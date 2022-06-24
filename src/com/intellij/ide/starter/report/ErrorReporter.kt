@@ -30,7 +30,7 @@ object ErrorReporter {
           val messageText = generifyErrorMessage(messageFile.readText().trim())
           val stackTraceContent = stacktraceFile.readText().trim()
 
-          val testName: String
+          var testName: String
 
           val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
 

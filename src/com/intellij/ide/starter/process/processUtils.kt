@@ -2,7 +2,7 @@ package com.intellij.ide.starter.process
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.exec.ExecOutputRedirect
-import com.intellij.ide.starter.exec.exec
+import com.intellij.ide.starter.exec.ProcessExecutor
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.catchAll
@@ -11,7 +11,10 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+
+// TODO: consider using https://github.com/oshi/oshi for acquiring process info
 
 /**
  * TeamCity may not kill processes started during the build (TW-69045).
@@ -43,11 +46,13 @@ fun killOutdatedProcessesOnUnix(commandsToSearch: Iterable<String> = listOf("/pe
 fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
   check(SystemInfo.isMac)
   val stdoutRedirect = ExecOutputRedirect.ToString()
-  exec("ps",
-       di.direct.instance<GlobalPaths>().testsDirectory,
-       timeout = Duration.minutes(1),
-       args = listOf("ps", "-ax"),
-       stdoutRedirect = stdoutRedirect)
+  ProcessExecutor("ps",
+                  di.direct.instance<GlobalPaths>().testsDirectory,
+                  timeout = 1.minutes,
+                  args = listOf("ps", "-ax"),
+                  stdoutRedirect = stdoutRedirect
+  ).start()
+
   val processLines = stdoutRedirect.read().lines().drop(1).map { it.trim() }.filterNot { it.isBlank() }
   //PID TTY           TIME CMD
   //  1 ??         0:43.67 /sbin/launchd
@@ -72,11 +77,13 @@ fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
 fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
   check(SystemInfo.isLinux)
   val stdoutRedirect = ExecOutputRedirect.ToString()
-  exec("ps",
-       di.direct.instance<GlobalPaths>().testsDirectory,
-       timeout = Duration.minutes(1),
-       args = listOf("ps", "-aux"),
-       stdoutRedirect = stdoutRedirect)
+  ProcessExecutor("ps",
+                  di.direct.instance<GlobalPaths>().testsDirectory,
+                  timeout = 1.minutes,
+                  args = listOf("ps", "-aux"),
+                  stdoutRedirect = stdoutRedirect
+  ).start()
+
   val processLines = stdoutRedirect.read().lines().drop(1).map { it.trim() }.filterNot { it.isBlank() }
   //USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
   //root       823  0.0  0.0 1576524 8128 ?        Ssl  дек01   0:08 /usr/bin/containerd
@@ -108,14 +115,14 @@ private fun killProcessOnUnix(pid: Int) {
   check(SystemInfo.isUnix)
   logOutput("Killing process $pid")
 
-  exec(
+  ProcessExecutor(
     "kill-process-$pid",
     di.direct.instance<GlobalPaths>().testsDirectory,
-    timeout = Duration.minutes(1),
+    timeout = 1.minutes,
     args = listOf("kill", "-9", pid.toString()),
     stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),
     stderrRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-err]")
-  )
+  ).start()
 }
 
 /**
@@ -132,14 +139,15 @@ fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, ori
 
   val stdout = ExecOutputRedirect.ToString()
   val stderr = ExecOutputRedirect.ToString()
-  exec(
+  ProcessExecutor(
     "jcmd-run",
     workDir,
-    timeout = Duration.minutes(1),
+    timeout = 1.minutes,
     args = listOf(javaHome.resolve("bin/jcmd").toAbsolutePath().toString()),
     stdoutRedirect = stdout,
     stderrRedirect = stderr
-  )
+  ).start()
+
   val mergedOutput = stdout.read() + "\n" + stderr.read()
   val candidates = arrayListOf<Long>()
   val candidatesFromProcessHandle = arrayListOf<Long>()
@@ -210,14 +218,14 @@ fun collectJavaThreadDump(
 
   val command = listOf(jstackPath.toAbsolutePath().toString(), "-l", javaProcessId.toString())
 
-  exec(
+  ProcessExecutor(
     "jstack",
     workDir,
-    timeout = Duration.minutes(1),
+    timeout = 1.minutes,
     args = command,
     stdoutRedirect = ExecOutputRedirect.ToFile(dumpFile.toFile()),
     stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]")
-  )
+  ).start()
 
   if (includeStdout) {
     logOutput("jstack output:\n${dumpFile.toFile().readLines().joinToString("\n")}")
@@ -226,13 +234,14 @@ fun collectJavaThreadDump(
 
 fun destroyGradleDaemonProcessIfExists() {
   val stdout = ExecOutputRedirect.ToString()
-  exec(
+  ProcessExecutor(
     "get jps process",
     workDir = null,
-    timeout = Duration.seconds(30),
+    timeout = 30.seconds,
     args = listOf("jps", "-l"),
     stdoutRedirect = stdout
-  )
+  ).start()
+
   logOutput("List of java processes: " + stdout.read())
 
   if (stdout.read().contains("GradleDaemon")) {

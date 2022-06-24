@@ -4,10 +4,10 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.models.IdeInfo
-import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
+import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.direct
@@ -29,6 +29,8 @@ interface TestContainer<T> : Closeable {
     for (context in allContexts) {
       catchAll { context.paths.close() }
     }
+
+    logOutput("TestContainer $this disposed")
   }
 
   /**
@@ -46,8 +48,18 @@ interface TestContainer<T> : Closeable {
     useLatestDownloadedIdeBuild = true
   } as T
 
-  fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIDE> {
+  fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     return di.direct.factory<IdeInfo, IdeInstallator>().invoke(ideInfo).install(ideInfo)
+  }
+
+  fun installPerformanceTestingPluginIfMissing(context: IDETestContext) {
+    val performancePluginId = "com.jetbrains.performancePlugin"
+
+    context.pluginConfigurator.apply {
+      val pluginState = getPluginInstalledState(performancePluginId)
+      if (pluginState != PluginInstalledState.INSTALLED && pluginState != PluginInstalledState.BUNDLED_TO_IDE)
+        setupPluginFromPluginManager(performancePluginId, ide = context.ide)
+    }
   }
 
   /** Starting point to run your test */
@@ -65,11 +77,11 @@ interface TestContainer<T> : Closeable {
     logOutput("Using IDE paths for $testName: $paths")
     logOutput("IDE to run for $testName: $ide")
 
-    val projectHome = testCase.projectInfo?.resolveProjectHome()
+    val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
     val context = IDETestContext(paths, ide, testCase, testName, projectHome, patchVMOptions = { this }, ciServer = ciServer)
     allContexts += context
 
-    val baseContext = when (testCase.ideInfo == IdeProduct.AI.ideInfo) {
+    val baseContext = when (testCase.ideInfo == IdeProductProvider.AI) {
       true -> context
         .addVMOptionsPatch {
           overrideDirectories(paths)
@@ -83,10 +95,14 @@ interface TestContainer<T> : Closeable {
         .withGtk2OnLinux()
         .disableGitLogIndexing()
         .enableSlowOperationsInEdtInTests()
+        .collectOpenTelemetry()
         .addVMOptionsPatch {
           overrideDirectories(paths)
         }
     }
-    return setupHooks.fold(baseContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
+
+    return setupHooks
+      .fold(baseContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
+      .apply { installPerformanceTestingPluginIfMissing(this) }
   }
 }

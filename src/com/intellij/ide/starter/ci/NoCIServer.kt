@@ -11,10 +11,16 @@ object NoCIServer : CIServer {
   override val buildParams: Map<String, String> = mapOf()
 
   override fun publishArtifact(source: Path, artifactPath: String, artifactName: String) {
-    logError("No logic for publishing artifacts has been implemented")
+    logError("""
+      No logic for publishing artifacts has been implemented.
+      If you want to publish artifacts somewhere (e.g. in CI build) - implement [CIServer] interface and register it via KodeinDI as specified in Readme.
+      """.trimIndent())
   }
 
   override fun reportTestFailure(testName: String, message: String, details: String) {
-    logError("No logic for reporting test failure has been implemented")
+    logError("""
+      No logic for reporting test failure has been implemented.
+      If you want to report tests failures (e.g. on CI) - implement [CIServer] interface and register it via KodeinDI as specified in Readme.
+      """.trimIndent())
   }
 }

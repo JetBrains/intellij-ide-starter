@@ -2,7 +2,7 @@ package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.exec.ExecOutputRedirect
-import com.intellij.ide.starter.exec.exec
+import com.intellij.ide.starter.exec.ProcessExecutor
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.system.SystemInfo
 import org.kodein.di.instance
@@ -17,7 +17,7 @@ import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import java.util.zip.ZipFile
 import kotlin.io.path.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 object FileSystem {
   fun String.cleanPathFromSlashes(replaceWith: String = ""): String = this
@@ -90,6 +90,7 @@ object FileSystem {
     //project archive may be empty
     Files.createDirectories(targetDir)
     val name = archive.fileName.toString()
+
     try {
       when {
         name.endsWith(".zip") || name.endsWith(".ijx") -> unpackZip(archive, targetDir)
@@ -101,12 +102,14 @@ object FileSystem {
       if (e.message?.contains("No space left on device") == true) {
         val paths by di.instance<GlobalPaths>()
         paths.getDiskUsageDiagnostics()
+
         throw IOException(buildString {
           appendLine("No space left while extracting $archive to $targetDir")
           appendLine(Files.getFileStore(targetDir).getDiskInfo())
           appendLine(paths.getDiskUsageDiagnostics())
         })
       }
+
       throw e
     }
   }
@@ -126,13 +129,13 @@ object FileSystem {
       }
       else if (SystemInfo.isLinux || SystemInfo.isMac) {
         Files.createDirectories(targetDir)
-        exec(
-          presentablePurpose = "extract-tar",
+        ProcessExecutor(
+          presentableName = "extract-tar",
           workDir = targetDir,
-          timeout = Duration.minutes(10),
+          timeout = 10.minutes,
           stderrRedirect = ExecOutputRedirect.ToStdOut("tar"),
           args = listOf("tar", "-z", "-x", "-f", tarFile.toAbsolutePath().toString(), "-C", targetDir.toAbsolutePath().toString())
-        )
+        ).start()
       }
     }
     catch (e: Exception) {
@@ -169,11 +172,12 @@ object FileSystem {
     return output.count
   }
 
-  fun Path.getFileOrDirectoryPresentableSize(): String  {
+  fun Path.getFileOrDirectoryPresentableSize(): String {
     val size: Long
-    if(this.toFile().isFile){
+    if (this.toFile().isFile) {
       size = this.toFile().length()
-    } else{
+    }
+    else {
       size = Files.walk(this).mapToLong { p: Path ->
         if (p.toFile().isFile) {
           p.toFile().length()
@@ -233,6 +237,8 @@ object FileSystem {
   fun Path.isUpToDate(): Boolean {
     val lastModified = this.toFile().lastModified()
     val currentTime = System.currentTimeMillis()
+
+    // less then a day ago
     val upToDate = currentTime - lastModified < 24 * 60 * 60 * 1000
     if (upToDate) {
       logOutput("$this is up to date")

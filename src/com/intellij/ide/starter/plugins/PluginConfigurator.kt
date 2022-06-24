@@ -2,9 +2,11 @@ package com.intellij.ide.starter.plugins
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -33,9 +35,11 @@ open class PluginConfigurator(val testContext: IDETestContext) {
 
   fun setupPluginFromPluginManager(
     pluginId: String,
-    ideBuild: String,
+    ide: InstalledIde,
     channel: String? = null,
   ) = apply {
+    logOutput("Setting up plugin: $pluginId ...")
+
     val fileName = pluginId.replace(".", "-") + ".zip"
     val downloadedPlugin = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins") / testContext.ide.build / fileName
     if (!downloadedPlugin.toFile().exists()) {
@@ -44,15 +48,22 @@ open class PluginConfigurator(val testContext: IDETestContext) {
         append("?action=download")
         append("&id=${pluginId.replace(" ", "%20")}")
         append("&noStatistic=false")
-        append("&build=$ideBuild")
+        append("&build=${ide.productCode}-${ide.build}")
         channel?.let {
           append("&channel=$it")
         }
       }
-      HttpClient.download(url, downloadedPlugin)
+      if (HttpClient.download(url, downloadedPlugin, retries = 1)) {
+        FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
+      }
+      else {
+        logError("Plugin $pluginId downloading failed, skipping")
+        return@apply
+      }
+    } else {
+      FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
     }
-
-    FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
+    logOutput("Plugin $pluginId setup finished")
   }
 
   fun disablePlugins(vararg pluginIds: String) = disablePlugins(pluginIds.toSet())
@@ -113,7 +124,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     return PluginInstalledState.NOT_INSTALLED
   }
 
-  fun ensurePluginIsInstalled(pluginId: String): PluginConfigurator {
+  fun assertPluginIsInstalled(pluginId: String): PluginConfigurator {
     when (getPluginInstalledState(pluginId)) {
       PluginInstalledState.DISABLED -> error("Plugin '$pluginId' must not be listed in the disabled plugins file ${disabledPluginsPath}")
       PluginInstalledState.NOT_INSTALLED -> error("Plugin '$pluginId' must be installed")

@@ -2,7 +2,7 @@ package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.exec.ExecOutputRedirect
-import com.intellij.ide.starter.exec.exec
+import com.intellij.ide.starter.exec.ProcessExecutor
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.system.SystemInfo
 import org.kodein.di.direct
@@ -13,9 +13,17 @@ import java.nio.charset.Charset
 import java.nio.file.FileStore
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.io.path.*
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
+fun formatArtifactName(artifactType: String, testName: String): String {
+  val testNameFormatted = testName.replace("/", "-").replace(" ", "")
+  val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+  return "$artifactType-$testNameFormatted-$time"
+}
 
 fun getThrowableText(t: Throwable): String {
   val writer = StringWriter()
@@ -23,13 +31,18 @@ fun getThrowableText(t: Throwable): String {
   return writer.buffer.toString()
 }
 
-inline fun catchAll(action: () -> Unit) {
+/**
+ * In case of success - return T
+ * In case of error - print error to stderr and return null
+ */
+inline fun <T> catchAll(action: () -> T): T? {
   try {
-    action()
+    return action()
   }
   catch (t: Throwable) {
-    logOutput("CatchAll swallowed error: ${t.message}")
+    logError("CatchAll swallowed error: ${t.message}")
     logError(getThrowableText(t))
+    return null
   }
 }
 
@@ -63,14 +76,14 @@ fun execJavaCmd(javaHome: Path, args: Iterable<String> = listOf()): List<String>
 
   val processArguments = listOf(java.toString()).plus(args)
 
-  exec(
-    presentablePurpose = prefix,
+  ProcessExecutor(
+    presentableName = prefix,
     workDir = javaHome,
-    timeout = Duration.minutes(1),
+    timeout = 1.minutes,
     args = processArguments,
     stdoutRedirect = stdout,
     stderrRedirect = stderr
-  )
+  ).start()
 
   val mergedOutput = listOf(stdout, stderr)
     .flatMap { it.read().split(System.lineSeparator()) }
@@ -128,7 +141,7 @@ fun String.withIndent(indent: String = "  "): String = lineSequence().map { "$in
 private fun quoteArg(arg: String): String {
 
   val specials = " #'\"\n\r\t\u000c"
-  if(!specials.any { arg.contains(it) }){
+  if (!specials.any { arg.contains(it) }) {
     return arg
   }
 
@@ -176,14 +189,14 @@ fun takeScreenshot(logsDir: Path) {
 
   val toolPath = screenshotTool.resolve("$toolName.jar")
   val javaPath = ProcessHandle.current().info().command().orElseThrow().toString()
-  exec(
-    presentablePurpose = "take-screenshot",
+  ProcessExecutor(
+    presentableName = "take-screenshot",
     workDir = toolsDir,
-    timeout = Duration.seconds(15),
+    timeout = 15.seconds,
     args = mutableListOf(javaPath, "-jar", toolPath.absolutePathString(), screenshotFile.toString()),
     environmentVariables = mapOf("DISPLAY" to ":88"),
     onlyEnrichExistedEnvVariables = true
-  )
+  ).start()
 
   if (screenshotFile.exists()) {
     logOutput("Screenshot saved in $screenshotFile")
@@ -196,32 +209,38 @@ fun takeScreenshot(logsDir: Path) {
 fun startProfileNativeThreads(pid: String) {
   if (!SystemInfo.isWindows) {
     val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
-    val toolName = "async-profiler-2.7-macos"
+    val toolName = when {
+      SystemInfo.isMac -> "async-profiler-2.7-macos"
+      SystemInfo.isLinux -> "async-profiler-2.7-linux-x64"
+      else -> error("Not supported OS")
+    }
     val profiler = toolsDir / toolName
     downloadAsyncProfilerIfNeeded(profiler, toolsDir)
     givePermissionsToExecutables(profiler)
-    exec(
-      presentablePurpose = "start-profile",
+
+    ProcessExecutor(
+      presentableName = "start-profile",
       workDir = profiler,
-      timeout = Duration.seconds(15),
+      timeout = 15.seconds,
       args = mutableListOf("./profiler.sh", "start", pid)
-    )
+    ).start()
   }
 }
 
 private fun givePermissionsToExecutables(profiler: Path) {
-  exec(
-    presentablePurpose = "give-permissions-to-jattach",
+  ProcessExecutor(
+    presentableName = "give-permissions-to-jattach",
     workDir = profiler.resolve("build"),
-    timeout = Duration.seconds(10),
+    timeout = 10.seconds,
     args = mutableListOf("chmod", "+x", "jattach")
-  )
-  exec(
-    presentablePurpose = "give-permissions-to-profiler",
+  ).start()
+
+  ProcessExecutor(
+    presentableName = "give-permissions-to-profiler",
     workDir = profiler,
-    timeout = Duration.seconds(10),
+    timeout = 10.seconds,
     args = mutableListOf("chmod", "+x", "profiler.sh")
-  )
+  ).start()
 }
 
 fun stopProfileNativeThreads(pid: String, fileToStoreInfo: String) {
@@ -229,12 +248,13 @@ fun stopProfileNativeThreads(pid: String, fileToStoreInfo: String) {
     val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
     val toolName = "async-profiler-2.7-macos"
     val profiler = toolsDir / toolName
-    exec(
-      presentablePurpose = "stop-profile",
+
+    ProcessExecutor(
+      presentableName = "stop-profile",
       workDir = profiler,
-      timeout = Duration.seconds(15),
+      timeout = 15.seconds,
       args = mutableListOf("./profiler.sh", "stop", pid, "-f", fileToStoreInfo)
-    )
+    ).start()
   }
 }
 

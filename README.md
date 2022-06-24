@@ -3,7 +3,7 @@
 
 #### Overview
 
-In general - this package helps you write tests/code, that will start IDE from installer in external process.
+Starter helps you write tests/code, that will start IntelliJ-based IDE from installer in external process.
 Aside from that, you may find useful functionality as below:
 
 * execution commands in plugins (list of available commands described below)
@@ -12,7 +12,7 @@ Aside from that, you may find useful functionality as below:
 * integration with CI (optional)
 * collecting test artifacts
 * reporting of artifacts to CI (optional)
-* run a test with profiler (not yet included)
+* run a test with a profiler (not yet included)
 
 
 #### Supported products
@@ -63,7 +63,7 @@ dependencies {
 }
 ```
 
-To make sure, that you will not get problem with Kotlin Duration and Kotlin Path API, add the following
+To make sure, that you will not get problem with Kotlin Duration, add the following
 
 ```
 compileTestKotlin {
@@ -73,7 +73,6 @@ compileTestKotlin {
   kotlinOptions {
     jvmTarget = JavaVersion.VERSION_11.toString()
     freeCompilerArgs += [
-      "-Xopt-in=kotlin.io.path.ExperimentalPathApi",
       "-Xopt-in=kotlin.time.ExperimentalTime"
     ]
   }
@@ -85,17 +84,13 @@ compileTestKotlin {
 
 ##### Run with JUnit4
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.ide.starter/testSrc/com/intellij/ide/starter/tests/examples)
+[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/tree/master/testSrc/com/intellij/ide/starter/tests/examples/junit4)
 
-Don't forget to create appropriate classes for JUnit4StarterRule, IdeaCases.
+You should create appropriate classes in your tests for JUnit4StarterRule, IdeaCases (we don't provide that as an artifact yet)
 
 ##### Run with JUnit5
 
-The key difference between running tests on JUnit4 and JUnit5 here will be migration from ExternalResource (in JUnit4) to TempDir (in JUnit5).  
-Though, for now we don't have an example for JUnit5StarterRule.
-
-[JUnit4StarterRule implementation example is here](https://github.com/JetBrains/intellij-community/blob/master/tools/intellij.ide.starter/testSrc/com/intellij/ide/starter/tests/examples/junit4/JUnit4StarterRule.kt)
-
+[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/tree/master/testSrc/com/intellij/ide/starter/tests/examples/junit5)
 
 
 ##### Available commands from plugins
@@ -134,6 +129,7 @@ Dependency `performance-testing-commands`
 - storeIndices()
 - compareIndices()
 - recoveryAction(action: RecoveryActionType)
+- ... **TBD**
 
 Dependency `performance-testing-maven-commands`
 - importMavenProject()
@@ -146,6 +142,8 @@ Dependency `performance-testing-gradle-commands`
 Everything, that initializes via DI framework (Kodein DI) might be modified in your code for your need.   
 [DI container initialization](https://github.com/JetBrains/intellij-community/blob/master/tools/intellij.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt)  
 For example, you might write your own implementation of CIServer and provide it via DI.
+
+NOTE: Be sure to use the same version of Kodein, that is used in `build.gradle` for starter project.
 
 E.g:
 ```

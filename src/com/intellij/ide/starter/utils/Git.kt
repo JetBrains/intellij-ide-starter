@@ -1,12 +1,12 @@
 package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.exec.ExecOutputRedirect
-import com.intellij.ide.starter.exec.exec
+import com.intellij.ide.starter.exec.ProcessExecutor
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 object Git {
   val branch by lazy { getShortBranchName() }
@@ -15,12 +15,14 @@ object Git {
   @Throws(IOException::class, InterruptedException::class)
   private fun getLocalGitBranch(): String {
     val stdout = ExecOutputRedirect.ToString()
-    exec(
+
+    ProcessExecutor(
       "git-local-branch-get",
-      workDir = null, timeout = Duration.minutes(1),
+      workDir = null, timeout = 1.minutes,
       args = listOf("git", "rev-parse", "--abbrev-ref", "HEAD"),
       stdoutRedirect = stdout
-    )
+    ).start()
+
     return stdout.read().trim()
   }
 
@@ -41,16 +43,17 @@ object Git {
     val stdout = ExecOutputRedirect.ToString()
 
     try {
-      exec(
+      ProcessExecutor(
         "git-repo-root-get",
-        workDir = null, timeout = Duration.minutes(1),
+        workDir = null, timeout = 1.minutes,
         args = listOf("git", "rev-parse", "--show-toplevel", "HEAD"),
         stdoutRedirect = stdout
-      )
+      ).start()
     }
     catch (e: Exception) {
-      logError("There is a problem in detecting git repo root. Trying to acquire working dir path")
-      return Paths.get("").toAbsolutePath()
+      val workDir = Paths.get("").toAbsolutePath()
+      logError("There is a problem in detecting git repo root. Trying to acquire working dir path: '$workDir'")
+      return workDir
     }
 
     // Takes first line from output like this:

@@ -3,16 +3,20 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.models.*
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.profiler.ProfilerType
+import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import org.kodein.di.direct
 import org.kodein.di.factory
+import org.kodein.di.instance
 import org.kodein.di.newInstance
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -24,19 +28,22 @@ import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
 import kotlin.io.path.*
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 data class IDETestContext(
   val paths: IDEDataPaths,
-  val ide: InstalledIDE,
+  val ide: InstalledIde,
   val testCase: TestCase,
   val testName: String,
   private val _resolvedProjectHome: Path?,
   var patchVMOptions: VMOptions.() -> VMOptions,
   val ciServer: CIServer,
-  var profilerType: ProfilerType = ProfilerType.NONE
+  var profilerType: ProfilerType = ProfilerType.NONE,
+  val publishers: List<ReportPublisher> = di.direct.instance(),
+  var isReportPublishingEnabled: Boolean = false
 ) {
   companion object {
-    const val TEST_RESULT_FILE_PATH_PROPERTY = "test.result.file.path"
+    const val OPENTELEMETRY_FILE = "opentelemetry.json"
   }
 
   val resolvedProjectHome: Path
@@ -142,6 +149,7 @@ data class IDETestContext(
       addSystemProperty("snapshots.path", paths.snapshotsDir)
     }
 
+  @Suppress("unused")
   fun collectMemorySnapshotOnFailedPluginUnload(): IDETestContext =
     addVMOptionsPatch {
       addSystemProperty("ide.plugins.snapshot.on.unload.fail", true)
@@ -170,16 +178,16 @@ data class IDETestContext(
     addSystemProperty("idea.skip.indices.initialization", true)
   }
 
-  fun addTestResultFilePath() = addVMOptionsPatch {
-    addSystemProperty(TEST_RESULT_FILE_PATH_PROPERTY, paths.tempDir.resolve("testResult.txt"))
-  }
-
   fun collectImportProjectPerfMetrics() = addVMOptionsPatch {
     addSystemProperty("idea.collect.project.import.performance", true)
   }
 
+  fun collectOpenTelemetry() = addVMOptionsPatch {
+    addSystemProperty("idea.diagnostic.opentelemetry.file", paths.logsDir.resolve(OPENTELEMETRY_FILE))
+  }
+
   fun enableWorkspaceModelVerboseLogs() = addVMOptionsPatch {
-    addSystemProperty("idea.log.trace.categories", "#com.intellij.workspaceModel")
+    configureLoggers(traceLoggers = listOf("com.intellij.workspaceModel"))
   }
 
   fun wipeSystemDir() = apply {
@@ -202,7 +210,7 @@ data class IDETestContext(
 
   fun wipeEventLogDataDir() = apply {
     val path = paths.systemDir / "event-log-data"
-    logOutput("Cleaning event-log-data (FUS) dir for $this at $path")
+    logOutput("Cleaning event-log-data dir for $this at $path")
     path.toFile().deleteRecursively()
   }
 
@@ -212,8 +220,29 @@ data class IDETestContext(
     path.toFile().deleteRecursively()
   }
 
-  fun runContext(): IDERunContext {
+  fun runContext(
+    patchVMOptions: VMOptions.() -> VMOptions = { this },
+    commandLine: IDECommandLine? = null,
+    commands: Iterable<MarshallableCommand> = CommandChain(),
+    codeBuilder: (CodeInjector.() -> Unit)? = null,
+    runTimeout: Duration = 10.minutes,
+    useStartupScript: Boolean = true,
+    launchName: String = "",
+    expectedKill: Boolean = false,
+    collectNativeThreads: Boolean = false
+  ): IDERunContext {
     return IDERunContext(testContext = this)
+      .copy(
+        commandLine = commandLine,
+        commands = commands,
+        codeBuilder = codeBuilder,
+        runTimeout = runTimeout,
+        useStartupScript = useStartupScript,
+        launchName = launchName,
+        expectedKill = expectedKill,
+        collectNativeThreads = collectNativeThreads
+      )
+      .addVMOptionsPatch(patchVMOptions)
   }
 
   /**
@@ -273,42 +302,60 @@ data class IDETestContext(
     commandLine: IDECommandLine? = null,
     commands: Iterable<MarshallableCommand>,
     codeBuilder: (CodeInjector.() -> Unit)? = null,
-    runTimeout: Duration = Duration.minutes(10),
+    runTimeout: Duration = 10.minutes,
     useStartupScript: Boolean = true,
     launchName: String = "",
     expectedKill: Boolean = false,
     collectNativeThreads: Boolean = false
   ): IDEStartResult {
-    return runContext()
-      .copy(
-        commandLine = commandLine,
-        commands = commands,
-        codeBuilder = codeBuilder,
-        runTimeout = runTimeout,
-        useStartupScript = useStartupScript,
-        launchName = launchName,
-        expectedKill = expectedKill,
-        collectNativeThreads = collectNativeThreads
-      )
-      .addVMOptionsPatch(patchVMOptions)
-      .runIDE()
+
+    val ideRunResult = runContext(
+      commandLine = commandLine,
+      commands = commands,
+      codeBuilder = codeBuilder,
+      runTimeout = runTimeout,
+      useStartupScript = useStartupScript,
+      launchName = launchName,
+      expectedKill = expectedKill,
+      collectNativeThreads = collectNativeThreads,
+      patchVMOptions = patchVMOptions
+    ).runIDE()
+
+    if (isReportPublishingEnabled) publishers.forEach {
+      it.publish(ideRunResult)
+    }
+    if (ideRunResult.failureError != null) throw ideRunResult.failureError
+    return ideRunResult
   }
 
   fun warmUp(
     patchVMOptions: VMOptions.() -> VMOptions = { this },
     commands: Iterable<MarshallableCommand>,
-    runTimeout: Duration = Duration.minutes(10)
+    runTimeout: Duration = 10.minutes,
+    storeClassReport: Boolean = false
   ): IDEStartResult {
+    val updatedContext = this.copy(testName = "${this.testName}/warmup")
+    val result = updatedContext.runIDE(
+        patchVMOptions = {
+          val warmupReports = IDEStartupReports(paths.reportsDir)
+          if (storeClassReport) {
+            this.enableStartupPerformanceLog(warmupReports).enableClassLoadingReport(
+              paths.reportsDir / "class-report.txt").patchVMOptions()
+          }
+          else {
+            this
+          }
+        },
+        commands = testCase.commands.plus(commands),
+        runTimeout = runTimeout
+      )
+    updatedContext.publishArtifact(this.paths.reportsDir)
+    return result
+  }
 
-    return runIDE(
-      patchVMOptions = {
-        val warmupReports = IDEStartupReports(paths.reportsDir / "warmUp")
-        enableStartupPerformanceLog(warmupReports).enableClassLoadingReport(paths.logsDir / "class-report.txt").patchVMOptions()
-      },
-      commands = testCase.commands.plus(commands),
-      runTimeout = runTimeout,
-      launchName = "warmUp"
-    )
+  fun removeAndUnpackProject(): IDETestContext {
+    testCase.markNotReusable().projectInfo?.downloadAndUnpackProject()
+    return this
   }
 
   fun setProviderMemoryOnlyOnLinux(): IDETestContext {
@@ -412,8 +459,12 @@ data class IDETestContext(
     return this
   }
 
-  fun updateBuildProcessHeapSize(): IDETestContext {
+  fun setBuildProcessHeapSize(heapSizeValue: String): IDETestContext {
     if (_resolvedProjectHome != null) {
+      val heapSize = when (heapSizeValue.isEmpty()) {
+        true -> "2000"
+        else -> heapSizeValue
+      }
       val ideaDir = resolvedProjectHome.resolve(".idea")
       val compilerXml = ideaDir.resolve("compiler.xml")
       if (compilerXml.toFile().exists()) {
@@ -422,7 +473,19 @@ data class IDETestContext(
         if (!readText.contains("BUILD_PROCESS_HEAP_SIZE")) {
           compilerXml.toFile().readLines().forEach {
             if (it.contains("<component name=\"CompilerConfiguration\">")) {
-              val newLine = "<component name=\"CompilerConfiguration\">\n<option name=\"BUILD_PROCESS_HEAP_SIZE\" value=\"2000\" />"
+              val newLine = "<component name=\"CompilerConfiguration\">\n<option name=\"BUILD_PROCESS_HEAP_SIZE\" value=\"$heapSize\" />"
+              newContent.appendLine(newLine)
+            }
+            else {
+              newContent.appendLine(it)
+            }
+          }
+          compilerXml.writeText(newContent.toString())
+        }
+        else if (heapSizeValue.isNotEmpty()) {
+          compilerXml.toFile().readLines().forEach {
+            if (it.contains("BUILD_PROCESS_HEAP_SIZE")) {
+              val newLine = it.replace("value=\"\\d*\"".toRegex(), "value=\"$heapSize\"")
               newContent.appendLine(newLine)
             }
             else {
@@ -451,7 +514,33 @@ data class IDETestContext(
     return this
   }
 
+  @Suppress("unused")
+  fun setLicense(pathToFileWithLicense: Path): IDETestContext {
+    val licenseKeyFileName: String = when (this.ide.productCode) {
+      IdeProductProvider.IU.productCode -> "idea.key"
+      IdeProductProvider.RM.productCode -> "rubymine.key"
+      IdeProductProvider.WS.productCode -> "webstorm.key"
+      IdeProductProvider.PS.productCode -> "phpstorm.key"
+      IdeProductProvider.GO.productCode -> "goland.key"
+      IdeProductProvider.PY.productCode -> "pycharm.key"
+      IdeProductProvider.DB.productCode -> "datagrip.key"
+      else -> error("Setting license to the product ${this.ide.productCode} is not supported")
+    }
+
+    val keyFile = paths.configDir.resolve(licenseKeyFileName)
+    keyFile.toFile().createNewFile()
+    keyFile.toFile().writeText(pathToFileWithLicense.toFile().readText())
+    return this
+  }
+
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
                       artifactName: String = source.fileName.toString()) = ciServer.publishArtifact(source, artifactPath, artifactName)
+
+  @Suppress("unused")
+  fun withReportPublishing(isEnabled: Boolean): IDETestContext {
+    isReportPublishingEnabled = isEnabled
+    return this
+  }
 }
+

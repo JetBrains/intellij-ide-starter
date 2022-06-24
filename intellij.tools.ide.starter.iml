@@ -4,7 +4,7 @@
     <facet type="kotlin-language" name="Kotlin">
       <configuration version="3" platform="JVM 11" allPlatforms="JVM [11]" useProjectSettings="false">
         <compilerSettings>
-          <option name="additionalArguments" value="-version -Xstrict-java-nullability-assertions -Xjvm-default=enable -Xuse-old-backend -Xopt-in=kotlin.io.path.ExperimentalPathApi -Xopt-in=kotlin.time.ExperimentalTime" />
+          <option name="additionalArguments" value="-version -Xstrict-java-nullability-assertions -Xjvm-default=enable -Xopt-in=kotlin.io.path.ExperimentalPathApi -Xopt-in=kotlin.time.ExperimentalTime" />
         </compilerSettings>
         <compilerArguments>
           <option name="jvmTarget" value="11" />
@@ -56,5 +56,18 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="qodana-sarif" type="repository">
+        <properties include-transitive-deps="false" maven-id="com.jetbrains.qodana:qodana-sarif:0.1.95" />
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/com/jetbrains/qodana/qodana-sarif/0.1.95/qodana-sarif-0.1.95.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="gson" level="project" />
+    <orderEntry type="module" module-name="intellij.platform.lang.impl" />
+    <orderEntry type="module" module-name="intellij.platform.ide.impl" />
   </component>
 </module>
