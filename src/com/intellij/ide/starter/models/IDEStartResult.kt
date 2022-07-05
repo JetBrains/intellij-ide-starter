@@ -15,4 +15,6 @@ data class IDEStartResult(
   val context: IDETestContext get() = runContext.testContext
 
   val extraAttributes: MutableMap<String, String> = mutableMapOf()
+
+  val mainReportAttributes get() = mapOf("execution time" to executionTime.toString())
 }
