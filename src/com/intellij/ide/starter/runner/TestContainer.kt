@@ -56,7 +56,7 @@ interface TestContainer<T> : Closeable {
     context.pluginConfigurator.apply {
       val pluginState = getPluginInstalledState(performancePluginId)
       if (pluginState != PluginInstalledState.INSTALLED && pluginState != PluginInstalledState.BUNDLED_TO_IDE)
-        setupPluginFromPluginManager(performancePluginId, ideBuild = context.ide.build)
+        setupPluginFromPluginManager(performancePluginId, ide = context.ide)
     }
   }
 
