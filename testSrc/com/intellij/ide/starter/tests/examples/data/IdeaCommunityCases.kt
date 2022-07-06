@@ -14,6 +14,13 @@ object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
     )
   )
 
+  val MavenSimpleApp = getTemplate().withProject(
+    ProjectInfo(
+      testProjectURL = "https://github.com/jenkins-docs/simple-java-maven-app/archive/refs/heads/master.zip",
+      testProjectImageRelPath = { it / "simple-java-maven-app-master" }
+    )
+  )
+
   val IntelliJCommunityProject = getTemplate().withProject(
     ProjectInfo(
       testProjectURL = "https://github.com/JetBrains/intellij-community/archive/master.zip",

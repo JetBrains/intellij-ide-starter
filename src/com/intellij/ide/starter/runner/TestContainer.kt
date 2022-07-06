@@ -29,6 +29,8 @@ interface TestContainer<T> : Closeable {
     for (context in allContexts) {
       catchAll { context.paths.close() }
     }
+
+    logOutput("TestContainer $this disposed")
   }
 
   /**
