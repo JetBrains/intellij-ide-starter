@@ -28,7 +28,7 @@ class IdeDownloaderTest {
                                  majorVersion = "222",
                                  build = "10.20")
       .toString()
-      .shouldBe("?code=IC&type=eap&majorVersion=222&build=10.20")
+      .shouldBe("?code=IC&type=eap")
   }
 
   @Test
@@ -40,7 +40,7 @@ class IdeDownloaderTest {
 
   @Test
   @Timeout(value = 4, unit = TimeUnit.MINUTES)
-  fun downloadEapInstaller() {
+  fun downloadLatestEapInstaller() {
     val downloader by di.instance<IdeDownloader>()
 
     val installer = downloader.downloadIdeInstaller(ideInfo = IdeProductProvider.IC, testDirectory)
@@ -53,13 +53,41 @@ class IdeDownloaderTest {
 
   @Test
   @Timeout(value = 4, unit = TimeUnit.MINUTES)
-  fun downloadReleaseInstaller() {
+  fun downloadLatestReleaseInstaller() {
     val downloader by di.instance<IdeDownloader>()
 
     val testCase = TestCases.IC.GradleJitPackSimple.useRelease()
     val installer = downloader.downloadIdeInstaller(ideInfo = testCase.ideInfo, testDirectory)
 
     withClue("Release installer should be downloaded successfully") {
+      installer.installerFile.shouldExist()
+      installer.installerFile.fileSize().shouldNotBeZero()
+    }
+  }
+
+  @Test
+  @Timeout(value = 4, unit = TimeUnit.MINUTES)
+  fun downloadSpecificReleaseInstaller() {
+    val downloader by di.instance<IdeDownloader>()
+
+    val testCase = TestCases.IC.GradleJitPackSimple.useRelease(version = "2022.1.2")
+    val installer = downloader.downloadIdeInstaller(ideInfo = testCase.ideInfo, testDirectory)
+
+    withClue("Specific release installer should be downloaded successfully") {
+      installer.installerFile.shouldExist()
+      installer.installerFile.fileSize().shouldNotBeZero()
+    }
+  }
+
+  @Test
+  @Timeout(value = 4, unit = TimeUnit.MINUTES)
+  fun downloadSpecificEapInstaller() {
+    val downloader by di.instance<IdeDownloader>()
+
+    val testCase = TestCases.IC.GradleJitPackSimple.useEAP(buildNumber = "222.3244.4")
+    val installer = downloader.downloadIdeInstaller(ideInfo = testCase.ideInfo, testDirectory)
+
+    withClue("Specific EAP installer should be downloaded successfully") {
       installer.installerFile.shouldExist()
       installer.installerFile.fileSize().shouldNotBeZero()
     }

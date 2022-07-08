@@ -35,12 +35,12 @@ data class TestCase(
   }
 
   /**
-   * [buildNumber] - Release build number to download
-   * E.g: "222.3244.1"
+   * [version] - Release version to download
+   * E.g: "2022.1.2"
    * If empty - the latest release will be downloaded.
    * [Downloads for IDEA Ultimate](https://www.jetbrains.com/idea/download/other.html)
    **/
-  fun useRelease(buildNumber: String = ""): TestCase {
-    return copy(ideInfo = ideInfo.copy(buildType = BuildType.RELEASE.type, buildNumber = buildNumber))
+  fun useRelease(version: String = ""): TestCase {
+    return copy(ideInfo = ideInfo.copy(buildType = BuildType.RELEASE.type, version = version))
   }
 }
