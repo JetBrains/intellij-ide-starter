@@ -119,6 +119,18 @@ test {
   }
 }
 
+task runOnlyExamplesTests(type: Test) {
+  filter {
+    includeTestsMatching "com.intellij.ide.starter.tests.examples.*"
+  }
+
+  useJUnitPlatform()
+
+  testLogging {
+    events "passed", "skipped", "failed", "standardOut", "standardError"
+  }
+}
+
 task runOnlyUnitTests(type: Test) {
   filter {
     includeTestsMatching "com.intellij.ide.starter.tests.unit.*"

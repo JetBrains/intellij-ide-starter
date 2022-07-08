@@ -55,6 +55,7 @@
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5Jupiter" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5Params" level="project" />
+    <orderEntry type="library" scope="TEST" name="JUnit5Launcher" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library name="mockito-junit-jupiter" type="repository">
