@@ -84,13 +84,13 @@ compileTestKotlin {
 
 ##### Run with JUnit4
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.ide.starter/testSrc/com/intellij/ide/starter/tests/examples/junit4)
+[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/tree/master/testSrc/com/intellij/ide/starter/tests/examples/junit4)
 
 You should create appropriate classes in your tests for JUnit4StarterRule, IdeaCases (we don't provide that as an artifact yet)
 
 ##### Run with JUnit5
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.ide.starter/testSrc/com/intellij/ide/starter/tests/examples/junit5)
+[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/tree/master/testSrc/com/intellij/ide/starter/tests/examples/junit5)
 
 
 ##### Available commands from plugins
