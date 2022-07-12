@@ -43,7 +43,6 @@ data class IDETestContext(
   var isReportPublishingEnabled: Boolean = false
 ) {
   companion object {
-    const val TEST_RESULT_FILE_PATH_PROPERTY = "test.result.file.path"
     const val OPENTELEMETRY_FILE = "opentelemetry.json"
   }
 
@@ -176,10 +175,6 @@ data class IDETestContext(
 
   fun skipIndicesInitialization() = addVMOptionsPatch {
     addSystemProperty("idea.skip.indices.initialization", true)
-  }
-
-  fun addTestResultFilePath() = addVMOptionsPatch {
-    addSystemProperty(TEST_RESULT_FILE_PATH_PROPERTY, paths.tempDir.resolve("testResult.txt"))
   }
 
   fun collectImportProjectPerfMetrics() = addVMOptionsPatch {
@@ -519,7 +514,7 @@ data class IDETestContext(
 
   @Suppress("unused")
   fun setLicense(pathToFileWithLicense: Path): IDETestContext {
-    val licenseKeyFileName: String = when(this.ide.productCode) {
+    val licenseKeyFileName: String = when (this.ide.productCode) {
       "IU" -> "idea.key"
       "RM" -> "rubymine.key"
       "WS" -> "webstorm.key"
