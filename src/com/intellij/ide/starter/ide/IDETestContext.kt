@@ -515,13 +515,13 @@ data class IDETestContext(
   @Suppress("unused")
   fun setLicense(pathToFileWithLicense: Path): IDETestContext {
     val licenseKeyFileName: String = when (this.ide.productCode) {
-      "IU" -> "idea.key"
-      "RM" -> "rubymine.key"
-      "WS" -> "webstorm.key"
-      "PS" -> "phpstorm.key"
-      "GO" -> "goland.key"
-      "PY" -> "pycharm.key"
-      "DG" -> "datagrip.key"
+      IdeProductProvider.IU.productCode -> "idea.key"
+      IdeProductProvider.RM.productCode -> "rubymine.key"
+      IdeProductProvider.WS.productCode -> "webstorm.key"
+      IdeProductProvider.PS.productCode -> "phpstorm.key"
+      IdeProductProvider.GO.productCode-> "goland.key"
+      IdeProductProvider.PY.productCode -> "pycharm.key"
+      IdeProductProvider.DB.productCode -> "datagrip.key"
       else -> error("Setting license to the product ${this.ide.productCode} is not supported")
     }
 
