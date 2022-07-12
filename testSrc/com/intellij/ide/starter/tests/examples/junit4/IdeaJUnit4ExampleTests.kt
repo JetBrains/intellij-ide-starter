@@ -2,6 +2,7 @@ package com.intellij.ide.starter.tests.examples.junit4
 
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade
+import com.intellij.ide.starter.sdk.JdkVersion
 import com.intellij.ide.starter.tests.examples.data.TestCases
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import com.jetbrains.performancePlugin.commands.setupSdk
@@ -17,7 +18,7 @@ class IdeaJUnit4ExampleTests {
   val testContextFactory = initStarterRule()
 
   private val sdk17 by lazy {
-    JdkDownloaderFacade.jdk17.toSdk("17")
+    JdkDownloaderFacade.jdk17.toSdk(JdkVersion.JDK_17)
   }
 
   @Test

@@ -29,10 +29,10 @@ import kotlin.io.path.isRegularFile
  */
 object JdkDownloaderFacade {
 
-  val jdk8 get() = jdkDownloader("8")
-  val jdk11 get() = jdkDownloader("11")
-  val jdk15 get() = jdkDownloader("15")
-  val jdk17 get() = jdkDownloader("17")
+  val jdk8 get() = jdkDownloader(JdkVersion.JDK_8.toString())
+  val jdk11 get() = jdkDownloader(JdkVersion.JDK_11.toString())
+  val jdk15 get() = jdkDownloader(JdkVersion.JDK_15.toString())
+  val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
 
   fun jdkDownloader(
     version: String,

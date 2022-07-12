@@ -17,6 +17,8 @@ data class JdkDownloadItem(
     sdkPath = home,
   )
 
+  fun toSdk(sdkVersion: JdkVersion) = toSdk(sdkVersion.toString())
+
   override fun equals(other: Any?) = other is JdkDownloadItem && other.jdk == jdk
   override fun hashCode() = jdk.hashCode()
   override fun toString(): String = "JdkDownloadItem(${jdk.fullPresentationText})"
