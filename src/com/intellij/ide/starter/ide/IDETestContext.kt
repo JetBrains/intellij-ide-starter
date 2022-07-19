@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.ide.starter.build.tool.BuildToolProvider
+import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.command.MarshallableCommand

@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.di
 
-import com.intellij.ide.starter.build.tool.BuildToolDefaultProvider
-import com.intellij.ide.starter.build.tool.BuildToolProvider
+import com.intellij.ide.starter.buildTool.BuildToolDefaultProvider
+import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.community.PublicIdeResolver
