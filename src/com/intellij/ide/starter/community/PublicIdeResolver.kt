@@ -4,6 +4,9 @@ import com.intellij.ide.starter.ide.IDEResolver
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.ide.starter.system.SystemInfo.isLinux
+import com.intellij.ide.starter.system.SystemInfo.isMac
+import com.intellij.ide.starter.system.SystemInfo.isWindows
 import java.nio.file.Path
 import kotlin.io.path.exists
 
@@ -19,11 +22,12 @@ object PublicIdeResolver : IDEResolver {
     if (releaseInfoMap.size == 1) {
       //Find the latest build
       val possibleBuild = releaseInfoMap.values.iterator().next().sortedByDescending { it.date }[0]
-      var downloadLink = ""
-      if (SystemInfo.isLinux) downloadLink = possibleBuild.downloads.linux!!.link
-      else if (SystemInfo.isMac) downloadLink = possibleBuild.downloads.mac!!.link
-      else if (SystemInfo.isWindows) downloadLink = possibleBuild.downloads.windows!!.link
-      else throw RuntimeException("Unsupported OS ${SystemInfo.getOsType()}")
+      val downloadLink = when {
+        isLinux -> possibleBuild.downloads.linux!!.link
+        isMac -> possibleBuild.downloads.mac!!.link
+        isWindows -> possibleBuild.downloads.windows!!.link
+        else -> throw RuntimeException("Unsupported OS ${SystemInfo.getOsType()}")
+      }
 
       val installerFile = installerPath.resolve("${ideInfo.installerFilePrefix}-" + possibleBuild.build.replace(".", "") + ideInfo.installerFileExt)
       if (!installerFile.exists()) DataServiceClient.downloadIDE(downloadLink, installerFile)
