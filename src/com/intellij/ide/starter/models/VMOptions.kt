@@ -108,13 +108,14 @@ data class VMOptions(
       .addSystemProperty("idea.record.classpath.info", "true")
   }
 
-  fun enableClassVMTraceReport(filePath: Path): VMOptions {
-    return when {
-      SystemInfo.isLinux -> this
-        .addSystemProperty("idea.log.class.vm.trace.file", filePath)
-        .addSystemProperty("idea.record.class.vm.trace", "true")
-      else -> this
-    }
+  fun enableVmtraceClassLoadingReport(filePath: Path): VMOptions {
+    if (!SystemInfo.isLinux) return this
+
+    val vmTraceFile = VMTrace.vmTraceFile
+
+    return this
+      .addSystemProperty("idea.log.vmtrace.file", filePath)
+      .addLine("-agentpath:${vmTraceFile.toAbsolutePath()}=${filePath.toAbsolutePath()}")
   }
 
   fun configureLoggers(

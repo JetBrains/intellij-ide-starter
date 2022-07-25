@@ -341,7 +341,7 @@ data class IDETestContext(
           if (storeClassReport) {
             this.enableStartupPerformanceLog(warmupReports)
               .enableClassLoadingReport(paths.reportsDir / "class-report.txt")
-              .enableClassVMTraceReport(paths.reportsDir / "class-vmtrace.txt")
+              .enableVmtraceClassLoadingReport(paths.reportsDir / "class-vmtrace.txt")
               .patchVMOptions()
           }
           else {
