@@ -345,7 +345,7 @@ data class IDETestContext(
               .patchVMOptions()
           }
           else {
-            this
+            this.patchVMOptions()
           }
         },
         commands = testCase.commands.plus(commands),
