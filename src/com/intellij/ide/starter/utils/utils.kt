@@ -209,7 +209,11 @@ fun takeScreenshot(logsDir: Path) {
 fun startProfileNativeThreads(pid: String) {
   if (!SystemInfo.isWindows) {
     val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
-    val toolName = "async-profiler-2.7-macos"
+    val toolName = when {
+      SystemInfo.isMac -> "async-profiler-2.7-macos"
+      SystemInfo.isLinux -> "async-profiler-2.7-linux-x64"
+      else -> error("Not supported OS")
+    }
     val profiler = toolsDir / toolName
     downloadAsyncProfilerIfNeeded(profiler, toolsDir)
     givePermissionsToExecutables(profiler)
