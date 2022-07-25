@@ -108,6 +108,15 @@ data class VMOptions(
       .addSystemProperty("idea.record.classpath.info", "true")
   }
 
+  fun enableClassVMTraceReport(filePath: Path): VMOptions {
+    return when {
+      SystemInfo.isLinux -> this
+        .addSystemProperty("idea.log.class.vm.trace.file", filePath)
+        .addSystemProperty("idea.record.class.vm.trace", "true")
+      else -> this
+    }
+  }
+
   fun configureLoggers(
     debugLoggers: List<String> = emptyList(),
     traceLoggers: List<String> = emptyList()

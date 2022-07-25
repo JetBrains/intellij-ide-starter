@@ -339,8 +339,10 @@ data class IDETestContext(
         patchVMOptions = {
           val warmupReports = IDEStartupReports(paths.reportsDir)
           if (storeClassReport) {
-            this.enableStartupPerformanceLog(warmupReports).enableClassLoadingReport(
-              paths.reportsDir / "class-report.txt").patchVMOptions()
+            this.enableStartupPerformanceLog(warmupReports)
+              .enableClassLoadingReport(paths.reportsDir / "class-report.txt")
+              .enableClassVMTraceReport(paths.reportsDir / "class-vmtrace.txt")
+              .patchVMOptions()
           }
           else {
             this
