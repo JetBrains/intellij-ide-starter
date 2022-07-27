@@ -12,13 +12,14 @@ object VMTrace {
   val vmTraceFile: Path
 
   val isSupported: Boolean
-    get() = SystemInfo.isLinux || SystemInfo.isMac && SystemInfo.OS_ARCH != "aarch64"
+    get() = SystemInfo.isLinux || SystemInfo.isMac
 
   init {
     if (isSupported) {
       val resourceName = when {
         SystemInfo.isLinux -> "/libvmtrace.so"
-        SystemInfo.isMac -> "/libvmtrace.dylib"
+        SystemInfo.isMac && !SystemInfo.isAarch64 -> "/libvmtrace.dylib"
+        SystemInfo.isMac && SystemInfo.isAarch64 -> "/libvmtrace-aarch64.dylib"
         else -> throw UnsupportedOperationException("Unsupported platform for libvmtrace")
       }
 
