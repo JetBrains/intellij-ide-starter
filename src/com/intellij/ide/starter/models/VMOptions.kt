@@ -109,7 +109,7 @@ data class VMOptions(
   }
 
   fun enableVmtraceClassLoadingReport(filePath: Path): VMOptions {
-    if (!SystemInfo.isLinux) return this
+    if (!VMTrace.isSupported) return this
 
     val vmTraceFile = VMTrace.vmTraceFile
 
