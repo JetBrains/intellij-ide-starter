@@ -72,12 +72,12 @@ data class IDERunContext(
 
   fun addCompletionHandler(handler: IDERunCloseContext.() -> Unit) = this.copy(closeHandlers = closeHandlers + handler)
 
-  fun uploadProfileResultsToTeamCity(profilerSnapshotsDir: Path, artifactName: String) =
+  fun uploadProfilerResultsToCIServer(profilerSnapshotsDir: Path, artifactName: String) =
     this.addCompletionHandler {
       testContext.publishArtifact(source = profilerSnapshotsDir, artifactName = artifactName)
     }
 
-  fun installProfiler(): IDERunContext {
+  private fun installProfiler(): IDERunContext {
     return when (val profilerType = testContext.profilerType) {
       ProfilerType.ASYNC, ProfilerType.YOURKIT -> {
         val profiler = di.direct.instance<ProfilerInjector>(tag = profilerType)
@@ -308,8 +308,7 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
-    return installProfiler()
-      .prepareToRunIDE()
+    return installProfiler().prepareToRunIDE()
   }
 
   private fun deleteSavedAppStateOnMac() {
