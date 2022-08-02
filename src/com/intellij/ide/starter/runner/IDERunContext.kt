@@ -193,7 +193,7 @@ data class IDERunContext(
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
             val javaProcessId by lazy { getJavaProcessId(jdkHome, startConfig.workDir, pid, process) }
-            val monitoringThreadDumpDir = logsDir.resolve("monitoring-Thread-Dumps").createDirectories()
+            val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
 
             var cnt = 0
             while (process.isAlive) {
@@ -202,7 +202,6 @@ data class IDERunContext(
 
               val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
               logOutput("Dumping threads to $dumpFile")
-              logOutput(Runtime.getRuntime().getRuntimeInfo())
               catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile, false) }
             }
           },

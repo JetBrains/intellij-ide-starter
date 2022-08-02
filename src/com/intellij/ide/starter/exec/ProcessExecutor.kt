@@ -169,9 +169,9 @@ class ProcessExecutor(val presentableName: String,
     val process = processBuilder.start()
 
     val processId = process.pid()
-    val onProcessCreatedJob: Job? = catchAll {
+    val onProcessCreatedJob: Job = supervisorScope.launch {
       logOutput("  ... started external process `$presentableName` with process ID = $processId")
-      supervisorScope.launch { onProcessCreated(process, processId) }
+      onProcessCreated(process, processId)
     }
 
     val inputThread = redirectProcessInput(process, stdInBytes)
@@ -180,8 +180,8 @@ class ProcessExecutor(val presentableName: String,
     val ioThreads = listOfNotNull(inputThread, stdoutThread, stderrThread)
 
     fun killProcess() {
+      catchAll { runBlocking { onProcessCreatedJob.cancelAndJoin() } }
       catchAll { runBlocking { withTimeout(1.minutes) { onBeforeKilled(process, processId) } } }
-      catchAll { runBlocking { onProcessCreatedJob?.cancelAndJoin() } }
       catchAll { process.descendants().forEach { catchAll { it.destroyForcibly() } } }
       catchAll { process.destroy() }
       catchAll { process.destroyForcibly() }
