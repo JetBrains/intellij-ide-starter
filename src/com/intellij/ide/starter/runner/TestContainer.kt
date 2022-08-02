@@ -80,7 +80,6 @@ interface TestContainer<T> : Closeable {
 
     val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
     testContext = IDETestContext(paths, ide, testCase, testName, projectHome, patchVMOptions = { this }, ciServer = ciServer)
-    StarterBus.post(TestContextInitializedEvent(EventState.BEFORE, testContext))
 
     testContext = when (testCase.ideInfo == IdeProductProvider.AI) {
       true -> testContext
@@ -106,7 +105,7 @@ interface TestContainer<T> : Closeable {
       .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
       .apply { installPerformanceTestingPluginIfMissing(this) }
 
-    StarterBus.post(TestContextInitializedEvent(EventState.AFTER, testContext))
+    StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
 
     return contextWithAppliedHooks
   }

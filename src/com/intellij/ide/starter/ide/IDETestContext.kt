@@ -345,18 +345,19 @@ data class IDETestContext(
   ): IDEStartResult {
     val updatedContext = this.copy(testName = "${this.testName}/warmup")
     val result = updatedContext.runIDE(
-        patchVMOptions = {
-          this.run {
-            if (storeClassReport) {
-              this.enableClassLoadingReport(paths.reportsDir / "class-report.txt")
-            } else {
-              this
-            }
-          }.patchVMOptions()
-        },
-        commands = testCase.commands.plus(commands),
-        runTimeout = runTimeout
-      )
+      patchVMOptions = {
+        this.run {
+          if (storeClassReport) {
+            this.enableClassLoadingReport(paths.reportsDir / "class-report.txt")
+          }
+          else {
+            this
+          }
+        }.patchVMOptions()
+      },
+      commands = testCase.commands.plus(commands),
+      runTimeout = runTimeout
+    )
     updatedContext.publishArtifact(this.paths.reportsDir)
     return result
   }
