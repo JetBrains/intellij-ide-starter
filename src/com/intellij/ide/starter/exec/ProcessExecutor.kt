@@ -5,6 +5,7 @@ import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import kotlinx.coroutines.*
+import kotlinx.coroutines.future.await
 import java.io.IOException
 import java.lang.Runnable
 import java.nio.file.Files
@@ -88,6 +89,12 @@ class ProcessExecutor(val presentableName: String,
     }
 
     return this
+  }
+
+  private fun killProcessGracefully(process: ProcessHandle) {
+    process.destroy()
+    runBlocking { withTimeout(20.seconds) { process.onExit().await() } }
+    process.destroyForcibly()
   }
 
   private fun analyzeProcessExit(process: Process) {
@@ -182,9 +189,8 @@ class ProcessExecutor(val presentableName: String,
     fun killProcess() {
       catchAll { runBlocking { onProcessCreatedJob.cancelAndJoin() } }
       catchAll { runBlocking { withTimeout(1.minutes) { onBeforeKilled(process, processId) } } }
-      catchAll { process.descendants().forEach { catchAll { it.destroyForcibly() } } }
-      catchAll { process.destroy() }
-      catchAll { process.destroyForcibly() }
+      process.descendants().forEach { catchAll { killProcessGracefully(it) } }
+      catchAll { killProcessGracefully(process.toHandle()) }
       catchAll { ioThreads.forEach { it.interrupt() } }
     }
 
