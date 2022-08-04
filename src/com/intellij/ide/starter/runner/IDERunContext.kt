@@ -109,7 +109,7 @@ data class IDERunContext(
     val stdout = if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
     val stderr = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
 
-    var successfulRun = true
+    var isRunSuccessful = true
     val host by lazy { di.direct.instance<CodeInjector>() }
 
     try {
@@ -246,7 +246,7 @@ data class IDERunContext(
       return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = vmOptionsDiff, logsDir = logsDir)
     }
     catch (t: Throwable) {
-      successfulRun = false
+      isRunSuccessful = false
       if (t is ExecTimeoutException && !expectedKill) {
         error("Timeout of IDE run $contextName for $runTimeout")
       }
@@ -280,14 +280,14 @@ data class IDERunContext(
         }.forEach { it.toFile().deleteRecursively() }
 
         ErrorReporter.reportErrorsAsFailedTests(logsDir / "script-errors", contextName)
-        val (artifactPath, artifactName) = if (successfulRun) contextName to "logs" else "run/$contextName" to "crash"
-        testContext.publishArtifact(logsDir, artifactPath, formatArtifactName(artifactName, testContext.testName))
+        publishArtifacts(isRunSuccessful)
+
         if (codeBuilder != null) {
           host.tearDown(testContext)
         }
 
         val closeContext = object : IDERunCloseContext {
-          override val wasRunSuccessful: Boolean = successfulRun
+          override val wasRunSuccessful: Boolean = isRunSuccessful
         }
 
         closeHandlers.forEach {
@@ -304,6 +304,22 @@ data class IDERunContext(
         StarterBus.post(IdeLaunchEvent(EventState.AFTER, this))
       }
     }
+  }
+
+  private fun publishArtifacts(isRunSuccessful: Boolean) {
+    // publish artifacts to directory with a test in any case
+    testContext.publishArtifact(
+      source = testContext.paths.logsDir,
+      artifactPath = contextName,
+      artifactName = formatArtifactName("logs", testContext.testName)
+    )
+
+    if (!isRunSuccessful)
+      testContext.publishArtifact(
+        source = testContext.paths.logsDir,
+        artifactPath = "_crashes/$contextName",
+        artifactName = formatArtifactName("crash", testContext.testName)
+      )
   }
 
   fun runIDE(): IDEStartResult {
