@@ -22,7 +22,7 @@ data class PluginLatestForIde(
     return buildString {
       append("https://plugins.jetbrains.com/pluginManager/?action=download")
       append("&id=${pluginIdEscaped()}")
-      append("&noStatistic=false")
+      append("&noStatistic=true")
       append("&build=${ide.productCode}-${ide.build}")
       channel?.let {
         append("&channel=$it")
@@ -42,7 +42,7 @@ data class PluginWithExactVersion(
     return buildString {
       append("https://plugins.jetbrains.com/plugin/download")
       append("?pluginId=${pluginIdEscaped()}")
-      append("&noStatistic=false")
+      append("&noStatistic=true")
       append("&version=$version")
       channel?.let {
         append("&channel=$it")
