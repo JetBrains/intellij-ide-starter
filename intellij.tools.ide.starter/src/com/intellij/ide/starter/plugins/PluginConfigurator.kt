@@ -54,24 +54,33 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     pluginId: String,
     ide: InstalledIde,
     channel: String? = null,
+  ) = setupPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel))
+
+  @Suppress("unused")
+  fun setupPluginFromPluginManager(
+    pluginId: String,
+    pluginVersion: String,
+    channel: String? = null,
+  ) = setupPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel))
+
+  fun setupPluginFromPluginManager(
+    plugin: PluginSourceDescriptor
   ) = apply {
+    val pluginId = plugin.pluginId
     logOutput("Setting up plugin: $pluginId ...")
 
+    val pluginsCacheDor = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins")
     val fileName = pluginId.replace(".", "-") + ".zip"
-    val downloadedPlugin = (di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins") / testContext.ide.build)
-                             .createDirectories() / fileName
+
+    val downloadedPlugin: Path = when (plugin) {
+      is PluginLatestForIde ->
+        (pluginsCacheDor / plugin.ide.build).createDirectories() / fileName
+      is PluginWithExactVersion ->
+        (pluginsCacheDor / plugin.version).createDirectories() / fileName
+    }
 
     if (!downloadedPlugin.toFile().exists()) {
-      val url = buildString {
-        append("https://plugins.jetbrains.com/pluginManager/")
-        append("?action=download")
-        append("&id=${pluginId.replace(" ", "%20")}")
-        append("&noStatistic=false")
-        append("&build=${ide.productCode}-${ide.build}")
-        channel?.let {
-          append("&channel=$it")
-        }
-      }
+      val url: String = plugin.downloadUrl()
       if (HttpClient.download(url, downloadedPlugin, retries = 1)) {
         FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
       }
