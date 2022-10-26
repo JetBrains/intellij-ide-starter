@@ -157,3 +157,27 @@ di = DI {
       bindSingleton<CIServer>(overrides = true) { YourImplementationOfCI() }
 }
 ```
+
+### Debugging the test
+
+Since the actual logic of the test is executed inside the plugin (inside the IDE in external process) you cannot simply debug the test.  
+To achieve that you have to connect remotely to that IDE instance.
+
+Some general workflow for debugging:
+
+```
+...
+
+context
+.addVMOptionsPatch { debug() }
+
+...
+``` 
+
+Create run configuration for Remote JVM Debug:
+Debugger mode: **Attach to Remote JVM**   
+Host: **localhost** Port: **5005**  
+Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005```  
+
+Run your test. After seeing in console prompt to connect remotely to the 5005 port run the created run configuration.
+
