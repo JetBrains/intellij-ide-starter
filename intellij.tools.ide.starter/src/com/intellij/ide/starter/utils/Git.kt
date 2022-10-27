@@ -6,6 +6,7 @@ import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.nameWithoutExtension
 import kotlin.time.Duration.Companion.minutes
 
 object Git {
@@ -18,7 +19,8 @@ object Git {
 
     ProcessExecutor(
       "git-local-branch-get",
-      workDir = null, timeout = 1.minutes,
+      workDir = null,
+      timeout = 1.minutes,
       args = listOf("git", "rev-parse", "--abbrev-ref", "HEAD"),
       stdoutRedirect = stdout
     ).start()
@@ -45,7 +47,8 @@ object Git {
     try {
       ProcessExecutor(
         "git-repo-root-get",
-        workDir = null, timeout = 1.minutes,
+        workDir = null,
+        timeout = 1.minutes,
         args = listOf("git", "rev-parse", "--show-toplevel", "HEAD"),
         stdoutRedirect = stdout
       ).start()
@@ -60,6 +63,45 @@ object Git {
     // /opt/REPO/intellij
     // 1916dc2bef46b51cfb02ad9f7e87d12aa1aa9fdc
     return Path(stdout.read().split("\n").first().trim()).toAbsolutePath()
+  }
+
+  fun clone(repoUrl: String, destinationDir: Path) {
+    val cmdName = "git-clone"
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = destinationDir.parent.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = listOf("git", "clone", repoUrl, destinationDir.nameWithoutExtension),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+    ).start()
+  }
+
+  fun reset(repositoryDirectory: Path) {
+    val cmdName = "git-reset"
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = listOf("git", "reset", "--hard"),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+    ).start()
+  }
+
+  fun pull(repositoryDirectory: Path) {
+    val cmdName = "git-pull"
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = listOf("git", "pull"),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+    ).start()
   }
 }
 

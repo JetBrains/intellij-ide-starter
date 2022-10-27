@@ -22,7 +22,7 @@ data class RemoteArchiveProjectInfo(
   /**
    * Relative path inside Image file, where project home is located
    */
-  override val testProjectImageRelPath: (Path) -> Path = { it / (testProjectURL.split("/")?.last()?.split(".zip")?.first() ?: "") }
+  override val testProjectImageRelPath: (Path) -> Path = { it / testProjectURL.split("/").last().split(".zip").first() }
 ) : ProjectInfoSpec {
 
   override fun downloadAndUnpackProject(): Path {
