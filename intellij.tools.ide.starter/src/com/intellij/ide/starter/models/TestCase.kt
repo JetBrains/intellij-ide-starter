@@ -2,8 +2,8 @@ package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.ide.command.MarshallableCommand
-import com.intellij.ide.starter.project.ProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
+import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 
 data class TestCase(
   val ideInfo: IdeInfo,
@@ -19,7 +19,7 @@ data class TestCase(
   /** On each test run the project will be unpacked again.
    * This guarantees that there is not side effects from previous test runs
    **/
-  fun markNotReusable(): TestCase = copy(projectInfo = (projectInfo as ProjectInfo).copy(isReusable = false))
+  fun markNotReusable(): TestCase = copy(projectInfo = (projectInfo as RemoteArchiveProjectInfo).copy(isReusable = false))
 
   /**
    * [buildNumber] - EAP build number to download
