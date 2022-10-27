@@ -519,3 +519,8 @@ fun <T : CommandChain> T.pressKeyEnter(): T {
   addCommand(PRESS_KEY_ENTER)
   return this
 }
+const val CLionDummyCommand = "${CMD_PREFIX}\"CLionDummyCommand\""
+fun <T : CommandChain> T.clionDum(delay: Int): T {
+  addCommand("$CLionDummyCommand")
+  return this
+}
