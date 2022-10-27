@@ -114,13 +114,13 @@ data class IndexingMetrics(
       return indexedFiles
     }
 
-  private val processingSpeedPerFileType: Map<String, Long>
+  private val processingSpeedPerFileType: Map<String, Int>
     get() {
-      val map = mutableMapOf<String, Long>()
+      val map = mutableMapOf<String, Int>()
       for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
         for (totalStatsPerFileType in jsonIndexDiagnostic.projectIndexingHistory.totalStatsPerFileType) {
           val speed = (totalStatsPerFileType.totalProcessingSpeed.totalBytes.toDouble() * 0.001 /
-                       totalStatsPerFileType.totalProcessingSpeed.totalTime * TimeUnit.SECONDS.toNanos(1).toDouble()).toLong()
+                       totalStatsPerFileType.totalProcessingSpeed.totalTime * TimeUnit.SECONDS.toNanos(1).toDouble()).toInt()
           if (map.containsKey(totalStatsPerFileType.fileType)) {
             if (map[totalStatsPerFileType.fileType]!! < speed) {
               map[totalStatsPerFileType.fileType] = speed
@@ -166,7 +166,7 @@ data class IndexingMetrics(
       PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = totalNumberOfIndexedFiles),
       PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = totalNumberOfFilesFullyIndexedByExtensions),
       PerformanceMetrics.Metric(metricNumberOfIndexingRuns, value = totalNumberOfIndexingRuns)
-    ) + createPerformanceMetricsFromMap(processingSpeedPerFileType)
+    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType)
   }
 }
 
@@ -183,10 +183,10 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   return IndexingMetrics(startResult, jsonIndexDiagnostics)
 }
 
-private fun createPerformanceMetricsFromMap(additionalMetrics: Map<String, Long>): List<PerformanceMetrics.Metric<*>> {
+private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric<*>> {
     val list = mutableListOf<PerformanceMetrics.Metric<*>>()
-    additionalMetrics.forEach{
-       list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricDuration(), value = it.value))
+  mapFileTypeToSpeed.forEach{
+       list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value))
       }
     return list
 }
