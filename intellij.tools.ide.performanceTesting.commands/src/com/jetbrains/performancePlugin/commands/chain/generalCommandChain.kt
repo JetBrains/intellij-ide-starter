@@ -23,6 +23,12 @@ fun <T : CommandChain> T.waitForSmartMode(): T {
   return this
 }
 
+const val WAIT_FOR_DUMB_CMD_PREFIX = "${CMD_PREFIX}waitForDumb"
+fun <T : CommandChain> T.waitForDumbMode(maxWaitingTimeInSec: Int): T {
+  addCommand("$WAIT_FOR_DUMB_CMD_PREFIX $maxWaitingTimeInSec")
+  return this
+}
+
 const val WAIT_FOR_GIT_LOG_INDEXING = "${CMD_PREFIX}waitForGitLogIndexing"
 
 fun <T : CommandChain> T.waitForGitLogIndexing(): T {
@@ -493,5 +499,11 @@ fun <T : CommandChain> T.withSystemMetrics(chain: CommandChain): T {
   for (command in chain) {
     addCommand(command.storeToString(), ENABLE_SYSTEM_METRICS)
   }
+  return this
+}
+
+const val PRESS_KEY_ENTER = "${CMD_PREFIX}pressKeyEnter"
+fun <T : CommandChain> T.pressKeyEnter(): T {
+  addCommand(PRESS_KEY_ENTER)
   return this
 }
