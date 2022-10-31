@@ -75,6 +75,7 @@ object Git {
       args = listOf("git", "clone", repoUrl, destinationDir.nameWithoutExtension),
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
     ).start()
   }
 
@@ -88,6 +89,7 @@ object Git {
       args = listOf("git", "reset", "--hard"),
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
     ).start()
   }
 
@@ -101,6 +103,7 @@ object Git {
       args = listOf("git", "pull"),
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
     ).start()
   }
 }
