@@ -8,6 +8,7 @@ import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.instance
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -28,7 +29,7 @@ data class RemoteArchiveProjectInfo(
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
 
-    val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked")
+    val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
     val projectHome = projectsUnpacked.let(testProjectImageRelPath)
 
     if (!isReusable) {

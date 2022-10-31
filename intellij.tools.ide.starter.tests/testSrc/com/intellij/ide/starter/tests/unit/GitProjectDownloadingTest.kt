@@ -15,7 +15,7 @@ class GitProjectDownloadingTest {
   @Test
   @Timeout(value = 2, unit = TimeUnit.MINUTES)
   fun downloadMatplotlibCheatsheetsRepo() {
-    val matplotlibCheatsheetsGitProject = GitProjectInfo(sshRepositoryUrl = "git@github.com:matplotlib/cheatsheets.git")
+    val matplotlibCheatsheetsGitProject = GitProjectInfo(repositoryUrl = "https://github.com/matplotlib/cheatsheets.git")
 
     val projectPath = matplotlibCheatsheetsGitProject.downloadAndUnpackProject()
 
