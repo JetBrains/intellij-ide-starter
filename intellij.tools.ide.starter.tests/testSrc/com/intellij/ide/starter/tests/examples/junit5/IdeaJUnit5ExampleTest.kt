@@ -11,6 +11,7 @@ import com.intellij.ide.starter.tests.examples.data.TestCases
 import com.intellij.metricsCollector.metrics.getOpenTelemetry
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import com.jetbrains.performancePlugin.commands.chain.inspectCode
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
@@ -57,6 +58,7 @@ class IdeaJUnit5ExampleTest {
   }
 
   @Test
+  @Disabled("Long running test (> 10 min)")
   fun inspectMavenProject() {
     val testContext = context
       .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
