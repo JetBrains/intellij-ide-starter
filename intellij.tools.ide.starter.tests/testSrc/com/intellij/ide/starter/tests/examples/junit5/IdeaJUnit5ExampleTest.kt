@@ -1,8 +1,11 @@
 package com.intellij.ide.starter.tests.examples.junit5
 
+import com.intellij.ide.starter.data.TestCaseTemplate
+import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.tests.examples.data.TestCases
 import com.intellij.metricsCollector.metrics.getOpenTelemetry
@@ -68,5 +71,20 @@ class IdeaJUnit5ExampleTest {
       println("Name: " + it.n)
       println("Value: " + it.v + "ms")
     }
+  }
+
+  private val matplotlibCheatSheetsGitProject = GitProjectInfo(sshRepositoryUrl = "git@github.com:matplotlib/cheatsheets.git")
+
+  @Test
+  fun usageGitRepoAsTestProjec() {
+    val testContext = context
+      .initializeTestContext(
+        testName = testInfo.hyphenateWithClass(),
+        testCase = object : TestCaseTemplate(IdeProductProvider.PY) {}.getTemplate().withProject(matplotlibCheatSheetsGitProject))
+      .prepareProjectCleanImport()
+      .skipIndicesInitialization()
+      .setSharedIndexesDownload(enable = true)
+
+    testContext.runIDE(commands = CommandChain().exitApp())
   }
 }
