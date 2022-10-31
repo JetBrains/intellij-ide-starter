@@ -2,8 +2,8 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 buildscript {
-  ext.kotlin_version = '1.7.0'
-  ext.jackson_version = '2.13.3'
+  ext.kotlin_version = '1.7.20'
+  ext.jackson_version = '2.14.0-rc1'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.2"
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.2"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
   implementation "org.jetbrains.intellij.deps:gradle-api:7.4"
@@ -51,11 +51,11 @@ dependencies {
 
   testImplementation 'junit:junit:4.13.2'
 
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-  testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
-  testImplementation 'org.junit.vintage:junit-vintage-engine:5.8.1'
-  testImplementation 'org.junit.platform:junit-platform-launcher:1.8.2'
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.1`'
+  testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.1'
+  testImplementation 'org.junit.platform:junit-platform-launcher:1.9.1'
 
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.3.2'
   testImplementation 'org.mockito:mockito-core:3.12.4'
