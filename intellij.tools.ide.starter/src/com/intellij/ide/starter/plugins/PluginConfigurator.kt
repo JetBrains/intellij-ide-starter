@@ -12,10 +12,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
 import java.util.jar.JarFile
-import kotlin.io.path.div
-import kotlin.io.path.exists
-import kotlin.io.path.readLines
-import kotlin.io.path.writeLines
+import kotlin.io.path.*
 
 open class PluginConfigurator(val testContext: IDETestContext) {
   val disabledPluginsPath: Path
@@ -41,7 +38,9 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     logOutput("Setting up plugin: $pluginId ...")
 
     val fileName = pluginId.replace(".", "-") + ".zip"
-    val downloadedPlugin = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins") / testContext.ide.build / fileName
+    val downloadedPlugin = (di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins") / testContext.ide.build)
+                             .createDirectories() / fileName
+
     if (!downloadedPlugin.toFile().exists()) {
       val url = buildString {
         append("https://plugins.jetbrains.com/pluginManager/")
