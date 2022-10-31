@@ -70,4 +70,11 @@ object IdeProductImp : IdeProduct {
     platformPrefix = "CLion",
     executableFileName = "clion"
   )
+
+  /** DataSpell */
+  override val DS: IdeInfo = IdeInfo(
+    productCode = "DS",
+    platformPrefix = "DataSpell",
+    executableFileName = "dataspell"
+  )
 }

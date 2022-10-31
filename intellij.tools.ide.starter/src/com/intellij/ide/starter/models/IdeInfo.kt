@@ -25,6 +25,7 @@ data class IdeInfo(
       "GO" -> "goland"
       "RM" -> "RubyMine"
       "PY" -> "pycharmPY"
+      "DS" -> "dataspell"
       else -> error("Unknown product code: $productCode")
     }
 

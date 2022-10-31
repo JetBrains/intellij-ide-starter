@@ -30,4 +30,7 @@ interface IdeProduct {
 
   /** CLion */
   val CL: IdeInfo
+
+  /** DataSpell */
+  val DS: IdeInfo
 }

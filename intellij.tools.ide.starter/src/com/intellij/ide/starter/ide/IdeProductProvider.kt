@@ -38,5 +38,8 @@ object IdeProductProvider {
   /** CLion */
   val CL: IdeInfo = di.direct.instance<IdeProduct>().CL
 
+  /** DataSpell */
+  val DS: IdeInfo = di.direct.instance<IdeProduct>().DS
+
   fun getProducts(): List<IdeInfo> = IdeProductProvider::class.declaredMemberProperties.map { it.get(IdeProductProvider) as IdeInfo }
 }
