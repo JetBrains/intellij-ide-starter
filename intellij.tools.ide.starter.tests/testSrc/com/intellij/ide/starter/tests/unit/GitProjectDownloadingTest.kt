@@ -14,11 +14,10 @@ class GitProjectDownloadingTest {
 
   @Test
   @Timeout(value = 2, unit = TimeUnit.MINUTES)
-  fun downloadAwsPluginCheckerRepo() {
-    val awsPluginCheckerProject = GitProjectInfo(
-      sshRepositoryUrl = "ssh://git@git.jetbrains.team/platform-test-automation/aws-plugin-checker.git")
+  fun downloadMatplotlibCheatsheetsRepo() {
+    val matplotlibCheatsheetsGitProject = GitProjectInfo(sshRepositoryUrl = "git@github.com:matplotlib/cheatsheets.git")
 
-    val projectPath = awsPluginCheckerProject.downloadAndUnpackProject()
+    val projectPath = matplotlibCheatsheetsGitProject.downloadAndUnpackProject()
 
     projectPath.shouldExist()
 
