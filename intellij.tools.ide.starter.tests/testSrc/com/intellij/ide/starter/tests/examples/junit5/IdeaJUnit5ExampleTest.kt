@@ -75,10 +75,13 @@ class IdeaJUnit5ExampleTest {
     }
   }
 
-  private val matplotlibCheatSheetsGitProject = GitProjectInfo(repositoryUrl = "https://github.com/matplotlib/cheatsheets.git")
-
   @Test
   fun usageGitRepoAsTestProject() {
+    val matplotlibCheatSheetsGitProject = GitProjectInfo(
+      repositoryUrl = "https://github.com/matplotlib/cheatsheets.git",
+      branchName = "master"
+    )
+
     val testContext = context
       .initializeTestContext(
         testName = testInfo.hyphenateWithClass(),

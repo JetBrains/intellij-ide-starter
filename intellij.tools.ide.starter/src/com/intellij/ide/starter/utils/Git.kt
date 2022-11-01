@@ -65,28 +65,34 @@ object Git {
     return Path(stdout.read().split("\n").first().trim()).toAbsolutePath()
   }
 
-  fun clone(repoUrl: String, destinationDir: Path) {
+  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "") {
     val cmdName = "git-clone"
+
+    val arguments = mutableListOf("git", "clone", repoUrl, destinationDir.nameWithoutExtension)
+    if (branchName.isNotEmpty()) arguments.addAll(listOf("-b", branchName))
 
     ProcessExecutor(
       presentableName = cmdName,
       workDir = destinationDir.parent.toAbsolutePath(),
       timeout = 10.minutes,
-      args = listOf("git", "clone", repoUrl, destinationDir.nameWithoutExtension),
+      args = arguments,
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       onlyEnrichExistedEnvVariables = true
     ).start()
   }
 
-  fun reset(repositoryDirectory: Path) {
+  fun reset(repositoryDirectory: Path, commitHash: String = "") {
     val cmdName = "git-reset"
+
+    val arguments = mutableListOf("git", "reset", "--hard")
+    if (commitHash.isNotEmpty()) arguments.add(commitHash)
 
     ProcessExecutor(
       presentableName = cmdName,
       workDir = repositoryDirectory.toAbsolutePath(),
       timeout = 10.minutes,
-      args = listOf("git", "reset", "--hard"),
+      args = arguments,
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       onlyEnrichExistedEnvVariables = true
@@ -101,6 +107,24 @@ object Git {
       workDir = repositoryDirectory.toAbsolutePath(),
       timeout = 10.minutes,
       args = listOf("git", "clean", "-fd"),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+  }
+
+
+  fun checkout(repositoryDirectory: Path, branchName: String = "") {
+    val cmdName = "git-checkout"
+
+    val arguments = mutableListOf("git", "checkout")
+    if (branchName.isNotEmpty()) arguments.add(branchName)
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = arguments,
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       onlyEnrichExistedEnvVariables = true

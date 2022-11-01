@@ -14,10 +14,14 @@ class GitProjectDownloadingTest {
 
   @Test
   @Timeout(value = 2, unit = TimeUnit.MINUTES)
-  fun downloadMatplotlibCheatsheetsRepo() {
-    val matplotlibCheatsheetsGitProject = GitProjectInfo(repositoryUrl = "https://github.com/matplotlib/cheatsheets.git")
+  fun downloadGitRepoProject() {
+    val gitProject = GitProjectInfo(
+      branchName = "gh-pages",
+      repositoryUrl = "https://github.com/facebookresearch/encodec"
+    )
+      .onCommit("59d463f77b872474e4beb50d896db9eb326841da")
 
-    val projectPath = matplotlibCheatsheetsGitProject.downloadAndUnpackProject()
+    val projectPath = gitProject.downloadAndUnpackProject()
 
     projectPath.shouldExist()
 
