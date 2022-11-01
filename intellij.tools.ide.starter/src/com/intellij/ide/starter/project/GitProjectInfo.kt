@@ -32,8 +32,17 @@ data class GitProjectInfo(
     val projectHome = projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
 
     if (projectHome.exists()) {
-      Git.reset(projectHome)
-      Git.pull(projectHome)
+      try {
+        Git.reset(projectHome)
+        Git.clean(projectHome)
+        Git.pull(projectHome)
+      }
+      catch (_: Exception) {
+        projectHome.apply {
+          toFile().deleteRecursively()
+          createDirectories()
+        }
+      }
     }
     else {
       Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome)

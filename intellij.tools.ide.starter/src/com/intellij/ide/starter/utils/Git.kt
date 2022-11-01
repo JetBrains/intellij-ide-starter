@@ -93,6 +93,20 @@ object Git {
     ).start()
   }
 
+  fun clean(repositoryDirectory: Path) {
+    val cmdName = "git-clean"
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = listOf("git", "clean", "-fd"),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+  }
+
   fun pull(repositoryDirectory: Path) {
     val cmdName = "git-pull"
 
