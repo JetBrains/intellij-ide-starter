@@ -124,7 +124,7 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
         (containerProp.javaField!!.apply { trySetAccessible() }.get(testInstance) as T).close()
       }
       catch (e: Throwable) {
-        logError("Unable automatically to close resources of ${containerProp.name}")
+        logError("Unable close resources of ${containerProp.name}")
       }
     }
   }

@@ -1,13 +1,22 @@
 package com.intellij.tools.plugin.checker.tests
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.module.kotlin.jsonMapper
+import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.intellij.ide.starter.community.model.BuildType
+import com.intellij.ide.starter.extended.teamcity.TeamCityCIServer
+import com.intellij.ide.starter.extended.teamcity.TeamCityClient
+import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.plugin.checker.data.TestCases
-import com.intellij.tools.plugin.checker.marketplace.MarketPlaceEvent
+import com.intellij.tools.plugin.checker.di.initDI
+import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.jetbrains.performancePlugin.commands.chain.exitApp
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
@@ -15,7 +24,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.concurrent.TimeUnit
 
-private const val MARKETPLACE_RAW_EVENT_DATA_ENV = "MARKETPLACE_RAW_EVENT_DATA"
 
 @ExtendWith(JUnit5StarterAssistant::class)
 class InstallPluginTest {
@@ -24,46 +32,86 @@ class InstallPluginTest {
   private lateinit var context: TestContainerImpl
 
   companion object {
-    val marketplaceRawEventData: String by lazy { System.getenv(MARKETPLACE_RAW_EVENT_DATA_ENV) }
+    init {
+      initDI()
+    }
 
-    fun deserializeMessageFromMarketplace(input: String): MarketPlaceEvent {
-      // TODO: implement deserialization, when real data will be available
-      return MarketPlaceEvent(
-        id = 1,
-        file = "http://path-to-plugin-file.zip",
-        productCode = "IU",
-        productVersion = "IU-221.2.54",
-        productLink = "http://link-to-download-ide",
-        productType = "release", //release, eap, rc
-        s3Path = "",
-        forced = false
-      )
+    /**
+     * Extract only sns_message_body from text like this:
+     * ##type='sns' triggerId='TRIGGER_1' queueMergingEnabled='false' sns_message_body='{JSON_CONTENT}'
+     */
+    private fun String.extractSnsMessageBody(): String {
+      val matchResult = Regex("sns_message_body='(.)*'").find(this)
+
+      requireNotNull(matchResult) { "Error happened during parsing trigger parameters. Expecting `sns_message_body` param" }
+
+      return matchResult.groups.single { it != null && it.value.startsWith("sns_message_body") }!!
+        .value.removePrefix("sns_message_body='").removeSuffix("'")
+    }
+
+    /**
+     * Json we get, isn't valid. So we have to do regexp thing before deserialization
+     */
+    private fun String.extractMarketplaceDetailPayload(): String {
+      val matchResult = Regex("\"detail\":(.)*}").find(this)
+
+      requireNotNull(matchResult) { "Error happened during searching for detail field in trigger parameter" }
+
+      return matchResult.groups.single { it != null && it.value.startsWith("\"detail\"") }!!
+        .value.removePrefix("\"detail\":").removeSuffix("}")
+    }
+
+    fun deserializeMessageFromMarketplace(input: String): MarketplaceEvent {
+      val jacksonMapper = jsonMapper {
+        addModule(kotlinModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      }
+
+      val detailField = jacksonMapper.readTree(input.extractMarketplaceDetailPayload())
+      return jacksonMapper.treeToValue<MarketplaceEvent>(detailField)
+    }
+
+    fun getMarketplaceEvent(): MarketplaceEvent {
+      val triggeredByJsonNode = TeamCityClient.run {
+        get(getGuestAuthUrl().resolve("builds/id:${TeamCityCIServer.buildId}?fields=triggered(displayText)"))
+      }
+
+      val displayTextField = requireNotNull(triggeredByJsonNode.first().first().asText())
+
+      return deserializeMessageFromMarketplace(displayTextField.extractSnsMessageBody())
     }
 
     @JvmStatic
     fun data(): List<EventToTestCaseParams> {
-      val originalParams: EventToTestCaseParams = EventToTestCaseParams(
-        event = deserializeMessageFromMarketplace(marketplaceRawEventData),
+      val event = getMarketplaceEvent()
+      val draftParams: EventToTestCaseParams = EventToTestCaseParams(
+        event = event,
         testCase = TestCases.IU.GradleJitPackSimple
       )
 
-      return listOf(modifyTestCaseForIdeVersion(originalParams))
+      return listOf(modifyTestCaseForIdeVersion(draftParams))
     }
 
     fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): EventToTestCaseParams {
-      val testCase = when (params.event.productType) {
-        BuildType.EAP.type -> params.testCase.useEAP(params.event.productVersion)
-        BuildType.RELEASE.type -> params.testCase.useRelease(params.event.productVersion)
-        else -> TODO("Build type `${params.event.productType}` is not supported")
+      val ideInfo = IdeProductProvider.getProducts().single { it.productCode == params.event.productCode }
+
+      val paramsWithAppropriateIde = params.onIDE(ideInfo)
+      val numericProductVersion = paramsWithAppropriateIde.event.getNumericProductVersion()
+
+      val testCase = when (paramsWithAppropriateIde.event.productType) {
+        BuildType.EAP.type -> paramsWithAppropriateIde.testCase.useEAP().withBuildNumber(numericProductVersion)
+        BuildType.RELEASE.type -> paramsWithAppropriateIde.testCase.useRelease().withBuildNumber(numericProductVersion)
+        else -> TODO("Build type `${paramsWithAppropriateIde.event.productType}` is not supported")
       }
 
-      return params.copy(testCase = testCase)
+      return paramsWithAppropriateIde.copy(testCase = testCase)
     }
   }
 
   @ParameterizedTest
   @MethodSource("data")
   @Timeout(value = 15, unit = TimeUnit.MINUTES)
+  @Disabled
   fun installPluginTest(params: EventToTestCaseParams) {
 
     val testContext = context
