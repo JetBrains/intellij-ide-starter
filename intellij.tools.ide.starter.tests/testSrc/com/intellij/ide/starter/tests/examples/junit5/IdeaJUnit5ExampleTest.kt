@@ -7,10 +7,13 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.sdk.JdkDownloaderFacade
+import com.intellij.ide.starter.sdk.JdkVersion
 import com.intellij.ide.starter.tests.examples.data.TestCases
 import com.intellij.metricsCollector.metrics.getOpenTelemetry
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import com.jetbrains.performancePlugin.commands.chain.inspectCode
+import com.jetbrains.performancePlugin.commands.setupSdk
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -22,6 +25,10 @@ class IdeaJUnit5ExampleTest {
   // these properties will be injected via [JUnit5StarterAssistant]
   private lateinit var testInfo: TestInfo
   private lateinit var context: TestContainerImpl
+
+  private val sdk17 by lazy {
+    JdkDownloaderFacade.jdk17.toSdk(JdkVersion.JDK_17)
+  }
 
   @Test
   fun openGradleJitPack() {
@@ -62,9 +69,8 @@ class IdeaJUnit5ExampleTest {
   fun inspectMavenProject() {
     val testContext = context
       .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
-      .prepareProjectCleanImport()
-      .skipIndicesInitialization()
       .collectOpenTelemetry()
+      .setupSdk(sdk17)
       .setSharedIndexesDownload(enable = true)
 
     testContext.runIDE(commands = CommandChain().inspectCode().exitApp())

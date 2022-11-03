@@ -12,6 +12,7 @@ import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkItem
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkListDownloader
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkPredicate
 import com.intellij.openapi.util.io.FileUtil
+import com.intellij.testFramework.TestApplicationManager
 import com.intellij.util.io.delete
 import com.intellij.util.io.isDirectory
 import com.intellij.util.io.readText
@@ -49,6 +50,7 @@ object JdkDownloaderFacade {
   }
 
   val allJdks by lazy {
+    TestApplicationManager.getInstance()
     listJDKs(JdkPredicate.forCurrentProcess())
   }
 
