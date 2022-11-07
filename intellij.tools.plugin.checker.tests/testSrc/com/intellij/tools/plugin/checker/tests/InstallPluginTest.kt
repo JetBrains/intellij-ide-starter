@@ -16,7 +16,6 @@ import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.jetbrains.performancePlugin.commands.chain.exitApp
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
@@ -111,7 +110,6 @@ class InstallPluginTest {
   @ParameterizedTest
   @MethodSource("data")
   @Timeout(value = 15, unit = TimeUnit.MINUTES)
-  @Disabled
   fun installPluginTest(params: EventToTestCaseParams) {
 
     val testContext = context
