@@ -5,6 +5,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.path.IDEDataPaths
@@ -20,6 +21,7 @@ import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class ReportPublisherTest {
 
   @Mock

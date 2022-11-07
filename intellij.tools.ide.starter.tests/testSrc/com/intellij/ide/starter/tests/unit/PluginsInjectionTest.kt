@@ -3,6 +3,7 @@ package com.intellij.ide.starter.tests.unit
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.hyphenateTestName
@@ -18,6 +19,7 @@ import java.nio.file.Path
 
 
 @ExtendWith(MockitoExtension::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class PluginsInjectionTest {
 
   @TempDir

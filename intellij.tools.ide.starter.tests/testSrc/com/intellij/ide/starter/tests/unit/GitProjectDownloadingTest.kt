@@ -1,15 +1,18 @@
 package com.intellij.ide.starter.tests.unit
 
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.GitProjectInfo
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.ExtendWith
 import org.kodein.di.instance
 import java.util.concurrent.TimeUnit
 
+@ExtendWith(JUnit5StarterAssistant::class)
 class GitProjectDownloadingTest {
 
   @Test

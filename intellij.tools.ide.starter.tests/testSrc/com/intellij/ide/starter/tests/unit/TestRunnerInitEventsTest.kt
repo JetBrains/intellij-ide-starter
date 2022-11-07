@@ -7,6 +7,7 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.TestContainer
@@ -32,6 +33,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @ExtendWith(MockitoExtension::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class TestRunnerInitEventsTest {
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private lateinit var testCase: TestCase

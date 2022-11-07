@@ -5,6 +5,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.profiler.ProfilerInjector
@@ -23,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 
 @ExtendWith(MockitoExtension::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class ProfilerInjectionTest {
 
   @Mock

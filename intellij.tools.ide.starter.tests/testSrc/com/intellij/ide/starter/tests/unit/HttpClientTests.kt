@@ -1,14 +1,17 @@
 package com.intellij.ide.starter.tests.unit
 
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.utils.HttpClient
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.ExtendWith
 import java.io.File
 import java.util.concurrent.TimeUnit
 
+@ExtendWith(JUnit5StarterAssistant::class)
 class HttpClientTests {
   @Test
   @Timeout(value = 1, unit = TimeUnit.MINUTES)

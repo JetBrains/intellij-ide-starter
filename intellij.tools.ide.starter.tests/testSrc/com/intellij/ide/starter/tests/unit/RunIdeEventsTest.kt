@@ -7,6 +7,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.runner.IdeLaunchEvent
@@ -35,6 +36,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 @ExtendWith(MockitoExtension::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class RunIdeEventsTest {
 
   @TempDir

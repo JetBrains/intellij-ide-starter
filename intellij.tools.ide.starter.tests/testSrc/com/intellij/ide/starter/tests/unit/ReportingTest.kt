@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.tests.unit
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize
@@ -28,6 +28,7 @@ import kotlin.io.path.div
 import kotlin.random.Random
 
 @ExtendWith(MockitoExtension::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class ReportingTest {
 
   companion object {
@@ -88,7 +89,9 @@ class ReportingTest {
 
   @Test
   fun `validate default error failure details generation`(testInfo: TestInfo) {
-    val testName = testInfo.hyphenateWithClass()
+    val testName = testInfo.run {
+      testClass.get().name + "." + testMethod.get().name
+    }
     Mockito.doReturn(testName).`when`(runContextMock).contextName
 
     val failureDetails = di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext = runContextMock)
