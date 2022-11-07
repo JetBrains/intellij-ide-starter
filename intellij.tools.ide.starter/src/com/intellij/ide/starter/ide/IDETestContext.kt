@@ -444,13 +444,13 @@ data class IDETestContext(
     return this
   }
 
-  fun checkThatBuildRunByIdea(): IDETestContext {
+  fun runBuildBy(gradleBuild: Boolean = false): IDETestContext {
     if (_resolvedProjectHome != null) {
       val ideaDir = resolvedProjectHome.resolve(".idea")
       val gradle = ideaDir.resolve("gradle.xml")
       if (gradle.toFile().exists()) {
         val readText = gradle.toFile().readText()
-        if (!readText.contains("<option name=\"delegatedBuild\" value=\"false\"/>")) {
+        if (!readText.contains("<option name=\"delegatedBuild\" value=\"$gradleBuild\"/>")) {
           val xmlDoc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(gradle.toFile())
 
           xmlDoc.documentElement.normalize()
@@ -464,7 +464,7 @@ data class IDETestContext(
               if (component.nodeType == Node.ELEMENT_NODE) {
                 val optionElement = xmlDoc.createElement("option")
                 optionElement.setAttribute("name", "delegatedBuild")
-                optionElement.setAttribute("value", "false")
+                optionElement.setAttribute("value", "$gradleBuild")
                 component.appendChild(optionElement)
               }
             }

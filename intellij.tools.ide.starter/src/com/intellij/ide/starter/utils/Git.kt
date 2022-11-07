@@ -82,6 +82,42 @@ object Git {
     ).start()
   }
 
+  fun status(projectDir: Path): Long {
+    val arguments = mutableListOf("git", "-c", "core.fsmonitor=false", "status")
+
+    val startTimer = System.currentTimeMillis()
+
+    val execOutStatus = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      presentableName = "git-status",
+      workDir = projectDir,
+      timeout = 2.minutes,
+      args = arguments,
+      stdoutRedirect = execOutStatus,
+      stderrRedirect = ExecOutputRedirect.ToString(),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+
+    val endTimer = System.currentTimeMillis()
+    val duration = endTimer - startTimer
+    println("Git status took $duration")
+    println("Git status output: ${execOutStatus.read()}")
+
+    val execOutVersion = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      presentableName = "git-version",
+      workDir = projectDir,
+      timeout = 1.minutes,
+      args = listOf("git", "--version"),
+      stdoutRedirect = execOutVersion,
+      stderrRedirect = ExecOutputRedirect.ToString(),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+
+    println("Git version: ${execOutVersion.read()}")
+    return duration
+  }
+
   fun reset(repositoryDirectory: Path, commitHash: String = "") {
     val cmdName = "git-reset"
 
