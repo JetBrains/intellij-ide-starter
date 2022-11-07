@@ -120,6 +120,18 @@ fun <T : CommandChain> T.goto(line: Int, column: Int): T {
   return this
 }
 
+const val GO_TO_PSI_ELEMENT_PREFIX = "${CMD_PREFIX}goToAnyPsiElement"
+
+fun <T : CommandChain> T.gotoAnyPsiElement(vararg name: String): T {
+  addCommand(GO_TO_PSI_ELEMENT_PREFIX, *name)
+  return this
+}
+
+fun <T : CommandChain> T.gotoAnyPsiElementIfExist(vararg name: String): T {
+  addCommand(GO_TO_PSI_ELEMENT_PREFIX, *name, "SUPPRESS_ERROR_IF_NOT_FOUND")
+  return this
+}
+
 const val FIND_USAGES_CMD_PREFIX = "${CMD_PREFIX}findUsages"
 
 fun <T : CommandChain> T.findUsages(): T {
