@@ -49,7 +49,7 @@ fun <T : CommandChain> T.recoveryAction(action: RecoveryActionType): T {
   val possibleArguments = RecoveryActionType.values().map { it.name }
 
   require(possibleArguments.contains(action.toString())) {
-    "Argument ${action.toString()} isn't allowed. Possible values: $possibleArguments"
+    "Argument ${action} isn't allowed. Possible values: $possibleArguments"
   }
 
   addCommand(RECOVERY_ACTION_CMD_PREFIX, action.toString())
