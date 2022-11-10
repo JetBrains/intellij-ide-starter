@@ -132,6 +132,18 @@ fun <T : CommandChain> T.gotoNextPsiElementIfExist(vararg name: String): T {
   return this
 }
 
+const val GO_TO_NAMED_PSI_ELEMENT_PREFIX = "${CMD_PREFIX}goToNamedPsiElement"
+
+fun <T : CommandChain> T.gotoNamedPsiElement(name: String, position: Position = Position.INTO): T {
+  addCommand(GO_TO_NAMED_PSI_ELEMENT_PREFIX, position.name, name)
+  return this
+}
+
+fun <T : CommandChain> T.gotoNamedPsiElementIfExist(name: String, position: Position = Position.INTO): T {
+  addCommand(GO_TO_NAMED_PSI_ELEMENT_PREFIX, name, position.name, "SUPPRESS_ERROR_IF_NOT_FOUND")
+  return this
+}
+
 const val FIND_USAGES_CMD_PREFIX = "${CMD_PREFIX}findUsages"
 
 fun <T : CommandChain> T.findUsages(): T {
