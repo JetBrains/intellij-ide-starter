@@ -1,8 +1,9 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.ide.starter.Const
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.CodeInjector
 import com.intellij.ide.starter.ide.IDETestContext
@@ -106,7 +107,11 @@ data class IDERunContext(
     .takeScreenshotOnFailure(testContext.paths.logsDir)
     .withJvmCrashLogDirectory(jvmCrashLogDirectory)
     .withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
-    .let { if (Const.isClassFileVerificationEnabled) it.withClassFileVerification() else it }
+    .let {
+      if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
+        it.withClassFileVerification()
+      else it
+    }
     .let { testContext.testCase.vmOptionsFix(it) }
     .let { testContext.patchVMOptions(it) }
     .patchVMOptions()

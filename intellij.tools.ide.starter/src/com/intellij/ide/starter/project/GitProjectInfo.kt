@@ -33,7 +33,7 @@ data class GitProjectInfo(
   /**
    * Relative path inside Image file, where project home is located
    */
-  override val testProjectImageRelPath: (Path) -> Path = { it }
+  override val projectHomeRelativePath: (Path) -> Path = { it }
 ) : ProjectInfoSpec {
 
   private fun cloneRepo(projectHome: Path) {
@@ -73,7 +73,7 @@ data class GitProjectInfo(
       setupRepositoryState(projectHome)
     }
 
-    val imagePath = projectHome.let(testProjectImageRelPath)
+    val imagePath = projectHome.let(projectHomeRelativePath)
     return imagePath
   }
 

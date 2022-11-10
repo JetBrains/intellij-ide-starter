@@ -5,7 +5,10 @@ import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.community.PublicIdeDownloader
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.ide.*
+import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
@@ -42,18 +45,13 @@ var di = DI {
   bindSingleton<CodeInjector> { CodeBuilderHost() }
   bindFactory { testContext: IDETestContext -> PluginConfigurator(testContext) }
   bindSingleton<IdeDownloader> { PublicIdeDownloader }
-  bindFactory<IdeInfo, IdeInstallator> { ideInfo ->
-    if (ideInfo.productCode == IdeProductProvider.AI.productCode) {
-      AndroidInstaller()
-    }
-    else {
-      SimpleInstaller()
-    }
-  }
+  bindFactory<IdeInfo, IdeInstallator> { ideInfo -> IdeInstallerFactory().createInstaller(ideInfo) }
   bindFactory<IDETestContext, BuildToolProvider> { testContext: IDETestContext -> BuildToolDefaultProvider(testContext) }
   bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher, QodanaTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
+  bindSingleton<EapReleaseConfigurable> { object : EapReleaseConfigurable {} }
+  bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
 }.apply {
-  logOutput("DI was initialized")
+  logOutput("Starter DI was initialized")
 }

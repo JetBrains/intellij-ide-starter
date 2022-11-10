@@ -17,20 +17,17 @@ import kotlin.io.path.isRegularFile
  * Project stored on remote server as an archive
  */
 data class RemoteArchiveProjectInfo(
-  val testProjectURL: String,
+  val projectURL: String,
   override val isReusable: Boolean = true,
 
-  /**
-   * Relative path inside Image file, where project home is located
-   */
-  override val testProjectImageRelPath: (Path) -> Path = { it / testProjectURL.split("/").last().split(".zip").first() }
+  override val projectHomeRelativePath: (Path) -> Path = { it / projectURL.split("/").last().split(".zip").first() }
 ) : ProjectInfoSpec {
 
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
 
     val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
-    val projectHome = projectsUnpacked.let(testProjectImageRelPath)
+    val projectHome = projectsUnpacked.let(projectHomeRelativePath)
 
     if (!isReusable) {
       projectHome.toFile().deleteRecursively()
@@ -44,12 +41,12 @@ data class RemoteArchiveProjectInfo(
       projectHome.toFile().deleteRecursively()
     }
 
-    val zipFile = when (testProjectURL.contains("https://github.com")) {
+    val zipFile = when (projectURL.contains("https://github.com")) {
       true -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve("${projectHome.toString().split("/").last()}.zip")
-      false -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve(testProjectURL.toString().split("/").last())
+      false -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve(projectURL.toString().split("/").last())
     }
 
-    HttpClient.downloadIfMissing(testProjectURL, zipFile)
+    HttpClient.downloadIfMissing(projectURL, zipFile)
     val imagePath: Path = zipFile
 
     when {

@@ -2,7 +2,7 @@ package com.intellij.ide.starter.community
 
 import com.intellij.ide.starter.community.model.ReleaseInfo
 import com.intellij.ide.starter.ide.IdeDownloader
-import com.intellij.ide.starter.ide.IdeInstaller
+import com.intellij.ide.starter.ide.installer.IdeInstaller
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
@@ -20,7 +20,7 @@ object PublicIdeDownloader : IdeDownloader {
 
     if (filteringParams.majorVersion.isNotBlank()) return sorted.first { it.majorVersion == filteringParams.majorVersion }
 
-    // find latest release / eap, if no specific params were provided
+    // find the latest release / eap, if no specific params were provided
     if (filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank()) return sorted.first()
 
     if (filteringParams.versionNumber.isNotBlank()) return sorted.first { it.version == filteringParams.versionNumber }

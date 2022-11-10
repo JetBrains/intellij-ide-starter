@@ -2,7 +2,10 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.models.IdeInfo
@@ -19,13 +22,22 @@ import java.io.Closeable
 import kotlin.io.path.div
 
 /**
- * [ciServer] - use [NoCIServer] for only local run. Otherwise - pass implementation of CIServer
+ * [ciServer] - use [NoCIServer] for local run. Otherwise - pass implementation of CIServer
  */
 interface TestContainer<T> : Closeable {
   val ciServer: CIServer
-  var useLatestDownloadedIdeBuild: Boolean
   var testContext: IDETestContext
   val setupHooks: MutableList<IDETestContext.() -> IDETestContext>
+
+  companion object {
+    init {
+      StarterListener.subscribe { event: TestContextInitializedEvent ->
+        if (event.state == EventState.AFTER) {
+          logOutput("Starter configuration variables: ${ConfigurationStorage.instance().getAll()}")
+        }
+      }
+    }
+  }
 
   override fun close() {
     catchAll { testContext.paths.close() }
@@ -38,14 +50,6 @@ interface TestContainer<T> : Closeable {
    */
   fun withSetupHook(hook: IDETestContext.() -> IDETestContext): T = apply {
     setupHooks += hook
-  } as T
-
-  /**
-   * Makes the test use the latest available locally IDE build for testing.
-   */
-  fun useLatestDownloadedIdeBuild(): T = apply {
-    assert(!ciServer.isBuildRunningOnCI)
-    useLatestDownloadedIdeBuild = true
   } as T
 
   /**

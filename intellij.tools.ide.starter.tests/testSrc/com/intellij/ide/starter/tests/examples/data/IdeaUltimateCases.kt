@@ -8,8 +8,8 @@ import kotlin.io.path.div
 object  IdeaUltimateCases : TestCaseTemplate(IdeProductProvider.IU) {
   val IntelliJCommunityProject = getTemplate().withProject(
     RemoteArchiveProjectInfo(
-      testProjectURL = "https://github.com/JetBrains/intellij-community/archive/master.zip",
-      testProjectImageRelPath = { it / "intellij-community-master" }
+      projectURL = "https://github.com/JetBrains/intellij-community/archive/master.zip",
+      projectHomeRelativePath = { it / "intellij-community-master" }
     )
   )
 }

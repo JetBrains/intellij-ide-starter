@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.ide
 
+import com.intellij.ide.starter.ide.installer.IdeInstaller
 import com.intellij.ide.starter.models.IdeInfo
 import java.nio.file.Path
 

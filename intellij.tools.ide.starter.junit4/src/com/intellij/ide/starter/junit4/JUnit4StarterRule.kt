@@ -2,6 +2,8 @@ package com.intellij.ide.starter.junit4
 
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
@@ -18,10 +20,15 @@ import org.junit.runners.model.Statement
 import org.kodein.di.direct
 import org.kodein.di.instance
 
-fun initStarterRule(): JUnit4StarterRule = JUnit4StarterRule(useLatestDownloadedIdeBuild = false)
+fun initJUnit4StarterRule(): JUnit4StarterRule = JUnit4StarterRule()
+
+fun <T : JUnit4StarterRule> T.useInstaller(): T {
+  ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_JUNIT_RUNNER_USE_INSTALLER, true)
+
+  return this as T
+}
 
 open class JUnit4StarterRule(
-  override var useLatestDownloadedIdeBuild: Boolean,
   override val setupHooks: MutableList<IDETestContext.() -> IDETestContext> = mutableListOf(),
   override val ciServer: CIServer = di.direct.instance()
 ) : ExternalResource(), TestContainer<JUnit4StarterRule> {
@@ -70,9 +77,15 @@ open class JUnit4StarterRule(
   override fun after() {
     StarterListener.unsubscribe()
     close()
+    ConfigurationStorage.instance().resetToDefault()
     super.after()
   }
+
+  /**
+   * Makes the test use the latest available locally IDE build for testing.
+   */
+  fun useLatestDownloadedIdeBuild(): JUnit4StarterRule = apply {
+    assert(!ciServer.isBuildRunningOnCI)
+    ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, true)
+  }
 }
-
-
-

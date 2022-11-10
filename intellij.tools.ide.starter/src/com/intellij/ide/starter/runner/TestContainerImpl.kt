@@ -8,7 +8,6 @@ import org.kodein.di.instance
 
 class TestContainerImpl(
   override val ciServer: CIServer = di.direct.instance(),
-  override var useLatestDownloadedIdeBuild: Boolean = false,
   override val setupHooks: MutableList<IDETestContext.() -> IDETestContext> = mutableListOf()
 ) : TestContainer<TestContainerImpl> {
   override lateinit var testContext: IDETestContext

@@ -181,3 +181,16 @@ Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,ser
 
 Run your test. After seeing in console prompt to connect remotely to the 5005 port run the created run configuration.
 
+
+### Using tweaks to alter starter behaviour
+For JUnit5 there a few extensions with prefix `Tweak``, that just convenient way to set configuration variable you needed.  
+Eg:
+```
+@ExtendWith(TweakEnableClassFileVerification::class)
+@ExtendWith(TweakUseLatestDownloadedIdeBuild::class)
+class ClassWithTest {
+...
+}
+```
+
+Configuration storage `com.intellij.ide.starter.config.StarterConfigurationStorage`

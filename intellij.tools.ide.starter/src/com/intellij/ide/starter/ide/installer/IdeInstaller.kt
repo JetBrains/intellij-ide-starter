@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.ide
+package com.intellij.ide.starter.ide.installer
 
 import java.nio.file.Path
 

@@ -1,21 +1,22 @@
 package com.intellij.ide.starter.project
 
 import java.nio.file.Path
+import kotlin.io.path.notExists
 
 /**
  * Project, that somehow already exist on filesystem.
  * So we cannot link it with any particular URL
  */
 data class LocalProjectInfo(
-  val testProjectDir: Path,
+  val projectDir: Path,
   override val isReusable: Boolean = true,
-  override val testProjectImageRelPath: (Path) -> Path = { it },
+  override val projectHomeRelativePath: (Path) -> Path = { it },
 ) : ProjectInfoSpec {
   override fun downloadAndUnpackProject(): Path? {
-    if (!testProjectDir.toFile().exists()) {
+    if (projectDir.notExists()) {
       return null
     }
 
-    return testProjectDir.toAbsolutePath()
+    return projectDir.toAbsolutePath()
   }
 }

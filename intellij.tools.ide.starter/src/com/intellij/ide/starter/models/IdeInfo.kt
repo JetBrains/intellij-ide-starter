@@ -5,12 +5,22 @@ import com.intellij.ide.starter.system.SystemInfo
 
 data class IdeInfo(
   val productCode: String,
+
+  /**
+   * Eg: idea, Idea, GoLand, WebStorm ...
+   */
   val platformPrefix: String,
+
   val executableFileName: String,
   val buildType: String = BuildType.EAP.type,
   val additionalModules: List<String> = emptyList(),
+
+  /** E.g: "222.3244.1" */
   val buildNumber: String = "",
+
+  /** E.g: "2022.1.2" */
   val version: String = "",
+
   val tag: String? = null,
 ) {
   companion object

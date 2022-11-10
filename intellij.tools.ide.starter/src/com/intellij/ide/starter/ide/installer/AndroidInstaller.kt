@@ -1,6 +1,10 @@
-package com.intellij.ide.starter.ide
+package com.intellij.ide.starter.ide.installer
 
 import com.intellij.ide.starter.downloadAndroidStudio
+import com.intellij.ide.starter.ide.IdeArchiveExtractor
+import com.intellij.ide.starter.ide.IdeDistributionFactory
+import com.intellij.ide.starter.ide.IdeInstallator
+import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.system.SystemInfo
 import java.io.File

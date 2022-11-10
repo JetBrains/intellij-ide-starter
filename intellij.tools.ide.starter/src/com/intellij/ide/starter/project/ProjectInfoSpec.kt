@@ -6,9 +6,9 @@ interface ProjectInfoSpec {
   val isReusable: Boolean
 
   /**
-   * Relative path inside Image file, where project home is located
+   * Relative path inside archive where project home is located
    */
-  val testProjectImageRelPath: (Path) -> Path
+  val projectHomeRelativePath: (Path) -> Path
 
   fun downloadAndUnpackProject(): Path?
 }

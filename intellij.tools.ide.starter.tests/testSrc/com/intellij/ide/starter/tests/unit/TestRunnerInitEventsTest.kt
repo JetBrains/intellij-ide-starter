@@ -43,7 +43,6 @@ class TestRunnerInitEventsTest {
 
   private val container = object : TestContainer<Any> {
     override val ciServer: CIServer = NoCIServer
-    override var useLatestDownloadedIdeBuild: Boolean = false
     override lateinit var testContext: IDETestContext
     override val setupHooks: MutableList<IDETestContext.() -> IDETestContext> = mutableListOf()
 

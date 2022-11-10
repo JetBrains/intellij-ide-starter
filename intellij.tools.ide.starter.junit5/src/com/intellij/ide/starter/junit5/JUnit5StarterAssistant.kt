@@ -2,6 +2,7 @@ package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.killOutdatedProcessesOnUnix
@@ -19,32 +20,12 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.lang.reflect.Method
 import java.util.*
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
 open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
 
-  protected fun getProperty(testInstance: Any, propertyType: KClass<*>): KProperty1<out Any, *>? {
-    val properties = testInstance::class.memberProperties
-
-    try {
-      val contextField = properties.single { property ->
-        if (property.javaField == null) false
-        else property.javaField!!.type.equals(propertyType.javaObjectType)
-      }
-      return contextField
-    }
-    catch (t: Throwable) {
-      logError("Unable to get property of type ${propertyType.simpleName} in ${testInstance::class.qualifiedName}")
-    }
-
-    return null
-  }
-
   open fun injectTestContainerProperty(testInstance: Any) {
-    val containerProp = getProperty(testInstance, TestContainerImpl::class)
+    val containerProp = TestInstanceReflexer.getProperty(testInstance, TestContainerImpl::class)
     if (containerProp != null) {
       val containerInstance = TestContainerImpl()
 
@@ -67,7 +48,7 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
   private fun injectTestInfoProperty(context: ExtensionContext) {
     val testInstance = context.testInstance.get()
 
-    val testInfoProperty = getProperty(testInstance, TestInfo::class)
+    val testInfoProperty = TestInstanceReflexer.getProperty(testInstance, TestInfo::class)
     if (testInfoProperty != null) {
       val testInfoInstance = object : TestInfo {
         override fun getDisplayName(): String = context.displayName
@@ -117,7 +98,7 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
 
   protected inline fun <reified T : TestContainer<T>> closeResourcesOfTestContainer(context: ExtensionContext) {
     val testInstance = context.testInstance.get()
-    val containerProp = getProperty(testInstance, T::class)
+    val containerProp = TestInstanceReflexer.getProperty(testInstance, T::class)
 
     if (containerProp != null) {
       try {
@@ -133,6 +114,8 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
     StarterListener.unsubscribe()
 
     closeResourcesOfTestContainer<TestContainerImpl>(context)
+
+    ConfigurationStorage.instance().resetToDefault()
   }
 }
 
