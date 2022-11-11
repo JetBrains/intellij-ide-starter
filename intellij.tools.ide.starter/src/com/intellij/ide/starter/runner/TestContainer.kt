@@ -99,6 +99,7 @@ interface TestContainer<T> : Closeable {
         .addVMOptionsPatch {
           overrideDirectories(paths)
         }
+        .disableMinimap()
     }
 
     val contextWithAppliedHooks = setupHooks

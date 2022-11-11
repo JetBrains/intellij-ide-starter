@@ -17,6 +17,7 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.util.io.createDirectories
 import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
@@ -532,6 +533,21 @@ data class IDETestContext(
           pathToGeneralXml.writeBytes(it.readAllBytes())
         }
       }
+    }
+    return this
+  }
+
+  fun disableMinimap(): IDETestContext {
+    val miniMapConfig = paths.configDir.toAbsolutePath().resolve("options/Minimap.xml")
+    if (!miniMapConfig.exists()) {
+      miniMapConfig.parent.createDirectories()
+      miniMapConfig.writeText("""
+        <application>
+          <component name="Minimap">
+            <option name="enabled" value="false" />
+          </component>
+        </application>
+      """.trimIndent())
     }
     return this
   }
