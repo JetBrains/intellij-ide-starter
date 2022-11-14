@@ -20,11 +20,4 @@ object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
       testProjectImageRelPath = { it / "simple-java-maven-app-master" }
     )
   )
-
-  val IntelliJCommunityProject = getTemplate().withProject(
-    RemoteArchiveProjectInfo(
-      testProjectURL = "https://github.com/JetBrains/intellij-community/archive/master.zip",
-      testProjectImageRelPath = { it / "intellij-community-master" }
-    )
-  )
 }
