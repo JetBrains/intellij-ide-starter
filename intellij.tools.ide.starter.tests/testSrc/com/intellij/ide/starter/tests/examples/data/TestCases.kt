@@ -6,6 +6,7 @@ package com.intellij.ide.starter.tests.examples.data
 object TestCases {
   /** IntelliJ Community cases */
   val IC = IdeaCommunityCases
+  val IU = IdeaUltimateCases
 
   //val DB = DataGripCases
 
