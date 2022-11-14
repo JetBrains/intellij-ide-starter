@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.data
+package com.intellij.ide.starter.project
 
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase

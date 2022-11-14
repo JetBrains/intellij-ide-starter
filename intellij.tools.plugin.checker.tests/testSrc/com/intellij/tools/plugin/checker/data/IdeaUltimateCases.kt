@@ -1,6 +1,6 @@
 package com.intellij.tools.plugin.checker.data
 
-import com.intellij.ide.starter.data.TestCaseTemplate
+import com.intellij.ide.starter.project.TestCaseTemplate
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 import kotlin.io.path.div

@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.tests.examples.junit5
 
-import com.intellij.ide.starter.data.TestCaseTemplate
+import com.intellij.ide.starter.project.TestCaseTemplate
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant

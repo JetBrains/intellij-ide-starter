@@ -1,26 +1,29 @@
 package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
+import org.w3c.dom.Document
 import org.w3c.dom.Element
+import org.w3c.dom.Node
+import org.w3c.dom.NodeList
 import java.io.File
-import java.io.FileOutputStream
 import java.nio.file.Path
-import java.util.stream.IntStream
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 import kotlin.io.path.*
 
 open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.GRADLE, testContext) {
-  private val localGradleRepo: Path
+  private val localGradleRepoPath: Path
     get() = testContext.paths.tempDir.resolve("gradle")
 
+  private val gradleXmlPath: Path
+    get() = testContext.resolvedProjectHome.resolve(".idea").resolve("gradle.xml")
+
+  private fun parseGradleXmlConfig(): Document = XmlBuilder.parse(gradleXmlPath)
+
   fun useNewGradleLocalCache(): GradleBuildTool {
-    localGradleRepo.toFile().mkdirs()
-    testContext.addVMOptionsPatch { addSystemProperty("gradle.user.home", localGradleRepo.toString()) }
+    localGradleRepoPath.toFile().mkdirs()
+    testContext.addVMOptionsPatch { addSystemProperty("gradle.user.home", localGradleRepoPath.toString()) }
     return this
   }
 
@@ -67,43 +70,59 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
   fun setGradleJvmInProject(useJavaHomeAsGradleJvm: Boolean = true): GradleBuildTool {
     try {
-      val ideaDir = testContext.resolvedProjectHome.resolve(".idea")
-      val gradleXml = ideaDir.resolve("gradle.xml")
+      if (gradleXmlPath.notExists()) return this
+      val xmlDoc = parseGradleXmlConfig()
 
-      if (gradleXml.toFile().exists()) {
-        val xmlDoc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(gradleXml.toFile())
-        xmlDoc.documentElement.normalize()
+      val gradleSettings = xmlDoc.getElementsByTagName("GradleProjectSettings")
+      if (gradleSettings.length != 1) return this
 
-        val gradleSettings = xmlDoc.getElementsByTagName("GradleProjectSettings")
-        if (gradleSettings.length == 1) {
-          val options = (gradleSettings.item(0) as Element).getElementsByTagName("option")
-          IntStream
-            .range(0, options.length)
-            .mapToObj { i -> options.item(i) as Element }
-            .filter { it.getAttribute("name") == "gradleJvm" }
-            .findAny()
-            .ifPresent { node -> gradleSettings.item(0).removeChild(node) }
+      val options = (gradleSettings.item(0) as Element).getElementsByTagName("option")
 
-          if (useJavaHomeAsGradleJvm) {
-            val option = xmlDoc.createElement("option")
-            option.setAttribute("name", "gradleJvm")
-            option.setAttribute("value", "#JAVA_HOME")
-            gradleSettings.item(0).appendChild(option)
-          }
+      XmlBuilder.findNode(options) { it.getAttribute("name") == "gradleJvm" }
+        .ifPresent { node -> gradleSettings.item(0).removeChild(node) }
 
-          val source = DOMSource(xmlDoc)
-          val outputStream = FileOutputStream(gradleXml.toFile())
-          val result = StreamResult(outputStream)
-          val transformerFactory = TransformerFactory.newInstance()
-          val transformer = transformerFactory.newTransformer()
-          transformer.transform(source, result)
-          outputStream.close()
-        }
+      if (useJavaHomeAsGradleJvm) {
+        val option = xmlDoc.createElement("option")
+        option.setAttribute("name", "gradleJvm")
+        option.setAttribute("value", "#JAVA_HOME")
+        gradleSettings.item(0).appendChild(option)
       }
+
+      XmlBuilder.writeDocument(xmlDoc, gradleXmlPath)
     }
     catch (e: Exception) {
       logError(e)
     }
+
+    return this
+  }
+
+  fun runBuildByGradle(useGradleBuildSystem: Boolean = true): GradleBuildTool {
+    if (gradleXmlPath.notExists()) return this
+    if (gradleXmlPath.toFile().readText().contains("<option name=\"delegatedBuild\" value=\"$useGradleBuildSystem\"/>")) return this
+
+    val xmlDoc = parseGradleXmlConfig()
+
+    val gradleProjectSettingsElements: NodeList = xmlDoc.getElementsByTagName("GradleProjectSettings")
+    if (gradleProjectSettingsElements.length != 1) return this
+
+    val options = (gradleProjectSettingsElements.item(0) as Element).getElementsByTagName("option")
+
+    XmlBuilder.findNode(options) { it.getAttribute("name") == "delegatedBuild" }
+      .ifPresent { node -> gradleProjectSettingsElements.item(0).removeChild(node) }
+
+    for (i in 0 until gradleProjectSettingsElements.length) {
+      val component: Node = gradleProjectSettingsElements.item(i)
+
+      if (component.nodeType == Node.ELEMENT_NODE) {
+        val optionElement = xmlDoc.createElement("option")
+        optionElement.setAttribute("name", "delegatedBuild")
+        optionElement.setAttribute("value", "$useGradleBuildSystem")
+        component.appendChild(optionElement)
+      }
+    }
+
+    XmlBuilder.writeDocument(xmlDoc, gradleXmlPath)
 
     return this
   }

@@ -1,12 +1,12 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.callJavaVersion
 import com.intellij.ide.starter.utils.logOutput
 import org.w3c.dom.Node
 import java.io.File
 import java.nio.file.Path
-import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -16,11 +16,9 @@ class MacOsIdeDistribution : IdeDistribution() {
 
   private fun getExecutableNameFromInfoPlist(appDir: File, @Suppress("SameParameterValue") keyName: String): String {
     val infoPlistFile = appDir.resolve("Contents/Info.plist")
-    val xmlFactory = DocumentBuilderFactory.newInstance()
 
     infoPlistFile.inputStream().use {
-      val xmlBuilder = xmlFactory.newDocumentBuilder()
-      val document = xmlBuilder.parse(it)
+      val document = XmlBuilder.parse(it)
 
       val keys = document.getElementsByTagName("key")
 

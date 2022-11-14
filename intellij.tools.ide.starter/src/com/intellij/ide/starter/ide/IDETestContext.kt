@@ -22,15 +22,8 @@ import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
 import org.kodein.di.newInstance
-import org.w3c.dom.Node
-import org.w3c.dom.NodeList
-import java.io.FileOutputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -392,132 +385,6 @@ data class IDETestContext(
     <option name="PROVIDER" value="MEMORY_ONLY" />
   </component>
 </application>""")
-    }
-    return this
-  }
-
-  fun addBuildProcessProfiling(): IDETestContext {
-    if (_resolvedProjectHome != null) {
-      val ideaDir = resolvedProjectHome.resolve(".idea")
-      val workspace = ideaDir.resolve("workspace.xml")
-
-      if (workspace.toFile().exists()) {
-        val newContent = StringBuilder()
-        val readText = workspace.toFile().readText()
-        val userLocalBuildProcessVmOptions = when {
-          (testName.contains(
-            "intellij_sources")) -> "-Dprofiling.mode=true -Dgroovyc.in.process=true -Dgroovyc.asm.resolving.only=false"
-          else -> "-Dprofiling.mode=true"
-        }
-        if (readText.contains("CompilerWorkspaceConfiguration")) {
-          workspace.toFile().readLines().forEach {
-            if (it.contains("<component name=\"CompilerWorkspaceConfiguration\">")) {
-              val newLine = "<component name=\"CompilerWorkspaceConfiguration\">\n<option name=\"COMPILER_PROCESS_ADDITIONAL_VM_OPTIONS\" value=\"$userLocalBuildProcessVmOptions\" />"
-              newContent.appendLine(newLine)
-            }
-            else {
-              newContent.appendLine(it)
-            }
-          }
-          workspace.writeText(newContent.toString())
-        }
-        else {
-          val xmlDoc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(workspace.toFile())
-
-          xmlDoc.documentElement.normalize()
-
-          val firstElement = xmlDoc.firstChild
-          val componentElement = xmlDoc.createElement("component")
-          componentElement.setAttribute("name", "CompilerWorkspaceConfiguration")
-          val optionElement = xmlDoc.createElement("option")
-          optionElement.setAttribute("name", "COMPILER_PROCESS_ADDITIONAL_VM_OPTIONS")
-          optionElement.setAttribute("value", userLocalBuildProcessVmOptions)
-          firstElement.appendChild(componentElement).appendChild(optionElement)
-          val source = DOMSource(xmlDoc)
-          val outputStream = FileOutputStream(workspace.toFile())
-          val result = StreamResult(outputStream)
-          val transformerFactory = TransformerFactory.newInstance()
-          val transformer = transformerFactory.newTransformer()
-          transformer.transform(source, result)
-        }
-      }
-    }
-    return this
-  }
-
-  fun runBuildBy(gradleBuild: Boolean = false): IDETestContext {
-    if (_resolvedProjectHome != null) {
-      val ideaDir = resolvedProjectHome.resolve(".idea")
-      val gradle = ideaDir.resolve("gradle.xml")
-      if (gradle.toFile().exists()) {
-        val readText = gradle.toFile().readText()
-        if (!readText.contains("<option name=\"delegatedBuild\" value=\"$gradleBuild\"/>")) {
-          val xmlDoc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(gradle.toFile())
-
-          xmlDoc.documentElement.normalize()
-
-          val gradleProjectSettingsElements: NodeList = xmlDoc.getElementsByTagName("GradleProjectSettings")
-          if (gradleProjectSettingsElements.length == 1) {
-
-            for (i in 0 until gradleProjectSettingsElements.length) {
-              val component: Node = gradleProjectSettingsElements.item(i)
-
-              if (component.nodeType == Node.ELEMENT_NODE) {
-                val optionElement = xmlDoc.createElement("option")
-                optionElement.setAttribute("name", "delegatedBuild")
-                optionElement.setAttribute("value", "$gradleBuild")
-                component.appendChild(optionElement)
-              }
-            }
-            val source = DOMSource(xmlDoc)
-            val outputStream = FileOutputStream(gradle.toFile())
-            val result = StreamResult(outputStream)
-            val transformerFactory = TransformerFactory.newInstance()
-            val transformer = transformerFactory.newTransformer()
-            transformer.transform(source, result)
-          }
-        }
-      }
-    }
-    return this
-  }
-
-  fun setBuildProcessHeapSize(heapSizeValue: String): IDETestContext {
-    if (_resolvedProjectHome != null) {
-      val heapSize = when (heapSizeValue.isEmpty()) {
-        true -> "2000"
-        else -> heapSizeValue
-      }
-      val ideaDir = resolvedProjectHome.resolve(".idea")
-      val compilerXml = ideaDir.resolve("compiler.xml")
-      if (compilerXml.toFile().exists()) {
-        val newContent = StringBuilder()
-        val readText = compilerXml.toFile().readText()
-        if (!readText.contains("BUILD_PROCESS_HEAP_SIZE")) {
-          compilerXml.toFile().readLines().forEach {
-            if (it.contains("<component name=\"CompilerConfiguration\">")) {
-              val newLine = "<component name=\"CompilerConfiguration\">\n<option name=\"BUILD_PROCESS_HEAP_SIZE\" value=\"$heapSize\" />"
-              newContent.appendLine(newLine)
-            }
-            else {
-              newContent.appendLine(it)
-            }
-          }
-          compilerXml.writeText(newContent.toString())
-        }
-        else if (heapSizeValue.isNotEmpty()) {
-          compilerXml.toFile().readLines().forEach {
-            if (it.contains("BUILD_PROCESS_HEAP_SIZE")) {
-              val newLine = it.replace("value=\"\\d*\"".toRegex(), "value=\"$heapSize\"")
-              newContent.appendLine(newLine)
-            }
-            else {
-              newContent.appendLine(it)
-            }
-          }
-          compilerXml.writeText(newContent.toString())
-        }
-      }
     }
     return this
   }
