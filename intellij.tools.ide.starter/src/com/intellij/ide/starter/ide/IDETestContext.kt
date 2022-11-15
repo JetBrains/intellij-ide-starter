@@ -433,6 +433,7 @@ data class IDETestContext(
       IdeProductProvider.GO.productCode -> "goland.key"
       IdeProductProvider.PY.productCode -> "pycharm.key"
       IdeProductProvider.DB.productCode -> "datagrip.key"
+      IdeProductProvider.CL.productCode -> "clion.key"
       else -> error("Setting license to the product ${this.ide.productCode} is not supported")
     }
 
