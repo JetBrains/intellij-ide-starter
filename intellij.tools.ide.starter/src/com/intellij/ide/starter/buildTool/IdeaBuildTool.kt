@@ -2,7 +2,6 @@ package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.utils.XmlBuilder
-import java.io.FileNotFoundException
 import java.nio.file.Path
 import kotlin.io.path.notExists
 import kotlin.io.path.writeText
@@ -15,7 +14,7 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
     get() = ideaDir.resolve("compiler.xml")
 
   fun setBuildProcessHeapSize(heapSizeMb: Int = 2000): IdeaBuildTool {
-    if (compilerXmlPath.notExists()) throw FileNotFoundException(compilerXmlPath.toString())
+    if (compilerXmlPath.notExists()) return this
 
     val newContent = StringBuilder()
     val readText = compilerXmlPath.toFile().readText()
