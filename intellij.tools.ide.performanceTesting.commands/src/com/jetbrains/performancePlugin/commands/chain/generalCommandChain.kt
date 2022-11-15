@@ -375,14 +375,14 @@ fun <T : CommandChain> T.doLocalInspection(): T {
 
 const val SHOW_ALT_ENTER_CMD_PREFIX = "${CMD_PREFIX}altEnter"
 
-fun <T : CommandChain> T.altEnter(intention: String): T {
-  addCommand(SHOW_ALT_ENTER_CMD_PREFIX, intention)
+fun <T : CommandChain> T.altEnter(intention: String, invoke: Boolean): T {
+  addCommand(SHOW_ALT_ENTER_CMD_PREFIX, "$intention|$invoke" )
   return this
 }
 
-fun <T : CommandChain> T.callAltEnter(times: Int, intention: String = ""): T {
+fun <T : CommandChain> T.callAltEnter(times: Int, intention: String = "", invoke: Boolean = true): T {
   for (i in 1..times) {
-    altEnter(intention)
+    altEnter(intention, invoke)
   }
   return this
 }
@@ -517,5 +517,12 @@ fun <T : CommandChain> T.withSystemMetrics(chain: CommandChain): T {
 const val PRESS_KEY_ENTER = "${CMD_PREFIX}pressKeyEnter"
 fun <T : CommandChain> T.pressKeyEnter(): T {
   addCommand(PRESS_KEY_ENTER)
+  return this
+}
+
+const val SELECT_TEXT_CMD_PREFIX = "${CMD_PREFIX}selectText"
+
+fun <T : CommandChain> T.selectText(startLine: Int, startColumn: Int,endLine: Int, endColumn: Int): T {
+  addCommand(SELECT_TEXT_CMD_PREFIX, startLine.toString(), startColumn.toString(),endLine.toString(), endColumn.toString())
   return this
 }
