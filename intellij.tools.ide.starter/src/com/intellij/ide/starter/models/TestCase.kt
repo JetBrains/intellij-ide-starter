@@ -3,6 +3,8 @@ package com.intellij.ide.starter.models
 import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.MarshallableCommand
+import com.intellij.ide.starter.project.GitProjectInfo
+import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 
@@ -25,8 +27,23 @@ data class TestCase(
   /** On each test run the project will be unpacked again.
    * This guarantees that there is not side effects from previous test runs
    **/
-  fun markNotReusable(): TestCase = copy(projectInfo = (projectInfo as RemoteArchiveProjectInfo).copy(isReusable = false))
-
+  fun markNotReusable(): TestCase {
+    when (projectInfo) {
+      is RemoteArchiveProjectInfo -> {
+        return copy(projectInfo = projectInfo.copy(isReusable = false))
+      }
+      is GitProjectInfo -> {
+        return copy(projectInfo = projectInfo.copy(isReusable = false))
+      }
+      is LocalProjectInfo -> {
+        return copy(projectInfo = projectInfo.copy(isReusable = false))
+      }
+      else -> {
+        throw IllegalStateException("Can't mark not reusable for ${projectInfo?.javaClass}")
+      }
+    }
+  }
+  
   fun useEAP(): TestCase = copy(ideInfo = ideInfo.copy(buildType = BuildType.EAP.type))
 
   /**
