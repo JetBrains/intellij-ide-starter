@@ -443,6 +443,17 @@ data class IDETestContext(
     return this
   }
 
+  fun setLightTheme(): IDETestContext {
+    val lafXml = paths.configDir.resolve("options").resolve("laf.xml").toFile()
+    lafXml.createNewFile()
+    lafXml.writeText("""<application>
+  <component name="LafManager" autodetect="false">
+    <laf class-name="com.intellij.ide.ui.laf.IntelliJLaf" themeId="JetBrainsLightTheme" />
+  </component>
+</application>""")
+    return this
+  }
+
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
                       artifactName: String = source.fileName.toString()) = ciServer.publishArtifact(source, artifactPath, artifactName)
