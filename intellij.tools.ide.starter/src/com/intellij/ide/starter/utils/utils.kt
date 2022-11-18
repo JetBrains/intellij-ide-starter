@@ -293,6 +293,6 @@ fun pathInsideJarFile(
   pathInsideJar: String
 ): String = jarFile.toAbsolutePath().toString().trimEnd('/') + "!/" + pathInsideJar
 
-data class FindUsagesCallParameters(val pathToFile: String, val offset: String, val element: String) {
-  override fun toString() = "$pathToFile $element, $offset)"
+data class FindUsagesCallParameters(val pathToFile: String, val element: String) {
+  override fun toString() = "$pathToFile $element)"
 }
