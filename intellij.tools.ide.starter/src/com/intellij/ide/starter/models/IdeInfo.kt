@@ -2,6 +2,7 @@ package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.system.SystemInfo
+import java.net.URI
 
 data class IdeInfo(
   val productCode: String,
@@ -22,6 +23,8 @@ data class IdeInfo(
   val version: String = "",
 
   val tag: String? = null,
+
+  val downloadURI: URI? = null
 ) {
   companion object
 

@@ -8,6 +8,8 @@ import com.intellij.ide.starter.models.IdeInfo
  * Might be customized/overriden via DI
  */
 interface EapReleaseConfigurable {
+  fun useRC(ideInfo: IdeInfo): IdeInfo = ideInfo.copy(buildType = BuildType.RC.type)
+
   fun useEAP(ideInfo: IdeInfo): IdeInfo = ideInfo.copy(buildType = BuildType.EAP.type)
 
   /**

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.intellij.ide.starter.community.model.BuildType
+import com.intellij.ide.starter.extended.engine.junit5.TweakUseInstaller
 import com.intellij.ide.starter.extended.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.extended.teamcity.TeamCityClient
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -13,7 +14,7 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.plugin.checker.data.TestCases
-import com.intellij.tools.plugin.checker.di.initDI
+import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import org.junit.jupiter.api.TestInfo
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import java.net.URI
 import java.util.concurrent.TimeUnit
 
 
@@ -32,7 +34,7 @@ class InstallPluginTest {
 
   companion object {
     init {
-      initDI()
+      initPluginCheckerDI()
     }
 
     /**
@@ -93,6 +95,7 @@ class InstallPluginTest {
 
     fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): EventToTestCaseParams {
       val ideInfo = IdeProductProvider.getProducts().single { it.productCode == params.event.productCode }
+        .copy(downloadURI = URI(params.event.productLink))
 
       val paramsWithAppropriateIde = params.onIDE(ideInfo)
       val numericProductVersion = paramsWithAppropriateIde.event.getNumericProductVersion()
@@ -100,6 +103,7 @@ class InstallPluginTest {
       val testCase = when (paramsWithAppropriateIde.event.productType) {
         BuildType.EAP.type -> paramsWithAppropriateIde.testCase.useEAP().withBuildNumber(numericProductVersion)
         BuildType.RELEASE.type -> paramsWithAppropriateIde.testCase.useRelease().withBuildNumber(numericProductVersion)
+        BuildType.RC.type -> paramsWithAppropriateIde.testCase.useRC().withBuildNumber(numericProductVersion)
         else -> TODO("Build type `${paramsWithAppropriateIde.event.productType}` is not supported")
       }
 
@@ -109,7 +113,7 @@ class InstallPluginTest {
 
   @ParameterizedTest
   @MethodSource("data")
-  @Timeout(value = 15, unit = TimeUnit.MINUTES)
+  @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
 
     val testContext = context

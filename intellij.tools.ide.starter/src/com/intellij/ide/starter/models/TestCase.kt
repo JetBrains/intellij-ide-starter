@@ -49,6 +49,8 @@ data class TestCase(
     }
   }
 
+  fun useRC(): TestCase = copy(ideInfo = eapReleaseConfigurable.useRC(ideInfo))
+
   fun useEAP(): TestCase = copy(ideInfo = eapReleaseConfigurable.useEAP(ideInfo))
 
   fun useEAP(buildNumber: String = ""): TestCase = copy(ideInfo = eapReleaseConfigurable.useEAP(ideInfo, buildNumber))
