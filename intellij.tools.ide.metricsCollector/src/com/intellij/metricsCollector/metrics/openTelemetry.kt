@@ -43,6 +43,7 @@ fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
   val root = jacksonObjectMapper().readTree(file)
   val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
   val allSpans = root.get("data")[0].get("spans")
+  if (allSpans.isEmpty) println("No spans have been found")
   for (span in allSpans) {
     if (span.get("operationName").textValue() == nameOfSpan) {
       val metric = MetricWithAttributes(Metric(Duration(nameOfSpan), getDuration(span)))
