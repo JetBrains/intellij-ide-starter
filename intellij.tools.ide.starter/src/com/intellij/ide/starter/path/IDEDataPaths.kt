@@ -34,8 +34,10 @@ class IDEDataPaths(
   val snapshotsDir = (testHome / "snapshots").createDirectories()
   val tempDir = (testHome / "temp").createDirectories()
 
-  // Directory used to store TeamCity artifacts. To make sure the TeamCity publishes all artifacts
-  // files added to this directory must not be removed until the end of the tests execution .
+  /**
+   * Directory used to store TeamCity artifacts. To make sure the TeamCity publishes all artifacts
+   * files added to this directory must not be removed until the end of the tests execution .
+   */
   val teamCityArtifacts = (testHome / "team-city-artifacts").createDirectories()
 
   val configDir = ((inMemoryRoot ?: testHome) / "config").createDirectories()
