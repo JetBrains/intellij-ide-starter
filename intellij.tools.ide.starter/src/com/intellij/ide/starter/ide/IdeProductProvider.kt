@@ -42,4 +42,6 @@ object IdeProductProvider {
   val DS: IdeInfo = di.direct.instance<IdeProduct>().DS
 
   fun getProducts(): List<IdeInfo> = IdeProductProvider::class.declaredMemberProperties.map { it.get(IdeProductProvider) as IdeInfo }
+
+  fun isProductSupported(productCode: String): Boolean = getProducts().any { it.productCode == productCode }
 }

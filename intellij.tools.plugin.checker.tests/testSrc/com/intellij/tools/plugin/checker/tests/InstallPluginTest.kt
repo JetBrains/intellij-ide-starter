@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.intellij.ide.starter.community.model.BuildType
-import com.intellij.ide.starter.extended.engine.junit5.TweakUseInstaller
 import com.intellij.ide.starter.extended.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.extended.teamcity.TeamCityClient
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -13,10 +11,13 @@ import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.utils.logError
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.jetbrains.performancePlugin.commands.chain.exitApp
+import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
@@ -35,6 +36,12 @@ class InstallPluginTest {
   companion object {
     init {
       initPluginCheckerDI()
+    }
+
+    @BeforeAll
+    @JvmStatic
+    fun beforeAll() {
+      Assumptions.assumeTrue({ data().isNotEmpty() }, "Cannot run tests, because tests cases are empty")
     }
 
     /**
@@ -90,24 +97,22 @@ class InstallPluginTest {
         testCase = TestCases.IU.GradleJitPackSimple
       )
 
-      return listOf(modifyTestCaseForIdeVersion(draftParams))
+      return modifyTestCaseForIdeVersion(draftParams)
     }
 
-    fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): EventToTestCaseParams {
+    fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
+      if (!IdeProductProvider.isProductSupported(params.event.productCode)) {
+        logError("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}")
+        return listOf()
+      }
+
       val ideInfo = IdeProductProvider.getProducts().single { it.productCode == params.event.productCode }
-        .copy(downloadURI = URI(params.event.productLink))
+        .copy(downloadURI = URI(params.event.productLink), buildType = params.event.productType ?: "")
 
       val paramsWithAppropriateIde = params.onIDE(ideInfo)
       val numericProductVersion = paramsWithAppropriateIde.event.getNumericProductVersion()
 
-      val testCase = when (paramsWithAppropriateIde.event.productType) {
-        BuildType.EAP.type -> paramsWithAppropriateIde.testCase.useEAP().withBuildNumber(numericProductVersion)
-        BuildType.RELEASE.type -> paramsWithAppropriateIde.testCase.useRelease().withBuildNumber(numericProductVersion)
-        BuildType.RC.type -> paramsWithAppropriateIde.testCase.useRC().withBuildNumber(numericProductVersion)
-        else -> TODO("Build type `${paramsWithAppropriateIde.event.productType}` is not supported")
-      }
-
-      return paramsWithAppropriateIde.copy(testCase = testCase)
+      return listOf(paramsWithAppropriateIde.copy(testCase = paramsWithAppropriateIde.testCase.withBuildNumber(numericProductVersion)))
     }
   }
 
@@ -115,7 +120,6 @@ class InstallPluginTest {
   @MethodSource("data")
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
-
     val testContext = context
       .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
       .prepareProjectCleanImport()

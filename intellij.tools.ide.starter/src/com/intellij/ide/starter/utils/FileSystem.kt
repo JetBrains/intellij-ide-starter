@@ -93,7 +93,10 @@ object FileSystem {
 
     try {
       when {
-        name.endsWith(".zip") || name.endsWith(".ijx") -> unpackZip(archive, targetDir)
+        name.endsWith(".zip") ||
+        name.endsWith(".ijx") ||
+        name.endsWith(".jar") -> unpackZip(archive, targetDir)
+
         name.endsWith(".tar.gz") -> unpackTarGz(archive, targetDir)
         else -> error("Archive $name is not supported")
       }

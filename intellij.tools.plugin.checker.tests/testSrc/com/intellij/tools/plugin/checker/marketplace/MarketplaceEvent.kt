@@ -15,7 +15,7 @@ data class MarketplaceEvent(
   /** Eg: https://download.jetbrains.com/go/goland-2022.2.4.tar.gz */
   val productLink: String,
 
-  /** Eg: release */
+  /** Eg: release, rc, eap ... */
   val productType: String?,
 
   /** Eg: /files/master/10080/122595/intellij-rainbow-brackets-6.18.zip */
