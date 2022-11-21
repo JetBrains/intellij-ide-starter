@@ -97,7 +97,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
-  fun runBuildByGradle(useGradleBuildSystem: Boolean = true): GradleBuildTool {
+  fun runBuildBy(useGradleBuildSystem: Boolean): GradleBuildTool {
     if (gradleXmlPath.notExists()) return this
     if (gradleXmlPath.toFile().readText().contains("<option name=\"delegatedBuild\" value=\"$useGradleBuildSystem\"/>")) return this
 
