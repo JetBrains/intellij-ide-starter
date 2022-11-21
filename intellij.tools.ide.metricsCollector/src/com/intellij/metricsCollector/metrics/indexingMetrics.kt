@@ -5,6 +5,7 @@ import com.intellij.metricsCollector.collector.PerformanceMetrics
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.JsonIndexDiagnostic
+import com.intellij.util.indexing.diagnostic.dto.JsonScanningStatistics
 import com.intellij.util.indexing.diagnostic.dump.paths.PortableFilePath
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
@@ -94,6 +95,18 @@ data class IndexingMetrics(
         for (indexStats in jsonIndexDiagnostic.projectIndexingHistory.fileProviderStatistics) {
           indexedFiles[indexStats.providerName] = indexedFiles.getOrDefault(indexStats.providerName,
                                                                             0) + indexStats.totalNumberOfIndexedFiles
+        }
+      }
+      return indexedFiles
+    }
+
+  val scanningStatisticsByProviders: Map<String, ScanningStatistics>
+    get() {
+      val indexedFiles = mutableMapOf<String /* Provider name */, ScanningStatistics>()
+      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
+        for (indexStats in jsonIndexDiagnostic.projectIndexingHistory.scanningStatistics) {
+          val value: ScanningStatistics = indexedFiles.getOrDefault(indexStats.providerName, ScanningStatistics())
+          indexedFiles[indexStats.providerName] = value.merge(indexStats)
         }
       }
       return indexedFiles
@@ -189,4 +202,13 @@ private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>):
        list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value))
       }
     return list
+}
+
+data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val scanningTime: Long = 0) {
+  fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
+    return ScanningStatistics(
+      numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
+      scanningTime = scanningTime + scanningStatistics.scanningTime.milliseconds
+    )
+  }
 }
