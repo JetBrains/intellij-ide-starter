@@ -50,9 +50,7 @@ object PublicIdeDownloader : IdeDownloader {
       else -> throw RuntimeException("Unsupported OS ${SystemInfo.getOsType()}")
     }
 
-    val installerFile = installerDirectory.resolve(
-      "${ideInfo.installerFilePrefix}-" + possibleBuild.build.replace(".", "") + ideInfo.installerFileExt
-    )
+    val installerFile = installerDirectory.resolve("${ideInfo.installerFilePrefix}-${possibleBuild.build}${ideInfo.installerFileExt}")
 
     if (!installerFile.exists()) {
       logOutput("Downloading $ideInfo ...")

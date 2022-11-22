@@ -12,9 +12,7 @@ object IdeByLinkDownloader : IdeDownloader {
   override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstaller {
     requireNotNull(ideInfo.downloadURI) { "Download URI should not be null for $ideInfo" }
 
-    val installerFile = installerDirectory.resolve(
-      "${ideInfo.installerFilePrefix}-" + ideInfo.buildNumber.replace(".", "") + ideInfo.installerFileExt
-    )
+    val installerFile = installerDirectory.resolve("${ideInfo.installerFilePrefix}-${ideInfo.buildNumber}${ideInfo.installerFileExt}")
 
     if (!installerFile.exists()) {
       logOutput("Downloading $ideInfo ...")
