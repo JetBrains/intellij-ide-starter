@@ -10,6 +10,9 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.kodein.di.direct
 import org.kodein.di.instance
 
+/**
+ * Signals to use locally available build, instead of downloading one.
+ */
 open class TweakUseLatestDownloadedIdeBuild : BeforeAllCallback, BeforeEachCallback {
   private fun configure() {
     require(!di.direct.instance<CIServer>().isBuildRunningOnCI) {
