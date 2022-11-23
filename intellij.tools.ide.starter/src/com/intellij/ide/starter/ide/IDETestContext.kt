@@ -379,17 +379,18 @@ data class IDETestContext(
   }
 
   fun setProviderMemoryOnlyOnLinux(): IDETestContext {
-    if (SystemInfo.isLinux) {
-      val optionsConfig = paths.configDir.resolve("options")
-      optionsConfig.toFile().mkdirs()
-      val securityXml = optionsConfig.resolve("security.xml")
-      securityXml.toFile().createNewFile()
-      securityXml.toFile().writeText("""<application>
+    if (!SystemInfo.isLinux) return this
+
+    val optionsConfig = paths.configDir.resolve("options")
+    optionsConfig.toFile().mkdirs()
+    val securityXml = optionsConfig.resolve("security.xml")
+    securityXml.toFile().createNewFile()
+    securityXml.toFile().writeText("""<application>
   <component name="PasswordSafe">
     <option name="PROVIDER" value="MEMORY_ONLY" />
   </component>
 </application>""")
-    }
+
     return this
   }
 
