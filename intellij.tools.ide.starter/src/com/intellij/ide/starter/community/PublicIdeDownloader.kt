@@ -38,6 +38,9 @@ object PublicIdeDownloader : IdeDownloader {
     val releaseInfoMap = JetBrainsDataServiceClient.getReleases(params)
     if (releaseInfoMap.size != 1) throw RuntimeException("Only one product can be downloaded at once. Found ${releaseInfoMap.keys}")
 
+    logOutput("Trying to download installer with following parameters: $releaseInfoMap")
+    logOutput(params)
+
     val possibleBuild: ReleaseInfo = findSpecificRelease(releaseInfoMap, params)
 
     val downloadLink: String = when (SystemInfo.getOsType()) {
