@@ -130,10 +130,13 @@ private fun processChildren(spanToMetricMap: MutableMap<String, MutableList<Metr
         val spanId = reference.get("spanID").textValue()
         if (spanId == parentSpanId) {
           val spanName = span.get("operationName").textValue()
-          val metric = MetricWithAttributes(Metric(Duration(spanName), getDuration(span)))
-          populateAttributes(metric, span)
-          spanToMetricMap.getOrPut(spanName) { mutableListOf() }.add(metric)
-          processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
+          val value = getDuration(span)
+          if(value != 0L || !shouldAvoidIfZero(span)) {
+            val metric = MetricWithAttributes(Metric(Duration(spanName), value))
+            populateAttributes(metric, span)
+            spanToMetricMap.getOrPut(spanName) { mutableListOf() }.add(metric)
+            processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
+          }
         }
       }
     }
@@ -141,6 +144,19 @@ private fun processChildren(spanToMetricMap: MutableMap<String, MutableList<Metr
 }
 
 private fun getDuration(span: JsonNode) = (span.get("duration").longValue() / 1000.0).roundToLong()
+
+
+private fun shouldAvoidIfZero(span: JsonNode): Boolean {
+  span.get("tags")?.forEach { tag ->
+    val attributeName = tag.get("key").textValue()
+    if (attributeName == "avoid_null_value") {
+      tag.get("value").textValue().runCatching { toBoolean() }.onSuccess {
+        return it
+      }
+    }
+  }
+  return false
+}
 
 private fun populateAttributes(metric: MetricWithAttributes, span: JsonNode) {
   span.get("tags")?.forEach { tag ->
