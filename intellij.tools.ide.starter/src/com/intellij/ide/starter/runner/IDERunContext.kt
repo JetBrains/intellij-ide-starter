@@ -6,6 +6,7 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.CodeInjector
+import com.intellij.ide.starter.ide.EapReleaseConfigurable
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.models.IDEStartResult
@@ -320,6 +321,9 @@ data class IDERunContext(
       }
       finally {
         StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
+
+        // quick hack. need to refactor this (either completely reset DI, or redesign test workflow completely)
+        di.direct.instance<EapReleaseConfigurable>().resetDIToDefaultDownloading()
       }
     }
   }

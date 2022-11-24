@@ -1,7 +1,13 @@
 package com.intellij.ide.starter.ide
 
+import com.intellij.ide.starter.community.PublicIdeDownloader
 import com.intellij.ide.starter.community.model.BuildType
+import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.ide.starter.models.IdeProduct
+import com.intellij.ide.starter.models.IdeProductImp
+import org.kodein.di.DI
+import org.kodein.di.bindSingleton
 
 /**
  * Determines behaviour for downloading/using EAP / RELEASE builds
@@ -35,4 +41,20 @@ interface EapReleaseConfigurable {
 
   /** E.g: "2022.1.2" */
   fun withVersion(ideInfo: IdeInfo, version: String): IdeInfo = ideInfo.copy(version = version)
+
+  /**
+   * Hack to redirect workflow of IDE downloading back to use publicly available IDE releases
+   */
+  fun usePublicIdeDownloader(): Unit {
+    di = DI {
+      extend(di)
+      bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
+      bindSingleton<IdeDownloader>(overrides = true) { PublicIdeDownloader }
+    }
+  }
+
+  /**
+   * Reset DI implementation to the desired default logic of downloading IDE's
+   */
+  fun resetDIToDefaultDownloading(): Unit
 }

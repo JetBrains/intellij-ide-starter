@@ -50,7 +50,11 @@ var di = DI {
   bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher, QodanaTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
-  bindSingleton<EapReleaseConfigurable> { object : EapReleaseConfigurable {} }
+  bindSingleton<EapReleaseConfigurable> {
+    object : EapReleaseConfigurable {
+      override fun resetDIToDefaultDownloading() = usePublicIdeDownloader()
+    }
+  }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
 }.apply {
   logOutput("Starter DI was initialized")
