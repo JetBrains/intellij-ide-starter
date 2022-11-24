@@ -4,7 +4,7 @@ import com.intellij.ide.starter.models.VMOptions
 import java.nio.file.Path
 
 interface InstalledIde {
-  val originalVMOptions: VMOptions
+  val vmOptions: VMOptions
 
   val build: String
   val os: String

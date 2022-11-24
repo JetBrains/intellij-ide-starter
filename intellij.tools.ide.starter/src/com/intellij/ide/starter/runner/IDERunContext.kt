@@ -99,7 +99,7 @@ data class IDERunContext(
     }
   }
 
-  private fun calculateVmOptions(): VMOptions = testContext.ide.originalVMOptions
+  private fun calculateVmOptions(): VMOptions = testContext.ide.vmOptions
     .disableStartupDialogs()
     .usingStartupFramework()
     .setFatalErrorNotificationEnabled()

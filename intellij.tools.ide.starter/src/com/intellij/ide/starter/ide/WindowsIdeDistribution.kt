@@ -20,12 +20,15 @@ class WindowsIdeDistribution : IdeDistribution() {
       file.fileName.toString() == "${executableFileName}64.exe"
     } ?: error("Failed to detect executable name, ending with 64.exe in:\n${allBinFiles.joinToString("\n")}")
 
-    val originalVMOptionsFile = executablePath.parent.resolve("${executablePath.fileName}.vmoptions")
-
     return object : InstalledIde {
       override val bundledPluginsDir = unpackDir.resolve("plugins")
+      override val vmOptions: VMOptions
+        get() = VMOptions(
+          ide = this,
+          data = emptyList(),
+          env = emptyMap()
+        )
 
-      override val originalVMOptions = VMOptions.readIdeVMOptions(this, originalVMOptionsFile)
       override val patchedVMOptionsFile = unpackDir.parent.resolve("${unpackDir.fileName}.vmoptions")
 
       override fun startConfig(vmOptions: VMOptions, logsDir: Path) = object : InstalledBackedIDEStartConfig(patchedVMOptionsFile,

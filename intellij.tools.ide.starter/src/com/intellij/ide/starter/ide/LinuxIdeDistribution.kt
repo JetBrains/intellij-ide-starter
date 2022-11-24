@@ -66,9 +66,13 @@ class LinuxIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = appHome.resolve("plugins")
 
-      val originalVMOptionsFile = executablePath.parent.resolve(
-        executablePath.fileName.toString().removeSuffix(".sh") + "64.vmoptions") //TODO: which file to pick with 64 or without?
-      override val originalVMOptions = VMOptions.readIdeVMOptions(this, originalVMOptionsFile)
+      override val vmOptions: VMOptions
+        get() = VMOptions(
+          ide = this,
+          data = emptyList(),
+          env = emptyMap()
+        )
+
       override val patchedVMOptionsFile = appHome.parent.resolve("${appHome.fileName}.vmoptions")
 
       override fun startConfig(vmOptions: VMOptions, logsDir: Path) =

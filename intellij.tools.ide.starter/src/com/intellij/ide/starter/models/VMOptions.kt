@@ -3,7 +3,6 @@ package com.intellij.ide.starter.models
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.path.IDEDataPaths
-import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.writeJvmArgsFile
@@ -176,46 +175,6 @@ data class VMOptions(
       .addSystemProperty("testscript.must.exist.process.with.non.success.code.on.ide.error", "true")
       // No need to report TeamCity test failure from within test script.
       .addSystemProperty("testscript.must.report.teamcity.test.failure.on.error", "false")
-  }
-
-  /** @see com.intellij.startupTime.StartupTimeWithCDSonJDK13.runOnJDK13 **/
-  fun withCustomJRE(jre: Path): VMOptions {
-    if (SystemInfo.isLinux) {
-      val jrePath = jre.toAbsolutePath().toString()
-      val envKey = when (ide.productCode) {
-        "IU" -> "IDEA_JDK"
-        "WS" -> "WEBIDE_JDK"
-        else -> error("Not supported for product $ide")
-      }
-      return this.withEnv(envKey, jrePath)
-    }
-
-    if (SystemInfo.isMac) {
-      //Does not work -- https://intellij-support.jetbrains.com/hc/en-us/articles/206544879-Selecting-the-JDK-version-the-IDE-will-run-under
-      //see https://youtrack.jetbrains.com/issue/IDEA-223075
-      //see Launcher.m:226
-      val jrePath = jre.toAbsolutePath().toString()
-      val envKey = when (ide.productCode) {
-        "IU" -> "IDEA_JDK"
-        "WS" -> "WEBSTORM_JDK"
-        else -> error("Not supported for product $ide")
-      }
-      return this.withEnv(envKey, jrePath)
-    }
-
-    if (SystemInfo.isWindows) {
-      //see WinLauncher.rc and WinLauncher.cpp:294
-      //see https://youtrack.jetbrains.com/issue/IDEA-223348
-      val jrePath = jre.toRealPath().toString().replace("/", "\\")
-      val envKey = when (ide.productCode) {
-        "IU" -> "IDEA_JDK_64"
-        "WS" -> "WEBIDE_JDK_64"
-        else -> error("Not supported for product $ide")
-      }
-      return this.withEnv(envKey, jrePath)
-    }
-
-    error("Current OS is not supported")
   }
 
   fun usingStartupFramework() = this

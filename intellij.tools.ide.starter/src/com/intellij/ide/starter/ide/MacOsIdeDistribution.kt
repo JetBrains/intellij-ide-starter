@@ -52,9 +52,6 @@ class MacOsIdeDistribution : IdeDistribution() {
     val executablePath = appHome / "MacOS" / executableName
     require(executablePath.isRegularFile()) { "Cannot find macOS IDE executable file in $executablePath" }
 
-    val originalVMOptions = appHome / "bin" / "$executableName.vmoptions"
-    require(originalVMOptions.isRegularFile()) { "Cannot find macOS IDE vmoptions file in $executablePath" }
-
     val buildTxtPath = appHome / "Resources" / "build.txt"
     require(buildTxtPath.isRegularFile()) { "Cannot find macOS IDE vmoptions file in $executablePath" }
 
@@ -63,7 +60,13 @@ class MacOsIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = appHome / "plugins"
 
-      override val originalVMOptions = VMOptions.readIdeVMOptions(this, originalVMOptions)
+      override val vmOptions: VMOptions
+        get() = VMOptions(
+          ide = this,
+          data = emptyList(),
+          env = emptyMap()
+        )
+
       override val patchedVMOptionsFile = appDir.parent.resolve("${appDir.fileName}.vmoptions") //see IDEA-220286
 
       override fun startConfig(vmOptions: VMOptions, logsDir: Path) = object : InstalledBackedIDEStartConfig(patchedVMOptionsFile,
