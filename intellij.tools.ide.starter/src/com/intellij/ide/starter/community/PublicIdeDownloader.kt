@@ -7,6 +7,7 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -16,15 +17,21 @@ object PublicIdeDownloader : IdeDownloader {
   /** Filter release map: <ProductCode, List of releases> */
   private fun findSpecificRelease(releaseInfoMap: Map<String, List<ReleaseInfo>>,
                                   filteringParams: ProductInfoRequestParameters): ReleaseInfo {
-    val sorted = releaseInfoMap.values.first().sortedByDescending { it.date }
+    try {
+      val sorted = releaseInfoMap.values.first().sortedByDescending { it.date }
 
-    if (filteringParams.majorVersion.isNotBlank()) return sorted.first { it.majorVersion == filteringParams.majorVersion }
+      if (filteringParams.majorVersion.isNotBlank()) return sorted.first { it.majorVersion == filteringParams.majorVersion }
 
-    // find the latest release / eap, if no specific params were provided
-    if (filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank()) return sorted.first()
+      // find the latest release / eap, if no specific params were provided
+      if (filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank()) return sorted.first()
 
-    if (filteringParams.versionNumber.isNotBlank()) return sorted.first { it.version == filteringParams.versionNumber }
-    if (filteringParams.buildNumber.isNotBlank()) return sorted.first { it.build == filteringParams.buildNumber }
+      if (filteringParams.versionNumber.isNotBlank()) return sorted.first { it.version == filteringParams.versionNumber }
+      if (filteringParams.buildNumber.isNotBlank()) return sorted.first { it.build == filteringParams.buildNumber }
+    }
+    catch (e: Exception) {
+      logError("Failed to find specific release by parameters $filteringParams")
+      throw e
+    }
 
     throw NoSuchElementException("Couldn't find specified release by parameters $filteringParams")
   }
