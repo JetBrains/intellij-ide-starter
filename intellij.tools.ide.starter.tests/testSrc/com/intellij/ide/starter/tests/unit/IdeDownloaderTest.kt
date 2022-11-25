@@ -30,14 +30,14 @@ class IdeDownloaderTest {
                                  snapshot = "eap",
                                  majorVersion = "222",
                                  buildNumber = "10.20")
-      .toString()
+      .toUriQuery()
       .shouldBe("?code=IC&type=eap")
   }
 
   @Test
   fun defaultParameterForIdeDownloaderCreation() {
     ProductInfoRequestParameters(type = "IU")
-      .toString()
+      .toUriQuery()
       .shouldBe("?code=IU&type=release")
   }
 
@@ -91,6 +91,20 @@ class IdeDownloaderTest {
     val installer = downloader.downloadIdeInstaller(ideInfo = testCase.ideInfo, testDirectory)
 
     withClue("Specific EAP installer should be downloaded successfully") {
+      installer.installerFile.shouldExist()
+      installer.installerFile.fileSize().shouldNotBeZero()
+    }
+  }
+
+  @Test
+  @Timeout(value = 4, unit = TimeUnit.MINUTES)
+  fun downloadLatestEAP() {
+    val downloader by di.instance<IdeDownloader>()
+
+    val testCase = TestCases.IC.GradleJitPackSimple.useEAP()
+    val installer = downloader.downloadIdeInstaller(ideInfo = testCase.ideInfo, testDirectory)
+
+    withClue("Latest EAP installer should be downloaded successfully") {
       installer.installerFile.shouldExist()
       installer.installerFile.fileSize().shouldNotBeZero()
     }

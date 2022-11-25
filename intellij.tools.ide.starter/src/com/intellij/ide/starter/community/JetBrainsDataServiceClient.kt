@@ -16,7 +16,7 @@ class JetBrainsDataServiceClient {
     private const val DATA_SERVICE_URL = "https://data.services.jetbrains.com"
 
     fun getReleases(request: ProductInfoRequestParameters): Map<String, List<ReleaseInfo>> {
-      val getUrlToJbDataServices = "$DATA_SERVICE_URL/products/releases$request"
+      val getUrlToJbDataServices = "$DATA_SERVICE_URL/products/releases${request.toUriQuery()}"
       logOutput("Requesting products by url: $getUrlToJbDataServices")
 
       return HttpClient.sendRequest(

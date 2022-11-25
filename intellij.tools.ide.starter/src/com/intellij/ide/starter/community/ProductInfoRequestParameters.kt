@@ -12,18 +12,15 @@ data class ProductInfoRequestParameters(
   // e.g "2022.1.1"
   val versionNumber: String = ""
 ) {
-  private fun toUriQuery(): URIBuilder {
+  /**
+   * API seems to filter only by code and type. It doesn't respond to majorVersion, build or version params
+   */
+  fun toUriQuery(): String {
     val builder = URIBuilder()
-
-    // API seems to filter only by code and type. It doesn't respond to majorVersion, build or version params
 
     if (type.isNotBlank()) builder.addParameter("code", type)
     if (snapshot.isNotBlank()) builder.addParameter("type", snapshot)
 
-    return builder
-  }
-
-  override fun toString(): String {
-    return toUriQuery().toString()
+    return builder.toString()
   }
 }

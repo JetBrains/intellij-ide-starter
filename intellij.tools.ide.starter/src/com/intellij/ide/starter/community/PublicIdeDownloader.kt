@@ -18,15 +18,15 @@ object PublicIdeDownloader : IdeDownloader {
   private fun findSpecificRelease(releaseInfoMap: Map<String, List<ReleaseInfo>>,
                                   filteringParams: ProductInfoRequestParameters): ReleaseInfo {
     try {
-      val sorted = releaseInfoMap.values.first().sortedByDescending { it.date }
+      val sortedByDate = releaseInfoMap.values.first().sortedByDescending { it.date }
 
-      if (filteringParams.majorVersion.isNotBlank()) return sorted.first { it.majorVersion == filteringParams.majorVersion }
+      if (filteringParams.majorVersion.isNotBlank()) return sortedByDate.first { it.majorVersion == filteringParams.majorVersion }
 
       // find the latest release / eap, if no specific params were provided
-      if (filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank()) return sorted.first()
+      if (filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank()) return sortedByDate.first()
 
-      if (filteringParams.versionNumber.isNotBlank()) return sorted.first { it.version == filteringParams.versionNumber }
-      if (filteringParams.buildNumber.isNotBlank()) return sorted.first { it.build == filteringParams.buildNumber }
+      if (filteringParams.versionNumber.isNotBlank()) return sortedByDate.first { it.version == filteringParams.versionNumber }
+      if (filteringParams.buildNumber.isNotBlank()) return sortedByDate.first { it.build == filteringParams.buildNumber }
     }
     catch (e: Exception) {
       logError("Failed to find specific release by parameters $filteringParams")
@@ -44,9 +44,6 @@ object PublicIdeDownloader : IdeDownloader {
 
     val releaseInfoMap = JetBrainsDataServiceClient.getReleases(params)
     if (releaseInfoMap.size != 1) throw RuntimeException("Only one product can be downloaded at once. Found ${releaseInfoMap.keys}")
-
-    logOutput("Trying to download installer with following parameters: $releaseInfoMap")
-    logOutput(params)
 
     val possibleBuild: ReleaseInfo = findSpecificRelease(releaseInfoMap, params)
 
