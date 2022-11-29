@@ -36,6 +36,16 @@ class IdeaJUnit4ExampleTests {
   }
 
   @Test
+  fun `open gradle project on the latest RC IJ Community`() {
+    val context = testContextFactory
+      .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple.useRC())
+      .prepareProjectCleanImport()
+      .setSharedIndexesDownload(enable = true)
+
+    context.runIDE(commands = CommandChain().exitApp())
+  }
+
+  @Test
   fun `open Community project on the latest Release IJ Ultimate`() {
     val context = testContextFactory
       .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IU.IntelliJCommunityProject.useRelease())
