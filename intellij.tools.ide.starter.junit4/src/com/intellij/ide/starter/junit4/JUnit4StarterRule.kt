@@ -80,12 +80,12 @@ open class JUnit4StarterRule(
     ConfigurationStorage.instance().resetToDefault()
     super.after()
   }
+}
 
-  /**
-   * Makes the test use the latest available locally IDE build for testing.
-   */
-  fun useLatestDownloadedIdeBuild(): JUnit4StarterRule = apply {
-    assert(!ciServer.isBuildRunningOnCI)
-    ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, true)
-  }
+/**
+ * Makes the test use the latest available locally IDE build for testing.
+ */
+fun <T : JUnit4StarterRule> T.useLatestDownloadedIdeBuild(): T = apply {
+  assert(!ciServer.isBuildRunningOnCI)
+  ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, true)
 }
