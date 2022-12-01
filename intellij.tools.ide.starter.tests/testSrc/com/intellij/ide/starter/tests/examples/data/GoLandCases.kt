@@ -6,6 +6,6 @@ import com.intellij.ide.starter.project.TestCaseTemplate
 
 object GoLandCases : TestCaseTemplate(IdeProductProvider.GO) {
   val CliProject = getTemplate().withProject(
-    GitHubProject.fromGithub(repoRelativePath = "/urfave/cli.git")
+    GitHubProject.fromGithub(repoRelativeUrl = "/urfave/cli.git")
   )
 }
