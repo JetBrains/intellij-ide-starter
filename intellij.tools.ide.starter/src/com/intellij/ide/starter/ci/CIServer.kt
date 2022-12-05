@@ -17,5 +17,5 @@ interface CIServer {
 
   fun ignoreTestFailure(testName: String, message: String, details: String)
 
-  fun checkIfShouldBeIgnored(message: String): Boolean
+  fun isTestFailureShouldBeIgnored(message: String): Boolean
 }

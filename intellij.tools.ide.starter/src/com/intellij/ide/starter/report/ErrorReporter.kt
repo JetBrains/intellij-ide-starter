@@ -24,41 +24,39 @@ object ErrorReporter {
 
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
 
-    errorsDirectories.forEach { errorDir ->
+    for (errorDir in errorsDirectories) {
       val messageFile = errorDir.resolve("message.txt").toFile()
       val stacktraceFile = errorDir.resolve("stacktrace.txt").toFile()
 
-      if (messageFile.exists() && stacktraceFile.exists()) {
-        val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
-        val stackTraceContent = stacktraceFile.readText().trimIndent().trim()
+      if (!(messageFile.exists() && stacktraceFile.exists())) continue
 
-         val errorShouldBeIgnored = di.direct.instance<CIServer>().checkIfShouldBeIgnored(messageText)
+      val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
+      val stackTraceContent = stacktraceFile.readText().trimIndent().trim()
 
-        val testName: String
+      val testName: String
 
-        val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
+      val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
 
-        if (stackTraceContent.startsWith(messageText)) {
-          val maxLength = (MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
-          val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
-          testName = "($onlyLettersHash $extractedTestName)"
-        }
-        else {
-          testName = "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
-        }
+      if (stackTraceContent.startsWith(messageText)) {
+        val maxLength = (MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
+        val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
+        testName = "($onlyLettersHash $extractedTestName)"
+      }
+      else {
+        testName = "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
+      }
 
-        val failureDetails = di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext)
+      val failureDetails = di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext)
 
-        if (errorShouldBeIgnored) {
-          di.direct.instance<CIServer>().ignoreTestFailure(testName = generifyErrorMessage(testName),
-                                                           message = failureDetails,
-                                                           details = stackTraceContent)
-        }
-        else {
-          di.direct.instance<CIServer>().reportTestFailure(testName = generifyErrorMessage(testName),
-                                                           message = failureDetails,
-                                                           details = stackTraceContent)
-        }
+      if (di.direct.instance<CIServer>().isTestFailureShouldBeIgnored(messageText)) {
+        di.direct.instance<CIServer>().ignoreTestFailure(testName = generifyErrorMessage(testName),
+                                                         message = failureDetails,
+                                                         details = stackTraceContent)
+      }
+      else {
+        di.direct.instance<CIServer>().reportTestFailure(testName = generifyErrorMessage(testName),
+                                                         message = failureDetails,
+                                                         details = stackTraceContent)
       }
     }
   }

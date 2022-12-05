@@ -31,7 +31,7 @@ object NoCIServer : CIServer {
       """.trimIndent())
   }
 
-  override fun checkIfShouldBeIgnored(message: String): Boolean {
+  override fun isTestFailureShouldBeIgnored(message: String): Boolean {
     return false
   }
 }
