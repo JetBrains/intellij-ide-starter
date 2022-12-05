@@ -204,6 +204,9 @@ data class VMOptions(
     .filterKeys { it == "-XX:+UseG1GC" }
     .addLine("-XX:+UseG1GC")
 
+  fun withGCLogs(gcLogFile: Path) = this
+    .addLine("-Xlog:gc*:file=${gcLogFile.toAbsolutePath()}")
+
   /** see [JEP 318](https://openjdk.org/jeps/318) **/
   fun withEpsilonGC() = this
     .filterKeys { it == "-XX:+UseConcMarkSweepGC" }
