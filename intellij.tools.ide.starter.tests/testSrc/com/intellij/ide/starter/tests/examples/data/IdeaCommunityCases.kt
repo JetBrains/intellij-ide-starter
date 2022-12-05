@@ -1,16 +1,17 @@
 package com.intellij.ide.starter.tests.examples.data
 
-import com.intellij.ide.starter.project.TestCaseTemplate
 import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
+import com.intellij.ide.starter.project.TestCaseTemplate
 import kotlin.io.path.div
 
 object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
 
   val GradleJitPackSimple = getTemplate().withProject(
-    RemoteArchiveProjectInfo(
-      projectURL = "https://github.com/jitpack/gradle-simple/archive/refs/heads/master.zip",
-      projectHomeRelativePath = { it / "gradle-simple-master" }
+    GitHubProject.fromGithub(
+      branchName = "master",
+      repoRelativeUrl = "/jitpack/gradle-simple.git"
     )
   )
 
