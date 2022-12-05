@@ -180,5 +180,19 @@ object Git {
       onlyEnrichExistedEnvVariables = true
     ).start()
   }
+
+  fun rebase(repositoryDirectory: Path, newBase: String = "master") {
+    val cmdName = "git-rebase"
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = listOf("git", "rebase", newBase),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+  }
 }
 
