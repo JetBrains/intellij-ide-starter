@@ -23,11 +23,11 @@ abstract class IdeDistribution {
     val localDir = jbrCacheDirectory / jbrFileName.removeSuffix(".tar.gz")
 
     val isSuccess = HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1)
-    if (!isSuccess) return Pair(isSuccess, localDir)
+    if (!isSuccess) return Pair(false, localDir)
 
     FileSystem.unpackIfMissing(localFile, localDir)
 
-    return Pair(isSuccess, localDir)
+    return Pair(true, localDir)
   }
 
   protected fun downloadAndUnpackJbrIfNeeded(jbrFullVersion: String): Path {

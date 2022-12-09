@@ -16,11 +16,7 @@ fun downloadGoSdk(version: String): Path {
     SystemInfo.isMac -> "darwin"
     else -> error("Unknown OS")
   }
-  val extension = when {
-    SystemInfo.isWindows -> ".zip"
-    SystemInfo.isLinux || SystemInfo.isMac -> ".tar.gz"
-    else -> error("Unknown OS")
-  }
+  val extension = if (SystemInfo.isWindows) ".zip" else ".tar.gz"
   val url = "https://cache-redirector.jetbrains.com/dl.google.com/go/go$version.$os-amd64$extension"
   val dirToDownload = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("go-sdk/$version")
   val downloadedFile = dirToDownload.resolve("go$version.$os-amd64$extension")
