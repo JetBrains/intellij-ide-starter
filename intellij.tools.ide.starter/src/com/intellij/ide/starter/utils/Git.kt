@@ -12,6 +12,7 @@ import kotlin.time.Duration.Companion.minutes
 object Git {
   val branch by lazy { getShortBranchName() }
   val localBranch by lazy { getLocalGitBranch() }
+  val getDefaultBranch by lazy { localBranch.substringBefore(".")}
 
   @Throws(IOException::class, InterruptedException::class)
   private fun getLocalGitBranch(): String {
