@@ -290,10 +290,6 @@ data class IDETestContext(
     addSystemProperty("idea.pkgs.disableLoading", true)
   }
 
-  fun enableForcePluginUpdate() = addVMOptionsPatch {
-    addSystemProperty("idea.force.plugin.updates", true)
-  }
-
   fun removeIdeaProjectDirectory(): IDETestContext {
     val ideaDirPath = resolvedProjectHome.resolve(".idea")
 
