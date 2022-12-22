@@ -538,3 +538,10 @@ fun <T : CommandChain> T.selectText(startLine: Int, startColumn: Int,endLine: In
   addCommand(SELECT_TEXT_CMD_PREFIX, startLine.toString(), startColumn.toString(),endLine.toString(), endColumn.toString())
   return this
 }
+
+const val SHOW_FILE_STRUCTURE_DIALOG_PREFIX = "${CMD_PREFIX}showFileStructureDialog"
+
+fun <T : CommandChain> T.showFileStructureDialog(): T {
+  addCommand(SHOW_FILE_STRUCTURE_DIALOG_PREFIX)
+  return this
+}
