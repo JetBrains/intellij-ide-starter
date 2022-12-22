@@ -334,7 +334,7 @@ data class IDETestContext(
   fun runIDE(
     patchVMOptions: VMOptions.() -> VMOptions = { this },
     commandLine: IDECommandLine? = null,
-    commands: Iterable<MarshallableCommand>,
+    commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
     runTimeout: Duration = 10.minutes,
     useStartupScript: Boolean = true,
