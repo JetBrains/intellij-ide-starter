@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.utils
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.seconds
@@ -29,6 +30,6 @@ suspend fun <T> withRetryAsync(retries: Long = 3, messageOnFailure: String = "",
 
 
 /** @return T - if successful; null - otherwise */
-fun <T> withRetry(retries: Long = 3, messageOnFailure: String = "", retryAction: () -> T): T? = runBlocking {
+fun <T> withRetry(retries: Long = 3, messageOnFailure: String = "", retryAction: () -> T): T? = runBlocking(Dispatchers.IO) {
   withRetryAsync(retries, messageOnFailure) { retryAction() }
 }

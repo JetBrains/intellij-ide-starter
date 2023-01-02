@@ -93,7 +93,7 @@ class ProcessExecutor(val presentableName: String,
 
   private fun killProcessGracefully(process: ProcessHandle) {
     process.destroy()
-    runBlocking { withTimeout(20.seconds) { process.onExit().await() } }
+    runBlocking(Dispatchers.IO) { withTimeout(20.seconds) { process.onExit().await() } }
     process.destroyForcibly()
   }
 
@@ -187,8 +187,8 @@ class ProcessExecutor(val presentableName: String,
     val ioThreads = listOfNotNull(inputThread, stdoutThread, stderrThread)
 
     fun killProcess() {
-      catchAll { runBlocking { onProcessCreatedJob.cancelAndJoin() } }
-      catchAll { runBlocking { withTimeout(1.minutes) { onBeforeKilled(process, processId) } } }
+      catchAll { runBlocking(Dispatchers.IO) { onProcessCreatedJob.cancelAndJoin() } }
+      catchAll { runBlocking(Dispatchers.IO) { withTimeout(1.minutes) { onBeforeKilled(process, processId) } } }
       process.descendants().forEach { catchAll { killProcessGracefully(it) } }
       catchAll { killProcessGracefully(process.toHandle()) }
       catchAll { ioThreads.forEach { it.interrupt() } }
