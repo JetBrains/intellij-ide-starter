@@ -6,7 +6,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 class JUnit4TestWatcher(private val testContextGetter: () -> IDETestContext) : TestWatcher() {
-  val watcherActions = TestWatcherActions()
+  private val watcherActions = TestWatcherActions()
 
   override fun finished(description: Description) {
     val testContext = testContextGetter()
