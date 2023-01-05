@@ -103,6 +103,7 @@ data class IDERunContext(
     .disableStartupDialogs()
     .usingStartupFramework()
     .setFatalErrorNotificationEnabled()
+    .setFlagIntegrationTests()
     .takeScreenshotsPeriodically(testContext.paths.logsDir)
     .takeScreenshotOnFailure(testContext.paths.logsDir)
     .withJvmCrashLogDirectory(jvmCrashLogDirectory)

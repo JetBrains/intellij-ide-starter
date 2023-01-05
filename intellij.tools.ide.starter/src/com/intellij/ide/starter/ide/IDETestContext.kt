@@ -110,16 +110,6 @@ data class IDETestContext(
       addSystemProperty("ide.instant.shutdown", false)
     }
 
-  fun setFlagIntegrationTests() : IDETestContext =
-    addVMOptionsPatch {
-      addSystemProperty("idea.is.integration.test", true)
-    }
-
-  fun removeFlagIntegrationTests(): IDETestContext =
-    addVMOptionsPatch {
-      removeSystemProperty("idea.is.integration.test", true.toString())
-    }
-
   fun useNewUIInTests() : IDETestContext =
     addVMOptionsPatch {
       addSystemProperty("ide.experimental.ui", true)

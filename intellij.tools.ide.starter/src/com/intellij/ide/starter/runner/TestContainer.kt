@@ -104,7 +104,7 @@ interface TestContainer<T> : Closeable {
           overrideDirectories(paths)
         }
         .disableMinimap()
-        .setFlagIntegrationTests()
+        .addProjectToTrustedLocations()
         .useNewUIInTests()
     }
 
