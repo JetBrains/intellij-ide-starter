@@ -32,6 +32,7 @@ object JdkDownloaderFacade {
   val jdk8 get() = jdkDownloader(JdkVersion.JDK_8.toString())
   val jdk11 get() = jdkDownloader(JdkVersion.JDK_11.toString())
   val jdk15 get() = jdkDownloader(JdkVersion.JDK_15.toString())
+  val jdk16 get() = jdkDownloader(JdkVersion.JDK_16.toString())
   val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
 
   fun jdkDownloader(

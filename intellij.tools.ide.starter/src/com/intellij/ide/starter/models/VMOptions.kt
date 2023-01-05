@@ -66,10 +66,22 @@ data class VMOptions(
     return addLine(line = "-D$key=$value", filterPrefix = "-D$key=")
   }
 
+  fun removeSystemProperty(key: String, value: String): VMOptions {
+    logOutput("Removing system property: [$key=$value]")
+    System.clearProperty(key) // to synchronize behaviour in IDEA and on test runner side
+    return removeLine(line = "-D$key=$value", filterPrefix = "-D$key=")
+  }
+
   fun addLine(line: String, filterPrefix: String? = null): VMOptions {
     if (data.contains(line)) return this
     val copy = if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) }
     return copy(data = copy + line)
+  }
+
+  fun removeLine(line: String, filterPrefix: String? = null): VMOptions {
+    if (!data.contains(line)) return this
+    val copy = if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) }
+    return copy(data = copy - line)
   }
 
   private fun filterKeys(toRemove: (String) -> Boolean) = copy(data = data.filterNot(toRemove))
@@ -179,9 +191,6 @@ data class VMOptions(
 
   fun usingStartupFramework() = this
     .addSystemProperty("startup.performance.framework", true)
-
-  fun setFlagIntegrationTests() = this
-    .addSystemProperty("idea.is.integration.test", true)
 
   fun setFatalErrorNotificationEnabled() = this
     .addSystemProperty("idea.fatal.error.notification", true)

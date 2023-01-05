@@ -104,6 +104,8 @@ interface TestContainer<T> : Closeable {
           overrideDirectories(paths)
         }
         .disableMinimap()
+        .setFlagIntegrationTests()
+        .useNewUIInTests()
     }
 
     val contextWithAppliedHooks = setupHooks
