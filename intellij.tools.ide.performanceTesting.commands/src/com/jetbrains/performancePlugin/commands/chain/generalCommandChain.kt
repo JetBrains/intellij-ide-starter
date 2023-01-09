@@ -93,8 +93,8 @@ fun <T : CommandChain> T.openRandomFile(extension: String): T {
 
 const val OPEN_PROJECT_CMD_PREFIX = "${CMD_PREFIX}openProject"
 
-fun <T : CommandChain> T.openProject(projectPath: Path, detectProjectLeak: Boolean = false): T {
-  addCommand(OPEN_PROJECT_CMD_PREFIX, projectPath.toString(), true.toString(), detectProjectLeak.toString())
+fun <T : CommandChain> T.openProject(projectPath: Path, openInNewWindow: Boolean = true, detectProjectLeak: Boolean = false): T {
+  addCommand(OPEN_PROJECT_CMD_PREFIX, projectPath.toString(), (!openInNewWindow).toString(), detectProjectLeak.toString())
   return this
 }
 
