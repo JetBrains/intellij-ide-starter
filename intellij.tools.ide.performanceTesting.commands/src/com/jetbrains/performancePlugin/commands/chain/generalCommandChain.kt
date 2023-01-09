@@ -18,6 +18,8 @@ const val ENABLE_SYSTEM_METRICS = "ENABLE_SYSTEM_METRICS"
 
 const val WAIT_FOR_SMART_CMD_PREFIX = "${CMD_PREFIX}waitForSmart"
 
+const val ACTION_CMD_PREFIX = "${CMD_PREFIX}action"
+
 fun <T : CommandChain> T.waitForSmartMode(): T {
   addCommand(WAIT_FOR_SMART_CMD_PREFIX)
   return this
@@ -436,8 +438,15 @@ fun <T : CommandChain> T.stopPowerSave(): T {
 
 const val SEARCH_EVERYWHERE_CMD_PREFIX = "${CMD_PREFIX}searchEverywhere"
 
-fun <T : CommandChain> T.searchEverywhere(tab: String = "all", text: String = ""): T {
-  addCommand(SEARCH_EVERYWHERE_CMD_PREFIX, "$tab|$text")
+fun <T : CommandChain> T.searchEverywhere(tab: String = "all", text: String = "", close: Boolean = false, selectFirst:Boolean = false): T {
+  val closeOnOpenCommand = when {
+    close -> "-close"
+    else -> ""
+  }
+  addCommand(SEARCH_EVERYWHERE_CMD_PREFIX, "-tab $tab $closeOnOpenCommand|$text")
+  if(selectFirst){
+    addCommand(ACTION_CMD_PREFIX, "SearchEverywhere.SelectItem")
+  }
   return this
 }
 
