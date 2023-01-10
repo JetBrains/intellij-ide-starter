@@ -480,22 +480,24 @@ data class IDETestContext(
   }
 
   fun addProjectToTrustedLocations(addParentDir: Boolean = false): IDETestContext {
-    val projectPath = this.resolvedProjectHome.normalize()
-    val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
+    if(this.testCase.projectInfo != null) {
+      val projectPath = this.resolvedProjectHome.normalize()
+      val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
-    trustedXml.parent.createDirectories()
-    if (addParentDir) {
-      val text = File(this::class.java.classLoader.getResource("trusted-paths-settings.xml").toURI()).readText()
-      trustedXml.writeText(
-        text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
-          .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
-      )
-    }
-    else {
-      val text = File(this::class.java.classLoader.getResource("trusted-paths.xml").toURI()).readText()
-      trustedXml.writeText(
-        text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
-      )
+      trustedXml.parent.createDirectories()
+      if (addParentDir) {
+        val text = File(this::class.java.classLoader.getResource("trusted-paths-settings.xml").toURI()).readText()
+        trustedXml.writeText(
+          text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
+            .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
+        )
+      }
+      else {
+        val text = File(this::class.java.classLoader.getResource("trusted-paths.xml").toURI()).readText()
+        trustedXml.writeText(
+          text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
+        )
+      }
     }
     return this
   }
