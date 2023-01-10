@@ -110,12 +110,12 @@ data class IDETestContext(
       addSystemProperty("ide.instant.shutdown", false)
     }
 
-  fun useNewUIInTests() : IDETestContext =
+  fun useNewUIInTests(): IDETestContext =
     addVMOptionsPatch {
       addSystemProperty("ide.experimental.ui", true)
     }
 
-  fun useOldUIInTests() : IDETestContext =
+  fun useOldUIInTests(): IDETestContext =
     addVMOptionsPatch {
       removeSystemProperty("ide.experimental.ui", true.toString())
     }
@@ -480,7 +480,7 @@ data class IDETestContext(
   }
 
   fun addProjectToTrustedLocations(addParentDir: Boolean = false): IDETestContext {
-    if(this.testCase.projectInfo != null) {
+    if (this.testCase.projectInfo != null) {
       val projectPath = this.resolvedProjectHome.normalize()
       val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
