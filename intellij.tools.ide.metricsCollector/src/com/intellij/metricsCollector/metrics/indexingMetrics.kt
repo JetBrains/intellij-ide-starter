@@ -4,6 +4,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.metricsCollector.collector.PerformanceMetrics
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
+import com.intellij.util.indexing.diagnostic.dto.JsonFileProviderIndexStatistics
 import com.intellij.util.indexing.diagnostic.dto.JsonIndexDiagnostic
 import com.intellij.util.indexing.diagnostic.dto.JsonScanningStatistics
 import com.intellij.util.indexing.diagnostic.dump.paths.PortableFilePath
@@ -145,6 +146,17 @@ data class IndexingMetrics(
         }
       }
       return map
+    }
+
+  val slowIndexedFiles: Map<String, List<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>
+    get() {
+      val indexedFiles = hashMapOf<String, MutableList<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>()
+      jsonIndexDiagnostics.forEach { jsonIndexDiagnostic ->
+        jsonIndexDiagnostic.projectIndexingHistory.fileProviderStatistics.forEach { fileProviderStatistic ->
+          indexedFiles.getOrPut(fileProviderStatistic.providerName) { arrayListOf() } += fileProviderStatistic.slowIndexedFiles
+        }
+      }
+      return indexedFiles
     }
 
   override fun toString() = buildString {
