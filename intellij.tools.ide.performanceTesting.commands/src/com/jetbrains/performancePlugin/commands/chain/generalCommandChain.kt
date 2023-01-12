@@ -554,3 +554,10 @@ fun <T : CommandChain> T.showFileStructureDialog(): T {
   addCommand(SHOW_FILE_STRUCTURE_DIALOG_PREFIX)
   return this
 }
+
+const val IMPORT_MAVEN_PROJECT_CMD_PREFIX = "${CMD_PREFIX}importMavenProject"
+
+fun <T : CommandChain> T.importMavenProject(): T {
+  addCommand(IMPORT_MAVEN_PROJECT_CMD_PREFIX)
+  return this
+}
