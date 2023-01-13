@@ -6,6 +6,7 @@ import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.writeJvmArgsFile
+import org.jetbrains.annotations.CheckReturnValue
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
@@ -25,6 +26,11 @@ fun (VMOptions.() -> VMOptions).andThen(right: VMOptions.() -> VMOptions): VMOpt
 }
 
 
+/**
+ * All methods of this class return a copy with modifications applied, so return value _must_ be used otherwise the
+ * whole call is useless.
+ */
+@CheckReturnValue
 data class VMOptions(
   private val ide: InstalledIde,
   private val data: List<String>,
