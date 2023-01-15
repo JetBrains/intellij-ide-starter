@@ -209,15 +209,18 @@ fun takeScreenshot(logsDir: Path) {
   }
 }
 
-fun collectJBRDiagnosticFilesIfExist(context: IDETestContext) {
+fun collectJBRDiagnosticFilesIfExist(context: IDETestContext, javaProcessId: Long) {
   val userHome = System.getProperty("user.home")
   val pathUserHome = Paths.get(userHome)
-  val listOfJavaErrorFiles = pathUserHome.toFile().listFiles().filter { it.nameWithoutExtension.startsWith("java_error_in_idea_") && it.extension == "log" }
-  if(listOfJavaErrorFiles.isNotEmpty()) {
-    listOfJavaErrorFiles.forEach {
-    if (!context.paths.jbrDiagnostic.resolve(it.name).toFile().exists())
-      it.copyTo(context.paths.jbrDiagnostic.resolve(it.name).toFile())
-    }
+  val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
+  val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
+  if (javaErrorInIdeaFile.exists()) {
+    javaErrorInIdeaFile.toFile().copyTo(context.paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
+  }
+  if (jbrErrFile.exists()) {
+    jbrErrFile.toFile().copyTo(context.paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
+  }
+  if (context.paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
     context.publishArtifact(context.paths.jbrDiagnostic)
   }
 }

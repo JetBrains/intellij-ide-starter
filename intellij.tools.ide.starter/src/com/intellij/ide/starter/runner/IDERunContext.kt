@@ -141,6 +141,7 @@ data class IDERunContext(
 
     val stdout = if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
     val stderr = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
+    var ideProcessId = 0L
 
     var isRunSuccessful = true
     val host by lazy { di.direct.instance<CodeInjector>() }
@@ -210,6 +211,7 @@ data class IDERunContext(
             StarterBus.post(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
 
             val javaProcessId by lazy { getJavaProcessId(jdkHome, startConfig.workDir, pid, process) }
+            ideProcessId = javaProcessId
             val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
 
             var cnt = 0
@@ -232,7 +234,9 @@ data class IDERunContext(
                 stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
               }
               val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}" + ".txt")
-              catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile) }
+              catchAll {
+                collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
+              }
             }
             takeScreenshot(logsDir)
           }
@@ -286,8 +290,7 @@ data class IDERunContext(
       }
     }
     finally {
-
-      collectJBRDiagnosticFilesIfExist(testContext)
+      if(ideProcessId != 0L) collectJBRDiagnosticFilesIfExist(testContext, ideProcessId)
 
       try {
         if (SystemInfo.isWindows) {
