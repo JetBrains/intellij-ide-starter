@@ -565,3 +565,12 @@ fun <T : CommandChain> T.importMavenProject(): T {
   addCommand(IMPORT_MAVEN_PROJECT_CMD_PREFIX)
   return this
 }
+
+const val INPLACE_RENAME_CMD_PREFIX = "${CMD_PREFIX}renameInplace"
+
+fun <T : CommandChain> T.renameInplace(to: String): T {
+  addCommand(INPLACE_RENAME_CMD_PREFIX)
+  delayType(150, to)
+  pressKeyEnter()
+  return this
+}
