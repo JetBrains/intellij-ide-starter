@@ -444,7 +444,7 @@ fun <T : CommandChain> T.searchEverywhere(tab: String = "all", text: String = ""
     else -> ""
   }
   val selectFirstArgument = when {
-    close -> "-selectFirst"
+    selectFirst -> "-selectFirst"
     else -> ""
   }
   if(selectFirstArgument.isNotEmpty() && closeOnOpenArgument.isNotEmpty()){
