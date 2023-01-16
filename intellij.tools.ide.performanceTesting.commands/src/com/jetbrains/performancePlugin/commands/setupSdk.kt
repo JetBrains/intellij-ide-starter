@@ -12,7 +12,7 @@ fun IDETestContext.setupSdk(vararg sdkObjects: SdkObject?, setupContext: IDETest
   if (sdkItemsToSetup.isEmpty()) return this
 
   disableAutoImport(true)
-    .executeAfterProjectOpening(true)
+    .executeRightAfterIdeOpened(true)
     .runIDE(
       commands = sdkItemsToSetup.map { CommandChain().setupProjectSdk(it) }
         .plus(CommandChain().exitApp()),
@@ -31,6 +31,6 @@ fun IDETestContext.setupSdk(vararg sdkObjects: SdkObject?, setupContext: IDETest
   return this
     // rollback changes, that were made only to setup sdk
     .disableAutoImport(false)
-    .executeAfterProjectOpening(false)
+    .executeRightAfterIdeOpened(false)
     .setupContext()
 }

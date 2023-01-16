@@ -81,8 +81,8 @@ data class IDETestContext(
       addSystemProperty("vcs.log.index.git", false)
     }
 
-  fun executeAfterProjectOpening(executeAfterProjectOpening: Boolean = true) = addVMOptionsPatch {
-    addSystemProperty("performance.execute.script.after.project.opened", executeAfterProjectOpening)
+  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = addVMOptionsPatch {
+    addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
   }
 
   fun executeDuringIndexing(): IDETestContext =
