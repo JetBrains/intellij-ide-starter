@@ -544,12 +544,6 @@ fun <T : CommandChain> T.withSystemMetrics(chain: CommandChain): T {
   return this
 }
 
-const val PRESS_KEY_ENTER = "${CMD_PREFIX}pressKeyEnter"
-fun <T : CommandChain> T.pressKeyEnter(): T {
-  addCommand(PRESS_KEY_ENTER)
-  return this
-}
-
 const val SELECT_TEXT_CMD_PREFIX = "${CMD_PREFIX}selectText"
 
 fun <T : CommandChain> T.selectText(startLine: Int, startColumn: Int,endLine: Int, endColumn: Int): T {
