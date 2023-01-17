@@ -2,6 +2,9 @@ package com.intellij.ide.starter.utils
 
 private val OFFSET: Int = "AAAAAAA".hashCode()
 
+/**
+ * 0340430340434 => XDMSLS
+ */
 fun convertToHashCodeWithOnlyLetters(hash: Int): String {
   val offsettedHash = (hash - OFFSET).toLong()
   var longHash: Long = offsettedHash and 0xFFFFFFFFL
