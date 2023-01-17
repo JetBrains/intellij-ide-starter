@@ -17,8 +17,6 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
-import com.intellij.internal.statistic.eventLog.validator.storage.EventLogServerMetadataLoader
-import com.intellij.internal.statistic.eventLog.validator.storage.persistence.EventLogMetadataPersistence.EVENTS_SCHEME_FILE
 import com.intellij.util.io.createDirectories
 import org.kodein.di.direct
 import org.kodein.di.factory
@@ -500,20 +498,6 @@ data class IDETestContext(
           text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
         )
       }
-    }
-    return this
-  }
-
-  /**
-  Need for statistics on local builds
-  */
-  fun loadMetadataFromServer(recorder: String = "FUS", ): IDETestContext {
-    if (this.ide.isFromSources) {
-      val metadataFile = (this.paths.configDir / "event-log-metadata" / recorder.lowercase()).resolve(EVENTS_SCHEME_FILE)
-      val metadataFromServer = EventLogServerMetadataLoader(recorder).loadMetadataFromServer()
-      metadataFile.parent.createDirectories()
-      Files.createFile(metadataFile)
-      Files.writeString(metadataFile, metadataFromServer)
     }
     return this
   }
