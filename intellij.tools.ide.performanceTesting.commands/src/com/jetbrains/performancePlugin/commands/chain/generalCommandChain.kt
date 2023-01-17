@@ -122,6 +122,11 @@ fun <T : CommandChain> T.goto(line: Int, column: Int): T {
   return this
 }
 
+fun <T : CommandChain> T.goto(goto: Pair<Int, Int>): T {
+  goto(goto.first, goto.second)
+  return this
+}
+
 const val GO_TO_PSI_ELEMENT_PREFIX = "${CMD_PREFIX}goToNextPsiElement"
 
 fun <T : CommandChain> T.gotoNextPsiElement(vararg name: String): T {
@@ -566,11 +571,9 @@ fun <T : CommandChain> T.importMavenProject(): T {
   return this
 }
 
-const val INPLACE_RENAME_CMD_PREFIX = "${CMD_PREFIX}renameInplace"
-
-fun <T : CommandChain> T.renameInplace(to: String): T {
-  addCommand(INPLACE_RENAME_CMD_PREFIX)
+fun <T : CommandChain> T.inlineRename(to: String): T {
+  addCommand("${CMD_PREFIX}startInlineRename")
   delayType(150, to)
-  pressKeyEnter()
+  addCommand("${CMD_PREFIX}finishInlineRename")
   return this
 }
