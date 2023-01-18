@@ -8,7 +8,11 @@ import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.bufferedReader
 
-object TeamCityCIServer : CIServer {
+fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
+
+open class TeamCityCIServer(
+  val fallbackUri: URI
+) : CIServer {
   override fun publishArtifact(source: Path, artifactPath: String, artifactName: String) {
     TeamCityClient.publishTeamCityArtifacts(source = source, artifactPath = artifactPath, artifactName = artifactName)
   }
@@ -69,8 +73,11 @@ object TeamCityCIServer : CIServer {
     }
 
   private val systemProperties by lazy {
-    loadProperties(Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE")))
-      .plus(System.getProperties().map { it.key.toString() to it.value.toString() })
+    val props = mutableMapOf<String, String>()
+    System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE")?.let { props.putAll(loadProperties(Path(it))) }
+
+    props.putAll(System.getProperties().map { it.key.toString() to it.value.toString() })
+    props
   }
 
   private fun getExistingParameter(name: String, impreciseNameMatch: Boolean = false): String {
@@ -90,7 +97,7 @@ object TeamCityCIServer : CIServer {
   override val buildNumber by lazy { System.getenv("BUILD_NUMBER") ?: "" }
   override val branchName by lazy { buildParams["teamcity.build.branch"] ?: "" }
 
-  val configurationName by lazy { getExistingParameter("teamcity.buildConfName") }
+  val configurationName by lazy { systemProperties["teamcity.buildConfName"] }
 
   override val buildParams by lazy {
     val configurationPropertiesFile = systemProperties["teamcity.configuration.properties.file"]
@@ -100,7 +107,10 @@ object TeamCityCIServer : CIServer {
   }
 
   /** Root URI of the server */
-  val serverUri by lazy { URI(getExistingParameter("teamcity.serverUrl")).normalize() }
+  val serverUri: URI by lazy {
+    systemProperties["teamcity.serverUrl"]?.let { return@lazy URI(it).normalize() }
+    return@lazy fallbackUri
+  }
 
   val userName: String by lazy { getExistingParameter("teamcity.auth.userId") }
   val password: String by lazy { getExistingParameter("teamcity.auth.password") }
@@ -111,19 +121,16 @@ object TeamCityCIServer : CIServer {
   }
 
   val isPersonalBuild by lazy {
-    getExistingParameter("build.is.personal").equals("true", ignoreCase = true)
+    systemProperties["build.is.personal"].equals("true", ignoreCase = true)
   }
 
-  val buildId by lazy {
-    buildParams["teamcity.build.id"] ?: run {
-      require(!isBuildRunningOnCI)
-      "LOCAL_RUN_SNAPSHOT"
-    }
+  val buildId: String by lazy {
+    buildParams["teamcity.build.id"] ?: run { "LOCAL_RUN_SNAPSHOT" }
   }
   val teamcityAgentName by lazy { buildParams["teamcity.agent.name"] }
   val teamcityCloudProfile by lazy { buildParams["system.cloud.profile_id"] }
 
-  val buildTypeId by lazy { getExistingParameter("teamcity.buildType.id") }
+  val buildTypeId: String? by lazy { systemProperties["teamcity.buildType.id"] }
 
   val isSpecialBuild: Boolean
     get() {
@@ -147,25 +154,27 @@ object TeamCityCIServer : CIServer {
 
   fun hasBooleanProperty(key: String, default: Boolean) = buildParams[key]?.equals("true", ignoreCase = true) ?: default
 
-  fun setStatusTextPrefix(text: String) {
-    logOutput(" ##teamcity[buildStatus text='$text {build.status.text}'] ")
-  }
+  companion object {
+    fun String.processStringForTC(): String {
+      return this.substring(0, Math.min(7000, this.length))
+        .replace("\\|", "||")
+        .replace("\\[", "|[")
+        .replace("]", "|]")
+        .replace("\n", "|n")
+        .replace("'", "|'")
+        .replace("\r", "|r")
+    }
 
-  fun reportTeamCityStatistics(key: String, value: Int) {
-    logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
-  }
+    fun setStatusTextPrefix(text: String) {
+      logOutput(" ##teamcity[buildStatus text='$text {build.status.text}'] ")
+    }
 
-  fun reportTeamCityStatistics(key: String, value: Long) {
-    logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
-  }
+    fun reportTeamCityStatistics(key: String, value: Int) {
+      logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
+    }
 
-  fun String.processStringForTC(): String {
-    return this.substring(0, Math.min(7000, this.length))
-      .replace("\\|", "||")
-      .replace("\\[", "|[")
-      .replace("]", "|]")
-      .replace("\n", "|n")
-      .replace("'", "|'")
-      .replace("\r", "|r")
+    fun reportTeamCityStatistics(key: String, value: Long) {
+      logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
+    }
   }
 }

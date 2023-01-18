@@ -2,6 +2,7 @@ package com.intellij.ide.starter.ci.teamcity
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
@@ -24,11 +25,13 @@ import kotlin.io.path.*
 
 // TODO: move on to use TeamCityRest client library or stick with Okhttp
 object TeamCityClient {
+  private val teamCityCI by lazy { di.direct.instance<CIServer>().asTeamCity() }
+
   // temporary directory, where artifact will be moved for preparation for publishing
   val artifactForPublishingDir: Path by lazy { di.direct.instance<GlobalPaths>().testsDirectory / "teamcity-artifacts-for-publish" }
 
-  private val restUri = TeamCityCIServer.serverUri.resolve("/app/rest/")
-  val guestAuthUri = TeamCityCIServer.serverUri.resolve("/guestAuth/app/rest/")
+  private val restUri = teamCityCI.serverUri.resolve("/app/rest/")
+  val guestAuthUri = teamCityCI.serverUri.resolve("/guestAuth/app/rest/")
 
   fun get(fullUrl: URI): JsonNode {
     val request = HttpGet(fullUrl).apply {
@@ -53,7 +56,7 @@ object TeamCityClient {
   }
 
   private fun <T : HttpRequest> T.withAuth(): T = this.apply {
-    addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(TeamCityCIServer.userName, TeamCityCIServer.password), this, null))
+    addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(teamCityCI.userName, teamCityCI.password), this, null))
   }
 
   /** @return <BuildId, BuildNumber> */
