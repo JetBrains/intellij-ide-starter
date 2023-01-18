@@ -83,6 +83,7 @@ data class IDETestContext(
 
   fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = addVMOptionsPatch {
     addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
+      .addSystemProperty("performance.execute.script.after.project.opened", executeRightAfterIdeOpened)
   }
 
   fun executeDuringIndexing(): IDETestContext =
