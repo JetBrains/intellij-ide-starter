@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.extended.engine.JBTestContainer
 import com.intellij.ide.starter.extended.engine.junit5.JUnit5StarterAssistantExtended
-import com.intellij.ide.starter.extended.teamcity.TeamCityCIServer
-import com.intellij.ide.starter.extended.teamcity.TeamCityClient
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.hyphenateWithClass
@@ -80,7 +80,7 @@ class InstallPluginTest {
 
     fun getMarketplaceEvent(): MarketplaceEvent {
       val triggeredByJsonNode = TeamCityClient.run {
-        get(getGuestAuthUrl().resolve("builds/id:${TeamCityCIServer.buildId}?fields=triggered(displayText)"))
+        get(guestAuthUri.resolve("builds/id:${TeamCityCIServer.buildId}?fields=triggered(displayText)"))
       }
 
       val displayTextField = requireNotNull(triggeredByJsonNode.first().first().asText())
