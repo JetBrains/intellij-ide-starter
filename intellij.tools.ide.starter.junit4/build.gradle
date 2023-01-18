@@ -2,8 +2,8 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 buildscript {
-  ext.kotlin_version = '1.7.20'
-  ext.jackson_version = '2.14.0-rc1'
+  ext.kotlin_version = '1.8.0'
+  ext.jackson_version = '2.14.1'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -30,7 +30,7 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
   implementation "org.jetbrains.intellij.deps:gradle-api:7.4"
-  implementation "org.kodein.di:kodein-di-jvm:7.13.0"
+  implementation "org.kodein.di:kodein-di-jvm:7.16.0"
 
   implementation 'com.jetbrains.intellij.performanceTesting:performance-testing-commands:LATEST-TRUNK-SNAPSHOT'
   implementation 'com.jetbrains.intellij.tools:ide-starter:LATEST-TRUNK-SNAPSHOT'

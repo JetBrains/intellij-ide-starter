@@ -39,7 +39,7 @@ dependencies {
   implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
   implementation "org.apache.httpcomponents:httpmime:4.5.13"
   implementation "org.jetbrains.intellij.deps:gradle-api:7.4"
-  implementation "org.kodein.di:kodein-di-jvm:7.13.0"
+  implementation "org.kodein.di:kodein-di-jvm:7.16.0"
   implementation "org.rauschig:jarchivelib:1.2.0"
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3"
   implementation "commons-logging:commons-logging:1.2"
