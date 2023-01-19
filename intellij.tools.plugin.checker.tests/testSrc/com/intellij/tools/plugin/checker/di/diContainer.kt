@@ -24,7 +24,7 @@ fun initPluginCheckerDI() {
         extend(di)
 
         bindSingleton<CIServer>(overrides = true) {
-          TeamCityCIServer(fallbackUri = URI("https://intellij-plugins-performance.teamcity.com").normalize())
+          TeamCityCIServer(fallbackServerUri = URI("https://intellij-plugins-performance.teamcity.com").normalize())
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }

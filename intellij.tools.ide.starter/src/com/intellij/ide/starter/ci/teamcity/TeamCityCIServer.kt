@@ -11,7 +11,12 @@ import kotlin.io.path.bufferedReader
 fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
 
 open class TeamCityCIServer(
-  val fallbackUri: URI
+  /**
+   * TeamCity by default will try to determine its server URL from properties.
+   * But for local run that is not possible, so that's why we should provide this fallback uri
+   */
+  val fallbackServerUri: URI,
+  private val systemPropertiesFilePath: Path? = Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))
 ) : CIServer {
   override fun publishArtifact(source: Path, artifactPath: String, artifactName: String) {
     TeamCityClient.publishTeamCityArtifacts(source = source, artifactPath = artifactPath, artifactName = artifactName)
@@ -74,7 +79,7 @@ open class TeamCityCIServer(
 
   private val systemProperties by lazy {
     val props = mutableMapOf<String, String>()
-    System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE")?.let { props.putAll(loadProperties(Path(it))) }
+    systemPropertiesFilePath?.let { props.putAll(loadProperties(it)) }
 
     props.putAll(System.getProperties().map { it.key.toString() to it.value.toString() })
     props
@@ -109,7 +114,7 @@ open class TeamCityCIServer(
   /** Root URI of the server */
   val serverUri: URI by lazy {
     systemProperties["teamcity.serverUrl"]?.let { return@lazy URI(it).normalize() }
-    return@lazy fallbackUri
+    return@lazy fallbackServerUri
   }
 
   val userName: String by lazy { getExistingParameter("teamcity.auth.userId") }
