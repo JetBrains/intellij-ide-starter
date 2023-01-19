@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
+import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
@@ -15,6 +16,7 @@ import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
+import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import org.junit.jupiter.api.Assumptions
@@ -26,7 +28,10 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.kodein.di.direct
 import org.kodein.di.instance
+import java.io.File
 import java.net.URI
+import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -37,8 +42,30 @@ class InstallPluginTest {
   private lateinit var container: TestContainerImpl
 
   companion object {
+    private fun setDebugBuildParamsForLocalDebug(vararg buildProperties: Pair<String, String>): Path {
+      val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
+
+      Properties().apply {
+        buildProperties.forEach { this.setProperty(it.first, it.second) }
+        store(tempPropertiesFile.outputStream(), "")
+      }
+
+      return tempPropertiesFile.toPath()
+    }
+
     init {
-      initPluginCheckerDI()
+      if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
+        // use this to simplify local debug
+        val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
+          Pair("teamcity.build.id", "6"),
+          Pair("teamcity.auth.userId", "YOUR_USER_ID"),
+          Pair("teamcity.auth.password", "SECRET")
+        )
+        initPluginCheckerDI(systemPropertiesFilePath)
+      }
+      else {
+        initPluginCheckerDI()
+      }
     }
 
     @BeforeAll
@@ -84,7 +111,9 @@ class InstallPluginTest {
 
     private fun getMarketplaceEvent(): MarketplaceEvent {
       val triggeredByJsonNode = TeamCityClient.run {
-        get(guestAuthUri.resolve("builds/id:${di.direct.instance<CIServer>().asTeamCity().buildId}?fields=triggered(displayText)"))
+        get(
+          fullUrl = restUri.resolve("builds/id:${di.direct.instance<CIServer>().asTeamCity().buildId}?fields=triggered(displayText)")
+        ) { it.withAuth() }
       }
 
       val displayTextField = requireNotNull(triggeredByJsonNode.first().first().asText())

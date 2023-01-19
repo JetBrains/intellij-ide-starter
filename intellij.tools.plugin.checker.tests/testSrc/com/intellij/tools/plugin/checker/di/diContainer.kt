@@ -11,11 +11,15 @@ import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.net.URI
+import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.Path
 
+internal val teamCityIntelliJPerformanceServer = TeamCityCIServer(
+  fallbackServerUri = URI("https://intellij-plugins-performance.teamcity.com").normalize())
 private val _isDiInitialized: AtomicBoolean = AtomicBoolean(false)
 
-fun initPluginCheckerDI() {
+fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))) {
   synchronized(_isDiInitialized) {
     if (!_isDiInitialized.get()) {
       _isDiInitialized.set(true)
@@ -24,7 +28,8 @@ fun initPluginCheckerDI() {
         extend(di)
 
         bindSingleton<CIServer>(overrides = true) {
-          TeamCityCIServer(fallbackServerUri = URI("https://intellij-plugins-performance.teamcity.com").normalize())
+          TeamCityCIServer(fallbackServerUri = teamCityIntelliJPerformanceServer.fallbackServerUri,
+                           systemPropertiesFilePath = systemPropertiesFilePath)
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }

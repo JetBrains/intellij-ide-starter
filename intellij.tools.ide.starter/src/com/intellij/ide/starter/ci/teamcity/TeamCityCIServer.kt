@@ -16,7 +16,12 @@ open class TeamCityCIServer(
    * But for local run that is not possible, so that's why we should provide this fallback uri
    */
   val fallbackServerUri: URI,
-  private val systemPropertiesFilePath: Path? = Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))
+  private val systemPropertiesFilePath: Path? = try {
+    Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))
+  }
+  catch (_: Exception) {
+    null
+  }
 ) : CIServer {
   override fun publishArtifact(source: Path, artifactPath: String, artifactName: String) {
     TeamCityClient.publishTeamCityArtifacts(source = source, artifactPath = artifactPath, artifactName = artifactName)
@@ -85,7 +90,10 @@ open class TeamCityCIServer(
     props
   }
 
-  private fun getExistingParameter(name: String, impreciseNameMatch: Boolean = false): String {
+  /**
+   * @return String or Null if parameters isn't found
+   */
+  private fun getBuildParam(name: String, impreciseNameMatch: Boolean = false): String? {
     val totalParams = systemProperties.plus(buildParams)
 
     val paramValue = if (impreciseNameMatch) {
@@ -95,14 +103,14 @@ open class TeamCityCIServer(
     }
     else totalParams[name]
 
-    return paramValue ?: error("Parameter $name is not specified in the build!")
+    return paramValue
   }
 
   override val isBuildRunningOnCI = System.getenv("TEAMCITY_VERSION") != null
   override val buildNumber by lazy { System.getenv("BUILD_NUMBER") ?: "" }
   override val branchName by lazy { buildParams["teamcity.build.branch"] ?: "" }
 
-  val configurationName by lazy { systemProperties["teamcity.buildConfName"] }
+  val configurationName by lazy { getBuildParam("teamcity.buildConfName") }
 
   override val buildParams by lazy {
     val configurationPropertiesFile = systemProperties["teamcity.configuration.properties.file"]
@@ -113,12 +121,12 @@ open class TeamCityCIServer(
 
   /** Root URI of the server */
   val serverUri: URI by lazy {
-    systemProperties["teamcity.serverUrl"]?.let { return@lazy URI(it).normalize() }
+    getBuildParam("teamcity.serverUrl")?.let { return@lazy URI(it).normalize() }
     return@lazy fallbackServerUri
   }
 
-  val userName: String by lazy { getExistingParameter("teamcity.auth.userId") }
-  val password: String by lazy { getExistingParameter("teamcity.auth.password") }
+  val userName: String by lazy { getBuildParam("teamcity.auth.userId")!! }
+  val password: String by lazy { getBuildParam("teamcity.auth.password")!! }
 
   private val isDefaultBranch by lazy {
     //see https://www.jetbrains.com/help/teamcity/predefined-build-parameters.html#PredefinedBuildParameters-Branch-RelatedParameters
@@ -126,16 +134,16 @@ open class TeamCityCIServer(
   }
 
   val isPersonalBuild by lazy {
-    systemProperties["build.is.personal"].equals("true", ignoreCase = true)
+    getBuildParam("build.is.personal").equals("true", ignoreCase = true)
   }
 
   val buildId: String by lazy {
-    buildParams["teamcity.build.id"] ?: run { "LOCAL_RUN_SNAPSHOT" }
+    getBuildParam("teamcity.build.id") ?: "LOCAL_RUN_SNAPSHOT"
   }
-  val teamcityAgentName by lazy { buildParams["teamcity.agent.name"] }
-  val teamcityCloudProfile by lazy { buildParams["system.cloud.profile_id"] }
+  val teamcityAgentName by lazy { getBuildParam("teamcity.agent.name") }
+  val teamcityCloudProfile by lazy { getBuildParam("system.cloud.profile_id") }
 
-  val buildTypeId: String? by lazy { systemProperties["teamcity.buildType.id"] }
+  val buildTypeId: String? by lazy { getBuildParam("teamcity.buildType.id") }
 
   val isSpecialBuild: Boolean
     get() {
@@ -157,7 +165,7 @@ open class TeamCityCIServer(
       return false
     }
 
-  fun hasBooleanProperty(key: String, default: Boolean) = buildParams[key]?.equals("true", ignoreCase = true) ?: default
+  fun hasBooleanProperty(key: String, default: Boolean) = getBuildParam(key)?.equals("true", ignoreCase = true) ?: default
 
   companion object {
     fun String.processStringForTC(): String {

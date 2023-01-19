@@ -23,6 +23,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 
+fun <T : HttpRequest> T.withAuth(): T = this.apply {
+  val teamCityCI by lazy { di.direct.instance<CIServer>().asTeamCity() }
+
+  addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(teamCityCI.userName, teamCityCI.password), this, null))
+}
+
 // TODO: move on to use TeamCityRest client library or stick with Okhttp
 object TeamCityClient {
   private val teamCityCI by lazy { di.direct.instance<CIServer>().asTeamCity() }
@@ -30,13 +36,14 @@ object TeamCityClient {
   // temporary directory, where artifact will be moved for preparation for publishing
   val artifactForPublishingDir: Path by lazy { di.direct.instance<GlobalPaths>().testsDirectory / "teamcity-artifacts-for-publish" }
 
-  private val restUri = teamCityCI.serverUri.resolve("/app/rest/")
+  val restUri = teamCityCI.serverUri.resolve("/app/rest/")
   val guestAuthUri = teamCityCI.serverUri.resolve("/guestAuth/app/rest/")
 
-  fun get(fullUrl: URI): JsonNode {
+  fun get(fullUrl: URI, additionalRequestActions: (HttpRequest) -> HttpRequest = { it }): JsonNode {
     val request = HttpGet(fullUrl).apply {
       addHeader("Content-Type", "application/json")
       addHeader("Accept", "application/json")
+      additionalRequestActions(this)
     }
 
     logOutput("Request to TeamCity: $fullUrl")
@@ -53,10 +60,6 @@ object TeamCityClient {
     }
 
     return requireNotNull(result) { "Request ${request.uri} failed" }
-  }
-
-  private fun <T : HttpRequest> T.withAuth(): T = this.apply {
-    addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(teamCityCI.userName, teamCityCI.password), this, null))
   }
 
   /** @return <BuildId, BuildNumber> */
