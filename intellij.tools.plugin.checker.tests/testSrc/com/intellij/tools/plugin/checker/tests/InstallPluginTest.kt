@@ -8,11 +8,11 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.extended.engine.JBTestContainer
-import com.intellij.ide.starter.extended.engine.junit5.JUnit5StarterAssistantExtended
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
@@ -30,11 +30,11 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 
 
-@ExtendWith(JUnit5StarterAssistantExtended::class)
+@ExtendWith(JUnit5StarterAssistant::class)
 class InstallPluginTest {
 
   private lateinit var testInfo: TestInfo
-  private lateinit var container: JBTestContainer
+  private lateinit var container: TestContainerImpl
 
   companion object {
     init {
@@ -48,7 +48,7 @@ class InstallPluginTest {
     }
 
     /**
-     * Extract only sns_message_body from text like this:
+     * Extract only 'sns_message_body' from text like this:
      * ##type='sns' triggerId='TRIGGER_1' queueMergingEnabled='false' sns_message_body='{JSON_CONTENT}'
      */
     private fun String.extractSnsMessageBody(): String {
@@ -72,7 +72,7 @@ class InstallPluginTest {
         .value.removePrefix("\"detail\":").removeSuffix("}")
     }
 
-    fun deserializeMessageFromMarketplace(input: String): MarketplaceEvent {
+    private fun deserializeMessageFromMarketplace(input: String): MarketplaceEvent {
       val jacksonMapper = jsonMapper {
         addModule(kotlinModule())
         configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -82,7 +82,7 @@ class InstallPluginTest {
       return jacksonMapper.treeToValue<MarketplaceEvent>(detailField)
     }
 
-    fun getMarketplaceEvent(): MarketplaceEvent {
+    private fun getMarketplaceEvent(): MarketplaceEvent {
       val triggeredByJsonNode = TeamCityClient.run {
         get(guestAuthUri.resolve("builds/id:${di.direct.instance<CIServer>().asTeamCity().buildId}?fields=triggered(displayText)"))
       }
