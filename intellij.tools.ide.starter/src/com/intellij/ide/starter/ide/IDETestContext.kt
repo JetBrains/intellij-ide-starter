@@ -22,7 +22,6 @@ import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
 import org.kodein.di.newInstance
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -487,14 +486,14 @@ data class IDETestContext(
 
       trustedXml.parent.createDirectories()
       if (addParentDir) {
-        val text = File(this::class.java.classLoader.getResource("trusted-paths-settings.xml").toURI()).readText()
+        val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml").readText()
         trustedXml.writeText(
           text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
             .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
         )
       }
       else {
-        val text = File(this::class.java.classLoader.getResource("trusted-paths.xml").toURI()).readText()
+        val text = this::class.java.classLoader.getResource("trusted-paths.xml").readText()
         trustedXml.writeText(
           text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
         )
