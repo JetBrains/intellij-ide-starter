@@ -571,3 +571,12 @@ fun <T : CommandChain> T.inlineRename(to: String): T {
   addCommand("${CMD_PREFIX}finishInlineRename")
   return this
 }
+
+fun <T : CommandChain> T.assertOpenedFileInRoot(): T {
+  addCommand("${CMD_PREFIX}assertOpenedFileInRoot")
+  return this
+}
+fun <T : CommandChain> T.assertOpenedKotlinFileInRoot(): T {
+  addCommand("${CMD_PREFIX}assertOpenedKotlinFileInRoot")
+  return this
+}
