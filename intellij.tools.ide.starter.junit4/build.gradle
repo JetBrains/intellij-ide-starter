@@ -33,7 +33,7 @@ dependencies {
   implementation "org.kodein.di:kodein-di-jvm:7.16.0"
 
   implementation 'com.jetbrains.intellij.performanceTesting:performance-testing-commands:LATEST-TRUNK-SNAPSHOT'
-  implementation 'com.jetbrains.intellij.tools:ide-starter:LATEST-TRUNK-SNAPSHOT'
+  implementation 'com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-TRUNK-SNAPSHOT'
 
   implementation 'junit:junit:4.13.2'
 }
