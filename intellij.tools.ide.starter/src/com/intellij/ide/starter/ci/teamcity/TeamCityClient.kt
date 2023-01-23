@@ -66,7 +66,7 @@ object TeamCityClient {
   fun getLastSuccessfulBuild(ideInfo: IdeInfo): Pair<String, String> {
     val tag = if (!ideInfo.tag.isNullOrBlank()) "tag:${ideInfo.tag}," else ""
     val number = if (!ideInfo.buildNumber.isBlank()) "number:${ideInfo.buildNumber}," else ""
-    val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${ideInfo.buildType},${tag}${number}status:SUCCESS,count:1")
+    val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${ideInfo.buildType},defaultFilter:false,or:(personal:false,personal:true),${tag}${number}status:SUCCESS,state:(finished:true),count:1")
 
     val build = get(fullUrl).fields().asSequence().first { it.key == "build" }.value
     val buildId = build.findValue("id").asText()
