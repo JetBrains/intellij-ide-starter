@@ -3,10 +3,14 @@ package com.intellij.ide.starter.utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /** @return T - if successful; null - otherwise */
-suspend fun <T> withRetryAsync(retries: Long = 3, messageOnFailure: String = "", retryAction: suspend () -> T): T? {
+suspend fun <T> withRetryAsync(retries: Long = 3,
+                               messageOnFailure: String = "",
+                               delay: Duration = 10.seconds,
+                               retryAction: suspend () -> T): T? {
 
   (1..retries).forEach { failureCount ->
     try {
@@ -20,7 +24,7 @@ suspend fun <T> withRetryAsync(retries: Long = 3, messageOnFailure: String = "",
 
       if (failureCount < retries) {
         logError("Retrying in 10 sec ...")
-        delay(10.seconds)
+        delay(delay)
       }
     }
   }
@@ -28,8 +32,12 @@ suspend fun <T> withRetryAsync(retries: Long = 3, messageOnFailure: String = "",
   return null
 }
 
-
 /** @return T - if successful; null - otherwise */
-fun <T> withRetry(retries: Long = 3, messageOnFailure: String = "", retryAction: () -> T): T? = runBlocking(Dispatchers.IO) {
+fun <T> withRetry(
+  retries: Long = 3,
+  messageOnFailure: String = "",
+  delay: Duration = 10.seconds,
+  retryAction: () -> T
+): T? = runBlocking(Dispatchers.IO) {
   withRetryAsync(retries, messageOnFailure) { retryAction() }
 }

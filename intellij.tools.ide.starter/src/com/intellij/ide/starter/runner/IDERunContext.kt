@@ -17,7 +17,7 @@ import com.intellij.ide.starter.process.destroyGradleDaemonProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.process.getJavaProcessId
+import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
@@ -210,7 +210,7 @@ data class IDERunContext(
           onProcessCreated = { process, pid ->
             StarterBus.post(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
 
-            val javaProcessId by lazy { getJavaProcessId(jdkHome, startConfig.workDir, pid, process) }
+            val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
             ideProcessId = javaProcessId
             val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
 
@@ -221,12 +221,13 @@ data class IDERunContext(
 
               val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
               logOutput("Dumping threads to $dumpFile")
-              catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile, false) }
+              catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile, false) }
             }
           },
           onBeforeKilled = { process, pid ->
             if (!expectedKill) {
-              val javaProcessId by lazy { getJavaProcessId(jdkHome, startConfig.workDir, pid, process) }
+              val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
+
               if (collectNativeThreads) {
                 val fileToStoreNativeThreads = logsDir.resolve("native-thread-dumps.txt")
                 startProfileNativeThreads(javaProcessId.toString())
@@ -290,7 +291,7 @@ data class IDERunContext(
       }
     }
     finally {
-      if(ideProcessId != 0L) collectJBRDiagnosticFilesIfExist(testContext, ideProcessId)
+      if (ideProcessId != 0L) collectJBRDiagnosticFilesIfExist(testContext, ideProcessId)
 
       try {
         if (SystemInfo.isWindows) {

@@ -7,6 +7,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.ide.starter.utils.withRetry
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
@@ -125,13 +126,21 @@ private fun killProcessOnUnix(pid: Int) {
   ).start()
 }
 
+fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
+  return requireNotNull(
+    withRetry(retries = 2, delay = 5.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId") {
+      getJavaProcessId(javaHome, workDir, originalProcessId, originalProcess)
+    }
+  ) { "Java process id must not be null" }
+}
+
 /**
  * Workaround for IDEA-251643.
  * On Linux we run IDE using `xvfb-run` tool wrapper.
  * Thus we must guess the original java process ID for capturing the thread dumps.
  * TODO: try to use java.lang.ProcessHandle to get the parent process ID.
  */
-fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
+private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
   if (!SystemInfo.isLinux) {
     return originalProcessId
   }
@@ -178,11 +187,12 @@ fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, ori
     }
   }
 
-  originalProcess.toHandle().descendants().forEach { desc ->
-    if (desc.info().command().get().contains("java")) {
-      logOutput("Candidate from ProcessHandle process: ${desc.pid()}")
-      logOutput("command: ${desc.info().command()}")
-      candidatesFromProcessHandle.add(desc.pid())
+  originalProcess.toHandle().descendants().forEach { processHandle ->
+    val command = processHandle.info().command()
+    if (command.isPresent && command.get().contains("java")) {
+      logOutput("Candidate from ProcessHandle process: ${processHandle.pid()}")
+      logOutput("command: ${processHandle.info().command()}")
+      candidatesFromProcessHandle.add(processHandle.pid())
     }
   }
 
