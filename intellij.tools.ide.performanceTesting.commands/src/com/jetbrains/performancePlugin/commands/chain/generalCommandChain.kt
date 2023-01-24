@@ -480,6 +480,11 @@ fun <T : CommandChain> T.expandMainMenu(): T {
   return this
 }
 
+fun <T : CommandChain> T.closeAllTabs(): T {
+  addCommand("${CMD_PREFIX}closeAllTabs")
+  return this
+}
+
 const val EXPAND_EDITOR_MENU = "${CMD_PREFIX}expandEditorMenu"
 
 fun <T : CommandChain> T.expandEditorMenu(): T {
