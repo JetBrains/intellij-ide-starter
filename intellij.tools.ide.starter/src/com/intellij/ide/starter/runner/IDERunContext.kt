@@ -291,7 +291,10 @@ data class IDERunContext(
       }
     }
     finally {
-      if (ideProcessId != 0L) collectJBRDiagnosticFilesIfExist(testContext, ideProcessId)
+      if (ideProcessId != 0L) {
+        testContext.collectJBRDiagnosticFilesIfExist(ideProcessId)
+        testContext.collectMemoryDumpsIfExists()
+      }
 
       try {
         if (SystemInfo.isWindows) {

@@ -209,19 +209,28 @@ fun takeScreenshot(logsDir: Path) {
   }
 }
 
-fun collectJBRDiagnosticFilesIfExist(context: IDETestContext, javaProcessId: Long) {
+fun IDETestContext.collectJBRDiagnosticFilesIfExist(javaProcessId: Long) {
   val userHome = System.getProperty("user.home")
   val pathUserHome = Paths.get(userHome)
   val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
   val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
   if (javaErrorInIdeaFile.exists()) {
-    javaErrorInIdeaFile.toFile().copyTo(context.paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
+    javaErrorInIdeaFile.toFile().copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
   }
   if (jbrErrFile.exists()) {
-    jbrErrFile.toFile().copyTo(context.paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
+    jbrErrFile.toFile().copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
   }
-  if (context.paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
-    context.publishArtifact(context.paths.jbrDiagnostic)
+  if (paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
+    publishArtifact(paths.jbrDiagnostic)
+  }
+}
+
+fun IDETestContext.collectMemoryDumpsIfExists() {
+  val userHome = System.getProperty("user.home")
+  val pathUserHome = Paths.get(userHome)
+  val memoryDump = pathUserHome.resolve("java_error_in_idea_.hprof")
+  if (memoryDump.exists()) {
+    publishArtifact(memoryDump)
   }
 }
 
