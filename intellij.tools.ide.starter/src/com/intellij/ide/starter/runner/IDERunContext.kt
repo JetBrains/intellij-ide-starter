@@ -293,7 +293,7 @@ data class IDERunContext(
     finally {
       if (ideProcessId != 0L) {
         testContext.collectJBRDiagnosticFilesIfExist(ideProcessId)
-        testContext.collectMemoryDumpsIfExists()
+        //testContext.collectMemoryDumpsIfExists()
       }
 
       try {
