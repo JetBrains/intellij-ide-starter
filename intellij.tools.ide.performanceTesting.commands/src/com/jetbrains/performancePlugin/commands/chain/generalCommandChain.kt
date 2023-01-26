@@ -585,3 +585,10 @@ fun <T : CommandChain> T.assertOpenedKotlinFileInRoot(): T {
   addCommand("${CMD_PREFIX}assertOpenedKotlinFileInRoot")
   return this
 }
+
+const val IMPORT_GRADLE_PROJECT_CMD_PREFIX = "${CMD_PREFIX}importGradleProject"
+
+fun <T : CommandChain> T.importGradleProject(): T {
+  this.addCommand(IMPORT_GRADLE_PROJECT_CMD_PREFIX)
+  return this
+}
