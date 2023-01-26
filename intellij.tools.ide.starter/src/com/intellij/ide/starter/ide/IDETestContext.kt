@@ -440,6 +440,21 @@ data class IDETestContext(
 
   @Suppress("unused")
   fun setLicense(pathToFileWithLicense: Path): IDETestContext {
+    val supportedProducts = listOf(IdeProductProvider.IU.productCode, IdeProductProvider.RM.productCode, IdeProductProvider.WS.productCode,
+                                   IdeProductProvider.PS.productCode, IdeProductProvider.PS.productCode, IdeProductProvider.PS.productCode,
+                                   IdeProductProvider.GO.productCode, IdeProductProvider.PY.productCode, IdeProductProvider.DB.productCode,
+                                   IdeProductProvider.CL.productCode)
+    if(this.ide.productCode !in supportedProducts){
+      error("Setting license to the product ${this.ide.productCode} is not supported")
+    }
+    return setLicense(pathToFileWithLicense.toFile().readText())
+  }
+
+  fun setLicense(license: String?): IDETestContext {
+    if (license == null) {
+      logOutput("License is not provided")
+      return this
+    }
     val licenseKeyFileName: String = when (this.ide.productCode) {
       IdeProductProvider.IU.productCode -> "idea.key"
       IdeProductProvider.RM.productCode -> "rubymine.key"
@@ -449,12 +464,12 @@ data class IDETestContext(
       IdeProductProvider.PY.productCode -> "pycharm.key"
       IdeProductProvider.DB.productCode -> "datagrip.key"
       IdeProductProvider.CL.productCode -> "clion.key"
-      else -> error("Setting license to the product ${this.ide.productCode} is not supported")
+      else -> return this
     }
-
-    val keyFile = paths.configDir.resolve(licenseKeyFileName)
-    keyFile.toFile().createNewFile()
-    keyFile.toFile().writeText(pathToFileWithLicense.toFile().readText())
+    val keyFile = paths.configDir.resolve(licenseKeyFileName).toFile()
+    keyFile.createNewFile()
+    keyFile.writeText(license)
+    logOutput("License is set")
     return this
   }
 

@@ -158,6 +158,7 @@ class InstallPluginTest {
       .apply {
         pluginConfigurator.setupPluginFromURL(params.event.file)
       }
+      .setLicense(System.getenv("LICENSE_KEY"))
 
     testContext.runIDE(commands = CommandChain().exitApp())
   }
