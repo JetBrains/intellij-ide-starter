@@ -1,14 +1,16 @@
 ### Tests that perform smoke validation of non-JetBrains plugins
 
-#### Top downloaded plugins
+#### How to debug
 
-1. Flutter (tech stack ...)
-1. CSV (tech stack ...)
-1. Rainbow Brackets (tech stack ...)
-1. .env files support (tech stack ...)
-1. Symfony Support (tech stack ...)
-1. SonarLint (tech stack ...)
-1. Atom Material Icons (tech stack ...)
-1. String Manipulation (tech stack ...)
-1. GraphQL (tech stack ...)
-1. Material Theme UI (tech stack ...)
+Tests are downloading IDE's and plugins and then install the plugin in an IDE and execute simple actions: import project, etc.  
+Parameters what IDE and plugin to download are specified in TeamCity trigger info.  
+Initially those parameters are sent from Marketplace Team (AWS EventBus -> SNS topic -> TeamCity trigger)  
+
+
+Use properties (search by files in project)
+```
+Pair("teamcity.build.id", "BUILD_ID"),
+Pair("teamcity.auth.userId", "YOUR_USER_ID"),
+Pair("teamcity.auth.password", "YOUR_SECRET" )
+```
+They will authorize you on TC server during local run and use build trigger info as an input data.
