@@ -14,6 +14,7 @@ import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.utils.logOutput
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
@@ -134,7 +135,8 @@ class InstallPluginTest {
 
     fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
       if (!IdeProductProvider.isProductSupported(params.event.productCode)) {
-        throw RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}")
+        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        return emptyList()
       }
 
       val ideInfo = IdeProductProvider.getProducts().single { it.productCode == params.event.productCode }
