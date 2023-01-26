@@ -77,4 +77,11 @@ object IdeProductImp : IdeProduct {
     platformPrefix = "DataSpell",
     executableFileName = "dataspell"
   )
+
+  /** PyCharm Community */
+  override val PC: IdeInfo = IdeInfo(
+    productCode = "PC",
+    platformPrefix = "PyCharmCore",
+    executableFileName = "pycharm"
+  )
 }

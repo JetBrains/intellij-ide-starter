@@ -33,4 +33,7 @@ interface IdeProduct {
 
   /** DataSpell */
   val DS: IdeInfo
+
+  /** PyCharm Community */
+  val PC: IdeInfo
 }

@@ -40,6 +40,7 @@ data class IdeInfo(
       "PY" -> "pycharmPY"
       "CL" -> "CLion"
       "DS" -> "dataspell"
+      "PC" -> "pycharmPC"
       else -> error("Unknown product code: $productCode")
     }
 
