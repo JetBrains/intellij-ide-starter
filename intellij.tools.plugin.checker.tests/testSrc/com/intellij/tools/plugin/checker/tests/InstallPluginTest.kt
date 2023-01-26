@@ -9,11 +9,14 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.downloadLatestAndroidSdk
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.sdk.JdkDownloaderFacade
+import com.intellij.ide.starter.sdk.setupAndroidSdkToProject
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
@@ -161,6 +164,11 @@ class InstallPluginTest {
         pluginConfigurator.setupPluginFromURL(params.event.file)
       }
       .setLicense(System.getenv("LICENSE_KEY"))
+    if (params.event.productCode == di.direct.instance<IdeProductProvider>().AI.productCode) {
+      logOutput("Setting up Android SDK")
+      val androidSdk = downloadLatestAndroidSdk(JdkDownloaderFacade.jdk11.home)
+      setupAndroidSdkToProject(testContext.resolvedProjectHome, androidSdk)
+    }
 
     testContext.runIDE(commands = CommandChain().exitApp())
   }
