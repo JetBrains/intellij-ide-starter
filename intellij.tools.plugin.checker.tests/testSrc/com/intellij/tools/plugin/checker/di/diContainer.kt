@@ -5,6 +5,7 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.community.IdeByLinkDownloader
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeDownloader
+import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
 import com.intellij.ide.starter.utils.logOutput
@@ -33,6 +34,7 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
+        bindSingleton<IdeProductProvider>(overrides = true) { IdeProductProvider }
       }
     }
 
