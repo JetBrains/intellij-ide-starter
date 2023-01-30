@@ -592,3 +592,28 @@ fun <T : CommandChain> T.importGradleProject(): T {
   this.addCommand(IMPORT_GRADLE_PROJECT_CMD_PREFIX)
   return this
 }
+
+fun <T : CommandChain> T.executeEditorAction(action: String): T {
+  this.addCommand("${CMD_PREFIX}executeEditorAction $action")
+  return this
+}
+
+fun <T : CommandChain> T.copy(): T {
+  this.executeEditorAction("\$Copy")
+  return this
+}
+
+fun <T : CommandChain> T.past(): T {
+  this.executeEditorAction("\$Paste")
+  return this
+}
+
+fun <T : CommandChain> T.cut(): T {
+  this.executeEditorAction("\$Cut")
+  return this
+}
+
+fun <T : CommandChain> T.selectAll(): T {
+  this.executeEditorAction("\$SelectAll")
+  return this
+}
