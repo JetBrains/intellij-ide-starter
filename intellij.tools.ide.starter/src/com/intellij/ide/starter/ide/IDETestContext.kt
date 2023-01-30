@@ -251,6 +251,12 @@ data class IDETestContext(
     path.toFile().deleteRecursively()
   }
 
+  fun wipeWorkspaceState() = apply {
+    val path = paths.configDir.resolve("workspace")
+    logOutput("Cleaning workspace dir in config dir for $this at $path")
+    path.toFile().deleteRecursively()
+  }
+
   fun runContext(
     patchVMOptions: VMOptions.() -> VMOptions = { this },
     commandLine: IDECommandLine? = null,
