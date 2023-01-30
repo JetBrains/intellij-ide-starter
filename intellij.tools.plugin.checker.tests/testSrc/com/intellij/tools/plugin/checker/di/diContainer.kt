@@ -34,7 +34,7 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
-        bindSingleton<IdeProductProvider>(overrides = true) { IdeProductProvider }
+        bindSingleton<IdeProductProvider> { IdeProductProvider }
       }
     }
 
