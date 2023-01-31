@@ -45,7 +45,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   fun setupPluginFromURL(urlToPluginZipFile: String) = apply {
     val pluginRootDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins")
     val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
-
+    logOutput("Downloading $urlToPluginZipFile")
     if (!HttpClient.download(urlToPluginZipFile, pluginZip)) {
       throw IllegalStateException("Plugin $urlToPluginZipFile couldn't be downloaded.")
     }
