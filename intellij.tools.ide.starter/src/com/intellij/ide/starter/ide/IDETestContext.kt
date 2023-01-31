@@ -24,6 +24,7 @@ import org.kodein.di.instance
 import org.kodein.di.newInstance
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -453,9 +454,12 @@ data class IDETestContext(
     if(this.ide.productCode !in supportedProducts){
       error("Setting license to the product ${this.ide.productCode} is not supported")
     }
-    return setLicense(pathToFileWithLicense.toFile().readText())
+    return setLicense(String(Base64.getEncoder().encode(pathToFileWithLicense.toFile().readBytes())))
   }
 
+  /**
+   * license is Base64 encoded string that contains key
+   */
   fun setLicense(license: String?): IDETestContext {
     if (license == null) {
       logOutput("License is not provided")
@@ -474,7 +478,7 @@ data class IDETestContext(
     }
     val keyFile = paths.configDir.resolve(licenseKeyFileName).toFile()
     keyFile.createNewFile()
-    keyFile.writeText(license)
+    keyFile.writeBytes(Base64.getDecoder().decode(license))
     logOutput("License is set")
     return this
   }
