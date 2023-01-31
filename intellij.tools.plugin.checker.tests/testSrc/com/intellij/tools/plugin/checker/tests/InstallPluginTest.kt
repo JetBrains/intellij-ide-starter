@@ -146,7 +146,7 @@ class InstallPluginTest {
 
       val link = params.event.productLink.substring(0, params.event.productLink.indexOf(".tar.gz"))
       val downloadLink: String = link + when (SystemInfo.getOsType()) {
-        OsType.Linux -> "tar.gz"
+        OsType.Linux -> ".tar.gz"
         OsType.MacOS -> {
           if (SystemInfo.OS_ARCH == "aarch64") "-aarch64.dmg"
           else ".dmg"
