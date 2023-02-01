@@ -42,6 +42,7 @@ abstract class GlobalPaths(val checkoutDir: Path) {
 
   fun getCacheDirectoryFor(entity: String): Path = (cacheDirectory / entity).createDirectories()
 
+  //TODO: Move it to [FileSystem] class
   fun getDiskUsageDiagnostics(): String {
     return buildString {
       appendLine("Disk usage by integration tests (home $testHomePath)")
