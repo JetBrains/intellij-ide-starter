@@ -617,3 +617,10 @@ fun <T : CommandChain> T.selectAll(): T {
   this.executeEditorAction("\$SelectAll")
   return this
 }
+
+const val GIT_CHECKOUT_BRANCH = "${CMD_PREFIX}gitCheckout"
+
+fun <T : CommandChain> T.checkoutBranch(branch: String): T {
+  this.addCommand("$GIT_CHECKOUT_BRANCH $branch")
+  return this
+}
