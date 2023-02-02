@@ -624,3 +624,10 @@ fun <T : CommandChain> T.checkoutBranch(branch: String): T {
   this.addCommand("$GIT_CHECKOUT_BRANCH $branch")
   return this
 }
+
+const val SHOW_FILE_HISTORY = "${CMD_PREFIX}showFileHistory"
+
+fun <T : CommandChain> T.showFileHistory(): T {
+  this.addCommand(SHOW_FILE_HISTORY)
+  return this
+}
