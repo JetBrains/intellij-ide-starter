@@ -46,7 +46,7 @@ object XmlBuilder {
   fun writeDocument(xmlDoc: Document, outputPath: Path) {
     val source = DOMSource(xmlDoc)
 
-    val transformerFactory = TransformerFactory.newInstance()
+    val transformerFactory = TransformerFactory.newDefaultInstance()
     val transformer = transformerFactory.newTransformer()
     transformer.setOutputProperty(OutputKeys.INDENT, "yes")
     transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
