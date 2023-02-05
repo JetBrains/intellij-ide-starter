@@ -305,6 +305,13 @@ data class IDERunContext(
           dir.listDirectoryEntries().isEmpty()
         }.forEach { it.toFile().deleteRecursively() }
 
+        try {
+          Files.writeString((logsDir / "script-errors").resolve("ide-version.txt"), testContext.ide.build)
+        } catch (e: Exception) {
+          logOutput("Failed write ide version to file: ${e.message}")
+          e.printStackTrace(System.err)
+        }
+
         ErrorReporter.reportErrorsAsFailedTests(logsDir / "script-errors", this)
         publishArtifacts(isRunSuccessful)
 
