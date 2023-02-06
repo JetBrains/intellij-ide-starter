@@ -42,12 +42,12 @@ dependencies {
   implementation "org.jetbrains.intellij.deps:gradle-api:7.4"
   implementation "org.kodein.di:kodein-di-jvm:7.16.0"
 
-  implementation 'com.jetbrains.intellij.performanceTesting:performance-testing-commands:LATEST-TRUNK-SNAPSHOT'
+  implementation 'com.jetbrains.intellij.tools:ide-performance-testing-commands-squashed:LATEST-TRUNK-SNAPSHOT'
 
   testImplementation 'com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-TRUNK-SNAPSHOT'
-  testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit4:LATEST-TRUNK-SNAPSHOT'
+  testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit4-squashed:LATEST-TRUNK-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit5-squashed:LATEST-TRUNK-SNAPSHOT'
-  testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector:LATEST-TRUNK-SNAPSHOT'
+  testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector-squashed:LATEST-TRUNK-SNAPSHOT'
 
   testImplementation 'junit:junit:4.13.2'
 
