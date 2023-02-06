@@ -631,3 +631,8 @@ fun <T : CommandChain> T.showFileHistory(): T {
   this.addCommand(SHOW_FILE_HISTORY)
   return this
 }
+
+fun <T : CommandChain> T.goToDeclaration(): T {
+  this.executeEditorAction("GotoDeclaration")
+  return this
+}
