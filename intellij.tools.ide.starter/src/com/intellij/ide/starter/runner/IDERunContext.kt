@@ -31,10 +31,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -306,7 +303,12 @@ data class IDERunContext(
         }.forEach { it.toFile().deleteRecursively() }
 
         try {
-          Files.writeString((logsDir / "script-errors").resolve("ide-version.txt"), testContext.ide.build)
+          val versionFile = (logsDir / "script-errors").resolve("ide-version.txt")
+          if (!Files.exists(versionFile)) {
+            Files.createDirectories(versionFile.parent)
+            versionFile.createFile()
+          }
+          Files.writeString(versionFile, testContext.ide.build)
         } catch (e: Exception) {
           logOutput("Failed write ide version to file: ${e.message}")
           e.printStackTrace(System.err)
