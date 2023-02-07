@@ -54,12 +54,14 @@ Minimal setup example:
 
 ```
 dependencies {
-  testImplementation("com.jetbrains.intellij.ide:ide-starter:LATEST-EAP-SNAPSHOT")
-  testImplementation("com.jetbrains.intellij.performanceTesting:performance-testing-commands:LATEST-EAP-SNAPSHOT")
+  testImplementation("com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-EAP-SNAPSHOT")
+  testImplementation("com.jetbrains.intellij.tools:ide-performance-testing-commands-squashed::LATEST-EAP-SNAPSHOT")
   
   testImplementation("junit:junit:4.13.2")
 }
 ```
+
+Also you may take a look at `build.gradle` files in `intellij.tools.ide.starter.tests`.  
 
 To make sure, that you will not get problem with Kotlin Duration, add the following
 
@@ -194,3 +196,8 @@ class ClassWithTest {
 ```
 
 Configuration storage `com.intellij.ide.starter.config.StarterConfigurationStorage`
+
+### Downloading custom releases
+By default, when `useEAP` or `useRelease` methods is called, downloading IDE installers will be performed from JB public hosting.  
+If no version is specified - latest version will be used. But you can specify the desired version as well.  
+
