@@ -2,6 +2,7 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.ide.starter.ci.ExceptionReporter
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -316,8 +317,10 @@ data class IDERunContext(
           logOutput("Failed write ide version to file: ${e.message}")
           e.printStackTrace(System.err)
         }
+        val rootErrorsDir  = logsDir/ "script-errors"
+        di.direct.instance<ExceptionReporter>().report(rootErrorsDir)
 
-        ErrorReporter.reportErrorsAsFailedTests(logsDir / "script-errors", this)
+        ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this)
         publishArtifacts(isRunSuccessful)
 
         if (codeBuilder != null) {

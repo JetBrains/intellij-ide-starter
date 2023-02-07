@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.ci.ExceptionReporter
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
@@ -22,7 +21,6 @@ object ErrorReporter {
    */
   fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext) {
     if (!rootErrorsDir.isDirectory()) return
-    di.direct.instance<ExceptionReporter>().report(rootErrorsDir)
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
 
     for (errorDir in errorsDirectories) {
