@@ -242,6 +242,31 @@ fun collectJavaThreadDump(
   }
 }
 
+fun collectMemoryDump(
+  javaHome: Path,
+  workDir: Path,
+  javaProcessId: Long,
+  dumpFile: Path,
+) {
+  val pathToJmap = "bin/jmap"
+  val ext = if (SystemInfo.isWindows) ".exe" else ""
+  val jmapPath = listOf(
+    javaHome.resolve("$pathToJmap$ext"),
+    javaHome.parent.resolve("$pathToJmap$ext")
+  ).map { it.toAbsolutePath() }.firstOrNull { it.isRegularFile() } ?: error("Failed to locate jmap under $javaHome")
+
+  val command = listOf(jmapPath.toAbsolutePath().toString(), "-dump:all,format=b,file=$dumpFile", javaProcessId.toString())
+
+  ProcessExecutor(
+    "jmap",
+    workDir,
+    timeout = 5.minutes,
+    args = command,
+    stdoutRedirect = ExecOutputRedirect.ToStdOut("[jmap-out]"),
+    stderrRedirect = ExecOutputRedirect.ToStdOut("[jmap-err]")
+  ).start()
+}
+
 fun destroyGradleDaemonProcessIfExists() {
   val stdout = ExecOutputRedirect.ToString()
   ProcessExecutor(

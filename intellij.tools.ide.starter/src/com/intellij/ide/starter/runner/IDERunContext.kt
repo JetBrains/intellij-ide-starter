@@ -13,6 +13,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.models.andThen
 import com.intellij.ide.starter.process.collectJavaThreadDump
+import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.destroyGradleDaemonProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
@@ -232,8 +233,10 @@ data class IDERunContext(
                 stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
               }
               val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}" + ".txt")
+              val memoryDumpFile = logsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof")
               catchAll {
                 collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
+                collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
               }
             }
             takeScreenshot(logsDir)
