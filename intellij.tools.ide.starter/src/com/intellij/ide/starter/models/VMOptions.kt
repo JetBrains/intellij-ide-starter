@@ -175,7 +175,7 @@ data class VMOptions(
     .addSystemProperty("ide.performance.screenshot", logsDir.resolve("screenshot.png").toString())
 
   fun takeScreenshotOnFailure(logsDir: Path) = this
-    .addSystemProperty("ide.performance.screenshot.on.failure", logsDir.resolve("screenshot_onFailure.jpg").toString())
+    .addSystemProperty("ide.performance.screenshot.on.failure", logsDir.resolve("screenshot_onFailure.png").toString())
 
   fun installTestScript(testName: String,
                         paths: IDEDataPaths,
