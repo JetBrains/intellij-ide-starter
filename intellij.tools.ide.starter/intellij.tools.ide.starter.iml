@@ -30,7 +30,6 @@
     <orderEntry type="library" name="jackson" level="project" />
     <orderEntry type="library" name="jackson-databind" level="project" />
     <orderEntry type="library" name="jackson-module-kotlin" level="project" />
-    <orderEntry type="library" name="jackson-datatype-jsr310" level="project" />
     <orderEntry type="library" name="http-client" level="project" />
     <orderEntry type="library" name="Gradle" level="project" />
     <orderEntry type="library" name="kodein-di-jvm" level="project" />
@@ -45,6 +44,16 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="commons-logging" level="project" />
+    <orderEntry type="module-library">
+      <library name="jackson-datatype-jsr310" type="repository">
+        <properties include-transitive-deps="false" maven-id="com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1" />
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.1/jackson-datatype-jsr310-2.13.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="qodana-sarif" level="project" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
