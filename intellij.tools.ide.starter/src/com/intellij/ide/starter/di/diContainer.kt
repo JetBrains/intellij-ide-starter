@@ -3,7 +3,9 @@ package com.intellij.ide.starter.di
 import com.intellij.ide.starter.buildTool.BuildToolDefaultProvider
 import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.ExceptionReporter
 import com.intellij.ide.starter.ci.NoCIServer
+import com.intellij.ide.starter.ci.NoopExceptionReporter
 import com.intellij.ide.starter.community.PublicIdeDownloader
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
@@ -50,6 +52,7 @@ var di = DI {
   bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher, QodanaTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
+  bindSingleton<ExceptionReporter> { NoopExceptionReporter() }
   bindSingleton<EapReleaseConfigurable> {
     object : EapReleaseConfigurable {
       override fun resetDIToDefaultDownloading() = usePublicIdeDownloader()
