@@ -225,15 +225,6 @@ fun IDETestContext.collectJBRDiagnosticFilesIfExist(javaProcessId: Long) {
   }
 }
 
-fun IDETestContext.collectMemoryDumpsIfExists() {
-  val userHome = System.getProperty("user.home")
-  val pathUserHome = Paths.get(userHome)
-  val memoryDump = pathUserHome.resolve("java_error_in_idea_.hprof")
-  if (memoryDump.exists()) {
-    publishArtifact(memoryDump)
-  }
-}
-
 fun startProfileNativeThreads(pid: String) {
   if (!SystemInfo.isWindows) {
     val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")

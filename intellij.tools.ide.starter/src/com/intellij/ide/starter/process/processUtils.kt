@@ -248,22 +248,22 @@ fun collectMemoryDump(
   javaProcessId: Long,
   dumpFile: Path,
 ) {
-  val pathToJmap = "bin/jmap"
+  val pathToJcmd = "bin/jcmd"
   val ext = if (SystemInfo.isWindows) ".exe" else ""
-  val jmapPath = listOf(
-    javaHome.resolve("$pathToJmap$ext"),
-    javaHome.parent.resolve("$pathToJmap$ext")
-  ).map { it.toAbsolutePath() }.firstOrNull { it.isRegularFile() } ?: error("Failed to locate jmap under $javaHome")
+  val jcmdPath = listOf(
+    javaHome.resolve("$pathToJcmd$ext"),
+    javaHome.parent.resolve("$pathToJcmd$ext")
+  ).map { it.toAbsolutePath() }.firstOrNull { it.isRegularFile() } ?: error("Failed to locate jcmd under $javaHome")
 
-  val command = listOf(jmapPath.toAbsolutePath().toString(), "-dump:all,format=b,file=$dumpFile", javaProcessId.toString())
+  val command = listOf(jcmdPath.toAbsolutePath().toString(), javaProcessId.toString(), "GC.heap_dump", "-gz=4", dumpFile.toString())
 
   ProcessExecutor(
-    "jmap",
+    "jcmd",
     workDir,
     timeout = 5.minutes,
     args = command,
-    stdoutRedirect = ExecOutputRedirect.ToStdOut("[jmap-out]"),
-    stderrRedirect = ExecOutputRedirect.ToStdOut("[jmap-err]")
+    stdoutRedirect = ExecOutputRedirect.ToStdOut("[jcmd-out]"),
+    stderrRedirect = ExecOutputRedirect.ToStdOut("[jcmd-err]")
   ).start()
 }
 
