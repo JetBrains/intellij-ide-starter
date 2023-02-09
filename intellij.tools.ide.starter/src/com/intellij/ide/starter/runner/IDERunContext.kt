@@ -352,31 +352,25 @@ data class IDERunContext(
   }
 
   private fun publishArtifacts(isRunSuccessful: Boolean) {
-    // publish log dir to directory with a test in any case
+    val artifactPath = when (isRunSuccessful) {
+      true -> contextName
+      false -> "_crashes/$contextName"
+    }
     testContext.publishArtifact(
       source = testContext.paths.logsDir,
-      artifactPath = contextName,
+      artifactPath = artifactPath,
       artifactName = formatArtifactName("logs", testContext.testName)
     )
-    // publish FUS dir to directory with a test
     testContext.publishArtifact(
       source = testContext.paths.systemDir.resolve("event-log-data/logs/FUS"),
-      artifactPath = contextName,
+      artifactPath = artifactPath,
       artifactName = formatArtifactName("event-log-data", testContext.testName)
     )
-
     testContext.publishArtifact(
       source = testContext.paths.snapshotsDir,
-      artifactPath = contextName,
+      artifactPath = artifactPath,
       artifactName = formatArtifactName("snapshots", testContext.testName)
     )
-
-    if (!isRunSuccessful)
-      testContext.publishArtifact(
-        source = testContext.paths.logsDir,
-        artifactPath = "_crashes/$contextName",
-        artifactName = formatArtifactName("crash", testContext.testName)
-      )
   }
 
   fun runIDE(): IDEStartResult {
