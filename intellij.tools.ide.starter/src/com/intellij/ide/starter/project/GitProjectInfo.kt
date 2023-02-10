@@ -50,46 +50,48 @@ data class GitProjectInfo(
     if (commitHash.isNotEmpty()) Git.reset(repositoryDirectory = projectHome, commitHash = commitHash)
   }
 
-  private fun deleteRepositoryDirectory(repoDirectory: Path) = repoDirectory.apply {
-    toFile().deleteRecursively()
-    createDirectories()
+  private fun isGitMetadataExist(repoRoot: Path) = repoRoot.listDirectoryEntries(".git").isNotEmpty()
+
+  private fun projectRootDirectorySetup(repoRoot: Path) = when {
+    !repoRoot.exists() -> cloneRepo(repoRoot)
+
+    repoRoot.exists() -> {
+      when {
+        // for some reason repository is corrupted => delete directory with repo completely for clean checkout
+        !isGitMetadataExist(repoRoot) -> repoRoot.toFile().deleteRecursively()
+
+        // simple remove everything, except .git directory - it will speed up subsequent git clean / reset (no need to redownload repo)
+        !isReusable -> repoRoot.listDirectoryEntries().filterNot { it.endsWith(".git") }
+          .forEach { it.toFile().deleteRecursively() }
+
+        else -> Unit
+      }
+    }
+
+    else -> Unit
   }
 
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
 
     val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
-    val projectHome = projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
-
-    when {
-      !projectHome.exists() -> cloneRepo(projectHome)
-      (!isReusable && projectHome.exists()) -> {
-        // for some reason repository is corrupted => remove directory with repo completely
-        if (projectHome.listDirectoryEntries(".git").isEmpty()) {
-          deleteRepositoryDirectory(projectHome)
-        }
-        else {
-          // simple remove everything, except .git directory (where git metadata is stored)
-          projectHome.listDirectoryEntries().filterNot { it.endsWith(".git") }
-            .forEach { it.toFile().deleteRecursively() }
-        }
-      }
-    }
+    val repoRoot = projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
 
     try {
-      setupRepositoryState(projectHome)
+      projectRootDirectorySetup(repoRoot)
+      setupRepositoryState(repoRoot)
     }
     catch (_: Exception) {
       logError("Failed to setup the test project git repository state as: $this")
       logError("Trying one more time from clean checkout")
 
-      deleteRepositoryDirectory(projectHome)
+      repoRoot.toFile().deleteRecursively()
 
-      cloneRepo(projectHome)
-      setupRepositoryState(projectHome)
+      cloneRepo(repoRoot)
+      setupRepositoryState(repoRoot)
     }
 
-    val imagePath = projectHome.let(projectHomeRelativePath)
+    val imagePath = repoRoot.let(projectHomeRelativePath)
     return imagePath
   }
 
