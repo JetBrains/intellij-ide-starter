@@ -5,6 +5,10 @@ import java.net.URI
 import java.nio.file.Path
 
 object GitHubProject {
+  /**
+   * [repoRelativeUrl] - Relative path to GitHub repo. Eg: "alexholmes/avro-maven.git"
+   * [projectDirRelativePath] - Relative path from repo root. Eg: { it.resolve("path/to/deeply/hidden/project") }
+   */
   fun fromGithub(
     branchName: String = "main",
     commitHash: String = "",

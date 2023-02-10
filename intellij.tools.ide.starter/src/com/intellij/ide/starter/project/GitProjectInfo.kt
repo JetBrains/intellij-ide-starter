@@ -8,6 +8,7 @@ import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
 
 /**
  * Project, hosted as a Git repository
@@ -49,13 +50,31 @@ data class GitProjectInfo(
     if (commitHash.isNotEmpty()) Git.reset(repositoryDirectory = projectHome, commitHash = commitHash)
   }
 
+  private fun deleteRepositoryDirectory(repoDirectory: Path) = repoDirectory.apply {
+    toFile().deleteRecursively()
+    createDirectories()
+  }
+
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
 
     val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
     val projectHome = projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
 
-    if (!projectHome.exists()) cloneRepo(projectHome)
+    when {
+      !projectHome.exists() -> cloneRepo(projectHome)
+      (!isReusable && projectHome.exists()) -> {
+        // for some reason repository is corrupted => remove directory with repo completely
+        if (projectHome.listDirectoryEntries(".git").isEmpty()) {
+          deleteRepositoryDirectory(projectHome)
+        }
+        else {
+          // simple remove everything, except .git directory (where git metadata is stored)
+          projectHome.listDirectoryEntries().filterNot { it.endsWith(".git") }
+            .forEach { it.toFile().deleteRecursively() }
+        }
+      }
+    }
 
     try {
       setupRepositoryState(projectHome)
@@ -64,10 +83,7 @@ data class GitProjectInfo(
       logError("Failed to setup the test project git repository state as: $this")
       logError("Trying one more time from clean checkout")
 
-      projectHome.apply {
-        toFile().deleteRecursively()
-        createDirectories()
-      }
+      deleteRepositoryDirectory(projectHome)
 
       cloneRepo(projectHome)
       setupRepositoryState(projectHome)
