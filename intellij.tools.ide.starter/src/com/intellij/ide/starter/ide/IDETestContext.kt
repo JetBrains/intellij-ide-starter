@@ -40,7 +40,7 @@ data class IDETestContext(
   val ciServer: CIServer,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),
-  var isReportPublishingEnabled: Boolean = false
+  var isReportPublishingEnabled: Boolean = true
 ) {
   companion object {
     const val OPENTELEMETRY_FILE = "opentelemetry.json"
@@ -350,24 +350,22 @@ data class IDETestContext(
     expectedKill: Boolean = false,
     collectNativeThreads: Boolean = false
   ): IDEStartResult {
-
-    val ideRunResult = runContext(
-      commandLine = commandLine,
-      commands = commands,
-      codeBuilder = codeBuilder,
-      runTimeout = runTimeout,
-      useStartupScript = useStartupScript,
-      launchName = launchName,
-      expectedKill = expectedKill,
-      collectNativeThreads = collectNativeThreads,
-      patchVMOptions = patchVMOptions
-    ).runIDE()
-
-    if (isReportPublishingEnabled) publishers.forEach {
-      it.publish(ideRunResult)
+    val context = runContext(commandLine = commandLine, commands = commands, codeBuilder = codeBuilder, runTimeout = runTimeout,
+                             useStartupScript = useStartupScript, launchName = launchName, expectedKill = expectedKill,
+                             collectNativeThreads = collectNativeThreads, patchVMOptions = patchVMOptions)
+    try {
+      val ideRunResult = context.runIDE()
+      if (isReportPublishingEnabled) publishers.forEach {
+        it.publishResult(ideRunResult)
+      }
+      if (ideRunResult.failureError != null) throw ideRunResult.failureError
+      return ideRunResult
     }
-    if (ideRunResult.failureError != null) throw ideRunResult.failureError
-    return ideRunResult
+    finally {
+      if (isReportPublishingEnabled) publishers.forEach {
+        it.publishAnyway(context.testContext)
+      }
+    }
   }
 
   fun warmUp(

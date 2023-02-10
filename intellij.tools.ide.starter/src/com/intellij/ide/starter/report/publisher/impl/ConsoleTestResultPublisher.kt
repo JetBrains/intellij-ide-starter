@@ -6,7 +6,7 @@ import com.intellij.ide.starter.utils.logOutput
 
 object ConsoleTestResultPublisher : ReportPublisher {
 
-  override fun publish(ideStartResult: IDEStartResult) {
+  override fun publishResult(ideStartResult: IDEStartResult) {
     logOutput("Console publisher")
   }
 

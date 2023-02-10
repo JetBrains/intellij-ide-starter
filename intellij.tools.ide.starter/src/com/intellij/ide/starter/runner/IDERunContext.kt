@@ -2,8 +2,6 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
-import com.intellij.ide.starter.ci.ExceptionReporter
-import com.intellij.ide.starter.ci.LaunchMetaData
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -24,6 +22,7 @@ import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
+import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
 import kotlinx.coroutines.delay
@@ -306,20 +305,7 @@ data class IDERunContext(
           dir.listDirectoryEntries().isEmpty()
         }.forEach { it.toFile().deleteRecursively() }
 
-        try {
-          val versionFile = (logsDir / "script-errors").resolve("ide-version.txt")
-          if (!Files.exists(versionFile)) {
-            Files.createDirectories(versionFile.parent)
-            versionFile.createFile()
-          }
-          Files.writeString(versionFile, testContext.ide.build)
-        } catch (e: Exception) {
-          logOutput("Failed write ide version to file: ${e.message}")
-          e.printStackTrace(System.err)
-        }
-        val rootErrorsDir  = logsDir / "script-errors"
-        val launchMetadata = LaunchMetaData(listOf("launchName" to this.launchName))
-        di.direct.instance<ExceptionReporter>().report(rootErrorsDir, launchMetadata)
+        val rootErrorsDir  = logsDir / ERRORS_DIR_NAME
 
         ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this)
         publishArtifacts(isRunSuccessful)

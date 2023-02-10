@@ -13,6 +13,9 @@ import kotlin.io.path.listDirectoryEntries
 
 object ErrorReporter {
   private const val MAX_TEST_NAME_LENGTH = 250
+  const val MESSAGE_FILENAME = "message.txt"
+  const val STACKTRACE_FILENAME = "stacktrace.txt"
+  const val ERRORS_DIR_NAME = "script-errors"
 
   /**
    * Read files from errors directories, written by performance testing plugin.
@@ -24,8 +27,8 @@ object ErrorReporter {
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
 
     for (errorDir in errorsDirectories) {
-      val messageFile = errorDir.resolve("message.txt").toFile()
-      val stacktraceFile = errorDir.resolve("stacktrace.txt").toFile()
+      val messageFile = errorDir.resolve(MESSAGE_FILENAME).toFile()
+      val stacktraceFile = errorDir.resolve(STACKTRACE_FILENAME).toFile()
 
       if (!(messageFile.exists() && stacktraceFile.exists())) continue
 

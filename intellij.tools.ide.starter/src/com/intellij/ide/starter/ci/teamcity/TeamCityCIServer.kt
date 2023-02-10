@@ -145,6 +145,8 @@ open class TeamCityCIServer(
 
   val buildTypeId: String? by lazy { getBuildParam("teamcity.buildType.id") }
 
+  val buildUrl by lazy { "https://buildserver.labs.intellij.net/buildConfiguration/$buildTypeId/$buildId?buildTab=tests" }
+
   val isSpecialBuild: Boolean
     get() {
       if (!isBuildRunningOnCI) {
