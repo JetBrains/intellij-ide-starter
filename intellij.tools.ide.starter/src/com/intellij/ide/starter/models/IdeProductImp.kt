@@ -84,4 +84,11 @@ object IdeProductImp : IdeProduct {
     platformPrefix = "PyCharmCore",
     executableFileName = "pycharm"
   )
+
+  /** Aqua */
+  override val QA: IdeInfo = IdeInfo(
+    productCode = "QA",
+    platformPrefix = "Aqua",
+    executableFileName = "aqua"
+  )
 }

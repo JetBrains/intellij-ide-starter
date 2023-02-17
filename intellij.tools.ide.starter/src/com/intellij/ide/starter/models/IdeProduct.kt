@@ -36,4 +36,7 @@ interface IdeProduct {
 
   /** PyCharm Community */
   val PC: IdeInfo
+
+  /** Aqua */
+  val QA: IdeInfo
 }

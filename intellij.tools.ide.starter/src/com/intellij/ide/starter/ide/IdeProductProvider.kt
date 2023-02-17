@@ -44,6 +44,9 @@ object IdeProductProvider {
   /** PyCharm Community */
   val PC: IdeInfo = di.direct.instance<IdeProduct>().PC
 
+  /** Aqua */
+  val QA: IdeInfo = di.direct.instance<IdeProduct>().QA
+
   fun getProducts(): List<IdeInfo> = IdeProductProvider::class.declaredMemberProperties.map { it.get(IdeProductProvider) as IdeInfo }
 
   fun isProductSupported(productCode: String): Boolean = getProducts().any { it.productCode == productCode }
