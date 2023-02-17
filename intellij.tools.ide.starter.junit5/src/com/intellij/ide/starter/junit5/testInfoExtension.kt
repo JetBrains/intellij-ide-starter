@@ -17,3 +17,7 @@ fun TestInfo.hyphenateWithClass(): String {
 fun TestInfo.hyphenate(): String {
   return testMethod.get().name.hyphenateTestName()
 }
+
+fun TestInfo.testMethodName(): String {
+  return testMethod.get().name
+}
