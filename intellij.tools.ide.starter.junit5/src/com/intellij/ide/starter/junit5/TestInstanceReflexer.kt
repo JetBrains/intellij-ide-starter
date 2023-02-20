@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.utils.logError
+import com.intellij.ide.starter.utils.logOutput
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -18,7 +18,7 @@ object TestInstanceReflexer {
       return contextField
     }
     catch (t: Throwable) {
-      logError("Unable to get property of type ${propertyType.simpleName} in ${testInstance::class.qualifiedName}")
+      logOutput("Unable to get property of type ${propertyType.simpleName} in ${testInstance::class.qualifiedName}")
     }
 
     return null

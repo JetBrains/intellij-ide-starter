@@ -33,7 +33,7 @@ interface TestContainer<T> : Closeable {
     init {
       StarterListener.subscribe { event: TestContextInitializedEvent ->
         if (event.state == EventState.AFTER) {
-          logOutput("Starter configuration variables: ${ConfigurationStorage.instance().getAll()}")
+          logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
         }
       }
     }
