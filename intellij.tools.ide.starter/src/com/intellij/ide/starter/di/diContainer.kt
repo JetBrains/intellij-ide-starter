@@ -47,7 +47,7 @@ var di = DI {
   bindSingleton<IdeDownloader> { PublicIdeDownloader }
   bindFactory<IdeInfo, IdeInstallator> { ideInfo -> IdeInstallerFactory().createInstaller(ideInfo) }
   bindFactory<IDETestContext, BuildToolProvider> { testContext: IDETestContext -> BuildToolDefaultProvider(testContext) }
-  bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher, QodanaTestResultPublisher) }
+  bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
   bindSingleton<EapReleaseConfigurable> {
