@@ -15,7 +15,7 @@ interface ReportPublisher {
   /**
    * Publish report even if error occurred during run ide
    */
-  fun publishAnyway(context: IDETestContext) {
+  fun publishAfterRun(context: IDETestContext) {
 
   }
 

@@ -363,7 +363,7 @@ data class IDETestContext(
     }
     finally {
       if (isReportPublishingEnabled) publishers.forEach {
-        it.publishAnyway(context.testContext)
+        it.publishAfterRun(context.testContext)
       }
     }
   }
