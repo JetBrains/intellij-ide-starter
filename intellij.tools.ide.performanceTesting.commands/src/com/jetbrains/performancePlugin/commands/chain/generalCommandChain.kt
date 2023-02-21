@@ -6,6 +6,7 @@ import com.intellij.ide.starter.utils.logOutput
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.listDirectoryEntries
 import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
@@ -630,5 +631,10 @@ fun <T : CommandChain> T.showFileHistory(): T {
 
 fun <T : CommandChain> T.goToDeclaration(): T {
   this.executeEditorAction("GotoDeclaration")
+  return this
+}
+
+fun <T : CommandChain> T.collectAllFiles(extension: String, fileWithResult: Path): T {
+  this.addCommand("${CMD_PREFIX}collectAllFiles $extension ${fileWithResult.absolutePathString()}")
   return this
 }
