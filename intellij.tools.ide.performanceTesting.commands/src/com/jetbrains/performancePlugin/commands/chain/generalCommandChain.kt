@@ -86,6 +86,15 @@ fun <T : CommandChain> T.openFile(relativePath: String): T {
   return this
 }
 
+fun <T : CommandChain> T.openFile(relativePath: String, timeoutInSeconds: Long, suppressErrors: Boolean = false): T {
+  if (suppressErrors) {
+    addCommand(OPEN_FILE_CMD_PREFIX, relativePath, timeoutInSeconds.toString(),"SUPPRESS_ERROR")
+  } else {
+    addCommand(OPEN_FILE_CMD_PREFIX, relativePath, timeoutInSeconds.toString())
+  }
+  return this
+}
+
 const val OPEN_RANDOM_FILE_CMD_PREFIX = "${CMD_PREFIX}openRandomFile"
 fun <T : CommandChain> T.openRandomFile(extension: String): T {
   addCommand(OPEN_RANDOM_FILE_CMD_PREFIX, extension)
