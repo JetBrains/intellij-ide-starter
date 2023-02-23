@@ -145,7 +145,7 @@ open class TeamCityCIServer(
 
   val buildTypeId: String? by lazy { getBuildParam("teamcity.buildType.id") }
 
-  fun buildUrl(): String = "$serverUri/$buildTypeId/$buildId?buildTab=tests"
+  fun buildUrl(): String = "$serverUri/buildConfiguration/$buildTypeId/$buildId?buildTab=tests"
 
   val isSpecialBuild: Boolean
     get() {
