@@ -10,6 +10,7 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.longs.shouldNotBeZero
 import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
@@ -82,6 +83,7 @@ class IdeDownloaderTest {
     }
   }
 
+  @Disabled("EAP build will be removed after certain period of time")
   @Test
   @Timeout(value = 4, unit = TimeUnit.MINUTES)
   fun downloadSpecificEapInstaller() {
