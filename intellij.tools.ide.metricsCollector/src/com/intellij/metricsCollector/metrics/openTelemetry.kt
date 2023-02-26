@@ -167,4 +167,23 @@ private fun populateAttributes(metric: MetricWithAttributes, span: JsonNode) {
   }
 }
 
+data class FilePathFieMetric(val value: Long, val path: String, val timeout: Boolean)
 
+fun getValues(file: File, nameOfSpan: String): List<FilePathFieMetric> {
+  val res = mutableListOf<FilePathFieMetric>()
+  val root = jacksonObjectMapper().readTree(file)
+  val allSpans = root.get("data")[0].get("spans")
+  if (allSpans.isEmpty) println("No spans have been found")
+  for (span in allSpans) {
+    if (span.get("operationName").textValue() == nameOfSpan) {
+      val duration = getDuration(span)
+      val path = span.get("tags").firstOrNull { it.get("key").textValue() == "filePath" }?.get("value")?.textValue()
+      val timeout = span.get("tags").firstOrNull { it.get("key").textValue() == "timeout" }?.get("value")?.textValue()
+      if (path != null) {
+        val time = timeout != null
+        res.add(FilePathFieMetric(duration, path, time))
+      }
+    }
+  }
+  return res
+}
