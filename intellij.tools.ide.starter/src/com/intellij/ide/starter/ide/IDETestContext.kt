@@ -74,6 +74,12 @@ data class IDETestContext(
         .withXmx(sizeMb)
     }
 
+  fun setActiveProcessorCount(count: Int): IDETestContext =
+    addVMOptionsPatch {
+      this
+        .withActiveProcessorCount(count)
+    }
+
   fun withGCLogs(): IDETestContext =
     addVMOptionsPatch { withGCLogs(paths.reportsDir / "gcLog.log") }
 
@@ -163,6 +169,7 @@ data class IDETestContext(
       addSystemProperty("ide.plugins.snapshot.on.unload.fail", true)
     }
 
+  @Suppress("unused")
   fun setPerProjectDynamicPluginsFlag(): IDETestContext =
     addVMOptionsPatch {
       addSystemProperty("ide.plugins.per.project", true)
@@ -191,6 +198,7 @@ data class IDETestContext(
     addSystemProperty("integrationTests.profiler", "async")
   }
 
+  @Suppress("unused")
   fun enableYourKitProfiler() = addVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "yourkit")
   }
@@ -510,14 +518,14 @@ data class IDETestContext(
 
       trustedXml.parent.createDirectories()
       if (addParentDir) {
-        val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml").readText()
+        val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
         trustedXml.writeText(
           text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
             .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
         )
       }
       else {
-        val text = this::class.java.classLoader.getResource("trusted-paths.xml").readText()
+        val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
         trustedXml.writeText(
           text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
         )
@@ -526,11 +534,13 @@ data class IDETestContext(
     return this
   }
 
+  @Suppress("unused")
   fun copyExistingConfig(configPath: Path): IDETestContext {
     FileUtil.copyDir(configPath.toFile(), paths.configDir.toFile())
     return this
   }
 
+  @Suppress("unused")
   fun copyExistingPlugins(pluginPath: Path): IDETestContext {
     FileUtil.copyDir(pluginPath.toFile(), paths.pluginsDir.toFile())
     return this

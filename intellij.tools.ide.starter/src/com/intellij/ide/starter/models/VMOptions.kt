@@ -213,6 +213,9 @@ data class VMOptions(
   fun withXmx(sizeMb: Int) = this
     .addLine("-Xmx" + sizeMb + "m", "-Xmx")
 
+  fun withActiveProcessorCount(count: Int) = this
+    .addLine("-XX:ActiveProcessorCount=$count", "-XX:ActiveProcessorCount")
+
   fun withClassFileVerification() = this
     .addLine("-XX:+UnlockDiagnosticVMOptions")
     .addLine("-XX:+BytecodeVerificationLocal")
