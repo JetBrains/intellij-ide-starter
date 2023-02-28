@@ -638,6 +638,16 @@ fun <T : CommandChain> T.showFileHistory(): T {
   return this
 }
 
+fun <T : CommandChain> T.assertCompletionCommand(): T {
+  this.addCommand("${CMD_PREFIX}assertCompletionCommand")
+  return this
+}
+
+fun <T : CommandChain> T.assertCompletionCommand(count: Int): T {
+  this.addCommand("${CMD_PREFIX}assertCompletionCommand ${count}")
+  return this
+}
+
 fun <T : CommandChain> T.goToDeclaration(): T {
   this.executeEditorAction("GotoDeclaration")
   return this
