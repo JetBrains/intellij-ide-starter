@@ -18,4 +18,8 @@ interface FailureDetailsOnCI {
     return "Test: $testMethodName" + System.lineSeparator() +
            "You can find logs and other useful info in CI artifacts under the path ${runContext.contextName}"
   }
+
+  fun getFailureDetailsForCrash(runContext: IDERunContext): String {
+    return getFailureDetails(runContext)
+  }
 }

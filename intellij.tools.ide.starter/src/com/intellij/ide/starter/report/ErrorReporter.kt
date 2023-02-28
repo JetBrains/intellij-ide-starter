@@ -22,7 +22,7 @@ object ErrorReporter {
    * Report them as an individual failures on CI
    * Take a look at [com.jetbrains.performancePlugin.ProjectLoaded.reportErrorsFromMessagePool]
    */
-  fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext) {
+  fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext, isRunSuccessful: Boolean) {
     if (!rootErrorsDir.isDirectory()) return
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
 
@@ -48,7 +48,8 @@ object ErrorReporter {
         testName = "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
       }
 
-      val failureDetails = di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext)
+      val failureDetails = if (isRunSuccessful) di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext)
+      else di.direct.instance<FailureDetailsOnCI>().getFailureDetailsForCrash(runContext)
 
       if (di.direct.instance<CIServer>().isTestFailureShouldBeIgnored(messageText)) {
         di.direct.instance<CIServer>().ignoreTestFailure(testName = generifyErrorMessage(testName),

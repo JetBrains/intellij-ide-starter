@@ -307,7 +307,7 @@ data class IDERunContext(
 
         val rootErrorsDir  = logsDir / ERRORS_DIR_NAME
 
-        ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this)
+        ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this, isRunSuccessful)
         publishArtifacts(isRunSuccessful)
 
         if (codeBuilder != null) {
