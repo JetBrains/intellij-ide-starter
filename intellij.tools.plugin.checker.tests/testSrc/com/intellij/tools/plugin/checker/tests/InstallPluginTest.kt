@@ -121,7 +121,6 @@ class InstallPluginTest {
           fullUrl = restUri.resolve("builds/id:${di.direct.instance<CIServer>().asTeamCity().buildId}?fields=triggered(displayText)")
         ) { it.withAuth() }
       }
-
       val displayTextField = requireNotNull(triggeredByJsonNode.first().first().asText())
 
       return deserializeMessageFromMarketplace(displayTextField.extractSnsMessageBody())
@@ -130,7 +129,7 @@ class InstallPluginTest {
     @JvmStatic
     fun data(): List<EventToTestCaseParams> {
       val event = getMarketplaceEvent()
-      val draftParams: EventToTestCaseParams = EventToTestCaseParams(
+      val draftParams = EventToTestCaseParams(
         event = event,
         testCase = TestCases.IU.GradleJitPackSimple
       )
@@ -138,9 +137,14 @@ class InstallPluginTest {
       return modifyTestCaseForIdeVersion(draftParams)
     }
 
-    fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
+    private fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
       if (!IdeProductProvider.isProductSupported(params.event.productCode)) {
         logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        return emptyList()
+      }
+
+      if(params.event.pricingModel != "FREE") {
+        logOutput(RuntimeException("Product ${params.event.pricingModel} is not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
       }
 
