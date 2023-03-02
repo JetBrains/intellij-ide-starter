@@ -6,4 +6,5 @@ package com.intellij.tools.plugin.checker.data
 object TestCases {
   /** IntelliJ Ultimate cases */
   val IU = IdeaUltimateCases
+  val PS = PhpStormCases
 }

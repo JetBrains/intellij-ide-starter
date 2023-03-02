@@ -63,9 +63,10 @@ class InstallPluginTest {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
-          Pair("teamcity.build.id", "847"),
+          Pair("teamcity.build.id", "4344"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
-          Pair("teamcity.auth.password", "eyJ0eXAiOiAiVENWMiJ9.bGdPNjF2cVdNa3NrMVBlblRpWEh1TVNuSFVv.MjdlODA0NTAtMWM0MC00YmQxLWJjMTgtMTEzZGMyMTU5Yzg3")
+          Pair("teamcity.auth.password",
+               "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
         )
         initPluginCheckerDI(systemPropertiesFilePath)
       }
@@ -129,9 +130,13 @@ class InstallPluginTest {
     @JvmStatic
     fun data(): List<EventToTestCaseParams> {
       val event = getMarketplaceEvent()
+      val testCase = when (event.productCode) {
+        IdeProductProvider.PS.productCode -> TestCases.PS.LaravelFramework
+        else -> TestCases.IU.GradleJitPackSimple
+      }
       val draftParams = EventToTestCaseParams(
         event = event,
-        testCase = TestCases.IU.GradleJitPackSimple
+        testCase = testCase
       )
 
       return modifyTestCaseForIdeVersion(draftParams)
