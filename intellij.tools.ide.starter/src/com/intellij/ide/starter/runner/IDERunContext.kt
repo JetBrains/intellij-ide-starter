@@ -357,6 +357,11 @@ data class IDERunContext(
       artifactPath = artifactPath,
       artifactName = formatArtifactName("snapshots", testContext.testName)
     )
+    testContext.publishArtifact(
+      source = testContext.paths.reportsDir,
+      artifactPath = artifactPath,
+      artifactName = formatArtifactName("reports", testContext.testName)
+    )
   }
 
   fun runIDE(): IDEStartResult {
