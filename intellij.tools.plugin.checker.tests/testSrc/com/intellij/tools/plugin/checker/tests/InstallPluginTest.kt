@@ -148,6 +148,11 @@ class InstallPluginTest {
         return emptyList()
       }
 
+      if (params.event.productCode == IdeProductProvider.AI.productCode) {
+        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        return emptyList()
+      }
+
       if(params.event.pricingModel != "FREE") {
         logOutput(RuntimeException("Product ${params.event.pricingModel} is not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
