@@ -153,8 +153,8 @@ class InstallPluginTest {
         return emptyList()
       }
 
-      if(params.event.pricingModel != "FREE") {
-        logOutput(RuntimeException("Product ${params.event.pricingModel} is not supported yet. Plugin id: ${params.event.pluginId}"))
+      if(params.event.pricingModel == "PAID") {
+        logOutput(RuntimeException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
       }
 
