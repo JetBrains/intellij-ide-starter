@@ -159,6 +159,11 @@ class InstallPluginTest {
         return emptyList()
       }
 
+      if (params.event.productCode == IdeProductProvider.DS.productCode) {
+        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. There is some issue with the license."))
+        return emptyList()
+      }
+
       if(params.event.pricingModel == "PAID") {
         logOutput(RuntimeException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
