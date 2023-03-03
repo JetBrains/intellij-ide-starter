@@ -64,14 +64,12 @@ fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
 }
 
 /**
- * The method reports duration of `nameSpan` and all its children spans.
+ * The method reports duration of `nameSpan` and in case of all publishOnlyParent=false its children spans.
  * Besides, all attributes are reported as counters.
  */
 fun getMetrics(context: IDETestContext, nameOfSpan: String, publishOnlyParent: Boolean = false): MutableCollection<Metric<*>> {
   if (publishOnlyParent) {
-    val list = mutableListOf<Metric<*>>()
-    list.add(getSingleMetric(context, nameOfSpan))
-    return list
+    return mutableListOf(getSingleMetric(context, nameOfSpan))
   }
   return getMetrics(context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile(), nameOfSpan)
 }
