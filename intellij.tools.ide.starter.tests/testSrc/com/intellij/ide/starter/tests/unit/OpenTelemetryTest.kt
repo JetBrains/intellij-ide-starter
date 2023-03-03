@@ -54,6 +54,7 @@ class OpenTelemetryTest {
   fun metricsWithSingleSpan() {
     val metrics = getMetrics((openTelemetryReports / "opentelemetry_with_main_timer.json").toFile(), "performance_test")
     metrics.shouldContainExactlyInAnyOrder(listOf(
+      Metric(Duration("performance_test"), 13497),
       Metric(Duration("delayType"), 3739),
       Metric(Counter("test#max_awt_delay"), 141),
       Metric(Counter("test#average_awt_delay"), 8),
@@ -64,6 +65,7 @@ class OpenTelemetryTest {
   fun metricsCorrectlyCollected2() {
     val metrics = getMetrics((openTelemetryReports / "opentelemetry2.json").toFile(), "performance_test")
     metrics.shouldContainExactlyInAnyOrder(listOf(
+      Metric(Duration("performance_test"), 81444),
       Metric(Duration("timer_1"), 1184),
       Metric(Counter("timer_1#average_awt_delay"), 3),
       Metric(Counter("timer_1#max_awt_delay"), 57),
@@ -92,6 +94,7 @@ class OpenTelemetryTest {
   fun metricsCorrectlyCollectedAvoidingZeroValue() {
     val metrics = getMetrics((openTelemetryReports / "opentelemetry_with_zero_values.json").toFile(), "performance_test")
     metrics.shouldContainExactlyInAnyOrder(listOf(
+      Metric(Duration("performance_test"), 27990),
       Metric(Duration("firstCodeAnalysis"), 1726),
       Metric(Duration("typing_1"), 158),
       Metric(Duration("typing_2"), 44),
