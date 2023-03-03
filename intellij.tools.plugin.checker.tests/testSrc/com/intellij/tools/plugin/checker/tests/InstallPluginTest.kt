@@ -63,7 +63,7 @@ class InstallPluginTest {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
-          Pair("teamcity.build.id", "4344"),
+          Pair("teamcity.build.id", "4636"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
           Pair("teamcity.auth.password",
                "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
@@ -150,6 +150,12 @@ class InstallPluginTest {
 
       if (params.event.productCode == IdeProductProvider.AI.productCode) {
         logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        return emptyList()
+      }
+
+      if (params.event.productVersion.startsWith("PC-231.")) {
+        logOutput(RuntimeException("Product ${params.event.productCode} is not supported in 231 branch yet. " +
+                                   "Since Performance Plugin is not bundled (yet) and not published."))
         return emptyList()
       }
 
