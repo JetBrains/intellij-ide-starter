@@ -170,6 +170,7 @@ data class VMOptions(
   fun disableStartupDialogs() = this
     .addSystemProperty("jb.consents.confirmation.enabled", false)
     .addSystemProperty("jb.privacy.policy.text", "<!--999.999-->")
+    .addSystemProperty("writerside.eula.reviewed.and.accepted", true)
 
   fun takeScreenshotsPeriodically(logsDir: Path) = this
     .addSystemProperty("ide.performance.screenshot", logsDir.resolve("screenshot.png").toString())
