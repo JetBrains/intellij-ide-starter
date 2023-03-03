@@ -9,4 +9,11 @@
     <entry key="freeze.reporter.profiling" value="false"/>
     <entry key="actionSystem.playback.typecommand.delay" value="0"/>
   </component>
+  <component name="StatusBar">
+    <option name="widgets">
+      <map>
+        <entry key="Memory" value="true" />
+      </map>
+    </option>
+  </component>
 </application>
