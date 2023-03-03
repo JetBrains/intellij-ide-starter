@@ -5,7 +5,9 @@ import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
 import com.intellij.metricsCollector.metrics.getMetrics
+import com.intellij.metricsCollector.metrics.getSingleMetric
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
@@ -40,6 +42,12 @@ class OpenTelemetryTest {
       Metric(Duration("FindUsagesManager.startProcessUsages#number_of_found_usages#mean_value"), 464),
       Metric(Duration("FindUsagesManager.startProcessUsages#number_of_found_usages#standard_deviation"), 349),
     ))
+  }
+
+  @Test
+  fun getSingleMetricTest() {
+    val singleMetric = getSingleMetric((openTelemetryReports / "opentelemetry2.json").toFile(), "performance_test")
+    singleMetric.shouldBe(Metric(Duration("performance_test"), 81444))
   }
 
   @Test

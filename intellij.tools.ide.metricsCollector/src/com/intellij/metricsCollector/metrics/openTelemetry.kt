@@ -35,6 +35,14 @@ fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): Perfor
 
 fun findMetricValue(metrics: List<Metric<*>>, metric: Duration) = metrics.first { it.id.name == metric.name }.value
 
+fun getSingleMetric(file: File, nameOfSpan: String): Metric<*> {
+  return getMetrics(file, DEFAULT_SPAN_NAME).first { it.id.name == nameOfSpan }
+}
+
+fun getSingleMetric(context: IDETestContext, nameOfSpan: String): Metric<*> {
+  return getMetrics(context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile(), DEFAULT_SPAN_NAME).first { it.id.name == nameOfSpan }
+}
+
 /**
  * The method reports duration of `nameSpan` and all its children spans.
  * Besides, all attributes are reported as counters.
@@ -52,7 +60,6 @@ fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
       processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
     }
   }
-  spanToMetricMap.remove(DEFAULT_SPAN_NAME)
   return combineMetrics(spanToMetricMap)
 }
 
@@ -60,7 +67,12 @@ fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
  * The method reports duration of `nameSpan` and all its children spans.
  * Besides, all attributes are reported as counters.
  */
-fun getMetrics(context: IDETestContext, nameOfSpan: String): MutableCollection<Metric<*>> {
+fun getMetrics(context: IDETestContext, nameOfSpan: String, publishOnlyParent: Boolean = false): MutableCollection<Metric<*>> {
+  if (publishOnlyParent) {
+    val list = mutableListOf<Metric<*>>()
+    list.add(getSingleMetric(context, nameOfSpan))
+    return list
+  }
   return getMetrics(context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile(), nameOfSpan)
 }
 
