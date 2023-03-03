@@ -25,6 +25,7 @@ import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.DI
 import org.kodein.di.bindFactory
 import org.kodein.di.bindSingleton
+import java.net.URI
 
 /**
  * Reinitialize / override bindings for this DI container in your module before executing tests
@@ -56,6 +57,7 @@ var di = DI {
     }
   }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
+  bindSingleton(tag = "teamcity.uri" ) { URI("https://buildserver.labs.intellij.net").normalize() }
 }.apply {
   logOutput("Starter DI was initialized")
 }
