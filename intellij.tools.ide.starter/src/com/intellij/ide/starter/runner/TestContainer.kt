@@ -106,6 +106,7 @@ interface TestContainer<T> : Closeable {
         .disableMinimap()
         .addProjectToTrustedLocations()
         .useNewUIInTests()
+        .withGCLogs()
     }
 
     val contextWithAppliedHooks = setupHooks
