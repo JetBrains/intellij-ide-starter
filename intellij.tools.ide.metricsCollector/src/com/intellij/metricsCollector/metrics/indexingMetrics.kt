@@ -31,7 +31,7 @@ data class IndexingMetrics(
   val totalNumberOfIndexingRuns: Int
     get() = jsonIndexDiagnostics.count { it.projectIndexingHistory.projectName.isNotEmpty() }
 
-  private val totalUpdatingTime: Long
+  val totalUpdatingTime: Long
     get() = jsonIndexDiagnostics.map { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingHistory.times.totalUpdatingTime.nano) }.sum()
 
   val totalIndexingTime: Long
