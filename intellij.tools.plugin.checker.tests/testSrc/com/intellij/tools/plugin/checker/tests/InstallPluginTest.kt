@@ -32,6 +32,8 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.kodein.di.DI
+import org.kodein.di.bindSingleton
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
@@ -62,6 +64,12 @@ class InstallPluginTest {
     init {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
+        di = DI {
+          extend(di)
+          bindSingleton<URI>(tag = "teamcity.uri", overrides = true) {
+            teamCityIntelliJPerformanceServer.fallbackServerUri
+          }
+        }
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
           Pair("teamcity.build.id", "4636"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
