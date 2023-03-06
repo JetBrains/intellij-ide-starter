@@ -28,6 +28,9 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
       di = DI {
         extend(di)
 
+        bindSingleton<URI>(tag = "teamcity.uri", overrides = true) {
+          teamCityIntelliJPerformanceServer.fallbackServerUri
+        }
         bindSingleton<CIServer>(overrides = true) {
           TeamCityCIServer(fallbackServerUri = teamCityIntelliJPerformanceServer.fallbackServerUri,
                            systemPropertiesFilePath = systemPropertiesFilePath)
