@@ -1,6 +1,5 @@
-package com.intellij.ide.starter.tests.unit
+package com.intellij.metricsCollector
 
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
@@ -9,11 +8,10 @@ import com.intellij.metricsCollector.metrics.getSingleMetric
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 import kotlin.io.path.div
 
-@ExtendWith(JUnit5StarterAssistant::class)
+
 class OpenTelemetryTest {
 
   private val openTelemetryReports by lazy {
