@@ -1,9 +1,5 @@
 name: Build and run tests intellij.tools.ide.metricsCollector
 
-defaults:
-  run:
-    working-directory: intellij.tools.ide.metricsCollector
-
 on:
   push:
     branches: [ "master" ]
@@ -14,10 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-
+  runTestsForMetricsCollector:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -29,3 +23,4 @@ jobs:
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: build test
+          build-root-directory: intellij.tools.ide.metricsCollector
