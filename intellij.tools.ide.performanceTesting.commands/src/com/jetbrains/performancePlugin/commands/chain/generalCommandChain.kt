@@ -657,3 +657,23 @@ fun <T : CommandChain> T.collectAllFiles(extension: String, fileWithResult: Path
   this.addCommand("${CMD_PREFIX}collectAllFiles $extension ${fileWithResult.absolutePathString()}")
   return this
 }
+
+fun <T : CommandChain> T.build(): T {
+  addCommand("${CMD_PREFIX}buildProject BUILD")
+  return this
+}
+
+fun <T : CommandChain> T.rebuild(): T {
+  addCommand("${CMD_PREFIX}buildProject REBUILD")
+  return this
+}
+
+fun <T : CommandChain> T.findUsagesJava(elementName: String, position: String = "INTO"): T {
+  addCommand("${CMD_PREFIX}findUsagesJava $position $elementName")
+  return this
+}
+
+fun <T : CommandChain> T.syncJpsLibraries(): T {
+  addCommand("${CMD_PREFIX}syncJpsLibraries")
+  return this
+}
