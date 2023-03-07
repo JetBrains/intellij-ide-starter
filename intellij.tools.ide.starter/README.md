@@ -26,69 +26,19 @@ Aside from that, you may find useful functionality as below:
 
 ##### How to setup
 
-Configure maven repositories in your `build.gradle` file
+Please see `build.gradle` file in `intellij.tools.ide.starter.examples` required dependencies 
+and examples of tests.
 
-```
-repositories {
-  maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
-  maven { url = "https://cache-redirector.jetbrains.com/intellij-dependencies" }
-
-  maven { url = "https://www.jetbrains.com/intellij-repository/releases" }
-}
-```
-
-Instead of `maven { url = "https://cache-redirector.jetbrains.com/maven-central" }` you may use `mavenCentral()`
-
-If you're sure, that you need more recent version of packages, you might use
-`maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }`
-OR
-`maven { url = "https://www.jetbrains.com/intellij-repository/nightly" }`
-
-But don't forget to change accordingly version of the packages as such:
-
-* nightly -> LATEST-TRUNK-SNAPSHOT
-* snapshots -> LATEST-EAP-SNAPSHOT
-* releases -> semver package version
-
-Minimal setup example:
-
-```
-dependencies {
-  testImplementation("com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-EAP-SNAPSHOT")
-  testImplementation("com.jetbrains.intellij.tools:ide-performance-testing-commands-squashed::LATEST-EAP-SNAPSHOT")
-  
-  testImplementation("junit:junit:4.13.2")
-}
-```
-
-Also you may take a look at `build.gradle` files in `intellij.tools.ide.starter.tests`.  
-
-To make sure, that you will not get problem with Kotlin Duration, add the following
-
-```
-compileTestKotlin {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
-
-  kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
-    freeCompilerArgs += [
-      "-Xopt-in=kotlin.time.ExperimentalTime"
-    ]
-  }
-}
-
-```
 
 ##### Run with JUnit4
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.tests/testSrc/com/intellij/ide/starter/tests/examples/junit4/IdeaJUnit4ExampleTests.kt)
+[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/tests/examples/junit4/IdeaJUnit4ExampleTests.kt)
 
 You should create appropriate classes in your tests for JUnit4StarterRule, IdeaCases (we don't provide that as an artifact yet)
 
 ##### Run with JUnit5
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.tests/testSrc/com/intellij/ide/starter/tests/examples/junit5/IdeaJUnit5ExampleTest.kt)
+[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/tests/examples/junit5/IdeaJUnit5ExampleTest.kt)
 
 ##### Available commands from plugins
 
