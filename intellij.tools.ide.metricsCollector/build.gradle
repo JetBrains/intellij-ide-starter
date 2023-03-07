@@ -54,28 +54,6 @@ configurations {
   implementation.exclude(group: 'com.jetbrains.infra')
 }
 
-compileKotlin {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
-
-  kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_17.toString()
-  }
-}
-
-compileTestKotlin {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
-
-  kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_17.toString()
-  }
-}
-
-tasks.test {
-  useJUnitPlatform()
-
-  testLogging {
-    events "passed", "skipped", "failed", "standardOut", "standardError"
-  }
+kotlin {
+  jvmToolchain(17)
 }
