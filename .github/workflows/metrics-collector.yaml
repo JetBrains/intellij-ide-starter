@@ -1,5 +1,9 @@
 name: Build and run tests intellij.tools.ide.metricsCollector
 
+defaults:
+  run:
+    working-directory: intellij.tools.ide.metricsCollector
+
 on:
   push:
     branches: [ "master" ]
