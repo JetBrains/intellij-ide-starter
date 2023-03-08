@@ -5,6 +5,8 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  schedule:
+    - cron: "0 0 * * *"
 
 permissions:
   contents: read
@@ -25,5 +27,5 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: build test
+          arguments: clean build test
           build-root-directory: intellij.tools.ide.starter.examples
