@@ -23,10 +23,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 
-/**
- * NOTE: this class uses IntelliJ IDEA components, please make sure
- * you call it from a proper test-case, e.g. [com.intellij.testFramework.LightPlatformTestCase]
- */
 object JdkDownloaderFacade {
 
   val jdk8 get() = jdkDownloader(JdkVersion.JDK_8.toString())
@@ -54,7 +50,7 @@ object JdkDownloaderFacade {
   }
 
   val allJdksForWSL by lazy {
-    listJDKs(JdkPredicate.forWSL())
+    listJDKs(JdkPredicate.forWSL(null))
   }
 
   private fun listJDKs(predicate: JdkPredicate): List<JdkDownloadItem> {
