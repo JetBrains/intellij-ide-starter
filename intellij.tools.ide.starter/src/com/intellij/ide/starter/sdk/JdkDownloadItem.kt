@@ -10,6 +10,7 @@ data class JdkDownloadItem(
   private val installJdk = lazy { download() }
   val home: Path get() = installJdk.value.homePath
   val installPath: Path get() = installJdk.value.installPath
+  private val majorVersion = jdk.jdkMajorVersion
 
   fun toSdk(sdkName: String) = SdkObject(
     sdkName = sdkName,
@@ -17,7 +18,7 @@ data class JdkDownloadItem(
     sdkPath = home,
   )
 
-  fun toSdk(sdkVersion: JdkVersion) = toSdk(sdkVersion.toString())
+  fun toSdk(): SdkObject = toSdk(majorVersion.toString())
 
   override fun equals(other: Any?) = other is JdkDownloadItem && other.jdk == jdk
   override fun hashCode() = jdk.hashCode()

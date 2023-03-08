@@ -7,15 +7,13 @@ import com.jetbrains.performancePlugin.commands.chain.exitApp
 import com.jetbrains.performancePlugin.commands.chain.setupProjectSdk
 import kotlin.time.Duration.Companion.minutes
 
-fun IDETestContext.setupSdk(vararg sdkObjects: SdkObject?, setupContext: IDETestContext.() -> IDETestContext = { this }, cleanDirs: Boolean = true): IDETestContext {
-  val sdkItemsToSetup = sdkObjects.filterNotNull()
-  if (sdkItemsToSetup.isEmpty()) return this
+fun IDETestContext.setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
+  if (sdkObjects == null) return this
 
   disableAutoImport(true)
     .executeRightAfterIdeOpened(true)
     .runIDE(
-      commands = sdkItemsToSetup.map { CommandChain().setupProjectSdk(it) }
-        .plus(CommandChain().exitApp()),
+      commands =  CommandChain().setupProjectSdk(sdkObjects).exitApp(),
       launchName = "setupSdk",
       runTimeout = 3.minutes
     )
@@ -32,5 +30,4 @@ fun IDETestContext.setupSdk(vararg sdkObjects: SdkObject?, setupContext: IDETest
     // rollback changes, that were made only to setup sdk
     .disableAutoImport(false)
     .executeRightAfterIdeOpened(false)
-    .setupContext()
 }
