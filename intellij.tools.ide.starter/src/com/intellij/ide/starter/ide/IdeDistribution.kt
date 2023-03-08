@@ -61,7 +61,7 @@ abstract class IdeDistribution {
       false -> "x64"
     }
 
-    var jbrFileName = "jbrsdk-$majorVersion-$os-$arch-b$buildNumber.tar.gz"
+    val jbrFileName = "jbrsdk-$majorVersion-$os-$arch-b$buildNumber.tar.gz"
     var downloadResult = downloadJbr(jbrFileName)
 
     if (!downloadResult.first) {

@@ -7,6 +7,7 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.bufferedReader
+import kotlin.math.min
 
 fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
 
@@ -171,7 +172,7 @@ open class TeamCityCIServer(
 
   companion object {
     fun String.processStringForTC(): String {
-      return this.substring(0, Math.min(7000, this.length))
+      return this.substring(0, min(7000, this.length))
         .replace("\\|", "||")
         .replace("\\[", "|[")
         .replace("]", "|]")

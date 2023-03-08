@@ -45,7 +45,7 @@ interface EapReleaseConfigurable {
   /**
    * Hack to redirect workflow of IDE downloading back to use publicly available IDE releases
    */
-  fun usePublicIdeDownloader(): Unit {
+  fun usePublicIdeDownloader() {
     di = DI {
       extend(di)
       bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
@@ -56,5 +56,5 @@ interface EapReleaseConfigurable {
   /**
    * Reset DI implementation to the desired default logic of downloading IDE's
    */
-  fun resetDIToDefaultDownloading(): Unit
+  fun resetDIToDefaultDownloading()
 }

@@ -43,7 +43,7 @@ data class RemoteArchiveProjectInfo(
 
     val zipFile = when (projectURL.contains("https://github.com")) {
       true -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve("${projectHome.toString().split("/").last()}.zip")
-      false -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve(projectURL.toString().split("/").last())
+      false -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve(projectURL.split("/").last())
     }
 
     HttpClient.downloadIfMissing(projectURL, zipFile)

@@ -70,20 +70,18 @@ object JdkDownloaderFacade {
   }
 
   private fun downloadJdkItem(jdk: JdkItem, predicate: JdkPredicate): JdkItemPaths {
-    val targetJdkHome: Path
-
     // hack for wsl on windows
-    if (predicate == JdkPredicate.forWSL() && SystemInfo.isWindows && WslDistributionManager.getInstance().installedDistributions.isNotEmpty()) {
+    val targetJdkHome: Path = if (predicate == JdkPredicate.forWSL(null) && SystemInfo.isWindows && WslDistributionManager.getInstance().installedDistributions.isNotEmpty()) {
       try {
         val wslDistribution = WslDistributionManager.getInstance().installedDistributions[0]
-        targetJdkHome = Path.of(wslDistribution.getWindowsPath("/tmp/jdks/${jdk.installFolderName}"))
+        Path.of(wslDistribution.getWindowsPath("/tmp/jdks/${jdk.installFolderName}"))
       }
       catch (_: Exception) {
         throw WslDistributionNotFoundException(predicate)
       }
     }
     else {
-      targetJdkHome = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
+      di.direct.instance<GlobalPaths>().getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
     }
 
     val targetHomeMarker = targetJdkHome.resolve("home.link")
@@ -105,7 +103,7 @@ object JdkDownloaderFacade {
     }
     val javaHome = File(targetHomeMarker.readText())
     val binJava = "bin/java" + when {
-      (SystemInfo.isWindows && predicate != JdkPredicate.forWSL()) -> ".exe"
+      (SystemInfo.isWindows && predicate != JdkPredicate.forWSL(null)) -> ".exe"
       else -> ""
     }
 

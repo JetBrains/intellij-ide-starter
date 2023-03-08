@@ -35,17 +35,15 @@ object ErrorReporter {
       val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
       val stackTraceContent = stacktraceFile.readText().trimIndent().trim()
 
-      val testName: String
-
       val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
 
-      if (stackTraceContent.startsWith(messageText)) {
+      val testName = if (stackTraceContent.startsWith(messageText)) {
         val maxLength = (MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
         val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
-        testName = "($onlyLettersHash $extractedTestName)"
+        "($onlyLettersHash $extractedTestName)"
       }
       else {
-        testName = "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
+        "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
       }
 
       val failureDetails = if (isRunSuccessful) di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext)

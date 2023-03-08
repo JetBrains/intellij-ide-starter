@@ -20,7 +20,6 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   val disabledPluginsPath: Path
     get() = testContext.paths.configDir / "disabled_plugins.txt"
 
-  @Suppress("unused")
   fun setupPluginFromPath(pathToPluginArchive: Path) = apply {
     FileSystem.unpack(pathToPluginArchive, testContext.paths.pluginsDir)
   }
@@ -28,7 +27,6 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   /**
    * @param pathToPluginFolder example: ~/Desktop/dev/scala-plugin-ultimate/target/Scala
    */
-  @Suppress("unused")
   fun setupPluginFromFolder(pathToPluginFolder: File) = apply {
     val targetPluginsDir = testContext.paths.pluginsDir.toFile()
     val targetPluginDir = targetPluginsDir.resolve(pathToPluginFolder.name)
@@ -59,7 +57,6 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     channel: String? = null,
   ) = setupPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel))
 
-  @Suppress("unused")
   fun setupPluginFromPluginManager(
     pluginId: String,
     pluginVersion: String,
@@ -156,12 +153,10 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     return PluginInstalledState.NOT_INSTALLED
   }
 
-  fun assertPluginIsInstalled(pluginId: String): PluginConfigurator {
-    when (getPluginInstalledState(pluginId)) {
-      PluginInstalledState.DISABLED -> error("Plugin '$pluginId' must not be listed in the disabled plugins file ${disabledPluginsPath}")
-      PluginInstalledState.NOT_INSTALLED -> error("Plugin '$pluginId' must be installed")
-      PluginInstalledState.BUNDLED_TO_IDE -> return this
-      PluginInstalledState.INSTALLED -> return this
-    }
+  fun assertPluginIsInstalled(pluginId: String): PluginConfigurator = when (getPluginInstalledState(pluginId)) {
+    PluginInstalledState.DISABLED -> error("Plugin '$pluginId' must not be listed in the disabled plugins file ${disabledPluginsPath}")
+    PluginInstalledState.NOT_INSTALLED -> error("Plugin '$pluginId' must be installed")
+    PluginInstalledState.BUNDLED_TO_IDE -> this
+    PluginInstalledState.INSTALLED -> this
   }
 }

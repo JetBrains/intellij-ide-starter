@@ -176,12 +176,11 @@ object FileSystem {
   }
 
   fun Path.getFileOrDirectoryPresentableSize(): String {
-    val size: Long
-    if (this.toFile().isFile) {
-      size = this.toFile().length()
+    val size: Long = if (this.toFile().isFile) {
+      this.toFile().length()
     }
     else {
-      size = Files.walk(this).mapToLong { p: Path ->
+      Files.walk(this).mapToLong { p: Path ->
         if (p.toFile().isFile) {
           p.toFile().length()
         }
@@ -213,12 +212,12 @@ object FileSystem {
       logOutput("File $this does not exist")
       return false
     }
-    if (this.fileSize() <= 0) {
+    return if (this.fileSize() <= 0) {
       logOutput("File $this is empty")
-      return false
+      false
     }
     else {
-      return this.isUpToDate()
+      this.isUpToDate()
     }
   }
 
@@ -227,13 +226,12 @@ object FileSystem {
       logOutput("Path $this does not exist")
       return false
     }
-
-    if (this.fileSize() <= 0) {
+    return if (this.fileSize() <= 0) {
       logOutput("Project dir $this is empty")
-      return false
+      false
     }
     else {
-      return this.isUpToDate()
+      this.isUpToDate()
     }
   }
 

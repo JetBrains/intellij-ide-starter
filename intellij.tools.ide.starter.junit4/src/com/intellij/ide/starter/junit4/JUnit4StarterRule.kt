@@ -25,7 +25,7 @@ fun initJUnit4StarterRule(): JUnit4StarterRule = JUnit4StarterRule()
 fun <T : JUnit4StarterRule> T.useInstaller(): T {
   ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_JUNIT_RUNNER_USE_INSTALLER, true)
 
-  return this as T
+  return this
 }
 
 open class JUnit4StarterRule(

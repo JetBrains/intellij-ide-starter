@@ -49,7 +49,7 @@ object XmlBuilder {
     val transformerFactory = TransformerFactory.newDefaultInstance()
     val transformer = transformerFactory.newTransformer()
     transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
 
     outputPath.outputStream().use {
       transformer.transform(source, StreamResult(it))

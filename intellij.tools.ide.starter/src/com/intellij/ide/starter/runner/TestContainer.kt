@@ -22,7 +22,7 @@ import java.io.Closeable
 import kotlin.io.path.div
 
 /**
- * [ciServer] - use [NoCIServer] for local run. Otherwise - pass implementation of CIServer
+ * [ciServer] - use [com.intellij.ide.starter.ci.NoCIServer] for local run. Otherwise - pass implementation of CIServer
  */
 interface TestContainer<T> : Closeable {
   val ciServer: CIServer

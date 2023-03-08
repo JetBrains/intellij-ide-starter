@@ -91,8 +91,7 @@ data class GitProjectInfo(
       setupRepositoryState(repoRoot)
     }
 
-    val imagePath = repoRoot.let(projectHomeRelativePath)
-    return imagePath
+    return repoRoot.let(projectHomeRelativePath)
   }
 
   fun onCommit(commitHash: String): GitProjectInfo = copy(commitHash = commitHash)

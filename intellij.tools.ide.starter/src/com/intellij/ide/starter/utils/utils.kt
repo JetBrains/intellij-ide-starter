@@ -38,15 +38,13 @@ fun getThrowableText(t: Throwable): String {
  * In case of success - return T
  * In case of error - print error to stderr and return null
  */
-inline fun <T> catchAll(action: () -> T): T? {
-  try {
-    return action()
-  }
-  catch (t: Throwable) {
-    logError("CatchAll swallowed error: ${t.message}")
-    logError(getThrowableText(t))
-    return null
-  }
+inline fun <T> catchAll(action: () -> T): T? = try {
+  action()
+}
+catch (t: Throwable) {
+  logError("CatchAll swallowed error: ${t.message}")
+  logError(getThrowableText(t))
+  null
 }
 
 fun FileStore.getDiskInfo(): String = buildString {

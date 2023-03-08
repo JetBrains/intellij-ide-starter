@@ -36,8 +36,8 @@ object TeamCityClient {
   // temporary directory, where artifact will be moved for preparation for publishing
   val artifactForPublishingDir: Path by lazy { di.direct.instance<GlobalPaths>().testsDirectory / "teamcity-artifacts-for-publish" }
 
-  val restUri = teamCityURI.resolve("/app/rest/")
-  val guestAuthUri = teamCityURI.resolve("/guestAuth/app/rest/")
+  val restUri: URI = teamCityURI.resolve("/app/rest/")
+  val guestAuthUri: URI = teamCityURI.resolve("/guestAuth/app/rest/")
 
   fun get(fullUrl: URI, additionalRequestActions: (HttpRequest) -> HttpRequest = { it }): JsonNode {
     val request = HttpGet(fullUrl).apply {

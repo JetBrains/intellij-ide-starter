@@ -18,7 +18,6 @@ import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
-import com.intellij.ide.starter.report.publisher.impl.QodanaTestResultPublisher
 import com.intellij.ide.starter.runner.CodeBuilderHost
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.utils.logOutput

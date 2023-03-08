@@ -35,7 +35,7 @@ abstract class ConfigurationStorage {
   /**
    * Reset to default values, that will be performed after each test
    */
-  abstract fun resetToDefault(): Unit
+  abstract fun resetToDefault()
 
   init {
     resetToDefault()
