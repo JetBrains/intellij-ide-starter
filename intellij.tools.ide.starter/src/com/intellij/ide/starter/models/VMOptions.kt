@@ -66,10 +66,34 @@ data class VMOptions(
 
   fun addSystemProperty(key: String, value: Path): VMOptions = addSystemProperty(key, value.toAbsolutePath().toString())
 
+  /*
+    This method adds a property to IDE's VMOptions
+    If such property already exists in VMOptions
+    it will be replaced by the new one
+   */
   fun addSystemProperty(key: String, value: String): VMOptions {
     logOutput("Setting system property: [$key=$value]")
     System.setProperty(key, value) // to synchronize behaviour in IDEA and on test runner side
     return addLine(line = "-D$key=$value", filterPrefix = "-D$key=")
+  }
+
+  /*
+    This method updates a property in IDE's VMOptions
+    with a new value (old value + new value separated by a comma)
+    If such property does not exist in VMOptions
+    the property with a given value will be added to VMOptions
+ */
+  private fun addSystemPropertyValue(key: String, value: String): VMOptions {
+    return if (data.filter { it.contains("-D$key") }.size == 1) {
+      val oldLine = data.filter { it.startsWith("-D$key") }[0]
+      val oldValue = oldLine.split("=")[1]
+      val updatedValue = "$oldValue,$value"
+      logOutput("Updating system property: [$key=$updatedValue]")
+      this.addSystemProperty(key, updatedValue)
+    }
+    else {
+      this.addSystemProperty(key, value)
+    }
   }
 
   fun removeSystemProperty(key: String, value: String): VMOptions {
@@ -144,14 +168,14 @@ data class VMOptions(
     traceLoggers: List<String> = emptyList()
   ): VMOptions {
     val withDebug = if (debugLoggers.isNotEmpty()) {
-      this.addSystemProperty("idea.log.debug.categories", debugLoggers.joinToString(separator = ",") { "#" + it.removePrefix("#") })
+      this.addSystemPropertyValue("idea.log.debug.categories", debugLoggers.joinToString(separator = ",") { "#" + it.removePrefix("#") })
     }
     else {
       this
     }
 
     return if (traceLoggers.isNotEmpty()) {
-      withDebug.addSystemProperty("idea.log.trace.categories", traceLoggers.joinToString(separator = ",") { "#" + it.removePrefix("#") })
+      withDebug.addSystemPropertyValue("idea.log.trace.categories", traceLoggers.joinToString(separator = ",") { "#" + it.removePrefix("#") })
     }
     else {
       withDebug
