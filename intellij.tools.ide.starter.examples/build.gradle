@@ -51,3 +51,11 @@ configurations {
   implementation.exclude(group: 'com.jetbrains.infra')
   implementation.exclude(group: 'com.jetbrains.intellij.remoteDev')
 }
+
+tasks.test {
+  useJUnitPlatform()
+
+  testLogging {
+    events "passed", "skipped", "failed", "standardOut", "standardError"
+  }
+}
