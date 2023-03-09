@@ -677,3 +677,39 @@ fun <T : CommandChain> T.syncJpsLibraries(): T {
   addCommand("${CMD_PREFIX}syncJpsLibraries")
   return this
 }
+
+//kotlin
+fun <T : CommandChain> T.clearSourceCaches(): T {
+  this.addCommand("${CMD_PREFIX}clearSourceCaches")
+  return this
+}
+
+fun <T : CommandChain> T.clearLibraryCaches(): T {
+  this.addCommand("${CMD_PREFIX}clearLibraryCaches")
+  return this
+}
+
+fun <T : CommandChain> T.performGC(): T {
+  this.addCommand("${CMD_PREFIX}performGC")
+  return this
+}
+
+fun <T : CommandChain> T.convertJavaToKotlinByDefault(value: Boolean): T {
+  this.addCommand("${CMD_PREFIX}changeKotlinEditorOptions donTShowConversionDialog $value")
+  return this
+}
+
+fun <T : CommandChain> T.assertOpenedKotlinFileInRoot(): T {
+  addCommand("${CMD_PREFIX}assertOpenedKotlinFileInRoot")
+  return this
+}
+
+fun <T : CommandChain> T.findUsagesKotlin(elementName: String, position: String = "INTO"): T {
+  addCommand("${CMD_PREFIX}findUsagesKotlin $position $elementName")
+  return this
+}
+
+fun <T : CommandChain> T.findUsagesKotlinWarmup(elementName: String, position: String = "INTO"): T {
+  addCommand("${CMD_PREFIX}findUsagesKotlin $position $elementName WARMUP")
+  return this
+}
