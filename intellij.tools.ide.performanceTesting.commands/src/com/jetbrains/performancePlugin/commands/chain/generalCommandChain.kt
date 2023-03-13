@@ -713,3 +713,8 @@ fun <T : CommandChain> T.findUsagesKotlinWarmup(elementName: String, position: S
   addCommand("${CMD_PREFIX}findUsagesKotlin $position $elementName WARMUP")
   return this
 }
+
+fun <T : CommandChain> T.assertFindUsagesCount(count: Int): T {
+  addCommand("${CMD_PREFIX}assertFindUsagesCommand $count")
+  return this
+}
