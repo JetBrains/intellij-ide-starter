@@ -7,10 +7,7 @@ import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.withRetry
 import com.intellij.ide.starter.wsl.WslDistributionNotFoundException
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkInstaller
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkItem
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkListDownloader
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkPredicate
+import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.io.delete
 import com.intellij.util.io.isDirectory
@@ -21,6 +18,7 @@ import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.isRegularFile
 
 object JdkDownloaderFacade {
@@ -95,7 +93,23 @@ object JdkDownloaderFacade {
         logOutput("Downloading JDK at $targetJdkHome")
         targetJdkHome.delete(true)
 
-        val jdkInstaller = JdkInstaller.getInstance()
+        val jdkInstaller = object : JdkInstallerBase() {
+          override fun defaultInstallDir(): Path {
+            val explicitHome = System.getProperty("jdk.downloader.home")
+            if (explicitHome != null) {
+              return Paths.get(explicitHome)
+            }
+
+            val home = Paths.get(FileUtil.toCanonicalPath(System.getProperty("user.home") ?: "."))
+            return when {
+              com.intellij.openapi.util.SystemInfo.isLinux   -> home.resolve(".jdks")
+              //see https://youtrack.jetbrains.com/issue/IDEA-206163#focus=streamItem-27-3270022.0-0
+              com.intellij.openapi.util.SystemInfo.isMac     -> home.resolve("Library/Java/JavaVirtualMachines")
+              com.intellij.openapi.util.SystemInfo.isWindows -> home.resolve(".jdks")
+              else -> error("Unsupported OS: ${com.intellij.openapi.util.SystemInfo.getOsNameAndVersion()}")
+            }
+          }
+        }
         val request = jdkInstaller.prepareJdkInstallationDirect(jdk, targetPath = targetJdkHome)
         jdkInstaller.installJdk(request, null, null)
         targetHomeMarker.write(request.javaHome.toRealPath().toString())
