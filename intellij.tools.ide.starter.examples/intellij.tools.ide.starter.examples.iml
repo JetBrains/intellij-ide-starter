@@ -32,5 +32,6 @@
     <orderEntry type="module" module-name="intellij.tools.ide.metricsCollector" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
+    <orderEntry type="library" scope="TEST" name="commons-io" level="project" />
   </component>
 </module>
