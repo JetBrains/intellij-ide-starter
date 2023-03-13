@@ -58,7 +58,10 @@ data class GitProjectInfo(
     repoRoot.exists() -> {
       when {
         // for some reason repository is corrupted => delete directory with repo completely for clean checkout
-        !isGitMetadataExist(repoRoot) -> repoRoot.toFile().deleteRecursively()
+        !isGitMetadataExist(repoRoot) -> {
+          repoRoot.toFile().deleteRecursively()
+          Unit
+        }
 
         // simple remove everything, except .git directory - it will speed up subsequent git clean / reset (no need to redownload repo)
         !isReusable -> repoRoot.listDirectoryEntries().filterNot { it.endsWith(".git") }

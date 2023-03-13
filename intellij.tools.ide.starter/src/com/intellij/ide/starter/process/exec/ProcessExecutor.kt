@@ -77,14 +77,10 @@ class ProcessExecutor(val presentableName: String,
     val processEnvironment = environment()
     if (processEnvironment == environmentVariables) return this
 
-    environmentVariables.filter { it.value == null }.forEach { logError("Env variable: ${it.key} has null value ${it.value}") }
-    val notNullValues = environmentVariables.filter { it.value != null }
-
     // env variables enrichment
-    processEnvironment.putAll(notNullValues)
-
+    processEnvironment.putAll(environmentVariables)
     if (!onlyEnrichExistedEnvVariables) {
-      val missingKeys = processEnvironment.keys - notNullValues.keys
+      val missingKeys = processEnvironment.keys - environmentVariables.keys
       missingKeys.forEach { key -> processEnvironment.remove(key) }
     }
 

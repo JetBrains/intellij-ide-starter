@@ -44,7 +44,7 @@ class EventBusTest {
   @Disabled("Is not stable")
   @RepeatedTest(value = 50)
   fun `filtering events by type is working`() {
-    StarterListener.subscribe { event: Signal ->
+    StarterListener.subscribe { _: Signal ->
       isEventHappened.set(true)
     }
 
