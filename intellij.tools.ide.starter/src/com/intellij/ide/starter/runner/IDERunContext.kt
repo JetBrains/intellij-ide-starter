@@ -125,6 +125,7 @@ data class IDERunContext(
     }
 
   // TODO: refactor this https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext
+  @OptIn(kotlin.time.ExperimentalTime::class)
   private fun prepareToRunIDE(): IDEStartResult {
     StarterBus.post(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
