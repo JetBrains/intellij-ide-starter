@@ -6,7 +6,7 @@ import com.intellij.ide.starter.ide.IdeInstallator
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.openapi.util.io.FileUtil
+import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
@@ -23,7 +23,7 @@ class ExistingIdeInstallator(private val installedIdePath: Path) : IdeInstallato
     val installDir = di.direct.instance<GlobalPaths>()
                        .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
     installDir.toFile().deleteRecursively()
-    FileUtil.copyDir(installedIdePath.toFile(), installDir.toFile())
+    FileUtils.copyDirectory(installedIdePath.toFile(), installDir.toFile())
     return Pair(
       ideInstaller.buildNumber,
       IdeDistributionFactory.installIDE(installDir.toFile(), ideInfo.executableFileName)

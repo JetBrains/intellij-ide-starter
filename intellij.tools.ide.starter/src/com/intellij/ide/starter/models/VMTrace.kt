@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.system.SystemInfo
-import com.intellij.openapi.util.io.FileUtilRt
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -24,7 +23,7 @@ object VMTrace {
         else -> throw UnsupportedOperationException("Unsupported platform for libvmtrace")
       }
 
-      vmTraceFile = Files.createTempFile("libvmtrace", "." + FileUtilRt.getExtension(resourceName))
+      vmTraceFile = Files.createTempFile("libvmtrace", "." + getExtension(resourceName))
 
       val vmTraceBytes = VMOptions::class.java.getResourceAsStream(resourceName)!!
         .use { it.readAllBytes() }
@@ -33,5 +32,9 @@ object VMTrace {
     else {
       vmTraceFile = Path.of("unsupported-platform-libvmtrace")
     }
+  }
+
+  private fun getExtension(fileName: String): String {
+    return fileName.substringAfterLast(".", "")
   }
 }

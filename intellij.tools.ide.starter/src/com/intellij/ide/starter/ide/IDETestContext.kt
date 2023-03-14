@@ -17,8 +17,7 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
-import com.intellij.openapi.util.io.FileUtil
-import com.intellij.util.io.createDirectories
+import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
@@ -536,13 +535,13 @@ data class IDETestContext(
 
   @Suppress("unused")
   fun copyExistingConfig(configPath: Path): IDETestContext {
-    FileUtil.copyDir(configPath.toFile(), paths.configDir.toFile())
+    FileUtils.copyDirectory(configPath.toFile(), paths.configDir.toFile())
     return this
   }
 
   @Suppress("unused")
   fun copyExistingPlugins(pluginPath: Path): IDETestContext {
-    FileUtil.copyDir(pluginPath.toFile(), paths.pluginsDir.toFile())
+    FileUtils.copyDirectory(pluginPath.toFile(), paths.pluginsDir.toFile())
     return this
   }
 }

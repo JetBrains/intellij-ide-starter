@@ -8,7 +8,7 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
-import com.intellij.openapi.util.io.FileUtil
+import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
@@ -37,7 +37,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
       targetPluginDir.deleteRecursively()
     }
     targetPluginDir.mkdirs()
-    FileUtil.copyDir(pathToPluginFolder, targetPluginDir, false)
+    FileUtils.copyDirectory(pathToPluginFolder, targetPluginDir, false)
   }
 
   fun setupPluginFromURL(urlToPluginZipFile: String) = apply {
