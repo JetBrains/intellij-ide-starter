@@ -718,3 +718,12 @@ fun <T : CommandChain> T.assertFindUsagesCount(count: Int): T {
   addCommand("${CMD_PREFIX}assertFindUsagesCommand $count")
   return this
 }
+
+
+/**
+ * Works for Java and Kotlin files
+ */
+fun <T : CommandChain> T.setBreakpoint(line: Int): T {
+  addCommand("${CMD_PREFIX}setBreakpoint $line")
+  return this
+}
