@@ -6,18 +6,16 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.withRetry
-import com.intellij.ide.starter.wsl.WslDistributionNotFoundException
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkInstallerBase
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkItem
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkListDownloader
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkPredicate
+import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 
 object JdkDownloaderFacade {
 
@@ -27,9 +25,11 @@ object JdkDownloaderFacade {
   val jdk16 get() = jdkDownloader(JdkVersion.JDK_16.toString())
   val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
 
+  const val MINIMUM_JDK_FILES_COUNT = 42
+
   fun jdkDownloader(version: String, jdks: Iterable<JdkDownloadItem> = allJdks): JdkDownloadItem {
     val jdkName = when (SystemInfo.OS_ARCH) {
-      "aarch64" -> "azul"
+      "aarch64" -> "corretto"
       else -> "corretto"
     }
     return jdks.single {
@@ -78,63 +78,76 @@ object JdkDownloaderFacade {
   }
 
   private fun determineTargetJdkHome(predicate: JdkPredicate, jdk: JdkItem): Path =
-    if (isWSLWindows(predicate) && WslDistributionManager.getInstance().installedDistributions.isNotEmpty()) {
-      try {
-        val wslDistribution = WslDistributionManager.getInstance().installedDistributions[0]
-        Path.of(wslDistribution.getWindowsPath("/tmp/jdks/${jdk.installFolderName}"))
-      }
-      catch (_: Exception) {
-        throw WslDistributionNotFoundException(predicate)
-      }
+    if (isWSL(predicate)) {
+      Path.of(WslDistributionManager.getInstance().installedDistributions[0].getWindowsPath("/tmp/jdks/${jdk.installFolderName}"))
     }
     else {
       di.direct.instance<GlobalPaths>().getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
     }
 
-  private fun isWSLWindows(predicate: JdkPredicate): Boolean =
-    predicate == JdkPredicate.forWSL(null) && SystemInfo.isWindows
+  private fun isWSL(predicate: JdkPredicate): Boolean = predicate == JdkPredicate.forWSL(null)
+                                                        && SystemInfo.isWindows
+                                                        && WslDistributionManager.getInstance().installedDistributions.isNotEmpty()
 
   private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean =
-    !Files.isRegularFile(targetHomeMarker) || !targetJdkHome.toFile().isDirectory || (runCatching {
-      Files.walk(targetJdkHome).use { it.count() }
-    }.getOrNull() ?: 0) < 42
+    !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), arrayOf(), true).size < MINIMUM_JDK_FILES_COUNT
 
   private fun downloadAndInstallJdk(jdk: JdkItem, targetJdkHome: Path, targetHomeMarker: Path) {
     withRetry(retries = 5) {
       logOutput("Downloading JDK at $targetJdkHome")
       FileUtils.deleteQuietly(targetJdkHome.toFile())
 
-      val jdkInstaller = createJdkInstaller()
+      val jdkInstaller = JdkInstaller()
       val request = jdkInstaller.prepareJdkInstallationDirect(jdk, targetPath = targetJdkHome)
-      callWithModifiedSystemPath { jdkInstaller.installJdk(request, null, null) }
-      FileUtils.createParentDirectories(targetHomeMarker.toFile())
-      Files.writeString(targetHomeMarker, request.javaHome.toRealPath().toString(), Charsets.UTF_8)
+      jdkInstaller.installJdk(request, targetHomeMarker)
     }
   }
 
-  //we need to override system path to download jdk since it's used to calculate temp folder
-  private fun callWithModifiedSystemPath(action: () -> Unit) {
-    val systemPathProperty = "idea.system.path"
-    val storedSystemPath = System.getProperty(systemPathProperty)
-    System.setProperty(systemPathProperty, di.direct.instance<GlobalPaths>().testHomePath.resolve("tmp/jdk").toAbsolutePath().toString())
-    action()
-    System.setProperty(systemPathProperty, storedSystemPath)
+  private fun downloadFileFromUrl(urlString: String, destinationPath: Path) {
+    FileUtils.createParentDirectories(destinationPath.toFile())
+    URL(urlString).openConnection().getInputStream().use { inputStream ->
+      Files.copy(inputStream, destinationPath, StandardCopyOption.REPLACE_EXISTING)
+    }
   }
 
-  private fun createJdkInstaller(): JdkInstallerBase = object : JdkInstallerBase() {
-    override fun defaultInstallDir(): Path {
-      val explicitHome = System.getProperty("jdk.downloader.home")
-      if (explicitHome != null) {
-        return Paths.get(explicitHome)
+  private fun JdkInstaller.installJdk(request: JdkInstallRequest, markerFile: Path) {
+    val item = request.item
+    val targetDir = request.installDir
+    val wslDistribution = wslDistributionFromPath(targetDir)
+    if (wslDistribution != null && item.os != "linux") {
+      error("Cannot install non-linux JDK into WSL environment to $targetDir from $item")
+    }
+    val temp = di.direct.instance<GlobalPaths>().testHomePath.resolve("tmp/jdk").toAbsolutePath().toString()
+    val downloadFile = Paths.get(temp, "jdk-${System.nanoTime()}-${item.archiveFileName}")
+    try {
+      try {
+        downloadFileFromUrl(item.url, downloadFile)
+        if (!downloadFile.toFile().isFile) {
+          throw RuntimeException("Downloaded file does not exist: $downloadFile")
+        }
+      }
+      catch (t: Throwable) {
+        throw RuntimeException("Failed to download ${item.fullPresentationText} from ${item.url}: ${t.message}", t)
       }
 
-      val home = Paths.get(File(System.getProperty("user.home") ?: ".").canonicalPath)
-      return when {
-        SystemInfo.isLinux -> home.resolve(".jdks")
-        SystemInfo.isMac -> home.resolve("Library/Java/JavaVirtualMachines")
-        SystemInfo.isWindows -> home.resolve(".jdks")
-        else -> error("Unsupported OS: ${SystemInfo.getOsNameAndVersion()}")
+      try {
+        if (wslDistribution != null) {
+          JdkInstallerWSL.unpackJdkOnWsl(wslDistribution, item.packageType, downloadFile, targetDir, item.packageRootPrefix)
+        }
+        else {
+          item.packageType.openDecompressor(downloadFile).let {
+            val fullMatchPath = item.packageRootPrefix.trim('/')
+            if (fullMatchPath.isBlank()) it else it.removePrefixPath(fullMatchPath)
+          }.extract(targetDir)
+        }
       }
+      catch (t: Throwable) {
+        throw RuntimeException("Failed to extract ${item.fullPresentationText}. ${t.message}", t)
+      }
+      Files.writeString(markerFile, request.javaHome.toRealPath().toString(), Charsets.UTF_8)
+    }
+    finally {
+      FileUtils.deleteQuietly(downloadFile.toFile())
     }
   }
 
