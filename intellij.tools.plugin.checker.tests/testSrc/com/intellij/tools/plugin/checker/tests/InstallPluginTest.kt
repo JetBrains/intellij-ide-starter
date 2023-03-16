@@ -9,14 +9,11 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.downloadLatestAndroidSdk
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.ide.starter.sdk.JdkDownloaderFacade
-import com.intellij.ide.starter.sdk.setupAndroidSdkToProject
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
@@ -71,7 +68,7 @@ class InstallPluginTest {
           }
         }
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
-          Pair("teamcity.build.id", "4636"),
+          Pair("teamcity.build.id", "9121"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
           Pair("teamcity.auth.password",
                "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
@@ -210,11 +207,6 @@ class InstallPluginTest {
         pluginConfigurator.setupPluginFromURL(params.event.file)
       }
       .setLicense(System.getenv("LICENSE_KEY"))
-    if (params.event.productCode == di.direct.instance<IdeProductProvider>().AI.productCode) {
-      logOutput("Setting up Android SDK")
-      val androidSdk = downloadLatestAndroidSdk(JdkDownloaderFacade.jdk11.home)
-      setupAndroidSdkToProject(testContext.resolvedProjectHome, androidSdk)
-    }
 
     testContext.runIDE(commands = CommandChain().exitApp())
   }
