@@ -1,107 +1,24 @@
-### Starter for IntelliJ IDEA based IDE's
+### Starter Core
 
 #### Overview
 
-Starter helps you write tests/code, that will start IntelliJ-based IDE from installer in external process.
-Aside from that, you may find useful functionality as below:
-
-* execution commands in plugins (list of available commands described below)
-* implementing your custom command to be invoked later in tests
-* execution custom code (though, you cannot use external libraries here)
-* integration with CI (optional)
-* collecting test artifacts
-* reporting of artifacts to CI (optional)
-* run a test with a profiler (not yet included)
-
-#### Supported products
-
-* IDEA
-* GoLand
-* WebStorm
-* PhpStorm
-* DataGrip
-* PyCharm
-* RubyMine
-* Android Studio
-
-##### How to setup
-
-Please see `build.gradle` file in `intellij.tools.ide.starter.examples` required dependencies 
-and examples of tests.
-
+This repository contains the core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/README.md)
 
 ##### Run with JUnit4
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/tests/examples/junit4/IdeaJUnit4ExampleTests.kt)
-
-You should create appropriate classes in your tests for JUnit4StarterRule, IdeaCases (we don't provide that as an artifact yet)
+[Example of test based on JUnit 4](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit4/IdeaJUnit4ExampleTests.kt)
 
 ##### Run with JUnit5
 
-[Example of simple test, that will download IntelliJ IDEA and start import of gradle project](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/tests/examples/junit5/IdeaJUnit5ExampleTest.kt)
-
-##### Available commands from plugins
-
-Dependency `performance-testing-commands`
-
-- waitForSmartMode()
-- flushIndexes()
-- setupProjectSdk(sdkName: String, sdkType: String, sdkPath: String)
-- setupProjectSdk(sdkObject: SdkObject)
-- setupProjectJdk(sdkName: String, sdkPath: String) = setupProjectSdk(sdkName, "JavaSDK", sdkPath)
-- openFile(relativePath: String)
-- openProject(projectPath: Path)
-- reopenProject()
-- goto(line: String, column: String)
-- findUsages()
-- inspectCode()
-- checkOnRedCode()
-- exitApp(forceExit: Boolean = true)
-- exitAppWithTimeout(timeoutInSeconds: Long)
-- memoryDump()
-- dumpProjectFiles()
-- compareProjectFiles(firstDir: String, secondDir: String)
-- cleanCaches()
-- doComplete()
-- doComplete(times: Int)
-- openProjectView()
-- pressKey(key: String)
-- delayType(command: String)
-- doLocalInspection()
-- altEnter(intention: String)
-- callAltEnter(times: Int, intention: String = "")
-- createAllServicesAndExtensions()
-- runConfiguration(command: String)
-- openFileWithTerminate(relativePath: String, terminateIdeInSeconds: Long)
-- searchEverywhere(text: String)
-- storeIndices()
-- compareIndices()
-- recoveryAction(action: RecoveryActionType)
-- ... **TBD**
-
-Dependency `performance-testing-maven-commands`
-
-- importMavenProject()
-
-Dependency `performance-testing-gradle-commands`
-
-- importGradleProject()
-
-### Metrics
-
-Dependency `com.jetbrains.intellij.tools:ide-metrics-collector`
-
-See [README](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.metricsCollector/README.md) for more details.
+[Example of test based on JUnit5](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit5/IdeaJUnit5ExampleTest.kt)
 
 #### What behaviour might be extended / modified
 
-Everything, that initializes via DI framework (Kodein DI) might be modified in your code for your need.   
+You can modify or extend any behavior initialized through the Kodein DI framework according to your needs. To do so, refer to the    
 [DI container initialization](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt)  
-For example, you might write your own implementation of CIServer and provide it via DI.
+For example, you can create your own implementation of CIServer and provide it through DI. Make sure to use the same Kodein version specified in the starter project's `build.gradle`.
 
-NOTE: Be sure to use the same version of Kodein, that is used in `build.gradle` for starter project.
-
-E.g:
+Example:
 
 ```
 di = DI {
@@ -112,11 +29,12 @@ di = DI {
 
 ### Debugging the test
 
-Since the actual logic of the test is executed inside the plugin (inside the IDE in external process) you cannot simply debug the test.  
-To achieve that you have to connect remotely to that IDE instance.
+Since tests are executed inside the IDE as an external process for test, you cannot directly debug them. 
+To debug a test, you need to connect remotely to the IDE instance.
 
-Some general workflow for debugging:
+General debugging workflow:
 
+1. Add the following call on `context` object
 ```
 ...
 
@@ -124,19 +42,21 @@ context
 .addVMOptionsPatch { debug() }
 
 ...
-``` 
-
-Create run configuration for Remote JVM Debug:
+```
+2. Create run configuration for Remote JVM Debug:
 Debugger mode: **Attach to Remote JVM**   
 Host: **localhost** Port: **5005**  
 Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005```  
+3. Run your test. 
 
-Run your test. After seeing in console prompt to connect remotely to the 5005 port run the created run configuration.
+After seeing the console prompt to connect remotely to port 5005, run the created run configuration.
 
 
-### Using tweaks to alter starter behaviour
-For JUnit5 there a few extensions with prefix `Tweak``, that just convenient way to set configuration variable you needed.  
-Eg:
+### Using Tweaks to Modify Starter Behavior
+
+For JUnit5, there are several extensions with the Tweak prefix, which provide a convenient way to set configuration variables as needed.
+
+Example:
 ```
 @ExtendWith(TweakEnableClassFileVerification::class)
 @ExtendWith(TweakUseLatestDownloadedIdeBuild::class)
@@ -145,9 +65,10 @@ class ClassWithTest {
 }
 ```
 
-Configuration storage `com.intellij.ide.starter.config.StarterConfigurationStorage`
+The configuration storage is `com.intellij.ide.starter.config.StarterConfigurationStorage`
 
 ### Downloading custom releases
-By default, when `useEAP` or `useRelease` methods is called, downloading IDE installers will be performed from JB public hosting.  
-If no version is specified - latest version will be used. But you can specify the desired version as well.  
+Downloading Custom Releases
+
+By default, when useEAP or useRelease methods are called, IDE installers will be downloaded from JetBrains' public hosting. If no version is specified, the latest version will be used. However, you can specify a desired version if needed.  
 
