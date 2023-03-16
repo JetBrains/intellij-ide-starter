@@ -13,6 +13,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
@@ -199,15 +200,20 @@ class InstallPluginTest {
   @MethodSource("data")
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
-    val testContext = container
-      .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
-      .prepareProjectCleanImport()
-      .setSharedIndexesDownload(enable = true)
-      .apply {
-        pluginConfigurator.setupPluginFromURL(params.event.file)
-      }
-      .setLicense(System.getenv("LICENSE_KEY"))
-
-    testContext.runIDE(commands = CommandChain().exitApp())
+    try {
+      val testContext = container
+        .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
+        .prepareProjectCleanImport()
+        .setSharedIndexesDownload(enable = true)
+        .apply {
+          pluginConfigurator.setupPluginFromURL(params.event.file)
+        }
+        .setLicense(System.getenv("LICENSE_KEY"))
+      testContext.runIDE(commands = CommandChain().exitApp())
+    }
+    catch (e: PluginNotFoundException) {
+      //don't run the test if plugin was removed by author
+      return
+    }
   }
 }

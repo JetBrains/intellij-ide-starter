@@ -16,6 +16,8 @@ import java.nio.file.Path
 import java.util.jar.JarFile
 import kotlin.io.path.*
 
+class PluginNotFoundException(message: String? = null, cause: Throwable? = null) : RuntimeException(message, cause)
+
 open class PluginConfigurator(val testContext: IDETestContext) {
   val disabledPluginsPath: Path
     get() = testContext.paths.configDir / "disabled_plugins.txt"
@@ -45,7 +47,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
     logOutput("Downloading $urlToPluginZipFile")
     if (!HttpClient.download(urlToPluginZipFile, pluginZip)) {
-      throw IllegalStateException("Plugin $urlToPluginZipFile couldn't be downloaded.")
+      throw PluginNotFoundException("Plugin $urlToPluginZipFile couldn't be downloaded.")
     }
 
     FileSystem.unpack(pluginZip, testContext.paths.pluginsDir)
