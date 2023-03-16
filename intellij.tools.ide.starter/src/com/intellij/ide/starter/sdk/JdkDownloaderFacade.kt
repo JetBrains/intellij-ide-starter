@@ -90,7 +90,7 @@ object JdkDownloaderFacade {
                                                         && WslDistributionManager.getInstance().installedDistributions.isNotEmpty()
 
   private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean =
-    !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), arrayOf(), true).size < MINIMUM_JDK_FILES_COUNT
+    !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), null, true).size < MINIMUM_JDK_FILES_COUNT
 
   private fun downloadAndInstallJdk(jdk: JdkItem, targetJdkHome: Path, targetHomeMarker: Path) {
     withRetry(retries = 5) {
