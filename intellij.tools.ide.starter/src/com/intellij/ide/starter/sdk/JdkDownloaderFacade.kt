@@ -29,7 +29,7 @@ object JdkDownloaderFacade {
 
   fun jdkDownloader(version: String, jdks: Iterable<JdkDownloadItem> = allJdks): JdkDownloadItem {
     val jdkName = when (SystemInfo.OS_ARCH) {
-      "aarch64" -> "corretto"
+      "aarch64" -> "azul"
       else -> "corretto"
     }
     return jdks.single {
