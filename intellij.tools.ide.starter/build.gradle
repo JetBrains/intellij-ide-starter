@@ -17,6 +17,10 @@ buildscript {
 
 sourceSets {
   main.kotlin.srcDirs += 'src'
+  main.resources {
+    srcDirs "resources"
+    includes = ["**/*.*"]
+  }
   test.kotlin.srcDirs += 'testSrc'
   test.resources {
     srcDirs "testResources"
@@ -46,9 +50,10 @@ dependencies {
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3"
   implementation "com.jetbrains.qodana:qodana-sarif:0.1.99"
   implementation('com.jetbrains.intellij.platform:ide-impl:LATEST-TRUNK-SNAPSHOT')
-  Implementation 'commons-io:commons-io:2.11.0'
+  implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-TRUNK-SNAPSHOT')
+  implementation 'commons-io:commons-io:2.11.0'
 
-  testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-TRUNK-SNAPSHOT'
+  testImplementation project(':starter-junit5')
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'
   testImplementation 'org.mockito:mockito-core:3.12.4'

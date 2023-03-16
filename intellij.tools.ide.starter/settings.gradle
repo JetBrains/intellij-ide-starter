@@ -1,0 +1,5 @@
+include ":starter-junit5"
+project(":starter-junit5").projectDir = file("../intellij.tools.ide.starter.junit5")
+
+include ":starter-commands"
+project(":starter-commands").projectDir = file("../intellij.tools.ide.performanceTesting.commands")
