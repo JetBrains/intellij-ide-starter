@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.tests.unit
+package com.intellij.ide.starter.iunit5
 
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di

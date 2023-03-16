@@ -25,15 +25,11 @@ repositories {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4"
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-  implementation "org.jetbrains.intellij.deps:gradle-api:7.4"
   implementation "org.kodein.di:kodein-di-jvm:7.16.0"
 
-  implementation 'com.jetbrains.intellij.tools:ide-performance-testing-commands-squashed:LATEST-TRUNK-SNAPSHOT'
-  implementation 'com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-TRUNK-SNAPSHOT'
+  implementation project(':starter')
 
   implementation 'junit:junit:4.13.2'
 }
@@ -44,36 +40,15 @@ configurations {
   implementation.exclude(group: 'com.jetbrains.intellij.remoteDev')
 }
 
-compileKotlin {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
-
-  kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
-    freeCompilerArgs += [
-      "-version",
-      "-Xjvm-default=enable",
-      "-Xopt-in=kotlin.time.ExperimentalTime"
-    ]
-  }
+kotlin {
+  jvmToolchain(17)
 }
 
-compileTestKotlin {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
-
-  kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
-    freeCompilerArgs += [
-      "-version",
-      "-Xjvm-default=enable",
-      "-Xopt-in=kotlin.time.ExperimentalTime"
-    ]
-  }
+sourceSets {
+  main.kotlin.srcDirs += 'src'
 }
 
-
-test {
+tasks.test {
   useJUnitPlatform()
 
   testLogging {

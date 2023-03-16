@@ -32,6 +32,8 @@ dependencies {
   implementation project(':starter')
 
   implementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+
+  testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'
 }
 
 configurations {
@@ -48,7 +50,7 @@ sourceSets {
   main.kotlin.srcDirs += 'src'
 }
 
-test {
+tasks.test {
   useJUnitPlatform()
 
   testLogging {

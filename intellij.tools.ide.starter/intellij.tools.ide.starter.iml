@@ -45,7 +45,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="commons-logging" level="project" />
     <orderEntry type="module-library">
       <library name="jackson-datatype-jsr310" type="repository">
         <properties include-transitive-deps="false" maven-id="com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1" />
@@ -58,16 +57,9 @@
     </orderEntry>
     <orderEntry type="library" name="qodana-sarif" level="project" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
-    <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" name="jetbrains-annotations" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
-    <orderEntry type="module" module-name="intellij.tools.ide.starter.junit5" scope="TEST" />
-    <orderEntry type="library" scope="TEST" name="JUnit4" level="project" />
-    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
-    <orderEntry type="library" scope="TEST" name="mockito-junit-jupiter" level="project" />
-    <orderEntry type="library" scope="TEST" name="JUnit5Params" level="project" />
-    <orderEntry type="library" scope="TEST" name="Objenesis" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
   </component>
 </module>

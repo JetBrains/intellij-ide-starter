@@ -53,7 +53,6 @@ dependencies {
   implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-TRUNK-SNAPSHOT')
   implementation 'commons-io:commons-io:2.11.0'
 
-  testImplementation project(':starter-junit5')
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'
   testImplementation 'org.mockito:mockito-core:3.12.4'

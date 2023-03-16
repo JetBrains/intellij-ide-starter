@@ -45,7 +45,7 @@ sourceSets {
   main.kotlin.srcDirs += 'src'
 }
 
-test {
+tasks.test {
   useJUnitPlatform()
 
   testLogging {
