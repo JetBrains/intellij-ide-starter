@@ -4,13 +4,14 @@
 
 This repository contains the core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/README.md)
 
-##### Run with JUnit4
-
-[Example of test based on JUnit 4](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit4/IdeaJUnit4ExampleTests.kt)
-
 ##### Run with JUnit5
 
 [Example of test based on JUnit5](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit5/IdeaJUnit5ExampleTest.kt)
+
+##### Run with JUnit4
+
+We recommend using JUnit 5 whenever possible, as JUnit 4 is still supported but no longer under active development.
+[Example of test based on JUnit 4](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit4/IdeaJUnit4ExampleTests.kt)
 
 #### What behaviour might be extended / modified
 
