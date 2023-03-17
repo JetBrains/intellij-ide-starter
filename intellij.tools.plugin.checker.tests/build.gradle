@@ -28,10 +28,10 @@ repositories {
   maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }
 
   // This one will only work on https://intellij-plugins-performance.teamcity.com/ (locally you will get access denied, even in JB network)
-  //maven { url = "https://intellij-nightly-sdk.s3.eu-west-1.amazonaws.com" }
+  maven { url = "https://intellij-nightly-sdk.s3.eu-west-1.amazonaws.com" }
 
   // To debug build from gradle locally - uncomment this line and comment the line above
-    maven { url = "https://www.jetbrains.com/intellij-repository/nightly" }
+  //  maven { url = "https://www.jetbrains.com/intellij-repository/nightly" }
 
   maven { url = "https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public" }
 }
