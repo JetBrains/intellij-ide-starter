@@ -62,12 +62,6 @@ class InstallPluginTest {
     init {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
-        di = DI {
-          extend(di)
-          bindSingleton<URI>(tag = "teamcity.uri", overrides = true) {
-            teamCityIntelliJPerformanceServer.fallbackServerUri
-          }
-        }
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
           Pair("teamcity.build.id", "9238"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),

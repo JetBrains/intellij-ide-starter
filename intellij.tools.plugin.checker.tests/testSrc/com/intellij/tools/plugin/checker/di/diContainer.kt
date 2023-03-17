@@ -35,6 +35,9 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
         bindSingleton<IdeProductProvider> { IdeProductProvider }
+        bindSingleton<URI>(tag = "teamcity.uri", overrides = true) {
+          teamCityIntelliJPerformanceServer.fallbackServerUri
+        }
       }
     }
 
