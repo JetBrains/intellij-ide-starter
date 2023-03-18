@@ -35,8 +35,6 @@ repositories {
   maven { url = "https://www.jetbrains.com/intellij-repository/releases" }
   maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }
   maven { url = "https://www.jetbrains.com/intellij-repository/nightly" }
-
-  maven { url = "https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public" }
 }
 
 dependencies {
@@ -61,6 +59,10 @@ dependencies {
 
 configurations {
   implementation.exclude(group: 'com.jetbrains.infra')
+  implementation.exclude(group: 'ai.grazie.model')
+  implementation.exclude(group: 'ai.grazie.nlp')
+  implementation.exclude(group: 'ai.grazie.spell')
+  implementation.exclude(group: 'ai.grazie.utils')
 }
 
 kotlin {

@@ -26,8 +26,6 @@ repositories {
   maven { url = "https://www.jetbrains.com/intellij-repository/releases" }
   maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }
   maven { url = "https://www.jetbrains.com/intellij-repository/nightly" }
-
-  maven { url = "https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public" }
 }
 
 dependencies {
