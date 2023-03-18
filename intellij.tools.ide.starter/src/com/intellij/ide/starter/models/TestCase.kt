@@ -2,6 +2,7 @@ package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.EapReleaseConfigurable
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.project.GitProjectInfo
@@ -13,13 +14,15 @@ import org.kodein.di.instance
 data class TestCase(
   val ideInfo: IdeInfo,
   val projectInfo: ProjectInfoSpec? = null,
+  val additionalContext: IDETestContext.() -> IDETestContext = { this },
   val commands: Iterable<MarshallableCommand> = listOf(),
   val vmOptionsFix: VMOptions.() -> VMOptions = { this },
   val useInMemoryFileSystem: Boolean = false
 ) {
   private val eapReleaseConfigurable: EapReleaseConfigurable by di.instance<EapReleaseConfigurable>()
 
-  fun withProject(projectInfo: ProjectInfoSpec): TestCase = copy(projectInfo = projectInfo)
+  fun withProject(projectInfo: ProjectInfoSpec, additionalContext: IDETestContext.() -> IDETestContext = { this }): TestCase =
+    copy(projectInfo = projectInfo, additionalContext = additionalContext)
 
   fun withCommands(commands: Iterable<MarshallableCommand> = this.commands): TestCase = copy(commands = commands.toList())
 
@@ -63,4 +66,8 @@ data class TestCase(
 
   /** E.g: "2022.1.2" */
   fun withVersion(version: String): TestCase = copy(ideInfo = eapReleaseConfigurable.withVersion(ideInfo, version))
+
+  fun additionalContext(context: IDETestContext): IDETestContext {
+    return context.additionalContext()
+  }
 }

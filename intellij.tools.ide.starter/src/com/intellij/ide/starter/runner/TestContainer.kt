@@ -115,6 +115,6 @@ interface TestContainer<T> : Closeable {
 
     StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
 
-    return contextWithAppliedHooks
+    return contextWithAppliedHooks.testCase.additionalContext(contextWithAppliedHooks)
   }
 }
