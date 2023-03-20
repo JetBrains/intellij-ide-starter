@@ -5,6 +5,9 @@ import com.intellij.ide.starter.system.SystemInfo
 import java.net.URI
 
 data class IdeInfo(
+  /**
+   * Eg: IU, PY, GO ...
+   */
   val productCode: String,
 
   /**
