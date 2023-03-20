@@ -14,15 +14,15 @@ import org.kodein.di.instance
 data class TestCase(
   val ideInfo: IdeInfo,
   val projectInfo: ProjectInfoSpec? = null,
-  val additionalContext: IDETestContext.() -> IDETestContext = { this },
+  val contextConfiguration: IDETestContext.() -> IDETestContext = { this },
   val commands: Iterable<MarshallableCommand> = listOf(),
   val vmOptionsFix: VMOptions.() -> VMOptions = { this },
   val useInMemoryFileSystem: Boolean = false
 ) {
   private val eapReleaseConfigurable: EapReleaseConfigurable by di.instance<EapReleaseConfigurable>()
 
-  fun withProject(projectInfo: ProjectInfoSpec, additionalContext: IDETestContext.() -> IDETestContext = { this }): TestCase =
-    copy(projectInfo = projectInfo, additionalContext = additionalContext)
+  fun withProject(projectInfo: ProjectInfoSpec, contextConfiguration: IDETestContext.() -> IDETestContext = { this }): TestCase =
+    copy(projectInfo = projectInfo, contextConfiguration = contextConfiguration)
 
   fun withCommands(commands: Iterable<MarshallableCommand> = this.commands): TestCase = copy(commands = commands.toList())
 
@@ -67,7 +67,7 @@ data class TestCase(
   /** E.g: "2022.1.2" */
   fun withVersion(version: String): TestCase = copy(ideInfo = eapReleaseConfigurable.withVersion(ideInfo, version))
 
-  fun additionalContext(context: IDETestContext): IDETestContext {
-    return context.additionalContext()
+  fun contextConfiguration(context: IDETestContext): IDETestContext {
+    return context.contextConfiguration()
   }
 }
