@@ -1,2 +1,1 @@
-include ":starter"
-project(":starter").projectDir = file("../intellij.tools.ide.starter")
+rootProject.name = "ide-performance-testing-commands"

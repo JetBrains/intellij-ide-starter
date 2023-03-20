@@ -32,9 +32,9 @@ dependencies {
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   testImplementation "org.kodein.di:kodein-di-jvm:7.16.0"
 
-  testImplementation project(':starter')
-  testImplementation project(':starter-commands')
-  testImplementation project(':starter-junit5')
+  testImplementation "com.jetbrains.intellij.tools:ide-starter"
+  testImplementation "com.jetbrains.intellij.tools:ide-performance-testing-commands"
+  testImplementation "com.jetbrains.intellij.tools:ide-starter-junit5"
 
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 
@@ -42,12 +42,6 @@ dependencies {
   testImplementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
   testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
   testImplementation 'org.apache.httpcomponents:httpclient:4.5.14'
-}
-
-configurations {
-  implementation.exclude(group: 'io.ktor')
-  implementation.exclude(group: 'com.jetbrains.infra')
-  implementation.exclude(group: 'com.jetbrains.intellij.remoteDev')
 }
 
 kotlin {
