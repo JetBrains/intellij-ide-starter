@@ -1,6 +1,5 @@
-package com.intellij.ide.starter.iunit5
+package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.utils.HttpClient
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeFalse

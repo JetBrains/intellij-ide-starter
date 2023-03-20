@@ -1,7 +1,6 @@
-package com.intellij.ide.starter.iunit5
+package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize

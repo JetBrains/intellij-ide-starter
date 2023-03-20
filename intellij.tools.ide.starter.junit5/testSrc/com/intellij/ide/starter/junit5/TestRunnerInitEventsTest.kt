@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.iunit5
+package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
@@ -7,7 +7,6 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.TestContainer

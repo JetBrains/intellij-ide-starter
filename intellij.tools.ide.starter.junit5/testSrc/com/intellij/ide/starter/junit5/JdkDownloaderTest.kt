@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.iunit5
+package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade
 import io.kotest.matchers.collections.shouldHaveAtLeastSize

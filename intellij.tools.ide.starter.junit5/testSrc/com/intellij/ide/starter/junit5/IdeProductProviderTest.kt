@@ -1,7 +1,6 @@
-package com.intellij.ide.starter.iunit5
+package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
