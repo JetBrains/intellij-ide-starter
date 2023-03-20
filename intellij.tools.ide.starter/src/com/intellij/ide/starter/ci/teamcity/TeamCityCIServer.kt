@@ -1,7 +1,10 @@
 package com.intellij.ide.starter.ci.teamcity
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.utils.logOutput
+import org.kodein.di.direct
+import org.kodein.di.instance
 import java.net.URI
 import java.nio.file.Path
 import java.util.*
@@ -12,11 +15,6 @@ import kotlin.math.min
 fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
 
 open class TeamCityCIServer(
-  /**
-   * TeamCity by default will try to determine its server URL from properties.
-   * But for local run that is not possible, so that's why we should provide this fallback uri
-   */
-  val fallbackServerUri: URI,
   private val systemPropertiesFilePath: Path? = try {
     Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))
   }
@@ -123,7 +121,7 @@ open class TeamCityCIServer(
   /** Root URI of the server */
   val serverUri: URI by lazy {
     getBuildParam("teamcity.serverUrl")?.let { return@lazy URI(it).normalize() }
-    return@lazy fallbackServerUri
+    return@lazy di.direct.instance<URI>(tag = "teamcity.uri")
   }
 
   val userName: String by lazy { getBuildParam("teamcity.auth.userId")!! }

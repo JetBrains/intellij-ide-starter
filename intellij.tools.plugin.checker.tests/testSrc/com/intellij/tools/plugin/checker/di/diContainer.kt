@@ -16,28 +16,25 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.Path
 
-internal val teamCityIntelliJPerformanceServer = TeamCityCIServer(
-  fallbackServerUri = URI("https://intellij-plugins-performance.teamcity.com").normalize())
-private val _isDiInitialized: AtomicBoolean = AtomicBoolean(false)
+internal val serverUri = URI("https://intellij-plugins-performance.teamcity.com").normalize()
+internal val teamCityIntelliJPerformanceServer = TeamCityCIServer()
+private val isDiInitialized: AtomicBoolean = AtomicBoolean(false)
 
 fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))) {
-  synchronized(_isDiInitialized) {
-    if (!_isDiInitialized.get()) {
-      _isDiInitialized.set(true)
+  synchronized(isDiInitialized) {
+    if (!isDiInitialized.get()) {
+      isDiInitialized.set(true)
 
       di = DI {
         extend(di)
 
         bindSingleton<CIServer>(overrides = true) {
-          TeamCityCIServer(fallbackServerUri = teamCityIntelliJPerformanceServer.fallbackServerUri,
-                           systemPropertiesFilePath = systemPropertiesFilePath)
+          TeamCityCIServer(systemPropertiesFilePath)
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
         bindSingleton<IdeProductProvider> { IdeProductProvider }
-        bindSingleton<URI>(tag = "teamcity.uri", overrides = true) {
-          teamCityIntelliJPerformanceServer.fallbackServerUri
-        }
+        bindSingleton<URI>(tag = "teamcity.uri", overrides = true) { serverUri }
       }
     }
 
