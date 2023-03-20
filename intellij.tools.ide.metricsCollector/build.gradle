@@ -1,6 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
+group = "com.jetbrains.intellij.tools"
+
 buildscript {
   ext.kotlin_version = '1.8.0'
   ext.jackson_version = '2.14.1'
@@ -30,8 +32,7 @@ repositories {
 
   maven { url = "https://www.jetbrains.com/intellij-repository/releases" }
   maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }
-
-  maven { url = "https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public" }
+  maven { url = "https://www.jetbrains.com/intellij-repository/nightly" }
 }
 
 dependencies {
@@ -39,12 +40,10 @@ dependencies {
   implementation "org.jetbrains.intellij.deps:gradle-api:7.4"
 
 
-  implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-EAP-SNAPSHOT') {
-    exclude group: 'org.jetbrains.kotlinx'
-  }
+  implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-EAP-SNAPSHOT')
   implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
   implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
-  implementation 'com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-EAP-SNAPSHOT'
+  implementation "com.jetbrains.intellij.tools:ide-starter"
 
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'

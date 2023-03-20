@@ -34,12 +34,6 @@ dependencies {
   implementation 'junit:junit:4.13.2'
 }
 
-configurations {
-  implementation.exclude(group: 'io.ktor')
-  implementation.exclude(group: 'com.jetbrains.infra')
-  implementation.exclude(group: 'com.jetbrains.intellij.remoteDev')
-}
-
 kotlin {
   jvmToolchain(17)
 }
