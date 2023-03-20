@@ -50,9 +50,7 @@ kotlin {
 
 tasks.test {
   useJUnitPlatform()
-  filter {
-    includeTestsMatching "com.intellij.tools.plugin.checker.tests.InstallPluginTest"
-  }
+
   testLogging {
     events "passed", "skipped", "failed", "standardOut", "standardError"
   }
