@@ -453,7 +453,7 @@ fun <T : CommandChain> T.stopPowerSave(): T {
 
 const val SEARCH_EVERYWHERE_CMD_PREFIX = "${CMD_PREFIX}searchEverywhere"
 
-fun <T : CommandChain> T.searchEverywhere(tab: String = "all", text: String = "", close: Boolean = false, selectFirst:Boolean = false): T {
+fun <T : CommandChain> T.searchEverywhere(tab: String = "all", textToInsert: String = "", textToType: String = "", close: Boolean = false, selectFirst:Boolean = false): T {
   val closeOnOpenArgument = when {
     close -> "-close"
     else -> ""
@@ -462,10 +462,14 @@ fun <T : CommandChain> T.searchEverywhere(tab: String = "all", text: String = ""
     selectFirst -> "-selectFirst"
     else -> ""
   }
+  val argumentForTyping = when {
+    textToType.isNotEmpty() -> "-type $textToType"
+    else -> ""
+  }
   if(selectFirstArgument.isNotEmpty() && closeOnOpenArgument.isNotEmpty()){
     throw Exception("selectFirst=true argument will be ignored since close=true and SE will be closed first")
   }
-  addCommand(SEARCH_EVERYWHERE_CMD_PREFIX, "-tab $tab $closeOnOpenArgument $selectFirstArgument|$text")
+  addCommand(SEARCH_EVERYWHERE_CMD_PREFIX, "-tab $tab $closeOnOpenArgument $selectFirstArgument $argumentForTyping|$textToInsert")
   return this
 }
 
