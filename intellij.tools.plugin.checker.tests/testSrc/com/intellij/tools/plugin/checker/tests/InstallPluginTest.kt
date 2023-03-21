@@ -30,8 +30,6 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.kodein.di.DI
-import org.kodein.di.bindSingleton
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
@@ -63,7 +61,7 @@ class InstallPluginTest {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
-          Pair("teamcity.build.id", "9238"),
+          Pair("teamcity.build.id", "10103"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
           Pair("teamcity.auth.password",
                "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
@@ -149,7 +147,8 @@ class InstallPluginTest {
       }
 
       if (params.event.productCode == IdeProductProvider.AI.productCode) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        logOutput(
+          RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
         return emptyList()
       }
 
@@ -159,12 +158,18 @@ class InstallPluginTest {
         return emptyList()
       }
 
+      if (params.event.productVersion.startsWith("DB-222.")) {
+        logOutput(
+          RuntimeException("Product ${params.event.productVersion} is not supported: https://youtrack.jetbrains.com/issue/DBE-16528"))
+        return emptyList()
+      }
+
       if (params.event.productCode == IdeProductProvider.DS.productCode) {
         logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. There is some issue with the license."))
         return emptyList()
       }
 
-      if(params.event.pricingModel == "PAID") {
+      if (params.event.pricingModel == "PAID") {
         logOutput(RuntimeException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
       }
