@@ -727,3 +727,13 @@ fun <T : CommandChain> T.setBreakpoint(line: Int): T {
   addCommand("${CMD_PREFIX}setBreakpoint $line")
   return this
 }
+
+fun <T : CommandChain> T.debugRunConfiguration(runConfigurationName: String, maxWaitingTimeInSec: Int = 60): T {
+  addCommand("${CMD_PREFIX}debugRunConfiguration $runConfigurationName,$maxWaitingTimeInSec")
+  return this
+}
+
+fun <T : CommandChain> T.debugStep(debugStepTypes: DebugStepTypes): T {
+  addCommand("${CMD_PREFIX}debugStep ${debugStepTypes.name}")
+  return this
+}
