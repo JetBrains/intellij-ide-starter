@@ -220,6 +220,7 @@ data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSki
   fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
     return ScanningStatistics(
       numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
+      numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,  
       scanningTime = scanningTime + scanningStatistics.scanningTime.milliseconds
     )
   }
