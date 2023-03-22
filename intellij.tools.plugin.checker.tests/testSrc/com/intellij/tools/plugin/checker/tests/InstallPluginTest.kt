@@ -61,7 +61,7 @@ class InstallPluginTest {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
-          Pair("teamcity.build.id", "10103"),
+          Pair("teamcity.build.id", "10527"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
           Pair("teamcity.auth.password",
                "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
@@ -149,6 +149,12 @@ class InstallPluginTest {
       if (params.event.productCode == IdeProductProvider.AI.productCode) {
         logOutput(
           RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        return emptyList()
+      }
+
+      val versionNumber = params.event.productVersion.split("-")[1].split(".")[0].toInt()
+      if (versionNumber <= 200) {
+        logOutput(RuntimeException("Version ${params.event.productVersion} is not supported."))
         return emptyList()
       }
 
