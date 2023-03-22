@@ -133,7 +133,8 @@ data class IDERunContext(
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
     val snapshotsDir = paths.snapshotsDir.createDirectories()
-
+    //clear report dir to not publish data from previous run
+    testContext.wipeReportDir()
     val disabledPlugins = paths.configDir.resolve("disabled_plugins.txt")
     if (disabledPlugins.toFile().exists()) {
       logOutput("The list of disabled plugins: " + disabledPlugins.toFile().readText())
