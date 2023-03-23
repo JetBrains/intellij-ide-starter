@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.tests.examples.data
+package examples.data
 
 /**
  * Examples of test project for different IDE's

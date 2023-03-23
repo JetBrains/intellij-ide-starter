@@ -9,7 +9,7 @@ import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.ide.starter.tests.examples.data.TestCases
+import examples.data.TestCases
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
