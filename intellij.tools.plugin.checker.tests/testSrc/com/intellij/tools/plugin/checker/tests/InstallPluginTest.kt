@@ -61,7 +61,7 @@ class InstallPluginTest {
       if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) {
         // use this to simplify local debug
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
-          Pair("teamcity.build.id", "10527"),
+          Pair("teamcity.build.id", "11087"),
           Pair("teamcity.auth.userId", "maxim.kolmakov"),
           Pair("teamcity.auth.password",
                "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
@@ -164,7 +164,7 @@ class InstallPluginTest {
         return emptyList()
       }
 
-      if (params.event.productVersion.startsWith("DB-222.")) {
+      if (params.event.productVersion.startsWith("DB") && versionNumber < 232) {
         logOutput(
           RuntimeException("Product ${params.event.productVersion} is not supported: https://youtrack.jetbrains.com/issue/DBE-16528"))
         return emptyList()
