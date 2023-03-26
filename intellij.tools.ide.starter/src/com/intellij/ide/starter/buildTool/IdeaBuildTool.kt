@@ -34,7 +34,7 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
     return this
   }
 
-  fun addBuildVMOption(key: String, value: String): IdeaBuildTool {
+  fun addBuildProcessProfiling(): IdeaBuildTool {
     val workspace = ideaDir.resolve("workspace.xml")
     if (workspace.notExists()) return this
 
@@ -43,8 +43,8 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
 
     val userLocalBuildProcessVmOptions = when {
       (testContext.testName.contains(
-        "intellij_sources")) -> "-D$key=$value -Dgroovyc.in.process=true -Dgroovyc.asm.resolving.only=false"
-      else -> "-D$key=$value"
+        "intellij_sources")) -> "-Dprofiling.mode=true -Dgroovyc.in.process=true -Dgroovyc.asm.resolving.only=false"
+      else -> "-Dprofiling.mode=true"
     }
 
     if (readText.contains("CompilerWorkspaceConfiguration")) {
