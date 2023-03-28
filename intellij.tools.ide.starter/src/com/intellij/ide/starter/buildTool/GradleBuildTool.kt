@@ -128,7 +128,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
-  fun enableVerboseLogs(logLevel: LogLevel) {
+  fun setLogLevel(logLevel: LogLevel) {
     testContext.addVMOptionsPatch {
       configureLoggers(logLevel, "org.jetbrains.plugins.gradle")
     }

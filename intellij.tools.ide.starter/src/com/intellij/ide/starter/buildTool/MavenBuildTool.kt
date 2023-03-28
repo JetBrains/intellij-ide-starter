@@ -29,7 +29,7 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
     return this
   }
 
-  fun enableVerboseLogs(logLevel: LogLevel) {
+  fun setLogLevel(logLevel: LogLevel) {
     testContext.addVMOptionsPatch {
       configureLoggers(logLevel, "org.jetbrains.idea.maven")
     }
