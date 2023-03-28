@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter
 
 private fun getFormattedTime() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss"))
 
+// TODO: should we use java logging stack ?
 fun log(message: String, printerFunc: (String) -> Unit) {
   if (message.isEmpty()) {
     printerFunc(message)

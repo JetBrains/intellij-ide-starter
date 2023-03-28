@@ -6,6 +6,7 @@ import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.writeJvmArgsFile
+import com.intellij.openapi.diagnostic.LogLevel
 import org.jetbrains.annotations.CheckReturnValue
 import java.io.File
 import java.nio.file.Path
@@ -163,22 +164,22 @@ data class VMOptions(
     return this.addSystemProperty("idea.log.exit.metrics.file", filePath)
   }
 
+  /**
+   * [categories] - Could be packages, classes ...
+   */
   fun configureLoggers(
-    debugLoggers: List<String> = emptyList(),
-    traceLoggers: List<String> = emptyList()
+    logLevel: LogLevel,
+    vararg categories: String,
   ): VMOptions {
-    val withDebug = if (debugLoggers.isNotEmpty()) {
-      this.addSystemPropertyValue("idea.log.debug.categories", debugLoggers.joinToString(separator = ",") { "#" + it.removePrefix("#") })
+    val logLevelName = logLevel.name.lowercase()
+
+    return if (categories.isNotEmpty()) {
+      this.addSystemPropertyValue("idea.log.${logLevelName}.categories", categories.joinToString(separator = ",") {
+        "#" + it.removePrefix("#")
+      })
     }
     else {
       this
-    }
-
-    return if (traceLoggers.isNotEmpty()) {
-      withDebug.addSystemPropertyValue("idea.log.trace.categories", traceLoggers.joinToString(separator = ",") { "#" + it.removePrefix("#") })
-    }
-    else {
-      withDebug
     }
   }
 

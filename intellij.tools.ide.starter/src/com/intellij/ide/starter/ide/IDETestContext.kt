@@ -17,6 +17,7 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.diagnostic.LogLevel
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
@@ -219,7 +220,7 @@ data class IDETestContext(
   }
 
   fun enableWorkspaceModelVerboseLogs() = addVMOptionsPatch {
-    configureLoggers(traceLoggers = listOf("com.intellij.workspaceModel"))
+    configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
   }
 
   fun wipeSystemDir() = apply {
@@ -245,7 +246,7 @@ data class IDETestContext(
   fun wipeGcLogs() = apply {
     logOutput("removing gclogs files for $this at $paths")
     Files.walk(paths.reportsDir)
-      .filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log")}
+      .filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log") }
       .map { it.toFile() }
       .forEach { it.delete() }
   }
@@ -465,7 +466,7 @@ data class IDETestContext(
                                    IdeProductProvider.PS.productCode, IdeProductProvider.PS.productCode, IdeProductProvider.PS.productCode,
                                    IdeProductProvider.GO.productCode, IdeProductProvider.PY.productCode, IdeProductProvider.DB.productCode,
                                    IdeProductProvider.CL.productCode)
-    if(this.ide.productCode !in supportedProducts){
+    if (this.ide.productCode !in supportedProducts) {
       error("Setting license to the product ${this.ide.productCode} is not supported")
     }
     return setLicense(String(Base64.getEncoder().encode(pathToFileWithLicense.toFile().readBytes())))

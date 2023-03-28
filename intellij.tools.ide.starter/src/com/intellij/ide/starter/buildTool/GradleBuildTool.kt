@@ -4,6 +4,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.diagnostic.LogLevel
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -125,5 +126,11 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     XmlBuilder.writeDocument(xmlDoc, gradleXmlPath)
 
     return this
+  }
+
+  fun enableVerboseLogs(logLevel: LogLevel) {
+    testContext.addVMOptionsPatch {
+      configureLoggers(logLevel, "org.jetbrains.plugins.gradle")
+    }
   }
 }

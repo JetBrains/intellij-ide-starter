@@ -2,6 +2,7 @@ package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.diagnostic.LogLevel
 import java.nio.file.Path
 
 open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.MAVEN, testContext) {
@@ -26,5 +27,11 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
       }
 
     return this
+  }
+
+  fun enableVerboseLogs(logLevel: LogLevel) {
+    testContext.addVMOptionsPatch {
+      configureLoggers(logLevel, "org.jetbrains.idea.maven")
+    }
   }
 }
