@@ -723,8 +723,10 @@ fun <T : CommandChain> T.assertFindUsagesCount(count: Int): T {
   return this
 }
 
-fun <T : CommandChain> T.setBreakpoint(line: Int, relativePath: String? = null): T {
-  addCommand("${CMD_PREFIX}setBreakpoint $line" + if (relativePath != null) ", $relativePath" else "")
+fun <T : CommandChain> T.setBreakpoint(line: Int, relativePath: String? = null, isLambdaBreakpoint: Boolean = false): T {
+  addCommand("${CMD_PREFIX}setBreakpoint $line" +
+             if (relativePath != null) ", $relativePath" else "" +
+             if (isLambdaBreakpoint) ", lambda-type" else "")
   return this
 }
 
