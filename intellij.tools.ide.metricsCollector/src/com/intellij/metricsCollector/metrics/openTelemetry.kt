@@ -33,7 +33,13 @@ fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): Perfor
   )
 }
 
-fun findMetricValue(metrics: List<Metric<*>>, metric: Duration) = metrics.first { it.id.name == metric.name }.value
+fun findMetricValue(metrics: List<Metric<*>>, metric: Duration): Number = try {
+  metrics.first { it.id.name == metric.name }.value
+}
+catch (e: NoSuchElementException) {
+  throw NoSuchElementException("Metric with name '${metric.name}' wasn't found")
+}
+
 
 fun getSingleMetric(file: File, nameOfSpan: String): Metric<*> {
   return getMetrics(file, DEFAULT_SPAN_NAME).first { it.id.name == nameOfSpan }
@@ -110,8 +116,8 @@ private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAtt
         result.add(Metric(Duration(attr.key + "#standard_deviation"), standardDeviation(attr.value)))
       }
       result.add(Metric(Duration(entry.key), sum))
-      result.add(Metric(Duration(entry.key +  "#mean_value"), mean))
-      result.add(Metric(Duration(entry.key +  "#standard_deviation"), sqrt(variance).toLong()))
+      result.add(Metric(Duration(entry.key + "#mean_value"), mean))
+      result.add(Metric(Duration(entry.key + "#standard_deviation"), sqrt(variance).toLong()))
     }
   }
   return result
@@ -141,7 +147,7 @@ private fun processChildren(spanToMetricMap: MutableMap<String, MutableList<Metr
         if (spanId == parentSpanId) {
           val spanName = span.get("operationName").textValue()
           val value = getDuration(span)
-          if(value != 0L || !shouldAvoidIfZero(span)) {
+          if (value != 0L || !shouldAvoidIfZero(span)) {
             val metric = MetricWithAttributes(Metric(Duration(spanName), value))
             populateAttributes(metric, span)
             spanToMetricMap.getOrPut(spanName) { mutableListOf() }.add(metric)
