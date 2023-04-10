@@ -45,21 +45,12 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="jackson-datatype-jsr310" type="repository">
-        <properties include-transitive-deps="false" maven-id="com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1" />
-        <CLASSES>
-          <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.1/jackson-datatype-jsr310-2.13.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="qodana-sarif" level="project" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="library" name="jetbrains-annotations" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
+    <orderEntry type="library" name="jackson-datatype-jsr310" level="project" />
   </component>
 </module>
