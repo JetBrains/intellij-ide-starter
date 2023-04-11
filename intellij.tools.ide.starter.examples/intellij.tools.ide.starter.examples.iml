@@ -33,5 +33,6 @@
     <orderEntry type="library" scope="TEST" name="kotlin-stdlib" level="project" />
     <orderEntry type="library" scope="TEST" name="kodein-di-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="commons-io" level="project" />
+    <orderEntry type="library" scope="TEST" name="JUnit5Params" level="project" />
   </component>
 </module>
