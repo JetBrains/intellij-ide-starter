@@ -190,5 +190,9 @@ open class TeamCityCIServer(
     fun reportTeamCityStatistics(key: String, value: Long) {
       logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
     }
+
+    fun reportTeamCityMessage(text: String) {
+      logOutput(" ##teamcity[message text='$text']")
+    }
   }
 }
