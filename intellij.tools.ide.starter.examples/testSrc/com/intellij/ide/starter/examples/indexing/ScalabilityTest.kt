@@ -41,11 +41,7 @@ class ScalabilityTest {
       .initializeTestContext("${testInfo.hyphenateWithClass()}_$processorCount", TestCases.IC.GradleJitPackSimple)
       .setActiveProcessorCount(processorCount)
 
-    val commands = CommandChain()
-      //.startProfile("indexing")
-      .waitForSmartMode()
-      //.stopProfile()
-      .exitApp()
+    val commands = CommandChain().waitForSmartMode().exitApp()
 
     val result = context.runIDE(commands = commands)
     extractIndexingMetrics(result).publishIndexingMetrics()
