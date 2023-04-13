@@ -730,8 +730,9 @@ fun <T : CommandChain> T.setBreakpoint(line: Int, relativePath: String? = null, 
   return this
 }
 
-fun <T : CommandChain> T.debugRunConfiguration(runConfigurationName: String, maxWaitingTimeInSec: Int = 60): T {
-  addCommand("${CMD_PREFIX}debugRunConfiguration $runConfigurationName,$maxWaitingTimeInSec")
+fun <T : CommandChain> T.debugRunConfiguration(runConfigurationName: String, maxWaitingTimeInSec: Int? = null): T {
+  addCommand("${CMD_PREFIX}debugRunConfiguration $runConfigurationName" +
+             if (maxWaitingTimeInSec != null) ",$maxWaitingTimeInSec" else "")
   return this
 }
 
