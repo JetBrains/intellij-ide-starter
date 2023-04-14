@@ -182,9 +182,9 @@ fun takeScreenshot(logsDir: Path) {
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName
   if (!File(screenshotTool.toString()).exists()) {
-    val archivePath = toolsDir / "$toolName.zip"
-    HttpClient.download("https://repo.labs.intellij.net/phpstorm/tools/TakeScreenshot-1.02.zip", archivePath)
-    FileSystem.unpack(archivePath, screenshotTool)
+    val archivePath = toolsDir / "$toolName.jar"
+    val toolBytes = object { }.javaClass.getResourceAsStream("tools/$toolName.jar")!!.use { it.readAllBytes() }
+    Files.write(archivePath, toolBytes)
   }
   val screenshotFile = logsDir.resolve("screenshot_beforeKill.jpg")
 
