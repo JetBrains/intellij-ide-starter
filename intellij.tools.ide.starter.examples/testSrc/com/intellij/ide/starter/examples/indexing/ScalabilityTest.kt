@@ -14,6 +14,7 @@ import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.metricsCollector.metrics.extractIndexingMetrics
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import com.jetbrains.performancePlugin.commands.chain.waitForSmartMode
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
@@ -22,6 +23,7 @@ import org.kodein.di.bindSingleton
 import java.nio.file.Paths
 
 @ExtendWith(JUnit5StarterAssistant::class)
+@Disabled("Requires local installation of IDE, configs and project")
 class ScalabilityTest {
   private lateinit var testInfo: TestInfo
   private lateinit var context: TestContainerImpl
