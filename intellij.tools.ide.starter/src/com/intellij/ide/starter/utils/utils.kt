@@ -5,6 +5,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -183,7 +184,7 @@ fun takeScreenshot(logsDir: Path) {
   val screenshotTool = toolsDir / toolName
   if (!File(screenshotTool.toString()).exists()) {
     val archivePath = toolsDir / "$toolName.jar"
-    val toolBytes = object { }.javaClass.getResourceAsStream("tools/$toolName.jar")!!.use { it.readAllBytes() }
+    val toolBytes = IDERunContext::class.java.getResourceAsStream("tools/$toolName.jar")!!.use { it.readAllBytes() }
     Files.write(archivePath, toolBytes)
   }
   val screenshotFile = logsDir.resolve("screenshot_beforeKill.jpg")
