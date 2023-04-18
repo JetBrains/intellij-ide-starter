@@ -2,6 +2,7 @@ package com.intellij.metricsCollector.publishing
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.metricsCollector.collector.PerformanceMetricsDto
+import com.intellij.metricsCollector.metrics.AlternativeIndexingMetrics
 import com.intellij.metricsCollector.metrics.IndexingMetrics
 import com.intellij.openapi.util.BuildNumber
 import kotlin.io.path.div
@@ -19,6 +20,15 @@ fun IndexingMetrics.publishIndexingMetrics(): IndexingMetrics {
 }
 
 fun IndexingMetrics.toPerformanceMetricsJson(): PerformanceMetricsDto {
+  val metrics = getListOfIndexingMetrics()
+  return PerformanceMetricsDto.create(
+    projectName = this.ideStartResult.runContext.contextName,
+    buildNumber = BuildNumber.fromStringWithProductCode(ideStartResult.context.ide.build, ideStartResult.context.ide.productCode)!!,
+    metrics = metrics
+  )
+}
+
+fun AlternativeIndexingMetrics.toPerformanceMetricsJson(): PerformanceMetricsDto {
   val metrics = getListOfIndexingMetrics()
   return PerformanceMetricsDto.create(
     projectName = this.ideStartResult.runContext.contextName,
