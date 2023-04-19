@@ -230,7 +230,7 @@ private fun compareInitialAndAlternativeMetrics(metrics: IndexingMetrics,
   val comparisonMessage = buildString {
     fun <T> check(value: T, alternativeValue: T, name: String) {
       val equalityCheck: BiFunction<T, T, Boolean> =
-        if ("totalIndexingTime" == name || "totalScanFilesTime" == name || "totalUpdatingTime" == name) {
+        if ("totalIndexingTime" == name || "totalUpdatingTime" == name) {
           BiFunction { t, u -> abs((t as Long) - (u as Long)) < 200 }
         }
         else {
@@ -320,7 +320,7 @@ private fun compareInitialAndAlternativeJsonMetrics(json: PerformanceMetricsDto,
       }
 
       val equalityCheck: BiFunction<Long?, Long?, Boolean>
-      if ("indexing" == name || "scanning" == name || "updatingTime" == name) {
+      if ("indexing" == name || "updatingTime" == name) {
         equalityCheck = BiFunction { t, u ->
           when (t == null) {
             true -> u == null
