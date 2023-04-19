@@ -226,6 +226,7 @@ data class IDERunContext(
             }
           },
           onBeforeKilled = { process, pid ->
+            takeScreenshot(logsDir)
             if (!expectedKill) {
               val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
 
@@ -242,7 +243,6 @@ data class IDERunContext(
                 collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
               }
             }
-            takeScreenshot(logsDir)
           }
         ).start()
       }
