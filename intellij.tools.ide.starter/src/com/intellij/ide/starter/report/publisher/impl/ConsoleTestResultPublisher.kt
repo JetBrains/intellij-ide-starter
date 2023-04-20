@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.report.publisher.impl
 
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.utils.logOutput
@@ -7,7 +8,10 @@ import com.intellij.ide.starter.utils.logOutput
 object ConsoleTestResultPublisher : ReportPublisher {
 
   override fun publishResult(ideStartResult: IDEStartResult) {
-    logOutput("Console publisher")
+    logOutput(ideStartResult)
   }
 
+  override fun publishAfterRun(context: IDETestContext) {
+    logOutput(context)
+  }
 }
