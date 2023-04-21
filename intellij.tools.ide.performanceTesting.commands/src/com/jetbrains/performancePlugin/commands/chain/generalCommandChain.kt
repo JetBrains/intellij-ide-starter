@@ -390,8 +390,8 @@ fun <T : CommandChain> T.pressKey(key: Keys): T {
 
 const val DELAY_TYPE_CMD_PREFIX = "${CMD_PREFIX}delayType"
 
-fun <T : CommandChain> T.delayType(delay: Int, text: String): T {
-  addCommand(DELAY_TYPE_CMD_PREFIX, "$delay|$text")
+fun <T : CommandChain> T.delayType(delay: Int, text: String, calculateAnalyzesTime: Boolean = false): T {
+  addCommand(DELAY_TYPE_CMD_PREFIX, "$delay|$text|$calculateAnalyzesTime")
   return this
 }
 
