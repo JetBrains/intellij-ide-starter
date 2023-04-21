@@ -740,3 +740,13 @@ fun <T : CommandChain> T.debugStep(debugStepTypes: DebugStepTypes): T {
   addCommand("${CMD_PREFIX}debugStep ${debugStepTypes.name}")
   return this
 }
+
+fun <T : CommandChain> T.checkChatBotResponse(textToCheck: String): T {
+  addCommand("${CMD_PREFIX}checkResponseContains ${textToCheck}")
+  return this
+}
+
+fun <T : CommandChain> T.authenticateInGrazie(token: String): T {
+  addCommand("${CMD_PREFIX}authenticateInGrazie ${token}")
+  return this
+}
