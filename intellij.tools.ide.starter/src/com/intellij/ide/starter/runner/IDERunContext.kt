@@ -33,7 +33,10 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.*
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
+import kotlin.io.path.listDirectoryEntries
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -268,7 +271,7 @@ data class IDERunContext(
         logOutput()
       }
 
-      return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = vmOptionsDiff, logsDir = logsDir)
+      return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = vmOptionsDiff)
     }
     catch (t: Throwable) {
       isRunSuccessful = false
@@ -290,7 +293,7 @@ data class IDERunContext(
         throw Exception(errorMessage, t)
       }
       else {
-        return IDEStartResult(runContext = this, executionTime = runTimeout, logsDir = logsDir)
+        return IDEStartResult(runContext = this, executionTime = runTimeout)
       }
     }
     finally {
@@ -307,7 +310,7 @@ data class IDERunContext(
           dir.listDirectoryEntries().isEmpty()
         }.forEach { it.toFile().deleteRecursively() }
 
-        val rootErrorsDir  = logsDir / ERRORS_DIR_NAME
+        val rootErrorsDir = logsDir / ERRORS_DIR_NAME
 
         ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this, isRunSuccessful)
         publishArtifacts(isRunSuccessful)
