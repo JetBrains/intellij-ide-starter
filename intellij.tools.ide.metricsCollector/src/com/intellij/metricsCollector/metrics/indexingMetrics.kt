@@ -2,83 +2,94 @@ package com.intellij.metricsCollector.metrics
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.metricsCollector.collector.PerformanceMetrics
-import com.intellij.metricsCollector.collector.PerformanceMetricsDto
-import com.intellij.metricsCollector.publishing.ApplicationMetricDto
-import com.intellij.metricsCollector.publishing.toPerformanceMetricsJson
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
-import com.intellij.util.indexing.diagnostic.dto.JsonFileProviderIndexStatistics
-import com.intellij.util.indexing.diagnostic.dto.JsonIndexDiagnostic
-import com.intellij.util.indexing.diagnostic.dto.JsonScanningStatistics
+import com.intellij.util.indexing.diagnostic.dto.*
 import com.intellij.util.indexing.diagnostic.dump.paths.PortableFilePath
 import java.nio.file.Files
-import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.BiFunction
 import kotlin.io.path.div
 import kotlin.io.path.extension
-import kotlin.math.abs
-import kotlin.reflect.KProperty1
-
-val metricIndexing = PerformanceMetrics.MetricId.Duration("indexing")
-val metricScanning = PerformanceMetrics.MetricId.Duration("scanning")
-val metricUpdatingTime = PerformanceMetrics.MetricId.Duration("updatingTime")
-val metricNumberOfIndexedFiles = PerformanceMetrics.MetricId.Counter("numberOfIndexedFiles")
-val metricNumberOfFilesIndexedByExtensions = PerformanceMetrics.MetricId.Counter("numberOfFilesIndexedByExtensions")
-val metricNumberOfIndexingRuns = PerformanceMetrics.MetricId.Counter("numberOfIndexingRuns")
-val metricIds = listOf(metricIndexing, metricScanning, metricNumberOfIndexedFiles, metricNumberOfFilesIndexedByExtensions,
-                       metricNumberOfIndexingRuns)
 
 
 data class IndexingMetrics(
   val ideStartResult: IDEStartResult,
-  val jsonIndexDiagnostics: List<JsonIndexDiagnostic>
+  val jsonIndexDiagnostics: List<JsonIndexingActivityDiagnostic>
 ) {
+  private val scanningHistories: List<JsonProjectScanningHistory>
+    get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
+  private val indexingHistories: List<JsonProjectDumbIndexingHistory>
+    get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectDumbIndexingHistory>()
+  private val scanningStatistics: List<JsonScanningStatistics>
+    get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.flatMap { history ->
+      when (history) {
+        is JsonProjectScanningHistory -> history.scanningStatistics
+        is JsonProjectDumbIndexingHistory -> listOf(history.scanningStatisticsOfRefreshedFiles)
+      }
+    }
 
-  val totalNumberOfIndexingRuns: Int
-    get() = jsonIndexDiagnostics.count { it.projectIndexingHistory.projectName.isNotEmpty() }
+  val totalNumberOfIndexActivitiesRuns: Int
+    get() = jsonIndexDiagnostics.count {
+      //todo[lene] metrics should be renamed to index activities runs; better count scannings in tests as they are more reproducible
+      it.projectIndexingActivityHistory.projectName.isNotEmpty()
+    }
 
   val totalUpdatingTime: Long
-    get() = jsonIndexDiagnostics.map { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingHistory.times.totalUpdatingTime.nano) }.sum()
+    get() = jsonIndexDiagnostics.sumOf {
+      TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.totalWallTimeWithPauses.nano)
+    }
+
+  //todo[lene] definitely useful to track in tests
+  val totalDumbModeTime: Long
+    get() = jsonIndexDiagnostics.sumOf {
+      TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.dumbWallTimeWithPauses.nano)
+    }
 
   val totalIndexingTime: Long
-    get() = jsonIndexDiagnostics.map { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingHistory.times.indexingTime.nano) }.sum()
+    get() = indexingHistories.sumOf { TimeUnit.NANOSECONDS.toMillis(it.times.totalWallTimeWithoutPauses.nano) }
 
   val totalScanFilesTime: Long
-    get() = jsonIndexDiagnostics.map { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingHistory.times.scanFilesTime.nano) }.sum()
-
-  @Suppress("unused")
-  val totalPushPropertiesTime: Long
-    get() = jsonIndexDiagnostics.map { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingHistory.times.pushPropertiesTime.nano) }.sum()
+    get() = scanningHistories.sumOf {
+      //todo[lene] should actually be TimeUnit.NANOSECONDS.toMillis(it.times.totalWallTimeWithoutPauses.nano) Better to rename the metric
+      TimeUnit.NANOSECONDS.toMillis(it.times.collectingIndexableFilesTime.nano)
+    }
+  val totalDelayedFilesPushTime: Long
+    get() = scanningHistories.sumOf {
+      TimeUnit.NANOSECONDS.toMillis(it.times.delayedPushPropertiesStageTime.nano)
+    }
 
   private val suspendedTime: Long
-    get() = jsonIndexDiagnostics.map { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingHistory.times.totalSuspendedTime.nano) }.sum()
+    get() = jsonIndexDiagnostics.sumOf { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.wallTimeOnPause.nano) }
 
   val totalNumberOfIndexedFiles: Int
-    get() = jsonIndexDiagnostics.sumOf { diagnostic ->
-      diagnostic.projectIndexingHistory.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles }
-    }
+    get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles } }
 
   val totalNumberOfScannedFiles: Int
-    get() = jsonIndexDiagnostics.sumOf { diagnostic ->
-      diagnostic.projectIndexingHistory.scanningStatistics.sumOf { it.numberOfScannedFiles }
-    }
+    get() = scanningStatistics.sumOf { it.numberOfScannedFiles }
 
   val totalNumberOfFilesFullyIndexedByExtensions: Int
-    get() = jsonIndexDiagnostics.map { it.projectIndexingHistory.fileProviderStatistics.map { provider -> provider.totalNumberOfFilesFullyIndexedByExtensions }.sum() }.sum() +
-            jsonIndexDiagnostics.map { it.projectIndexingHistory.scanningStatistics.map { scan -> scan.numberOfFilesFullyIndexedByInfrastructureExtensions }.sum() }.sum()
+    get() = jsonIndexDiagnostics.sumOf {
+      when (val fileCount = it.projectIndexingActivityHistory.fileCount) {
+        is JsonProjectScanningFileCount -> fileCount.numberOfFilesIndexedByInfrastructureExtensionsDuringScan
+        is JsonProjectDumbIndexingFileCount -> fileCount.numberOfRefreshedFilesIndexedByInfrastructureExtensionsDuringScan +
+                                               fileCount.numberOfFilesIndexedByInfrastructureExtensionsDuringIndexingStage
+      }
+    }
 
   val listOfFilesFullyIndexedByExtensions: List<String>
     get() {
       val indexedFiles = mutableListOf<String>()
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (fileProviderStatistic in jsonIndexDiagnostic.projectIndexingHistory.fileProviderStatistics) {
-          indexedFiles.addAll(fileProviderStatistic.filesFullyIndexedByExtensions)
-        }
-      }
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (scanningStatistic in jsonIndexDiagnostic.projectIndexingHistory.scanningStatistics) {
-          indexedFiles.addAll(scanningStatistic.filesFullyIndexedByInfrastructureExtensions)
+      jsonIndexDiagnostics.forEach { diagnostic ->
+        when (val history = diagnostic.projectIndexingActivityHistory) {
+          is JsonProjectScanningHistory -> history.scanningStatistics.forEach {
+            indexedFiles.addAll(it.filesFullyIndexedByInfrastructureExtensions)
+          }
+          is JsonProjectDumbIndexingHistory -> {
+            history.fileProviderStatistics.forEach {
+              indexedFiles.addAll(it.filesFullyIndexedByExtensions)
+            }
+            indexedFiles.addAll(history.scanningStatisticsOfRefreshedFiles.filesFullyIndexedByInfrastructureExtensions)
+          }
         }
       }
       return indexedFiles.distinct()
@@ -87,11 +98,9 @@ data class IndexingMetrics(
   val numberOfIndexedByExtensionsFilesForEachProvider: Map<String, Int>
     get() {
       val indexedByExtensionsFiles = mutableMapOf<String /* Provider name */, Int /* Number of files indexed by extensions */>()
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (scanStat in jsonIndexDiagnostic.projectIndexingHistory.scanningStatistics) {
-          indexedByExtensionsFiles[scanStat.providerName] = indexedByExtensionsFiles.getOrDefault(scanStat.providerName,
-                                                                                                  0) + scanStat.numberOfFilesFullyIndexedByInfrastructureExtensions
-        }
+      scanningStatistics.forEach { stat ->
+        indexedByExtensionsFiles[stat.providerName] = indexedByExtensionsFiles.getOrDefault(stat.providerName, 0) +
+                                                      stat.numberOfFilesFullyIndexedByInfrastructureExtensions
       }
       return indexedByExtensionsFiles
     }
@@ -99,11 +108,9 @@ data class IndexingMetrics(
   val numberOfIndexedFilesByUsualIndexesPerProvider: Map<String, Int>
     get() {
       val indexedFiles = mutableMapOf<String /* Provider name */, Int /* Number of files indexed by usual indexes */>()
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (indexStats in jsonIndexDiagnostic.projectIndexingHistory.fileProviderStatistics) {
-          indexedFiles[indexStats.providerName] = indexedFiles.getOrDefault(indexStats.providerName,
-                                                                            0) + indexStats.totalNumberOfIndexedFiles
-        }
+      indexingHistories.flatMap { it.fileProviderStatistics }.forEach { indexStats ->
+        indexedFiles[indexStats.providerName] = indexedFiles.getOrDefault(indexStats.providerName,
+                                                                          0) + indexStats.totalNumberOfIndexedFiles
       }
       return indexedFiles
     }
@@ -111,29 +118,22 @@ data class IndexingMetrics(
   val scanningStatisticsByProviders: Map<String, ScanningStatistics>
     get() {
       val indexedFiles = mutableMapOf<String /* Provider name */, ScanningStatistics>()
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (indexStats in jsonIndexDiagnostic.projectIndexingHistory.scanningStatistics) {
-          val value: ScanningStatistics = indexedFiles.getOrDefault(indexStats.providerName, ScanningStatistics())
-          indexedFiles[indexStats.providerName] = value.merge(indexStats)
-        }
+      scanningStatistics.forEach { stats ->
+        val value: ScanningStatistics = indexedFiles.getOrDefault(stats.providerName, ScanningStatistics())
+        indexedFiles[stats.providerName] = value.merge(stats)
       }
       return indexedFiles
     }
 
   val numberOfFullRescanning: Int
-    get() = jsonIndexDiagnostics.count {
-      it.projectIndexingHistory.times.scanningType.isFull &&
-      it.projectIndexingHistory.projectName.isNotEmpty()
-    }
+    get() = scanningHistories.count { it.times.scanningType.isFull }
 
-  val allIndexedFiles: Map<String, List<PortableFilePath>>
+  val allIndexedFiles: Map<String, List<PortableFilePath>> //without shared indexes
     get() {
       val indexedFiles = hashMapOf<String /* Provider name */, MutableList<PortableFilePath>>()
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (fileProviderStatistic in jsonIndexDiagnostic.projectIndexingHistory.fileProviderStatistics) {
-          indexedFiles.getOrPut(fileProviderStatistic.providerName) { arrayListOf() } +=
-            fileProviderStatistic.indexedFiles.orEmpty().map { it.path }
-        }
+      indexingHistories.flatMap { it.fileProviderStatistics }.forEach { fileProviderStatistic ->
+        indexedFiles.getOrPut(fileProviderStatistic.providerName) { arrayListOf() } +=
+          fileProviderStatistic.indexedFiles.orEmpty().map { it.path }
       }
       return indexedFiles
     }
@@ -141,18 +141,16 @@ data class IndexingMetrics(
   private val processingSpeedPerFileType: Map<String, Int>
     get() {
       val map = mutableMapOf<String, Int>()
-      for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
-        for (totalStatsPerFileType in jsonIndexDiagnostic.projectIndexingHistory.totalStatsPerFileType) {
-          val speed = (totalStatsPerFileType.totalProcessingSpeed.totalBytes.toDouble() * 0.001 /
-                       totalStatsPerFileType.totalProcessingSpeed.totalTime * TimeUnit.SECONDS.toNanos(1).toDouble()).toInt()
-          if (map.containsKey(totalStatsPerFileType.fileType)) {
-            if (map[totalStatsPerFileType.fileType]!! < speed) {
-              map[totalStatsPerFileType.fileType] = speed
-            }
-          }
-          else {
+      indexingHistories.flatMap { it.totalStatsPerFileType }.forEach { totalStatsPerFileType ->
+        val speed = (totalStatsPerFileType.totalProcessingSpeed.totalBytes.toDouble() * 0.001 /
+                     totalStatsPerFileType.totalProcessingSpeed.totalTime * TimeUnit.SECONDS.toNanos(1).toDouble()).toInt()
+        if (map.containsKey(totalStatsPerFileType.fileType)) {
+          if (map[totalStatsPerFileType.fileType]!! < speed) {
             map[totalStatsPerFileType.fileType] = speed
           }
+        }
+        else {
+          map[totalStatsPerFileType.fileType] = speed
         }
       }
       return map
@@ -161,17 +159,15 @@ data class IndexingMetrics(
   val slowIndexedFiles: Map<String, List<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>
     get() {
       val indexedFiles = hashMapOf<String, MutableList<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>()
-      jsonIndexDiagnostics.forEach { jsonIndexDiagnostic ->
-        jsonIndexDiagnostic.projectIndexingHistory.fileProviderStatistics.forEach { fileProviderStatistic ->
-          indexedFiles.getOrPut(fileProviderStatistic.providerName) { arrayListOf() } += fileProviderStatistic.slowIndexedFiles
-        }
+      indexingHistories.flatMap { it.fileProviderStatistics }.forEach { fileProviderStatistic ->
+        indexedFiles.getOrPut(fileProviderStatistic.providerName) { arrayListOf() } += fileProviderStatistic.slowIndexedFiles
       }
       return indexedFiles
     }
 
   override fun toString() = buildString {
-    appendLine("IndexingMetrics(${ideStartResult.runContext.contextName}):")
-    appendLine("IndexingMetrics(")
+    appendLine("AlternativeIndexingMetrics(${ideStartResult.runContext.contextName}):")
+    appendLine("AlternativeIndexingMetrics(")
     for ((name, value) in ideStartResult.mainReportAttributes + toReportTimeAttributes() + toReportCountersAttributes()) {
       appendLine("  $name = $value")
     }
@@ -189,7 +185,7 @@ data class IndexingMetrics(
     "number of indexed files" to totalNumberOfIndexedFiles.toString(),
     "number of scanned files" to totalNumberOfScannedFiles.toString(),
     "number of files indexed by extensions" to totalNumberOfFilesFullyIndexedByExtensions.toString(),
-    "number of indexing runs" to totalNumberOfIndexingRuns.toString(),
+    "number of indexing runs" to totalNumberOfIndexActivitiesRuns.toString(),
     "number of full indexing" to numberOfFullRescanning.toString()
   )
 
@@ -200,12 +196,12 @@ data class IndexingMetrics(
       PerformanceMetrics.Metric(metricUpdatingTime, value = totalUpdatingTime),
       PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = totalNumberOfIndexedFiles),
       PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = totalNumberOfFilesFullyIndexedByExtensions),
-      PerformanceMetrics.Metric(metricNumberOfIndexingRuns, value = totalNumberOfIndexingRuns)
+      PerformanceMetrics.Metric(metricNumberOfIndexingRuns, value = totalNumberOfIndexActivitiesRuns)
     ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType)
   }
 }
 
-fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
+fun extractAlternativeIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   val indexDiagnosticDirectory = startResult.context.paths.logsDir / "indexing-diagnostic"
   val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.toFile().isDirectory }.use { it.toList() }
   val projectIndexDiagnosticDirectory = indexDiagnosticDirectoryChildren.let { perProjectDirs ->
@@ -214,147 +210,14 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   val jsonIndexDiagnostics = Files.list(projectIndexDiagnosticDirectory)
     .use { stream -> stream.filter { it.extension == "json" }.toList() }
     .filter { Files.size(it) > 0L }
-    .map { IndexDiagnosticDumper.readJsonIndexDiagnostic(it) }
-
-  val alternativeIndexingMetrics = extractAlternativeIndexingMetrics(startResult)
-  val alternativeJson = alternativeIndexingMetrics.toPerformanceMetricsJson()
-  val metrics = IndexingMetrics(startResult, jsonIndexDiagnostics)
-  compareInitialAndAlternativeMetrics(metrics, alternativeIndexingMetrics)
-  val json = metrics.toPerformanceMetricsJson()
-  compareInitialAndAlternativeJsonMetrics(json, alternativeJson)
-  return metrics
-}
-
-private fun compareInitialAndAlternativeMetrics(metrics: IndexingMetrics,
-                                                alternativeMetrics: AlternativeIndexingMetrics) {
-  val comparisonMessage = buildString {
-    fun <T> check(value: T, alternativeValue: T, name: String) {
-      val equalityCheck: BiFunction<T, T, Boolean> =
-        if ("totalIndexingTime" == name || "totalUpdatingTime" == name) {
-          BiFunction { t, u -> abs((t as Long) - (u as Long)) < 200 }
-        }
-        else {
-          BiFunction { t, u -> t == u }
-        }
-      if (!equalityCheck.apply(value, alternativeValue)) {
-        appendLine("$name property differs: ${value} and ${alternativeValue}")
-      }
-    }
-
-    check(metrics.totalNumberOfIndexingRuns, alternativeMetrics.totalNumberOfIndexActivitiesRuns, "totalNumberOfIndexingRuns")
-    check(metrics.totalUpdatingTime, alternativeMetrics.totalUpdatingTime, "totalUpdatingTime")
-    check(metrics.totalIndexingTime, alternativeMetrics.totalIndexingTime, "totalIndexingTime")
-    check(metrics.totalScanFilesTime, alternativeMetrics.totalScanFilesTime, "totalScanFilesTime")
-    check(metrics.totalPushPropertiesTime, alternativeMetrics.totalDelayedFilesPushTime, "totalDelayedFilesPushTime")
-    check(metrics.totalNumberOfIndexedFiles, alternativeMetrics.totalNumberOfIndexedFiles, "totalNumberOfIndexedFiles")
-    check(metrics.totalNumberOfScannedFiles, alternativeMetrics.totalNumberOfScannedFiles, "totalNumberOfScannedFiles")
-    check(metrics.totalNumberOfFilesFullyIndexedByExtensions, alternativeMetrics.totalNumberOfFilesFullyIndexedByExtensions,
-          "totalNumberOfFilesFullyIndexedByExtensions")
-    check(metrics.numberOfIndexedByExtensionsFilesForEachProvider, alternativeMetrics.numberOfIndexedByExtensionsFilesForEachProvider,
-          "numberOfIndexedByExtensionsFilesForEachProvider")
-    check(metrics.numberOfIndexedFilesByUsualIndexesPerProvider, alternativeMetrics.numberOfIndexedFilesByUsualIndexesPerProvider,
-          "numberOfIndexedFilesByUsualIndexesPerProvider")
-    check(metrics.scanningStatisticsByProviders, alternativeMetrics.scanningStatisticsByProviders, "scanningStatisticsByProviders")
-    check(metrics.numberOfFullRescanning, alternativeMetrics.numberOfFullRescanning, "numberOfFullRescanning")
-    check(metrics.allIndexedFiles, alternativeMetrics.allIndexedFiles, "allIndexedFiles")
-    check(metrics.slowIndexedFiles, alternativeMetrics.slowIndexedFiles, "slowIndexedFiles")
-
-  }
-  checkMessage(comparisonMessage, metrics, alternativeMetrics)
-}
-
-private fun <T> checkMessage(comparisonMessage: String,
-                             metrics: T,
-                             alternativeMetrics: T) {
-  check(comparisonMessage.isEmpty()) {
-    buildString {
-      appendLine(comparisonMessage)
-      appendLine("Metrics and alternative metrics differ")
-      appendLine("Metrics:")
-      appendLine(metrics)
-      appendLine("\nAlternative metrics:")
-      appendLine(alternativeMetrics)
-    }
-  }
-}
-
-private fun compareInitialAndAlternativeJsonMetrics(json: PerformanceMetricsDto,
-                                                    alternativeJson: PerformanceMetricsDto) {
-  val comparisonMessage = buildString {
-    fun check(value: KProperty1<PerformanceMetricsDto, String>, name: String) {
-      if (value(json) != value(alternativeJson)) {
-        appendLine("$name property differs: ${value(json)} and ${value(alternativeJson)}")
-      }
-    }
-    check(PerformanceMetricsDto::generated, "generated")
-    check(PerformanceMetricsDto::project, "project")
-    check(PerformanceMetricsDto::os, "os")
-    check(PerformanceMetricsDto::osFamily, "osFamily")
-    check(PerformanceMetricsDto::runtime, "runtime")
-    check(PerformanceMetricsDto::generated, "generated")
-    check(PerformanceMetricsDto::build, "build")
-    check(PerformanceMetricsDto::buildDate, "buildDate")
-    check(PerformanceMetricsDto::productCode, "productCode")
-
-    if (json.metrics.size != alternativeJson.metrics.size) {
-      appendLine("Different size of metrics: ${json.metrics.size} and ${alternativeJson.metrics.size} ")
-    }
-
-    fun check(metric: ApplicationMetricDto,
-              alternativeMetric: ApplicationMetricDto,
-              metricName: String,
-              value: KProperty1<ApplicationMetricDto, Long?>,
-              name: String,
-              equalityCheck: BiFunction<Long?, Long?, Boolean>) {
-      if (!equalityCheck.apply(value(metric), value(alternativeMetric))) {
-        appendLine("Metric $name differs in $metricName: ${value(metric)} and ${value(alternativeMetric)}")
-      }
-    }
-
-    for (metric in json.metrics) {
-      val name = metric.n
-      val alternativeMetric = alternativeJson.metrics.firstOrNull { it.n == name }
-      if (alternativeMetric == null) {
-        appendLine("Metric ${name} not found")
-        continue
-      }
-
-      val equalityCheck: BiFunction<Long?, Long?, Boolean>
-      if ("indexing" == name || "updatingTime" == name) {
-        equalityCheck = BiFunction { t, u ->
-          when (t == null) {
-            true -> u == null
-            false -> u != null && abs(t - u) < 200
-          }
-        }
-      }
-      else {
-        equalityCheck = BiFunction { t, u -> Objects.equals(t, u) }
-      }
-
-      check(metric, alternativeMetric, name, ApplicationMetricDto::c, "c", equalityCheck)
-      check(metric, alternativeMetric, name, ApplicationMetricDto::d, "d", equalityCheck)
-      check(metric, alternativeMetric, name, ApplicationMetricDto::v, "v", equalityCheck)
-    }
-  }
-
-  checkMessage(comparisonMessage, json, alternativeJson)
+    .mapNotNull { IndexDiagnosticDumper.readJsonIndexingActivityDiagnostic(it) }
+  return IndexingMetrics(startResult, jsonIndexDiagnostics)
 }
 
 private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric<*>> {
-    val list = mutableListOf<PerformanceMetrics.Metric<*>>()
-  mapFileTypeToSpeed.forEach{
-       list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value))
-      }
-    return list
-}
-
-data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val scanningTime: Long = 0) {
-  fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
-    return ScanningStatistics(
-      numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
-      numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,  
-      scanningTime = scanningTime + scanningStatistics.scanningTime.milliseconds
-    )
+  val list = mutableListOf<PerformanceMetrics.Metric<*>>()
+  mapFileTypeToSpeed.forEach {
+    list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value))
   }
+  return list
 }
