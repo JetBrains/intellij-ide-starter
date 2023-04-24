@@ -11,4 +11,6 @@ interface ProjectInfoSpec {
   val projectHomeRelativePath: (Path) -> Path
 
   fun downloadAndUnpackProject(): Path?
+
+  fun getDescription(): String = ""
 }

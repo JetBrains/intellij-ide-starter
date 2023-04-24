@@ -11,6 +11,7 @@ data class LocalProjectInfo(
   val projectDir: Path,
   override val isReusable: Boolean = true,
   override val projectHomeRelativePath: (Path) -> Path = { it },
+  private val description: String = ""
 ) : ProjectInfoSpec {
   override fun downloadAndUnpackProject(): Path? {
     if (projectDir.notExists()) {
@@ -18,5 +19,9 @@ data class LocalProjectInfo(
     }
 
     return projectDir.toAbsolutePath()
+  }
+
+  override fun getDescription(): String {
+    return description
   }
 }
