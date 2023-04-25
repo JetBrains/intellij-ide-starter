@@ -166,8 +166,8 @@ data class IndexingMetrics(
     }
 
   override fun toString() = buildString {
-    appendLine("AlternativeIndexingMetrics(${ideStartResult.runContext.contextName}):")
-    appendLine("AlternativeIndexingMetrics(")
+    appendLine("IndexingMetrics(${ideStartResult.runContext.contextName}):")
+    appendLine("IndexingMetrics(")
     for ((name, value) in ideStartResult.mainReportAttributes + toReportTimeAttributes() + toReportCountersAttributes()) {
       appendLine("  $name = $value")
     }
@@ -201,7 +201,7 @@ data class IndexingMetrics(
   }
 }
 
-fun extractAlternativeIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
+fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   val indexDiagnosticDirectory = startResult.context.paths.logsDir / "indexing-diagnostic"
   val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.toFile().isDirectory }.use { it.toList() }
   val projectIndexDiagnosticDirectory = indexDiagnosticDirectoryChildren.let { perProjectDirs ->

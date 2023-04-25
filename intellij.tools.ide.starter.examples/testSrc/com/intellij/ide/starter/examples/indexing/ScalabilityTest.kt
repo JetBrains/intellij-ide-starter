@@ -11,7 +11,7 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.metricsCollector.metrics.extractIndexingMetrics
+import com.intellij.metricsCollector.metrics.extractOldIndexingMetrics
 import com.jetbrains.performancePlugin.commands.chain.exitApp
 import com.jetbrains.performancePlugin.commands.chain.waitForSmartMode
 import org.junit.jupiter.api.Disabled
@@ -68,7 +68,7 @@ class ScalabilityTest {
       val commands = CommandChain().waitForSmartMode().exitApp()
 
       val result = context.runIDE(commands = commands)
-      val indexingMetrics = extractIndexingMetrics(result)
+      val indexingMetrics = extractOldIndexingMetrics(result)
       results[processorCount] = listOf(indexingMetrics.totalIndexingTime, indexingMetrics.totalScanFilesTime)
     }
     println("\n###RESULTS###")

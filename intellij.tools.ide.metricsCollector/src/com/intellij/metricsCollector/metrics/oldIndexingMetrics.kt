@@ -170,8 +170,8 @@ data class OldIndexingMetrics(
     }
 
   override fun toString() = buildString {
-    appendLine("IndexingMetrics(${ideStartResult.runContext.contextName}):")
-    appendLine("IndexingMetrics(")
+    appendLine("OldIndexingMetrics(${ideStartResult.runContext.contextName}):")
+    appendLine("OldIndexingMetrics(")
     for ((name, value) in ideStartResult.mainReportAttributes + toReportTimeAttributes() + toReportCountersAttributes()) {
       appendLine("  $name = $value")
     }
@@ -205,7 +205,7 @@ data class OldIndexingMetrics(
   }
 }
 
-fun extractIndexingMetrics(startResult: IDEStartResult): OldIndexingMetrics {
+fun extractOldIndexingMetrics(startResult: IDEStartResult): OldIndexingMetrics {
   val indexDiagnosticDirectory = startResult.context.paths.logsDir / "old-version-indexing-diagnostic"
   val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.toFile().isDirectory }.use { it.toList() }
   val projectIndexDiagnosticDirectory = indexDiagnosticDirectoryChildren.let { perProjectDirs ->
@@ -216,19 +216,19 @@ fun extractIndexingMetrics(startResult: IDEStartResult): OldIndexingMetrics {
     .filter { Files.size(it) > 0L }
     .map { IndexDiagnosticDumper.readJsonIndexDiagnostic(it) }
 
-  val alternativeIndexingMetrics = extractAlternativeIndexingMetrics(startResult)
-  val alternativeJson = alternativeIndexingMetrics.toPerformanceMetricsJson()
+  val currentIndexingMetrics = extractIndexingMetrics(startResult)
+  val currentJson = currentIndexingMetrics.toPerformanceMetricsJson()
   val metrics = OldIndexingMetrics(startResult, jsonIndexDiagnostics)
-  compareInitialAndAlternativeMetrics(metrics, alternativeIndexingMetrics)
+  compareOldAndCurrentMetrics(metrics, currentIndexingMetrics)
   val json = metrics.toPerformanceMetricsJson()
-  compareInitialAndAlternativeJsonMetrics(json, alternativeJson)
+  compareOldAndCurrentJsonMetrics(json, currentJson)
   return metrics
 }
 
-private fun compareInitialAndAlternativeMetrics(metrics: OldIndexingMetrics,
-                                                alternativeMetrics: IndexingMetrics) {
+private fun compareOldAndCurrentMetrics(oldMetrics: OldIndexingMetrics,
+                                        metrics: IndexingMetrics) {
   val comparisonMessage = buildString {
-    fun <T> check(value: T, alternativeValue: T, name: String) {
+    fun <T> check(oldValue: T, value: T, name: String) {
       val equalityCheck: BiFunction<T, T, Boolean> =
         if ("totalIndexingTime" == name || "totalUpdatingTime" == name) {
           BiFunction { t, u -> abs((t as Long) - (u as Long)) < 200 }
@@ -236,54 +236,54 @@ private fun compareInitialAndAlternativeMetrics(metrics: OldIndexingMetrics,
         else {
           BiFunction { t, u -> t == u }
         }
-      if (!equalityCheck.apply(value, alternativeValue)) {
-        appendLine("$name property differs: ${value} and ${alternativeValue}")
+      if (!equalityCheck.apply(oldValue, value)) {
+        appendLine("$name property differs: ${oldValue} and ${value}")
       }
     }
 
-    check(metrics.totalNumberOfIndexingRuns, alternativeMetrics.totalNumberOfIndexActivitiesRuns, "totalNumberOfIndexingRuns")
-    check(metrics.totalUpdatingTime, alternativeMetrics.totalUpdatingTime, "totalUpdatingTime")
-    check(metrics.totalIndexingTime, alternativeMetrics.totalIndexingTime, "totalIndexingTime")
-    check(metrics.totalScanFilesTime, alternativeMetrics.totalScanFilesTime, "totalScanFilesTime")
-    check(metrics.totalPushPropertiesTime, alternativeMetrics.totalDelayedFilesPushTime, "totalDelayedFilesPushTime")
-    check(metrics.totalNumberOfIndexedFiles, alternativeMetrics.totalNumberOfIndexedFiles, "totalNumberOfIndexedFiles")
-    check(metrics.totalNumberOfScannedFiles, alternativeMetrics.totalNumberOfScannedFiles, "totalNumberOfScannedFiles")
-    check(metrics.totalNumberOfFilesFullyIndexedByExtensions, alternativeMetrics.totalNumberOfFilesFullyIndexedByExtensions,
+    check(oldMetrics.totalNumberOfIndexingRuns, metrics.totalNumberOfIndexActivitiesRuns, "totalNumberOfIndexingRuns")
+    check(oldMetrics.totalUpdatingTime, metrics.totalUpdatingTime, "totalUpdatingTime")
+    check(oldMetrics.totalIndexingTime, metrics.totalIndexingTime, "totalIndexingTime")
+    check(oldMetrics.totalScanFilesTime, metrics.totalScanFilesTime, "totalScanFilesTime")
+    check(oldMetrics.totalPushPropertiesTime, metrics.totalDelayedFilesPushTime, "totalDelayedFilesPushTime")
+    check(oldMetrics.totalNumberOfIndexedFiles, metrics.totalNumberOfIndexedFiles, "totalNumberOfIndexedFiles")
+    check(oldMetrics.totalNumberOfScannedFiles, metrics.totalNumberOfScannedFiles, "totalNumberOfScannedFiles")
+    check(oldMetrics.totalNumberOfFilesFullyIndexedByExtensions, metrics.totalNumberOfFilesFullyIndexedByExtensions,
           "totalNumberOfFilesFullyIndexedByExtensions")
-    check(metrics.numberOfIndexedByExtensionsFilesForEachProvider, alternativeMetrics.numberOfIndexedByExtensionsFilesForEachProvider,
+    check(oldMetrics.numberOfIndexedByExtensionsFilesForEachProvider, metrics.numberOfIndexedByExtensionsFilesForEachProvider,
           "numberOfIndexedByExtensionsFilesForEachProvider")
-    check(metrics.numberOfIndexedFilesByUsualIndexesPerProvider, alternativeMetrics.numberOfIndexedFilesByUsualIndexesPerProvider,
+    check(oldMetrics.numberOfIndexedFilesByUsualIndexesPerProvider, metrics.numberOfIndexedFilesByUsualIndexesPerProvider,
           "numberOfIndexedFilesByUsualIndexesPerProvider")
-    check(metrics.scanningStatisticsByProviders, alternativeMetrics.scanningStatisticsByProviders, "scanningStatisticsByProviders")
-    check(metrics.numberOfFullRescanning, alternativeMetrics.numberOfFullRescanning, "numberOfFullRescanning")
-    check(metrics.allIndexedFiles, alternativeMetrics.allIndexedFiles, "allIndexedFiles")
-    check(metrics.slowIndexedFiles, alternativeMetrics.slowIndexedFiles, "slowIndexedFiles")
+    check(oldMetrics.scanningStatisticsByProviders, metrics.scanningStatisticsByProviders, "scanningStatisticsByProviders")
+    check(oldMetrics.numberOfFullRescanning, metrics.numberOfFullRescanning, "numberOfFullRescanning")
+    check(oldMetrics.allIndexedFiles, metrics.allIndexedFiles, "allIndexedFiles")
+    check(oldMetrics.slowIndexedFiles, metrics.slowIndexedFiles, "slowIndexedFiles")
 
   }
-  checkMessage(comparisonMessage, metrics, alternativeMetrics)
+  checkMessage(comparisonMessage, oldMetrics, metrics)
 }
 
 private fun <T> checkMessage(comparisonMessage: String,
-                             metrics: T,
-                             alternativeMetrics: T) {
+                             oldMetrics: T,
+                             metrics: T) {
   check(comparisonMessage.isEmpty()) {
     buildString {
       appendLine(comparisonMessage)
-      appendLine("Metrics and alternative metrics differ")
-      appendLine("Metrics:")
+      appendLine("Old metrics and current metrics differ")
+      appendLine("Old metrics:")
+      appendLine(oldMetrics)
+      appendLine("\nCurrent metrics:")
       appendLine(metrics)
-      appendLine("\nAlternative metrics:")
-      appendLine(alternativeMetrics)
     }
   }
 }
 
-private fun compareInitialAndAlternativeJsonMetrics(json: PerformanceMetricsDto,
-                                                    alternativeJson: PerformanceMetricsDto) {
+private fun compareOldAndCurrentJsonMetrics(oldJson: PerformanceMetricsDto,
+                                            currentJson: PerformanceMetricsDto) {
   val comparisonMessage = buildString {
     fun check(value: KProperty1<PerformanceMetricsDto, String>, name: String) {
-      if (value(json) != value(alternativeJson)) {
-        appendLine("$name property differs: ${value(json)} and ${value(alternativeJson)}")
+      if (value(oldJson) != value(currentJson)) {
+        appendLine("$name property differs: ${value(oldJson)} and ${value(currentJson)}")
       }
     }
     check(PerformanceMetricsDto::generated, "generated")
@@ -296,25 +296,25 @@ private fun compareInitialAndAlternativeJsonMetrics(json: PerformanceMetricsDto,
     check(PerformanceMetricsDto::buildDate, "buildDate")
     check(PerformanceMetricsDto::productCode, "productCode")
 
-    if (json.metrics.size != alternativeJson.metrics.size) {
-      appendLine("Different size of metrics: ${json.metrics.size} and ${alternativeJson.metrics.size} ")
+    if (oldJson.metrics.size != currentJson.metrics.size) {
+      appendLine("Different size of metrics: ${oldJson.metrics.size} and ${currentJson.metrics.size} ")
     }
 
-    fun check(metric: ApplicationMetricDto,
-              alternativeMetric: ApplicationMetricDto,
+    fun check(oldMetric: ApplicationMetricDto,
+              currentMetric: ApplicationMetricDto,
               metricName: String,
               value: KProperty1<ApplicationMetricDto, Long?>,
               name: String,
               equalityCheck: BiFunction<Long?, Long?, Boolean>) {
-      if (!equalityCheck.apply(value(metric), value(alternativeMetric))) {
-        appendLine("Metric $name differs in $metricName: ${value(metric)} and ${value(alternativeMetric)}")
+      if (!equalityCheck.apply(value(oldMetric), value(currentMetric))) {
+        appendLine("Metric $name differs in $metricName: ${value(oldMetric)} and ${value(currentMetric)}")
       }
     }
 
-    for (metric in json.metrics) {
+    for (metric in oldJson.metrics) {
       val name = metric.n
-      val alternativeMetric = alternativeJson.metrics.firstOrNull { it.n == name }
-      if (alternativeMetric == null) {
+      val currentMetric = currentJson.metrics.firstOrNull { it.n == name }
+      if (currentMetric == null) {
         appendLine("Metric ${name} not found")
         continue
       }
@@ -332,13 +332,13 @@ private fun compareInitialAndAlternativeJsonMetrics(json: PerformanceMetricsDto,
         equalityCheck = BiFunction { t, u -> Objects.equals(t, u) }
       }
 
-      check(metric, alternativeMetric, name, ApplicationMetricDto::c, "c", equalityCheck)
-      check(metric, alternativeMetric, name, ApplicationMetricDto::d, "d", equalityCheck)
-      check(metric, alternativeMetric, name, ApplicationMetricDto::v, "v", equalityCheck)
+      check(metric, currentMetric, name, ApplicationMetricDto::c, "c", equalityCheck)
+      check(metric, currentMetric, name, ApplicationMetricDto::d, "d", equalityCheck)
+      check(metric, currentMetric, name, ApplicationMetricDto::v, "v", equalityCheck)
     }
   }
 
-  checkMessage(comparisonMessage, json, alternativeJson)
+  checkMessage(comparisonMessage, oldJson, currentJson)
 }
 
 private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric<*>> {
