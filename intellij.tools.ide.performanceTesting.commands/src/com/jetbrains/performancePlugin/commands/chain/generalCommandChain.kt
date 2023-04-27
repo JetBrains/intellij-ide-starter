@@ -741,6 +741,11 @@ fun <T : CommandChain> T.debugStep(debugStepTypes: DebugStepTypes): T {
   return this
 }
 
+fun <T : CommandChain> T.stopDebugProcess(): T {
+  addCommand("${CMD_PREFIX}stopDebugProcess")
+  return this
+}
+
 fun <T : CommandChain> T.checkChatBotResponse(textToCheck: String): T {
   addCommand("${CMD_PREFIX}checkResponseContains ${textToCheck}")
   return this
