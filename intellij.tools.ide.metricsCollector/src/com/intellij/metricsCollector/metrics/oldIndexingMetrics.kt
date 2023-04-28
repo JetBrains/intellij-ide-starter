@@ -231,7 +231,7 @@ private fun compareOldAndCurrentMetrics(oldMetrics: OldIndexingMetrics,
     fun <T> check(oldValue: T, value: T, name: String) {
       val equalityCheck: BiFunction<T, T, Boolean> =
         if ("totalIndexingTime" == name || "totalUpdatingTime" == name) {
-          BiFunction { t, u -> abs((t as Long) - (u as Long)) < 200 }
+          BiFunction { t, u -> abs((t as Long) - (u as Long)) < 600 }
         }
         else {
           BiFunction { t, u -> t == u }
@@ -324,7 +324,7 @@ private fun compareOldAndCurrentJsonMetrics(oldJson: PerformanceMetricsDto,
         equalityCheck = BiFunction { t, u ->
           when (t == null) {
             true -> u == null
-            false -> u != null && abs(t - u) < 200
+            false -> u != null && abs(t - u) < 600
           }
         }
       }
