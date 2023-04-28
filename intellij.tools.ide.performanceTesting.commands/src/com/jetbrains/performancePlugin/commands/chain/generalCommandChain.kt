@@ -79,19 +79,21 @@ private fun <T : CommandChain> T.appendRawLine(line: String): T {
   return this
 }
 
-const val OPEN_FILE_CMD_PREFIX = "${CMD_PREFIX}openFile"
-
-fun <T : CommandChain> T.openFile(relativePath: String): T {
-  addCommand(OPEN_FILE_CMD_PREFIX, relativePath)
-  return this
-}
-
-fun <T : CommandChain> T.openFile(relativePath: String, timeoutInSeconds: Long, suppressErrors: Boolean = false): T {
-  if (suppressErrors) {
-    addCommand(OPEN_FILE_CMD_PREFIX, relativePath, timeoutInSeconds.toString(),"SUPPRESS_ERROR")
-  } else {
-    addCommand(OPEN_FILE_CMD_PREFIX, relativePath, timeoutInSeconds.toString())
+fun <T : CommandChain> T.openFile(relativePath: String,
+                                  timeoutInSeconds: Long = 0,
+                                  suppressErrors: Boolean = false,
+                                  warmup: Boolean = false): T {
+  val command = mutableListOf("${CMD_PREFIX}openFile", "-file $relativePath")
+  if (timeoutInSeconds != 0L) {
+    command.add("-timeout $timeoutInSeconds")
   }
+  if (suppressErrors) {
+    command.add("-suppressErrors true")
+  }
+  if (warmup) {
+    command.add(WARMUP)
+  }
+  addCommand(*command.toTypedArray())
   return this
 }
 
