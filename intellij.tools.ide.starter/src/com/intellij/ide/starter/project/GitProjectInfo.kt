@@ -34,7 +34,8 @@ data class GitProjectInfo(
   /**
    * Relative path inside Image file, where project home is located
    */
-  override val projectHomeRelativePath: (Path) -> Path = { it }
+  override val projectHomeRelativePath: (Path) -> Path = { it },
+  private val description: String = ""
 ) : ProjectInfoSpec {
 
   private fun cloneRepo(projectHome: Path) {
@@ -100,4 +101,8 @@ data class GitProjectInfo(
   fun onCommit(commitHash: String): GitProjectInfo = copy(commitHash = commitHash)
 
   fun onBranch(branchName: String): GitProjectInfo = copy(branchName = branchName)
+
+  override fun getDescription(): String {
+    return description
+  }
 }

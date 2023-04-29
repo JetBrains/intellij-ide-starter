@@ -20,7 +20,8 @@ data class RemoteArchiveProjectInfo(
   val projectURL: String,
   override val isReusable: Boolean = true,
 
-  override val projectHomeRelativePath: (Path) -> Path = { it / projectURL.split("/").last().split(".zip").first() }
+  override val projectHomeRelativePath: (Path) -> Path = { it / projectURL.split("/").last().split(".zip").first() },
+  private val description: String = ""
 ) : ProjectInfoSpec {
 
   override fun downloadAndUnpackProject(): Path {
@@ -56,5 +57,9 @@ data class RemoteArchiveProjectInfo(
       else -> error("$imagePath does not exist!")
     }
     return projectHome
+  }
+
+  override fun getDescription(): String {
+    return description
   }
 }
