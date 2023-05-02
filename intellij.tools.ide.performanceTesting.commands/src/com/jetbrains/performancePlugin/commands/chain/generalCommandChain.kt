@@ -404,6 +404,11 @@ fun <T : CommandChain> T.doLocalInspection(): T {
   return this
 }
 
+fun <T : CommandChain> T.doLocalInspectionWarmup(): T {
+  addCommand(DO_LOCAL_INSPECTION_CMD_PREFIX, WARMUP)
+  return this
+}
+
 const val SHOW_ALT_ENTER_CMD_PREFIX = "${CMD_PREFIX}altEnter"
 
 fun <T : CommandChain> T.altEnter(intention: String, invoke: Boolean): T {
