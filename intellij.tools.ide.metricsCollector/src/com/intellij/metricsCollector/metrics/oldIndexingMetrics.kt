@@ -257,11 +257,22 @@ private fun compareOldAndCurrentMetrics(oldMetrics: OldIndexingMetrics,
     check(oldMetrics.scanningStatisticsByProviders, metrics.scanningStatisticsByProviders, "scanningStatisticsByProviders")
     check(oldMetrics.numberOfFullRescanning, metrics.numberOfFullRescanning, "numberOfFullRescanning")
     check(oldMetrics.allIndexedFiles, metrics.allIndexedFiles, "allIndexedFiles")
-    check(oldMetrics.slowIndexedFiles, metrics.slowIndexedFiles, "slowIndexedFiles")
-
+    check(orderSlowIndexedFiles(oldMetrics.slowIndexedFiles), orderSlowIndexedFiles(metrics.slowIndexedFiles), "slowIndexedFiles")
   }
   checkMessage(comparisonMessage, oldMetrics, metrics)
 }
+
+private fun orderSlowIndexedFiles(slowIndexedFiles: Map<String, List<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>):
+  Map<String, List<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>> =
+  slowIndexedFiles.mapValues { entry ->
+    entry.value.sortedWith { file1, file2 ->
+      if (file1.fileName != file2.fileName) return@sortedWith file1.fileName.compareTo(file2.fileName)
+      if (file1.processingTime != file2.processingTime) return@sortedWith file1.processingTime.nano.compareTo(file2.processingTime.nano)
+      if (file1.contentLoadingTime != file2.contentLoadingTime) return@sortedWith file1.contentLoadingTime.nano.compareTo(
+        file2.contentLoadingTime.nano)
+      return@sortedWith file1.evaluationOfIndexValueChangerTime.nano.compareTo(file2.evaluationOfIndexValueChangerTime.nano)
+    }
+  }.toSortedMap()
 
 private fun <T> checkMessage(comparisonMessage: String,
                              oldMetrics: T,
