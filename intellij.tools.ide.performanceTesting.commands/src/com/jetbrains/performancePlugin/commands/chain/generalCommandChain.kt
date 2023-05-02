@@ -748,6 +748,11 @@ fun <T : CommandChain> T.stopDebugProcess(): T {
   return this
 }
 
+fun <T : CommandChain> T.waitForCodeAnalysisFinished(): T {
+  addCommand("${CMD_PREFIX}waitForFinishedCodeAnalysis")
+  return this
+}
+
 fun <T : CommandChain> T.checkChatBotResponse(textToCheck: String): T {
   addCommand("${CMD_PREFIX}checkResponseContains ${textToCheck}")
   return this
