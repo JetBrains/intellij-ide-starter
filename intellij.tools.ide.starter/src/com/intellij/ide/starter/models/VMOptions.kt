@@ -264,4 +264,7 @@ data class VMOptions(
 
   // a dummy wrapper to simplify expressions
   fun id() = this
+
+  fun withBothIndexingDiagnostics(): VMOptions =
+    addSystemProperty("intellij.indexes.diagnostics.should.dump.old.version.of.diagnostics", true)
 }
