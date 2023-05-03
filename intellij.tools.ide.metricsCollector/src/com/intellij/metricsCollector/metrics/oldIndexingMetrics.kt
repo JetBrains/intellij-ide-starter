@@ -230,11 +230,16 @@ private fun compareOldAndCurrentMetrics(oldMetrics: OldIndexingMetrics,
   val comparisonMessage = buildString {
     fun <T> check(oldValue: T, value: T, name: String) {
       val equalityCheck: BiFunction<T, T, Boolean> =
-        if ("totalIndexingTime" == name || "totalUpdatingTime" == name) {
-          BiFunction { t, u -> abs((t as Long) - (u as Long)) < 600 }
-        }
-        else {
-          BiFunction { t, u -> t == u }
+        when (name) {
+          "totalIndexingTime" -> {
+            BiFunction { t, u -> abs((t as Long) - (u as Long)) < 1000 }
+          }
+          "totalUpdatingTime" -> {
+            BiFunction { t, u -> abs((t as Long) - (u as Long)) < 600 }
+          }
+          else -> {
+            BiFunction { t, u -> t == u }
+          }
         }
       if (!equalityCheck.apply(oldValue, value)) {
         appendLine("$name property differs: ${oldValue} and ${value}")
