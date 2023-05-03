@@ -18,7 +18,7 @@ import kotlin.io.path.writeText
 data class VMOptions(
   private val ide: InstalledIde,
   private var data: List<String>,
-  val env: Map<String, String>
+  private var env: Map<String, String>
 ) {
   companion object {
     fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions {
@@ -41,6 +41,9 @@ data class VMOptions(
     }
     appendLine("} // VMOptions")
   }
+
+  val environmentVariables: Map<String, String>
+    get() = env
 
   fun addSystemProperty(key: String, value: Boolean) = addSystemProperty(key, value.toString())
 
@@ -113,7 +116,10 @@ data class VMOptions(
     data = data.filterNot(toRemove)
   }
 
-  fun withEnv(key: String, value: String) = copy(env = env + (key to value))
+  fun withEnv(key: String, value: String) {
+    env = env + (key to value)
+  }
+
 
   fun writeIntelliJVmOptionFile(path: Path) {
     path.writeLines(data)

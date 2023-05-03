@@ -193,7 +193,7 @@ data class IDERunContext(
         is IDECommandLine.OpenTestCaseProject -> listOf(testContext.resolvedProjectHome.toAbsolutePath().toString())
       }
 
-      val finalEnvVariables = startConfig.environmentVariables + finalOptions.env
+      val finalEnvVariables = startConfig.environmentVariables + finalOptions.environmentVariables
       val extendedEnvVariablesWithJavaHome = finalEnvVariables.toMutableMap()
       extendedEnvVariablesWithJavaHome.putIfAbsent("JAVA_HOME", jdkHome.absolutePathString())
       val finalArgs = startConfig.commandLine + commandLineArgs
