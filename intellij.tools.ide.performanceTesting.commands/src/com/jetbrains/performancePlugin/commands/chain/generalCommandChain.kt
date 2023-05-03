@@ -664,6 +664,11 @@ fun <T : CommandChain> T.goToDeclaration(): T {
   return this
 }
 
+fun <T : CommandChain> T.goToDeclaration(expectedOpenedFile: String): T {
+  this.executeEditorAction("GotoDeclaration expectedOpenedFile $expectedOpenedFile")
+  return this
+}
+
 fun <T : CommandChain> T.collectAllFiles(extension: String, fileWithResult: Path): T {
   this.addCommand("${CMD_PREFIX}collectAllFiles $extension ${fileWithResult.absolutePathString()}")
   return this
