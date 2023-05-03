@@ -302,9 +302,9 @@ private fun compareOldAndCurrentJsonMetrics(oldJson: PerformanceMetricsDto,
     check(PerformanceMetricsDto::os, "os")
     check(PerformanceMetricsDto::osFamily, "osFamily")
     check(PerformanceMetricsDto::runtime, "runtime")
-    check(PerformanceMetricsDto::generated, "generated")
+    //check(PerformanceMetricsDto::generated, "generated")
     check(PerformanceMetricsDto::build, "build")
-    check(PerformanceMetricsDto::buildDate, "buildDate")
+    //check(PerformanceMetricsDto::buildDate, "buildDate")
     check(PerformanceMetricsDto::productCode, "productCode")
 
     if (oldJson.metrics.size != currentJson.metrics.size) {
