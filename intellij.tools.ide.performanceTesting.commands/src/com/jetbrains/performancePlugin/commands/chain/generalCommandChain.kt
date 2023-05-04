@@ -274,6 +274,11 @@ fun <T : CommandChain> T.memoryDump(): T {
   return this
 }
 
+fun <T : CommandChain> T.conditionalMemoryDump(targetMessageCount: Int): T {
+  addCommand("${CMD_PREFIX}conditionalMemoryDumpCommand $targetMessageCount")
+  return this
+}
+
 fun <T : CommandChain> T.profileIndexing(args: String): T {
   addCommand("%%profileIndexing $args")
   return this
