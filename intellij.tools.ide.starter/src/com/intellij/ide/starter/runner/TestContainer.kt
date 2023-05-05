@@ -83,13 +83,13 @@ interface TestContainer<T> : Closeable {
     logOutput("IDE to run for '$testName': $ide")
 
     val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
-    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, patchVMOptions = { this }, ciServer = ciServer)
+    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, patchVMOptions = {  }, ciServer = ciServer)
 
     testContext = when (testCase.ideInfo == IdeProductProvider.AI) {
       true -> testContext
         .addVMOptionsPatch {
           overrideDirectories(paths)
-            .withEnv("STUDIO_VM_OPTIONS", ide.patchedVMOptionsFile.toString())
+          withEnv("STUDIO_VM_OPTIONS", ide.patchedVMOptionsFile.toString())
         }
       false -> testContext
         .disableInstantIdeShutdown()

@@ -22,12 +22,15 @@ class WindowsIdeDistribution : IdeDistribution() {
 
     return object : InstalledIde {
       override val bundledPluginsDir = unpackDir.resolve("plugins")
+
+      private val vmOptionsFinal: VMOptions =VMOptions(
+        ide = this,
+        data = emptyList(),
+        env = emptyMap()
+      )
+
       override val vmOptions: VMOptions
-        get() = VMOptions(
-          ide = this,
-          data = emptyList(),
-          env = emptyMap()
-        )
+        get() = vmOptionsFinal
 
       override val patchedVMOptionsFile = unpackDir.parent.resolve("${unpackDir.fileName}.vmoptions")
 

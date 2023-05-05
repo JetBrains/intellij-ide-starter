@@ -11,7 +11,6 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.models.andThen
 import com.intellij.ide.starter.process.collectJavaThreadDump
 import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.destroyGradleDaemonProcessIfExists
@@ -74,11 +73,13 @@ data class IDERunContext(
   fun verbose() = copy(verboseOutput = true)
 
   @Suppress("unused")
-  fun withVMOptions(patchVMOptions: VMOptions.() -> VMOptions) = addVMOptionsPatch(patchVMOptions)
+  fun withVMOptions(patchVMOptions: VMOptions.() -> Unit) = addVMOptionsPatch(patchVMOptions)
 
-  fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> VMOptions) = copy(
-    patchVMOptions = this.patchVMOptions.andThen(patchVMOptions)
-  )
+  fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDERunContext {
+    testContext.ide.vmOptions.patchVMOptions()
+    return this
+  }
+
 
   fun addCompletionHandler(handler: IDERunCloseContext.() -> Unit) = this.copy(closeHandlers = closeHandlers + handler)
 
@@ -101,31 +102,30 @@ data class IDERunContext(
     }
   }
 
-  private fun calculateVmOptions(): VMOptions = testContext.ide.vmOptions
-    .disableStartupDialogs()
-    .usingStartupFramework()
-    .setFatalErrorNotificationEnabled()
-    .setFlagIntegrationTests()
-    .takeScreenshotsPeriodically(testContext.paths.logsDir)
-    .takeScreenshotOnFailure(testContext.paths.logsDir)
-    .withJvmCrashLogDirectory(jvmCrashLogDirectory)
-    .withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
-    .let {
+  private fun calculateVmOptions(): VMOptions {
+    return testContext.ide.vmOptions.copy().apply {
+      disableStartupDialogs()
+      usingStartupFramework()
+      setFatalErrorNotificationEnabled()
+      setFlagIntegrationTests()
+      takeScreenshotsPeriodically(testContext.paths.logsDir)
+      takeScreenshotOnFailure(testContext.paths.logsDir)
+      withJvmCrashLogDirectory(jvmCrashLogDirectory)
+      withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
+
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
-        it.withClassFileVerification()
-      else it
-    }
-    .let { testContext.testCase.vmOptionsFix(it) }
-    .let { testContext.patchVMOptions(it) }
-    .patchVMOptions()
-    .let {
+        withClassFileVerification()
+
+      testContext.testCase.vmOptionsFix(this)
+      testContext.patchVMOptions(this)
+      patchVMOptions()
       if (!useStartupScript) {
         require(commands.count() > 0) { "script builder is not allowed when useStartupScript is disabled" }
-        it
       }
       else
-        it.installTestScript(testName = contextName, paths = testContext.paths, commands = commands)
+        installTestScript(testName = contextName, paths = testContext.paths, commands = commands)
     }
+  }
 
   // TODO: refactor this https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext
   @OptIn(kotlin.time.ExperimentalTime::class)

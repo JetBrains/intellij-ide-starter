@@ -60,12 +60,14 @@ class MacOsIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = appHome / "plugins"
 
+      private val vmOptionsFinal: VMOptions =VMOptions(
+        ide = this,
+        data = emptyList(),
+        env = emptyMap()
+      )
+
       override val vmOptions: VMOptions
-        get() = VMOptions(
-          ide = this,
-          data = emptyList(),
-          env = emptyMap()
-        )
+        get() = vmOptionsFinal
 
       override val patchedVMOptionsFile = appDir.parent.resolve("${appDir.fileName}.vmoptions") //see IDEA-220286
 

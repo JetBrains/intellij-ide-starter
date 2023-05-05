@@ -66,12 +66,14 @@ class LinuxIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = appHome.resolve("plugins")
 
+      private val vmOptionsFinal: VMOptions =VMOptions(
+        ide = this,
+        data = emptyList(),
+        env = emptyMap()
+      )
+
       override val vmOptions: VMOptions
-        get() = VMOptions(
-          ide = this,
-          data = emptyList(),
-          env = emptyMap()
-        )
+        get() = vmOptionsFinal
 
       override val patchedVMOptionsFile = appHome.parent.resolve("${appHome.fileName}.vmoptions")
 

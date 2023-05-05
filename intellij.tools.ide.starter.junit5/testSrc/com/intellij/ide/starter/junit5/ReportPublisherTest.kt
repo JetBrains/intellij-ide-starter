@@ -37,7 +37,7 @@ class ReportPublisherTest {
   @Mock
   lateinit var context: IDETestContext
   private val commandChain = CommandChain()
-  private val patchVMOptions: VMOptions.() -> VMOptions = { this }
+  private val patchVMOptions: VMOptions.() -> Unit = { }
 
   private lateinit var publishers: List<ReportPublisher>
   private lateinit var publisherSpy: ReportPublisher

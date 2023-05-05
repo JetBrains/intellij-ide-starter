@@ -8,7 +8,6 @@ import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.models.andThen
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.profiler.ProfilerType
@@ -36,7 +35,7 @@ data class IDETestContext(
   val testCase: TestCase,
   val testName: String,
   private val _resolvedProjectHome: Path?,
-  var patchVMOptions: VMOptions.() -> VMOptions,
+  var patchVMOptions: VMOptions.() -> Unit,
   val ciServer: CIServer,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),
@@ -53,8 +52,8 @@ data class IDETestContext(
 
   val buildTools: BuildToolProvider by di.newInstance { factory<IDETestContext, BuildToolProvider>().invoke(this@IDETestContext) }
 
-  fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> VMOptions): IDETestContext {
-    this.patchVMOptions = this.patchVMOptions.andThen(patchVMOptions)
+  fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
+    ide.vmOptions.patchVMOptions()
     return this
   }
 
@@ -70,14 +69,12 @@ data class IDETestContext(
 
   fun setMemorySize(sizeMb: Int): IDETestContext =
     addVMOptionsPatch {
-      this
-        .withXmx(sizeMb)
+      withXmx(sizeMb)
     }
 
   fun setActiveProcessorCount(count: Int): IDETestContext =
     addVMOptionsPatch {
-      this
-        .withActiveProcessorCount(count)
+      withActiveProcessorCount(count)
     }
 
   fun withGCLogs(): IDETestContext =
@@ -99,17 +96,10 @@ data class IDETestContext(
 
   fun withGtk2OnLinux(): IDETestContext =
     addVMOptionsPatch {
-      this
-        .addSystemProperty("jdk.gtk.verbose", true)
-        .let {
-          // Desperate attempt to fix JBR-2783
-          if (SystemInfo.isLinux) {
-            it.addSystemProperty("jdk.gtk.version", 2)
-          }
-          else {
-            it
-          }
-        }
+      addSystemProperty("jdk.gtk.verbose", true)
+      if (SystemInfo.isLinux) {
+        addSystemProperty("jdk.gtk.version", 2)
+      }
     }
 
   fun disableInstantIdeShutdown(): IDETestContext =
@@ -144,12 +134,11 @@ data class IDETestContext(
 
   fun withVerboseIndexingDiagnostics(dumpPaths: Boolean = false): IDETestContext =
     addVMOptionsPatch {
-      this
-        .addSystemProperty("intellij.indexes.diagnostics.should.dump.for.interrupted.index.updaters", true)
-        .addSystemProperty("intellij.indexes.diagnostics.limit.of.files", 10000)
-        .addSystemProperty("intellij.indexes.diagnostics.should.dump.paths.of.indexed.files", dumpPaths)
-        // Dumping of lists of indexed file paths may require a lot of memory.
-        .withXmx(4 * 1024)
+      addSystemProperty("intellij.indexes.diagnostics.should.dump.for.interrupted.index.updaters", true)
+      addSystemProperty("intellij.indexes.diagnostics.limit.of.files", 10000)
+      addSystemProperty("intellij.indexes.diagnostics.should.dump.paths.of.indexed.files", dumpPaths)
+      // Dumping of lists of indexed file paths may require a lot of memory.
+      withXmx(4 * 1024)
     }
 
   fun setPathForMemorySnapshot(): IDETestContext =
@@ -185,8 +174,8 @@ data class IDETestContext(
 
   fun setSharedIndexesDownload(enable: Boolean = true) = addVMOptionsPatch {
     addSystemProperty("shared.indexes.bundled", enable)
-      .addSystemProperty("shared.indexes.download", enable)
-      .addSystemProperty("shared.indexes.download.auto.consent", enable)
+    addSystemProperty("shared.indexes.download", enable)
+    addSystemProperty("shared.indexes.download.auto.consent", enable)
   }
 
   fun skipIndicesInitialization(value: Boolean = true) = addVMOptionsPatch {
@@ -275,7 +264,7 @@ data class IDETestContext(
   }
 
   fun runContext(
-    patchVMOptions: VMOptions.() -> VMOptions = { this },
+    patchVMOptions: VMOptions.() -> Unit = { },
     commandLine: IDECommandLine? = null,
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
@@ -355,7 +344,7 @@ data class IDETestContext(
   }
 
   fun runIDE(
-    patchVMOptions: VMOptions.() -> VMOptions = { this },
+    patchVMOptions: VMOptions.() -> Unit = { },
     commandLine: IDECommandLine? = null,
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
@@ -384,7 +373,7 @@ data class IDETestContext(
   }
 
   fun warmUp(
-    patchVMOptions: VMOptions.() -> VMOptions = { this },
+    patchVMOptions: VMOptions.() -> Unit = { },
     commands: Iterable<MarshallableCommand>,
     runTimeout: Duration = 10.minutes,
     storeClassReport: Boolean = false
@@ -392,14 +381,10 @@ data class IDETestContext(
     val updatedContext = this.copy(testName = "${this.testName}/warmup")
     val result = updatedContext.runIDE(
       patchVMOptions = {
-        this.run {
-          if (storeClassReport) {
-            this.enableClassLoadingReport(paths.reportsDir / "class-report.txt")
-          }
-          else {
-            this
-          }
-        }.patchVMOptions()
+        if (storeClassReport) {
+          enableClassLoadingReport(paths.reportsDir / "class-report.txt")
+        }
+        patchVMOptions()
       },
       commands = testCase.commands.plus(commands),
       runTimeout = runTimeout
