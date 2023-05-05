@@ -261,7 +261,7 @@ private fun compareOldAndCurrentMetrics(oldMetrics: OldIndexingMetrics,
           "numberOfIndexedFilesByUsualIndexesPerProvider")
     check(oldMetrics.scanningStatisticsByProviders, metrics.scanningStatisticsByProviders, "scanningStatisticsByProviders")
     check(oldMetrics.numberOfFullRescanning, metrics.numberOfFullRescanning, "numberOfFullRescanning")
-    check(oldMetrics.allIndexedFiles, metrics.allIndexedFiles, "allIndexedFiles")
+    check(orderAllIndexedFiles(oldMetrics.allIndexedFiles), orderAllIndexedFiles(metrics.allIndexedFiles), "allIndexedFiles")
     check(orderSlowIndexedFiles(oldMetrics.slowIndexedFiles), orderSlowIndexedFiles(metrics.slowIndexedFiles), "slowIndexedFiles")
   }
   checkMessage(comparisonMessage, oldMetrics, metrics)
@@ -278,6 +278,9 @@ private fun orderSlowIndexedFiles(slowIndexedFiles: Map<String, List<JsonFilePro
       return@sortedWith file1.evaluationOfIndexValueChangerTime.nano.compareTo(file2.evaluationOfIndexValueChangerTime.nano)
     }
   }.toSortedMap()
+
+private fun orderAllIndexedFiles(allIndexedFiles: Map<String, List<PortableFilePath>>): Map<String, List<PortableFilePath>> =
+  allIndexedFiles.mapValues { entry -> entry.value.sortedBy(PortableFilePath::presentablePath) }.toSortedMap()
 
 private fun <T> checkMessage(comparisonMessage: String,
                              oldMetrics: T,
