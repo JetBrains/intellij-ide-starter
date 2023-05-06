@@ -217,8 +217,7 @@ fun collectJavaThreadDump(
   javaHome: Path,
   workDir: Path,
   javaProcessId: Long,
-  dumpFile: Path,
-  includeStdout: Boolean = true
+  dumpFile: Path
 ) {
   val ext = if (SystemInfo.isWindows) ".exe" else ""
   val jstackPath = listOf(
@@ -236,10 +235,6 @@ fun collectJavaThreadDump(
     stdoutRedirect = ExecOutputRedirect.ToFile(dumpFile.toFile()),
     stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]")
   ).start()
-
-  if (includeStdout) {
-    logOutput("jstack output:\n${dumpFile.toFile().readLines().joinToString("\n")}")
-  }
 }
 
 fun collectMemoryDump(

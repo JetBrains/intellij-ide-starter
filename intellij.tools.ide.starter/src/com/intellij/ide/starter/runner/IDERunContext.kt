@@ -226,7 +226,7 @@ data class IDERunContext(
 
               val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
               logOutput("Dumping threads to $dumpFile")
-              catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile, false) }
+              catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile) }
             }
           },
           onBeforeKilled = { process, pid ->

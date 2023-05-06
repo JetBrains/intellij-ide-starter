@@ -7,6 +7,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.util.io.createFile
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
@@ -181,21 +182,20 @@ fun writeJvmArgsFile(argFile: Path,
 fun takeScreenshot(logsDir: Path) {
   val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
   val toolName = "TakeScreenshot"
-  val screenshotTool = toolsDir / toolName
+  val screenshotTool = toolsDir / toolName / "$toolName.jar"
   if (!File(screenshotTool.toString()).exists()) {
-    val archivePath = toolsDir / "$toolName.jar"
-    val toolBytes = IDERunContext::class.java.getResourceAsStream("tools/$toolName.jar")!!.use { it.readAllBytes() }
-    Files.write(archivePath, toolBytes)
+    screenshotTool.createFile()
+    val screenshotJar = File(IDERunContext::class.java.classLoader.getResource("tools/$toolName.jar")!!.toURI())
+    screenshotJar.copyTo(screenshotTool.toFile(), true)
   }
   val screenshotFile = logsDir.resolve("screenshot_beforeKill.jpg")
 
-  val toolPath = screenshotTool.resolve("$toolName.jar")
   val javaPath = ProcessHandle.current().info().command().orElseThrow().toString()
   ProcessExecutor(
     presentableName = "take-screenshot",
     workDir = toolsDir,
     timeout = 15.seconds,
-    args = mutableListOf(javaPath, "-jar", toolPath.absolutePathString(), screenshotFile.toString()),
+    args = mutableListOf(javaPath, "-jar", screenshotTool.absolutePathString(), screenshotFile.toString()),
     environmentVariables = mapOf("DISPLAY" to ":88"),
     onlyEnrichExistedEnvVariables = true
   ).start()
