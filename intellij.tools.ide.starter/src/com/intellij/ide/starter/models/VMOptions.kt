@@ -96,6 +96,11 @@ data class VMOptions(
     data = if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) } - line
   }
 
+  fun removeLineLike(linePrefix: String) {
+    if (data.none { it.contains(linePrefix) }) return
+    data = data.filterNot { it.trim().startsWith(linePrefix) }
+  }
+
   private fun filterKeys(toRemove: (String) -> Boolean) {
     data = data.filterNot(toRemove)
   }
