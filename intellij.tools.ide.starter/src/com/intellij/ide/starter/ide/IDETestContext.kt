@@ -141,9 +141,9 @@ data class IDETestContext(
       withXmx(4 * 1024)
     }
 
-  fun setPathForMemorySnapshot(): IDETestContext =
+  fun setPathForMemorySnapshot(path: Path = paths.memoryDumpsDir): IDETestContext =
     addVMOptionsPatch {
-      addSystemProperty("memory.snapshots.path", paths.logsDir)
+      addSystemProperty("memory.snapshots.path", path)
     }
 
   fun setPathForSnapshots(): IDETestContext =
