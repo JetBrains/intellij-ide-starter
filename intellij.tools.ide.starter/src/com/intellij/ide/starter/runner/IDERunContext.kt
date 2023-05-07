@@ -136,7 +136,7 @@ data class IDERunContext(
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
-    val memoryDumpsDir = paths.memoryDumpsDir.createDirectories()
+    val snapshotsDir = paths.snapshotsDir.createDirectories()
     //each run produced unique gc logs so we delete existing
     testContext.wipeGcLogs()
     val disabledPlugins = paths.configDir.resolve("disabled_plugins.txt")
@@ -241,7 +241,7 @@ data class IDERunContext(
                 stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
               }
               val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}" + ".txt")
-              val memoryDumpFile = memoryDumpsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof.gz")
+              val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof.gz")
               catchAll {
                 collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
                 collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
