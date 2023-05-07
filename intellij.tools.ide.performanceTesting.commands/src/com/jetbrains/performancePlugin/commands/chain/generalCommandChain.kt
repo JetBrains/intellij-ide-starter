@@ -647,3 +647,8 @@ fun <T : CommandChain> T.collectAllFiles(extension: String, fileWithResult: Path
   this.addCommand("${CMD_PREFIX}collectAllFiles $extension ${fileWithResult.absolutePathString()}")
   return this
 }
+
+fun <T : CommandChain> T.waitForCodeAnalysisFinished(): T {
+  addCommand("${CMD_PREFIX}waitForFinishedCodeAnalysis")
+  return this
+}
