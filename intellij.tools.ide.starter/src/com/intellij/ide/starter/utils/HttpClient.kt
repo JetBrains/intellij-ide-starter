@@ -1,6 +1,8 @@
 package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.utils.FileSystem.isFileUpToDate
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpUriRequest
@@ -13,6 +15,8 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.outputStream
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 // TODO: migrate on okhttp ?
 object HttpClient {
@@ -32,7 +36,7 @@ object HttpClient {
    * Downloading file from [url] to [outPath] with [retries].
    * @return true - if successful, false - otherwise
    */
-  fun download(url: String, outPath: Path, retries: Long = 3): Boolean {
+  fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes): Boolean {
     val lock = locks.getOrPut(outPath.toAbsolutePath().toString()) { Semaphore(1) }
     lock.acquire()
 
@@ -40,16 +44,21 @@ object HttpClient {
       logOutput("Downloading $url to $outPath")
       var isSuccessful = false
 
-      withRetry(retries = retries) {
-        sendRequest(HttpGet(url)) { response ->
-          require(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
+      @Suppress("RAW_RUN_BLOCKING")
+      runBlocking {
+        withTimeout(timeout = timeout) {
+          withRetry(retries = retries) {
+            sendRequest(HttpGet(url)) { response ->
+              require(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
 
-          outPath.parent.createDirectories()
-          outPath.outputStream().buffered(10 * 1024 * 1024).use { stream ->
-            response.entity?.writeTo(stream)
+              outPath.parent.createDirectories()
+              outPath.outputStream().buffered(10 * 1024 * 1024).use { stream ->
+                response.entity?.writeTo(stream)
+              }
+
+              isSuccessful = true
+            }
           }
-
-          isSuccessful = true
         }
       }
 
@@ -66,7 +75,7 @@ object HttpClient {
    * [retries] - how many times retry to download in case of failure
    * @return true - if successful, false - otherwise
    */
-  fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3): Boolean {
+  fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3, timeout: Duration = 10.minutes): Boolean {
     val lock = locks[targetFile.toAbsolutePath().toString()]
     lock?.tryAcquire()
 
@@ -87,6 +96,6 @@ object HttpClient {
       lock?.release()
     }
 
-    return download(url, targetFile, retries)
+    return download(url, targetFile, retries, timeout)
   }
 }

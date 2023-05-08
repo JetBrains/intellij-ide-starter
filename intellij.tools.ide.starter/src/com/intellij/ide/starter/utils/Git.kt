@@ -7,6 +7,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 object Git {
@@ -71,7 +72,7 @@ object Git {
     return Path(stdout.read().split("\n").first().trim()).toAbsolutePath()
   }
 
-  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "") {
+  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "", timeout: Duration = 10.minutes) {
     val cmdName = "git-clone"
 
     val arguments = mutableListOf("git", "clone", repoUrl, destinationDir.nameWithoutExtension)
@@ -80,7 +81,7 @@ object Git {
     ProcessExecutor(
       presentableName = cmdName,
       workDir = destinationDir.parent.toAbsolutePath(),
-      timeout = 10.minutes,
+      timeout = timeout,
       args = arguments,
       stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),

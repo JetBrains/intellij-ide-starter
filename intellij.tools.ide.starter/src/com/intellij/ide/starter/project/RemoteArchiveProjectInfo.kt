@@ -12,6 +12,8 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Project stored on remote server as an archive
@@ -19,7 +21,7 @@ import kotlin.io.path.isRegularFile
 data class RemoteArchiveProjectInfo(
   val projectURL: String,
   override val isReusable: Boolean = true,
-
+  override val downloadTimeout: Duration = 10.minutes,
   override val projectHomeRelativePath: (Path) -> Path = { it / projectURL.split("/").last().split(".zip").first() },
   private val description: String = ""
 ) : ProjectInfoSpec {
@@ -47,7 +49,7 @@ data class RemoteArchiveProjectInfo(
       false -> globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve(projectURL.split("/").last())
     }
 
-    HttpClient.downloadIfMissing(projectURL, zipFile)
+    HttpClient.downloadIfMissing(url = projectURL, targetFile = zipFile, timeout = downloadTimeout)
     val imagePath: Path = zipFile
 
     when {

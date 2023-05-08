@@ -2,6 +2,8 @@ package com.intellij.ide.starter.project
 
 import java.nio.file.Path
 import kotlin.io.path.notExists
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Project, that somehow already exist on filesystem.
@@ -10,6 +12,7 @@ import kotlin.io.path.notExists
 data class LocalProjectInfo(
   val projectDir: Path,
   override val isReusable: Boolean = true,
+  override val downloadTimeout: Duration = 1.minutes,
   override val projectHomeRelativePath: (Path) -> Path = { it },
   private val description: String = ""
 ) : ProjectInfoSpec {

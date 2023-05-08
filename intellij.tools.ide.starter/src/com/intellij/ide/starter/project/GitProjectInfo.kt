@@ -9,6 +9,8 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Project, hosted as a Git repository
@@ -30,6 +32,7 @@ data class GitProjectInfo(
   val branchName: String,
 
   override val isReusable: Boolean = true,
+  override val downloadTimeout: Duration = 10.minutes,
 
   /**
    * Relative path inside Image file, where project home is located
@@ -39,7 +42,7 @@ data class GitProjectInfo(
 ) : ProjectInfoSpec {
 
   private fun cloneRepo(projectHome: Path) {
-    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName)
+    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, timeout = downloadTimeout)
   }
 
   private fun setupRepositoryState(projectHome: Path) {
