@@ -114,7 +114,7 @@ data class IDETestContext(
 
   fun useOldUIInTests(): IDETestContext =
     addVMOptionsPatch {
-      removeSystemProperty("ide.experimental.ui", true.toString())
+      removeSystemProperty("ide.experimental.ui", true)
     }
 
   fun enableSlowOperationsInEdtInTests(): IDETestContext =

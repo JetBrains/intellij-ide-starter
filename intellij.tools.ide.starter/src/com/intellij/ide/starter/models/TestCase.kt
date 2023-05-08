@@ -16,7 +16,6 @@ data class TestCase(
   val projectInfo: ProjectInfoSpec? = null,
   val contextConfiguration: IDETestContext.() -> IDETestContext = { this },
   val commands: Iterable<MarshallableCommand> = listOf(),
-  val vmOptionsFix: VMOptions.() -> Unit = { },
   val useInMemoryFileSystem: Boolean = false
 ) {
   private val eapReleaseConfigurable: EapReleaseConfigurable by di.instance<EapReleaseConfigurable>()

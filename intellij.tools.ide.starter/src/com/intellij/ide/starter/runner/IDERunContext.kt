@@ -47,7 +47,6 @@ interface IDERunCloseContext {
 
 data class IDERunContext(
   val testContext: IDETestContext,
-  val patchVMOptions: VMOptions.() -> VMOptions = { this },
   val commandLine: IDECommandLine? = null,
   val commands: Iterable<MarshallableCommand> = listOf(),
   val codeBuilder: (CodeInjector.() -> Unit)? = null,
@@ -117,9 +116,7 @@ data class IDERunContext(
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
         withClassFileVerification()
 
-      testContext.testCase.vmOptionsFix(this)
       testContext.patchVMOptions(this)
-      patchVMOptions()
       if (!useStartupScript) {
         require(commands.count() > 0) { "script builder is not allowed when useStartupScript is disabled" }
       }
@@ -230,7 +227,9 @@ data class IDERunContext(
             }
           },
           onBeforeKilled = { process, pid ->
-            takeScreenshot(logsDir)
+            catchAll {
+              takeScreenshot(logsDir)
+            }
             if (!expectedKill) {
               val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
 
@@ -244,6 +243,8 @@ data class IDERunContext(
               val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof.gz")
               catchAll {
                 collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
+              }
+              catchAll {
                 collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
               }
             }

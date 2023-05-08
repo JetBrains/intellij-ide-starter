@@ -80,10 +80,10 @@ data class VMOptions(
     }
   }
 
-  fun removeSystemProperty(key: String, value: String) {
+  fun removeSystemProperty(key: String, value: Boolean) {
     logOutput("Removing system property: [$key=$value]")
     System.clearProperty(key) // to synchronize behaviour in IDEA and on test runner side
-    removeLine(line = "-D$key=$value", filterPrefix = "-D$key=")
+    removeLine(line = "-D$key=$value")
   }
 
   fun addLine(line: String, filterPrefix: String? = null) {
@@ -91,9 +91,9 @@ data class VMOptions(
     data = (if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) }) + line
   }
 
-  fun removeLine(line: String, filterPrefix: String? = null) {
+  fun removeLine(line: String) {
     if (!data.contains(line)) return
-    data = if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) } - line
+    data =  data - line
   }
 
   fun removeLineLike(linePrefix: String) {
