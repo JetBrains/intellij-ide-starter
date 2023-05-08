@@ -305,12 +305,11 @@ private fun compareOldAndCurrentJsonMetrics(oldJson: PerformanceMetricsDto,
         appendLine("$name property differs: ${value(oldJson)} and ${value(currentJson)}")
       }
     }
-    check(PerformanceMetricsDto::generated, "generated")
+    //check(PerformanceMetricsDto::generated, "generated")
     check(PerformanceMetricsDto::project, "project")
     check(PerformanceMetricsDto::os, "os")
     check(PerformanceMetricsDto::osFamily, "osFamily")
     check(PerformanceMetricsDto::runtime, "runtime")
-    //check(PerformanceMetricsDto::generated, "generated")
     check(PerformanceMetricsDto::build, "build")
     //check(PerformanceMetricsDto::buildDate, "buildDate")
     check(PerformanceMetricsDto::productCode, "productCode")
