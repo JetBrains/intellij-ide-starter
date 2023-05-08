@@ -24,14 +24,16 @@ object JdkDownloaderFacade {
   val jdk15 get() = jdkDownloader(JdkVersion.JDK_15.toString())
   val jdk16 get() = jdkDownloader(JdkVersion.JDK_16.toString())
   val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
+  val jbrJcef17 get() = jdkDownloader(JdkVersion.JDK_17.toString(), jbr = true)
 
   const val MINIMUM_JDK_FILES_COUNT = 42
 
-  fun jdkDownloader(version: String, jdks: Iterable<JdkDownloadItem> = allJdks): JdkDownloadItem {
-    val jdkName = when (SystemInfo.OS_ARCH) {
-      "aarch64" -> "azul"
-      else -> "corretto"
-    }
+  fun jdkDownloader(version: String, jdks: Iterable<JdkDownloadItem> = allJdks, jbr: Boolean = false): JdkDownloadItem {
+    val jdkName =
+      when (jbr) {
+        true -> "jbr"
+        else -> "corretto"
+      }
     return jdks.single {
       it.jdk.sharedIndexAliases.contains("$jdkName-$version")
     }

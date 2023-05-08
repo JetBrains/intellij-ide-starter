@@ -2,9 +2,13 @@ package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.utils.XmlBuilder
+import org.w3c.dom.Element
 import java.nio.file.Path
+import javax.xml.xpath.XPath
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
 import kotlin.io.path.notExists
-import kotlin.io.path.writeText
+
 
 class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA, testContext) {
   private val ideaDir: Path
@@ -13,65 +17,37 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
   private val compilerXmlPath: Path
     get() = ideaDir.resolve("compiler.xml")
 
-  fun setBuildProcessHeapSize(heapSizeMb: Int = 2000): IdeaBuildTool {
+  fun setBuildProcessHeapSize(heapSizeMb: Int): IdeaBuildTool {
     if (compilerXmlPath.notExists()) return this
 
-    val newContent = StringBuilder()
-    val readText = compilerXmlPath.toFile().readText()
-    if (!readText.contains("BUILD_PROCESS_HEAP_SIZE")) {
-      compilerXmlPath.toFile().readLines().forEach {
-        if (it.contains("<component name=\"CompilerConfiguration\">")) {
-          val newLine = "<component name=\"CompilerConfiguration\">\n<option name=\"BUILD_PROCESS_HEAP_SIZE\" value=\"$heapSizeMb\" />"
-          newContent.appendLine(newLine)
-        }
-        else {
-          newContent.appendLine(it)
-        }
-      }
-      compilerXmlPath.writeText(newContent.toString())
-    }
+    val xmlDoc = XmlBuilder.parse(compilerXmlPath)
+    xmlDoc.documentElement.normalize()
+
+    val xp: XPath = XPathFactory.newInstance().newXPath()
+    val node =  xp.evaluate("//component/option[@name='BUILD_PROCESS_HEAP_SIZE']", xmlDoc, XPathConstants.NODE) as Element
+    node.removeAttribute("value")
+    node.setAttribute("value", "$heapSizeMb")
+    XmlBuilder.writeDocument(xmlDoc, compilerXmlPath)
 
     return this
   }
 
-  fun addBuildProcessProfiling(): IdeaBuildTool {
-    val workspace = ideaDir.resolve("workspace.xml")
-    if (workspace.notExists()) return this
+  fun addBuildVmOption(key: String, value: String): IdeaBuildTool {
+    if (compilerXmlPath.notExists()) return this
 
-    val newContent = StringBuilder()
-    val readText = workspace.toFile().readText()
+    val xmlDoc = XmlBuilder.parse(compilerXmlPath)
+    xmlDoc.documentElement.normalize()
 
-    val userLocalBuildProcessVmOptions = when {
-      (testContext.testName.contains(
-        "intellij_sources")) -> "-Dprofiling.mode=true -Dgroovyc.in.process=true -Dgroovyc.asm.resolving.only=false"
-      else -> "-Dprofiling.mode=true"
-    }
+    val xp: XPath = XPathFactory.newInstance().newXPath()
+    val node =  xp.evaluate("//component/option[@name='BUILD_PROCESS_ADDITIONAL_VM_OPTIONS']", xmlDoc, XPathConstants.NODE) as Element
+    val oldValue = node.getAttribute("value")
 
-    if (readText.contains("CompilerWorkspaceConfiguration")) {
-      workspace.toFile().readLines().forEach {
-        if (it.contains("<component name=\"CompilerWorkspaceConfiguration\">")) {
-          val newLine = "<component name=\"CompilerWorkspaceConfiguration\">\n<option name=\"COMPILER_PROCESS_ADDITIONAL_VM_OPTIONS\" value=\"$userLocalBuildProcessVmOptions\" />"
-          newContent.appendLine(newLine)
-        }
-        else {
-          newContent.appendLine(it)
-        }
-      }
-      workspace.writeText(newContent.toString())
-    }
-    else {
-      val xmlDoc = XmlBuilder.parse(workspace)
+    if (oldValue.contains(value)) return this
 
-      val firstElement = xmlDoc.firstChild
-      val componentElement = xmlDoc.createElement("component")
-      componentElement.setAttribute("name", "CompilerWorkspaceConfiguration")
-      val optionElement = xmlDoc.createElement("option")
-      optionElement.setAttribute("name", "COMPILER_PROCESS_ADDITIONAL_VM_OPTIONS")
-      optionElement.setAttribute("value", userLocalBuildProcessVmOptions)
-      firstElement.appendChild(componentElement).appendChild(optionElement)
-
-      XmlBuilder.writeDocument(xmlDoc, workspace)
-    }
+    val newValue = "$oldValue -D$key=$value"
+    node.removeAttribute("value")
+    node.setAttribute("value", newValue)
+    XmlBuilder.writeDocument(xmlDoc, compilerXmlPath)
 
     return this
   }
