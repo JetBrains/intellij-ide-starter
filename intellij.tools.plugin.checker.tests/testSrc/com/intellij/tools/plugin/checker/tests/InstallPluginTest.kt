@@ -208,6 +208,9 @@ class InstallPluginTest {
     try {
       val testContext = container
         .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
+        .applyVMOptionsPatch {
+          addSystemProperty("idea.local.statistics.without.report", true)
+        }
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {
