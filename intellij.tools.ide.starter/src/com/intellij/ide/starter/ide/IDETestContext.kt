@@ -39,7 +39,8 @@ data class IDETestContext(
   val ciServer: CIServer,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),
-  var isReportPublishingEnabled: Boolean = true
+  var isReportPublishingEnabled: Boolean = true,
+  private var preserveSystemDir: Boolean = false
 ) {
   companion object {
     const val OPENTELEMETRY_FILE = "opentelemetry.json"
@@ -212,9 +213,13 @@ data class IDETestContext(
   }
 
   fun wipeSystemDir() = apply {
-    //TODO: it would be better to allocate a new context instead of wiping the folder
-    logOutput("Cleaning system dir for $this at $paths")
-    paths.systemDir.toFile().deleteRecursively()
+    if(!preserveSystemDir) {
+      //TODO: it would be better to allocate a new context instead of wiping the folder
+      logOutput("Cleaning system dir for $this at $paths")
+      paths.systemDir.toFile().deleteRecursively()
+    } else {
+      logOutput("Cleaning system dir for $this at $paths is disabled due to preserveSystemDir")
+    }
   }
 
   fun wipeLogsDir() = apply {

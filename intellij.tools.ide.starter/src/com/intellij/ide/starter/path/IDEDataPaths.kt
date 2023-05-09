@@ -17,7 +17,9 @@ class IDEDataPaths(
 
   companion object {
     fun createPaths(testName: String, testHome: Path, useInMemoryFs: Boolean): IDEDataPaths {
-      testHome.toFile().deleteRecursively()
+      testHome.toFile().walkBottomUp().fold(true) { res, it ->
+        (it.absolutePath.startsWith((testHome / "system").toFile().absolutePath) || it.delete() || !it.exists()) && res
+      }
       testHome.createDirectories()
       val inMemoryRoot = if (useInMemoryFs) {
         createInMemoryDirectory("ide-integration-test-$testName")
