@@ -73,3 +73,7 @@ Downloading Custom Releases
 
 By default, when useEAP or useRelease methods are called, IDE installers will be downloaded from JetBrains' public hosting. If no version is specified, the latest version will be used. However, you can specify a desired version if needed.  
 
+### Modifying VM Options
+
+There are two ways to modify the VM options. One is on `IDETestContext` and another on `IDERunContext`. The first one is used to modify
+VM options for the whole context that can be reused between runs. The second is used to modify VM options just for the current run.

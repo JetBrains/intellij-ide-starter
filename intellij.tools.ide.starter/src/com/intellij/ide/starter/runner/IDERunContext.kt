@@ -68,14 +68,18 @@ data class IDERunContext(
 
   private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
+  private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
 
   fun verbose() = copy(verboseOutput = true)
 
   @Suppress("unused")
   fun withVMOptions(patchVMOptions: VMOptions.() -> Unit) = addVMOptionsPatch(patchVMOptions)
 
+  /**
+   * Method applies patch to the current run and the patch will be disregarded for the next run.
+   */
   fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDERunContext {
-    testContext.ide.vmOptions.patchVMOptions()
+    patchesForVMOptions.add(patchVMOptions)
     return this
   }
 
@@ -115,8 +119,12 @@ data class IDERunContext(
 
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
         withClassFileVerification()
-
+      installProfiler()
       testContext.patchVMOptions(this)
+      patchesForVMOptions.forEach { patchVMOptions ->
+        patchVMOptions()
+      }
+
       if (!useStartupScript) {
         require(commands.count() > 0) { "script builder is not allowed when useStartupScript is disabled" }
       }
@@ -372,7 +380,7 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
-    return installProfiler().prepareToRunIDE()
+    return prepareToRunIDE()
   }
 
   private fun deleteSavedAppStateOnMac() {

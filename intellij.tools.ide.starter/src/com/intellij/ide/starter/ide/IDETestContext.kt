@@ -53,6 +53,10 @@ data class IDETestContext(
 
   val buildTools: BuildToolProvider by di.newInstance { factory<IDETestContext, BuildToolProvider>().invoke(this@IDETestContext) }
 
+  /**
+   * Method applies patch immediately to the whole context.
+   * If you want apply VMOptions just for a single run, use [IDERunContext.addVMOptionsPatch].
+   */
   fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
     ide.vmOptions.patchVMOptions()
     return this
