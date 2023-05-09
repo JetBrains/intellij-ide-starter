@@ -56,50 +56,50 @@ data class IDETestContext(
    * Method applies patch immediately to the whole context.
    * If you want apply VMOptions just for a single run, use [IDERunContext.addVMOptionsPatch].
    */
-  fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
+  fun applyVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
     ide.vmOptions.patchVMOptions()
     return this
   }
 
   fun addLockFileForUITest(fileName: String): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("uiLockTempFile", paths.tempDir / fileName)
     }
 
   fun disableLinuxNativeMenuForce(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("linux.native.menu.force.disable", true)
     }
 
   fun setMemorySize(sizeMb: Int): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       withXmx(sizeMb)
     }
 
   fun setActiveProcessorCount(count: Int): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       withActiveProcessorCount(count)
     }
 
   fun withGCLogs(): IDETestContext =
-    addVMOptionsPatch { withGCLogs(paths.reportsDir / "gcLog.log") }
+    applyVMOptionsPatch { withGCLogs(paths.reportsDir / "gcLog.log") }
 
   fun disableGitLogIndexing(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("vcs.log.index.git", false)
     }
 
-  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = addVMOptionsPatch {
+  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = applyVMOptionsPatch {
     addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
   }
 
   fun executeDuringIndexing(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("performance.execute.script.after.scanning", true)
     }
 
   fun withGtk2OnLinux(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("jdk.gtk.verbose", true)
       if (SystemInfo.isLinux) {
         addSystemProperty("jdk.gtk.version", 2)
@@ -107,22 +107,22 @@ data class IDETestContext(
     }
 
   fun disableInstantIdeShutdown(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("ide.instant.shutdown", false)
     }
 
   fun useNewUIInTests(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("ide.experimental.ui", true)
     }
 
   fun useOldUIInTests(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       removeSystemProperty("ide.experimental.ui", true)
     }
 
   fun enableSlowOperationsInEdtInTests(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("ide.slow.operations.assertion", false)
     }
 
@@ -132,12 +132,12 @@ data class IDETestContext(
    * See [com.intellij.internal.statistic.EventLogApplicationLifecycleListener]
    */
   fun disableFusSendingOnIdeClose(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("feature.usage.event.log.send.on.ide.close", false)
     }
 
   fun withVerboseIndexingDiagnostics(dumpPaths: Boolean = false): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("intellij.indexes.diagnostics.should.dump.for.interrupted.index.updaters", true)
       addSystemProperty("intellij.indexes.diagnostics.limit.of.files", 10000)
       addSystemProperty("intellij.indexes.diagnostics.should.dump.paths.of.indexed.files", dumpPaths)
@@ -146,72 +146,72 @@ data class IDETestContext(
     }
 
   fun setPathForMemorySnapshot(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("memory.snapshots.path", paths.logsDir)
     }
 
   fun setPathForSnapshots(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("snapshots.path", paths.snapshotsDir)
     }
 
   @Suppress("unused")
   fun collectMemorySnapshotOnFailedPluginUnload(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("ide.plugins.snapshot.on.unload.fail", true)
     }
 
   @Suppress("unused")
   fun setPerProjectDynamicPluginsFlag(): IDETestContext =
-    addVMOptionsPatch {
+    applyVMOptionsPatch {
       addSystemProperty("ide.plugins.per.project", true)
     }
 
   // seems, doesn't work for Maven
-  fun disableAutoImport(disabled: Boolean = true) = addVMOptionsPatch {
+  fun disableAutoImport(disabled: Boolean = true) = applyVMOptionsPatch {
     addSystemProperty("external.system.auto.import.disabled", disabled)
   }
 
-  fun disableOrdinaryIndexes() = addVMOptionsPatch {
+  fun disableOrdinaryIndexes() = applyVMOptionsPatch {
     addSystemProperty("idea.use.only.index.infrastructure.extension", true)
   }
 
-  fun setSharedIndexesDownload(enable: Boolean = true) = addVMOptionsPatch {
+  fun setSharedIndexesDownload(enable: Boolean = true) = applyVMOptionsPatch {
     addSystemProperty("shared.indexes.bundled", enable)
     addSystemProperty("shared.indexes.download", enable)
     addSystemProperty("shared.indexes.download.auto.consent", enable)
   }
 
-  fun skipIndicesInitialization(value: Boolean = true) = addVMOptionsPatch {
+  fun skipIndicesInitialization(value: Boolean = true) = applyVMOptionsPatch {
     addSystemProperty("idea.skip.indices.initialization", value)
   }
 
-  fun enableAsyncProfiler() = addVMOptionsPatch {
+  fun enableAsyncProfiler() = applyVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "async")
   }
 
   @Suppress("unused")
-  fun enableYourKitProfiler() = addVMOptionsPatch {
+  fun enableYourKitProfiler() = applyVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "yourkit")
   }
 
-  fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = addVMOptionsPatch {
+  fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = applyVMOptionsPatch {
     addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
   }
 
-  fun collectImportProjectPerfMetrics() = addVMOptionsPatch {
+  fun collectImportProjectPerfMetrics() = applyVMOptionsPatch {
     addSystemProperty("idea.collect.project.import.performance", true)
   }
 
-  fun collectOpenTelemetry() = addVMOptionsPatch {
+  fun collectOpenTelemetry() = applyVMOptionsPatch {
     addSystemProperty("idea.diagnostic.opentelemetry.file", paths.logsDir.resolve(OPENTELEMETRY_FILE))
   }
 
-  fun enableVerboseOpenTelemetry() = addVMOptionsPatch {
+  fun enableVerboseOpenTelemetry() = applyVMOptionsPatch {
     addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
   }
 
-  fun enableWorkspaceModelVerboseLogs() = addVMOptionsPatch {
+  fun enableWorkspaceModelVerboseLogs() = applyVMOptionsPatch {
     configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
   }
 
@@ -304,7 +304,7 @@ data class IDETestContext(
     return this
   }
 
-  fun internalMode(value: Boolean = true) = addVMOptionsPatch { addSystemProperty("idea.is.internal", value) }
+  fun internalMode(value: Boolean = true) = applyVMOptionsPatch { addSystemProperty("idea.is.internal", value) }
 
   /**
    * Cleans .idea and removes all the .iml files for project
@@ -313,11 +313,11 @@ data class IDETestContext(
     return removeIdeaProjectDirectory().removeAllImlFilesInProject()
   }
 
-  fun disableAutoSetupJavaProject() = addVMOptionsPatch {
+  fun disableAutoSetupJavaProject() = applyVMOptionsPatch {
     addSystemProperty("idea.java.project.setup.disabled", true)
   }
 
-  fun disablePackageSearchBuildFiles() = addVMOptionsPatch {
+  fun disablePackageSearchBuildFiles() = applyVMOptionsPatch {
     addSystemProperty("idea.pkgs.disableLoading", true)
   }
 

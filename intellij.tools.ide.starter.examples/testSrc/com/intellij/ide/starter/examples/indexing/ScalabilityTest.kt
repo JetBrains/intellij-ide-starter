@@ -39,7 +39,7 @@ class ScalabilityTest {
   }
 
   private fun IDETestContext.setActiveProcessorCount(count: Int): IDETestContext =
-    this.addVMOptionsPatch {
+    this.applyVMOptionsPatch {
       this.addLine("-XX:ActiveProcessorCount=$count", "-XX:ActiveProcessorCount")
     }
 

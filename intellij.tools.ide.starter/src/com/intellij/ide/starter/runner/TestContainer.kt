@@ -91,7 +91,7 @@ interface TestContainer<T> : Closeable {
 
     testContext = when (testCase.ideInfo == IdeProductProvider.AI) {
       true -> testContext
-        .addVMOptionsPatch {
+        .applyVMOptionsPatch {
           overrideDirectories(paths)
           withEnv("STUDIO_VM_OPTIONS", ide.patchedVMOptionsFile.toString())
         }
@@ -104,7 +104,7 @@ interface TestContainer<T> : Closeable {
         .enableSlowOperationsInEdtInTests()
         .collectOpenTelemetry()
         .enableAsyncProfiler()
-        .addVMOptionsPatch {
+        .applyVMOptionsPatch {
           overrideDirectories(paths)
         }
         .disableMinimap()

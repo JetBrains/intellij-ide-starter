@@ -11,7 +11,7 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
 
   fun useNewMavenLocalRepository(): MavenBuildTool {
     localMavenRepo.toFile().mkdirs()
-    testContext.addVMOptionsPatch { addSystemProperty("idea.force.m2.home", localMavenRepo.toString()) }
+    testContext.applyVMOptionsPatch { addSystemProperty("idea.force.m2.home", localMavenRepo.toString()) }
     return this
   }
 
@@ -30,7 +30,7 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
   }
 
   fun setLogLevel(logLevel: LogLevel) {
-    testContext.addVMOptionsPatch {
+    testContext.applyVMOptionsPatch {
       configureLoggers(logLevel, "org.jetbrains.idea.maven")
     }
   }

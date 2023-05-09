@@ -24,7 +24,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
   fun useNewGradleLocalCache(): GradleBuildTool {
     localGradleRepoPath.toFile().mkdirs()
-    testContext.addVMOptionsPatch { addSystemProperty("gradle.user.home", localGradleRepoPath.toString()) }
+    testContext.applyVMOptionsPatch { addSystemProperty("gradle.user.home", localGradleRepoPath.toString()) }
     return this
   }
 
@@ -129,7 +129,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   fun setLogLevel(logLevel: LogLevel) {
-    testContext.addVMOptionsPatch {
+    testContext.applyVMOptionsPatch {
       configureLoggers(logLevel, "org.jetbrains.plugins.gradle")
     }
   }
