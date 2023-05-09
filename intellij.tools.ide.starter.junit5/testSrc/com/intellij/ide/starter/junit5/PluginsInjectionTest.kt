@@ -41,7 +41,6 @@ class PluginsInjectionTest {
                                  testCase = testCase,
                                  testName = testName,
                                  _resolvedProjectHome = projectHome,
-                                 patchVMOptions = { this },
                                  ciServer = di.direct.instance())
 
     context.pluginConfigurator.testContext.shouldBe(context)

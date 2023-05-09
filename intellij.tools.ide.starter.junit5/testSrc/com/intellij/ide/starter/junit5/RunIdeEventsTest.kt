@@ -67,7 +67,6 @@ class RunIdeEventsTest {
                                  testCase = testCase,
                                  testName = testName,
                                  _resolvedProjectHome = projectHome,
-                                 patchVMOptions = { this },
                                  ciServer = di.direct.instance())
 
     try {

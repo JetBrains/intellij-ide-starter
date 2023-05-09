@@ -37,7 +37,6 @@ class ReportPublisherTest {
   @Mock
   lateinit var context: IDETestContext
   private val commandChain = CommandChain()
-  private val patchVMOptions: VMOptions.() -> Unit = { }
 
   private lateinit var publishers: List<ReportPublisher>
   private lateinit var publisherSpy: ReportPublisher
@@ -54,7 +53,6 @@ class ReportPublisherTest {
       TestCases.IC.GradleJitPackSimple,
       "Test method",
       null,
-      patchVMOptions = patchVMOptions,
       NoCIServer,
       publishers = listOf(publisherSpy),
       isReportPublishingEnabled = true
@@ -69,12 +67,12 @@ class ReportPublisherTest {
     val spyTestContext = spy(ideTestContext)
 
     //WHEN
-    doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain, patchVMOptions = patchVMOptions)
+    doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain)
     doReturn(ideStartResult).`when`(spyIdeRunContext).runIDE()
     doReturn(context).`when`(spyIdeRunContext).testContext
 
     //THEN
-    spyTestContext.runIDE(commands = commandChain, patchVMOptions = patchVMOptions)
+    spyTestContext.runIDE(commands = commandChain)
     //ASSERT
     verify(publisherSpy, times(1)).publishResult(ideStartResult)
     verify(publisherSpy, times(1)).publishAfterRun(context)
@@ -88,12 +86,12 @@ class ReportPublisherTest {
     val spyTestContext = spy(ideTestContext)
 
     //WHEN
-    doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain, patchVMOptions = patchVMOptions)
+    doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain)
     doThrow(IllegalArgumentException::class.java).`when`(spyIdeRunContext).runIDE()
     doReturn(context).`when`(spyIdeRunContext).testContext
     //THEN
     Assertions.assertThrows(IllegalArgumentException::class.java) {
-      spyTestContext.runIDE(commands = commandChain, patchVMOptions = patchVMOptions)
+      spyTestContext.runIDE(commands = commandChain)
     }
     //ASSERT
     verify(publisherSpy, times(0)).publishResult(ideStartResult)

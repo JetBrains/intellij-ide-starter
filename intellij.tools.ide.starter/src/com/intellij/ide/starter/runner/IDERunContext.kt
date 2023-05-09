@@ -120,7 +120,7 @@ data class IDERunContext(
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
         withClassFileVerification()
       installProfiler()
-      testContext.patchVMOptions(this)
+
       patchesForVMOptions.forEach { patchVMOptions ->
         patchVMOptions()
       }

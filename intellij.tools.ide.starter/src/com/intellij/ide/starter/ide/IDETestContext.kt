@@ -35,7 +35,6 @@ data class IDETestContext(
   val testCase: TestCase,
   val testName: String,
   private val _resolvedProjectHome: Path?,
-  var patchVMOptions: VMOptions.() -> Unit,
   val ciServer: CIServer,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),

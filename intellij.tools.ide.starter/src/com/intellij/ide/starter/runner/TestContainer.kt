@@ -86,7 +86,7 @@ interface TestContainer<T> : Closeable {
     logOutput("IDE to run for '$testName': $ide")
 
     val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
-    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, patchVMOptions = {  }, ciServer = ciServer, preserveSystemDir=preserveSystemDir)
+    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, ciServer = ciServer, preserveSystemDir=preserveSystemDir)
     testContext.wipeSystemDir()
 
     testContext = when (testCase.ideInfo == IdeProductProvider.AI) {

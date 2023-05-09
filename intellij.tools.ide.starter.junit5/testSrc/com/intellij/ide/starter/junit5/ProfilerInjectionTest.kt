@@ -45,7 +45,6 @@ class ProfilerInjectionTest {
       testName = testInfo.hyphenateWithClass(),
       _resolvedProjectHome = null,
       ciServer = NoCIServer,
-      patchVMOptions = { this }
     )
 
     val ideRunContext = IDERunContext(ideTestContext)
