@@ -273,7 +273,6 @@ data class IDETestContext(
   }
 
   fun runContext(
-    patchVMOptions: VMOptions.() -> Unit = { },
     commandLine: IDECommandLine? = null,
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
@@ -281,7 +280,8 @@ data class IDETestContext(
     useStartupScript: Boolean = true,
     launchName: String = "",
     expectedKill: Boolean = false,
-    collectNativeThreads: Boolean = false
+    collectNativeThreads: Boolean = false,
+    patchVMOptions: VMOptions.() -> Unit = { }
   ): IDERunContext {
     return IDERunContext(testContext = this)
       .copy(
@@ -353,7 +353,6 @@ data class IDETestContext(
   }
 
   fun runIDE(
-    patchVMOptions: VMOptions.() -> Unit = { },
     commandLine: IDECommandLine? = null,
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
@@ -361,7 +360,8 @@ data class IDETestContext(
     useStartupScript: Boolean = true,
     launchName: String = "",
     expectedKill: Boolean = false,
-    collectNativeThreads: Boolean = false
+    collectNativeThreads: Boolean = false,
+    patchVMOptions: VMOptions.() -> Unit = { }
   ): IDEStartResult {
     val context = runContext(commandLine = commandLine, commands = commands, codeBuilder = codeBuilder, runTimeout = runTimeout,
                              useStartupScript = useStartupScript, launchName = launchName, expectedKill = expectedKill,
@@ -389,15 +389,14 @@ data class IDETestContext(
   ): IDEStartResult {
     val updatedContext = this.copy(testName = "${this.testName}/warmup")
     val result = updatedContext.runIDE(
-      patchVMOptions = {
-        if (storeClassReport) {
-          enableClassLoadingReport(paths.reportsDir / "class-report.txt")
-        }
-        patchVMOptions()
-      },
       commands = testCase.commands.plus(commands),
       runTimeout = runTimeout
-    )
+    ) {
+      if (storeClassReport) {
+        enableClassLoadingReport(paths.reportsDir / "class-report.txt")
+      }
+      patchVMOptions()
+    }
     updatedContext.publishArtifact(this.paths.reportsDir)
     return result
   }
