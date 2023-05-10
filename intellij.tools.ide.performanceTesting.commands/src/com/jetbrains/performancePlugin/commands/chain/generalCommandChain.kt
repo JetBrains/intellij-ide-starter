@@ -777,3 +777,13 @@ fun <T : CommandChain> T.authenticateInGrazie(token: String): T {
   addCommand("${CMD_PREFIX}authenticateInGrazie ${token}")
   return this
 }
+
+fun <T : CommandChain> T.createJavaFile(fileName: String, filePath: String, fileType: String): T {
+  addCommand("${CMD_PREFIX}createJavaFile $fileName,$filePath,$fileType")
+  return this
+}
+
+fun <T : CommandChain> T.createKotlinFile(fileName: String, filePath: String, fileType: String): T {
+  addCommand("${CMD_PREFIX}createKotlinFile $fileName,$filePath,$fileType")
+  return this
+}
