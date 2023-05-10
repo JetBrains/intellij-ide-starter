@@ -792,6 +792,25 @@ fun <T : CommandChain> T.createKotlinFile(fileName: String, filePath: String, fi
   return this
 }
 
+enum class EnableSettingSyncOptions{
+  GET, PUSH, NONE
+}
+
+fun <T : CommandChain> T.enableSettingsSync(enableCrossIdeSync: Boolean = false, action: EnableSettingSyncOptions = EnableSettingSyncOptions.NONE): T {
+  addCommand("${CMD_PREFIX}enableSettingsSync ${enableCrossIdeSync} ${action.name}")
+  return this
+}
+
+fun <T : CommandChain> T.getSettingsFromServer(): T {
+  addCommand("${CMD_PREFIX}getSettingsFromServer")
+  return this
+}
+
+fun <T : CommandChain> T.pushSettingsToServer(): T {
+  addCommand("${CMD_PREFIX}pushSettingsToServer")
+  return this
+}
+
 fun <T : CommandChain> T.acceptDecompileNotice(): T {
   addCommand("${CMD_PREFIX}acceptDecompileNotice")
   return this
