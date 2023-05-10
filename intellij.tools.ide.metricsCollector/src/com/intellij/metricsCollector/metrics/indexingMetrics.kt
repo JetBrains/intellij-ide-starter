@@ -208,7 +208,7 @@ data class IndexingMetrics(
   }
 }
 
-fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
+fun extractIndexingMetrics(startResult: IDEStartResult, withValidation: Boolean = true): IndexingMetrics {
   val indexDiagnosticDirectory = startResult.context.paths.logsDir / "indexing-diagnostic"
   val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.toFile().isDirectory }.use { it.toList() }
   val projectIndexDiagnosticDirectory = indexDiagnosticDirectoryChildren.let { perProjectDirs ->
@@ -220,13 +220,14 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
     .mapNotNull { IndexDiagnosticDumper.readJsonIndexingActivityDiagnostic(it) }
 
   val metrics = IndexingMetrics(startResult, jsonIndexDiagnostics)
-  val oldMetrics = extractOldIndexingMetrics(startResult)
-  compareOldAndCurrentMetrics(oldMetrics, metrics)
+  if (withValidation) {
+    val oldMetrics = extractOldIndexingMetrics(startResult)
+    compareOldAndCurrentMetrics(oldMetrics, metrics)
 
-  val json = metrics.toPerformanceMetricsJson()
-  val oldJson = oldMetrics.toPerformanceMetricsJson()
-  compareOldAndCurrentJsonMetrics(oldJson, json)
-
+    val json = metrics.toPerformanceMetricsJson()
+    val oldJson = oldMetrics.toPerformanceMetricsJson()
+    compareOldAndCurrentJsonMetrics(oldJson, json)
+  }
   return metrics
 }
 

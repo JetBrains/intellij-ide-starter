@@ -240,6 +240,4 @@ data class VMOptions(
     addLine("-XX:+UseEpsilonGC")
     addLine("-Xmx16g", "-Xmx")
   }
-
-  fun withBothIndexingDiagnostics() = addSystemProperty("intellij.indexes.diagnostics.should.dump.old.version.of.diagnostics", true)
 }
