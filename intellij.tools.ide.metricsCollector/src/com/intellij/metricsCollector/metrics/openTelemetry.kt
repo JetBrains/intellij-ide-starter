@@ -20,6 +20,7 @@ const val DEFAULT_SPAN_NAME: String = "performance_test"
 data class MetricWithAttributes(val metric: Metric<*>,
                                 val attributes: MutableList<Metric<*>> = mutableListOf())
 
+@Suppress("unused")
 fun getOpenTelemetry(context: IDETestContext): PerformanceMetricsDto {
   return getOpenTelemetry(context, DEFAULT_SPAN_NAME)
 }
@@ -54,10 +55,7 @@ fun getSingleMetric(context: IDETestContext, nameOfSpan: String): Metric<*> {
  * Besides, all attributes are reported as counters.
  */
 fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
-  val root = jacksonObjectMapper().readTree(file)
-  val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
-  val allSpans = root.get("data")[0].get("spans")
-  if (allSpans.isEmpty) println("No spans have been found")
+  val (spanToMetricMap, allSpans) = getSpans(file)
   for (span in allSpans) {
     if (span.get("operationName").textValue() == nameOfSpan) {
       val metric = MetricWithAttributes(Metric(Duration(nameOfSpan), getDuration(span)))
@@ -67,6 +65,27 @@ fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
     }
   }
   return combineMetrics(spanToMetricMap)
+}
+
+fun getMetricsLike(file: File, string: String): MutableCollection<Metric<*>> {
+  val (spanToMetricMap, allSpans) = getSpans(file)
+  for (span in allSpans) {
+    val operationName = span.get("operationName").textValue()
+    if (operationName.contains(string)) {
+      val metric = MetricWithAttributes(Metric(Duration(operationName), getDuration(span)))
+      populateAttributes(metric, span)
+      spanToMetricMap.getOrPut(operationName) { mutableListOf() }.add(metric)
+      processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
+    }
+  }
+  return combineMetrics(spanToMetricMap)
+}
+private fun getSpans(file: File): Pair<MutableMap<String, MutableList<MetricWithAttributes>>, JsonNode> {
+  val root = jacksonObjectMapper().readTree(file)
+  val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
+  val allSpans = root.get("data")[0].get("spans")
+  if (allSpans.isEmpty) println("No spans have been found")
+  return Pair(spanToMetricMap, allSpans)
 }
 
 /**
