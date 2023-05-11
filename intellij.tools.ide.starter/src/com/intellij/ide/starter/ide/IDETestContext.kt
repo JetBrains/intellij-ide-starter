@@ -381,7 +381,6 @@ data class IDETestContext(
   }
 
   fun warmUp(
-    patchVMOptions: VMOptions.() -> Unit = { },
     commands: Iterable<MarshallableCommand>,
     runTimeout: Duration = 10.minutes,
     storeClassReport: Boolean = false
@@ -394,7 +393,6 @@ data class IDETestContext(
       if (storeClassReport) {
         enableClassLoadingReport(paths.reportsDir / "class-report.txt")
       }
-      patchVMOptions()
     }
     updatedContext.publishArtifact(this.paths.reportsDir)
     return result
