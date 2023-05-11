@@ -387,6 +387,10 @@ fun <T : CommandChain> T.openProjectView(): T {
   return this
 }
 
+fun <T : CommandChain> T.getLibraryPathByName(name: String, path: Path): T {
+  addCommand("${CMD_PREFIX}getLibraryPathByName $name,$path")
+  return this
+}
 
 const val ENTER_CMD_PREFIX = "${CMD_PREFIX}pressKey"
 
