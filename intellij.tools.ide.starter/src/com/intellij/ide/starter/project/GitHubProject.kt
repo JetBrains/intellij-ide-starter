@@ -3,6 +3,8 @@ package com.intellij.ide.starter.project
 import com.intellij.ide.starter.config.Const
 import java.net.URI
 import java.nio.file.Path
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 object GitHubProject {
   /**
@@ -13,7 +15,8 @@ object GitHubProject {
     branchName: String = "main",
     commitHash: String = "",
     repoRelativeUrl: String,
-    projectDirRelativePath: (Path) -> Path = { it }
+    projectDirRelativePath: (Path) -> Path = { it },
+    downloadTimeout: Duration = 10.minutes
   ): GitProjectInfo {
     val repoRelativeUrlWithGitSuffix = if (repoRelativeUrl.endsWith(".git")) repoRelativeUrl
     else "$repoRelativeUrl.git"
@@ -23,6 +26,7 @@ object GitHubProject {
       commitHash = commitHash,
       repositoryUrl = URI(Const.GITHUB_HTTP_BASE_URL).resolve(repoRelativeUrlWithGitSuffix).toString(),
       projectHomeRelativePath = projectDirRelativePath,
+      downloadTimeout = downloadTimeout
     )
   }
 }
