@@ -791,3 +791,8 @@ fun <T : CommandChain> T.createKotlinFile(fileName: String, filePath: String, fi
   addCommand("${CMD_PREFIX}createKotlinFile $fileName,$filePath,$fileType")
   return this
 }
+
+fun <T : CommandChain> T.acceptDecompileNotice(): T {
+  addCommand("${CMD_PREFIX}acceptDecompileNotice")
+  return this
+}
