@@ -811,6 +811,11 @@ fun <T : CommandChain> T.pushSettingsToServer(): T {
   return this
 }
 
+fun <T : CommandChain> T.disableSettingsSync(deleteSettings: Boolean = false): T {
+  addCommand("${CMD_PREFIX}disableSettingsSync ${deleteSettings}")
+  return this
+}
+
 fun <T : CommandChain> T.acceptDecompileNotice(): T {
   addCommand("${CMD_PREFIX}acceptDecompileNotice")
   return this
