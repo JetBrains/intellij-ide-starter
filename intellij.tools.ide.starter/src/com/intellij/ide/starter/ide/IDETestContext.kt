@@ -382,18 +382,13 @@ data class IDETestContext(
 
   fun warmUp(
     commands: Iterable<MarshallableCommand>,
-    runTimeout: Duration = 10.minutes,
-    storeClassReport: Boolean = false
+    runTimeout: Duration = 10.minutes
   ): IDEStartResult {
     val updatedContext = this.copy(testName = "${this.testName}/warmup")
     val result = updatedContext.runIDE(
       commands = testCase.commands.plus(commands),
       runTimeout = runTimeout
-    ) {
-      if (storeClassReport) {
-        enableClassLoadingReport(paths.reportsDir / "class-report.txt")
-      }
-    }
+    )
     updatedContext.publishArtifact(this.paths.reportsDir)
     return result
   }
