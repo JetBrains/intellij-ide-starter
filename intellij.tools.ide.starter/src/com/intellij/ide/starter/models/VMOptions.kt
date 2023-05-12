@@ -96,9 +96,17 @@ data class VMOptions(
     data =  data - line
   }
 
-  fun removeLineLike(linePrefix: String) {
-    if (data.none { it.contains(linePrefix) }) return
-    data = data.filterNot { it.trim().startsWith(linePrefix) }
+  fun removeProfilerAgents() {
+    removeAsyncAgent()
+    removeYourkitAgent()
+  }
+
+  fun removeAsyncAgent() {
+    data = data.filterNot { it.contains("-agentpath:") && it.contains("async/libasyncProfiler") }
+  }
+
+  fun removeYourkitAgent() {
+    data = data.filterNot { it.contains("-agentpath:") && it.contains("yourkit/bin/libyjpagent") }
   }
 
   private fun filterKeys(toRemove: (String) -> Boolean) {

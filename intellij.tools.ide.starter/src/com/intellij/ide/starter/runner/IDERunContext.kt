@@ -99,7 +99,7 @@ data class IDERunContext(
         profiler.injectProfiler(this)
       }
       ProfilerType.NONE -> {
-        this.addVMOptionsPatch { removeLineLike("-agentpath:") }
+        this.addVMOptionsPatch { removeProfilerAgents() }
         logOutput("No profiler is specified.")
         return this
       }
