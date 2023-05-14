@@ -698,6 +698,11 @@ fun <T : CommandChain> T.findUsagesJava(elementName: String, position: String = 
   return this
 }
 
+fun <T : CommandChain> T.findUsagesJava(elementName: String): T {
+  addCommand("${CMD_PREFIX}findUsagesJava $elementName")
+  return this
+}
+
 fun <T : CommandChain> T.syncJpsLibraries(): T {
   addCommand("${CMD_PREFIX}syncJpsLibraries")
   return this
