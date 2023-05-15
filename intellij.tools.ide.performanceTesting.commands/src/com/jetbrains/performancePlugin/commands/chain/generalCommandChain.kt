@@ -10,6 +10,7 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.listDirectoryEntries
 import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
+import kotlin.time.Duration
 
 private const val CMD_PREFIX = '%'
 
@@ -823,5 +824,10 @@ fun <T : CommandChain> T.disableSettingsSync(deleteSettings: Boolean = false): T
 
 fun <T : CommandChain> T.acceptDecompileNotice(): T {
   addCommand("${CMD_PREFIX}acceptDecompileNotice")
+  return this
+}
+
+fun <T : CommandChain> T.waitVcsLogIndexing(timeout: Duration): T {
+  addCommand("${CMD_PREFIX}waitVcsLogIndexing $timeout")
   return this
 }
