@@ -16,7 +16,8 @@ object GitHubProject {
     commitHash: String = "",
     repoRelativeUrl: String,
     projectDirRelativePath: (Path) -> Path = { it },
-    downloadTimeout: Duration = 10.minutes
+    downloadTimeout: Duration = 10.minutes,
+    description: String = ""
   ): GitProjectInfo {
     val repoRelativeUrlWithGitSuffix = if (repoRelativeUrl.endsWith(".git")) repoRelativeUrl
     else "$repoRelativeUrl.git"
@@ -26,7 +27,8 @@ object GitHubProject {
       commitHash = commitHash,
       repositoryUrl = URI(Const.GITHUB_HTTP_BASE_URL).resolve(repoRelativeUrlWithGitSuffix).toString(),
       projectHomeRelativePath = projectDirRelativePath,
-      downloadTimeout = downloadTimeout
+      downloadTimeout = downloadTimeout,
+      description = description
     )
   }
 }
