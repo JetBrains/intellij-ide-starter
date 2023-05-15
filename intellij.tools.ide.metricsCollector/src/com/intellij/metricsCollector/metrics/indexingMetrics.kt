@@ -281,6 +281,8 @@ private fun orderSlowIndexedFiles(slowIndexedFiles: Map<String, List<JsonFilePro
       if (file1.processingTime != file2.processingTime) return@sortedWith file1.processingTime.nano.compareTo(file2.processingTime.nano)
       if (file1.contentLoadingTime != file2.contentLoadingTime) return@sortedWith file1.contentLoadingTime.nano.compareTo(
         file2.contentLoadingTime.nano)
+      if (file1.readLockWaitingTime != file2.readLockWaitingTime) return@sortedWith file1.readLockWaitingTime.nano.compareTo(
+        file2.readLockWaitingTime.nano)
       return@sortedWith file1.evaluationOfIndexValueChangerTime.nano.compareTo(file2.evaluationOfIndexValueChangerTime.nano)
     }
   }.toSortedMap()
