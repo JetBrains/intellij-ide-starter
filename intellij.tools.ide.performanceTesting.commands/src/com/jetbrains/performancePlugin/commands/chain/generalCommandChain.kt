@@ -169,10 +169,29 @@ fun <T : CommandChain> T.gotoNamedPsiElementIfExist(name: String, position: Posi
   return this
 }
 
-const val FIND_USAGES_CMD_PREFIX = "${CMD_PREFIX}findUsages"
+fun <T : CommandChain> T.findUsages(expectedElementName: String = "", scope: String = "All Places"): T {
+  navigateAndFindUsages(expectedElementName, "", scope, warmup = false)
+  return this
+}
 
-fun <T : CommandChain> T.findUsages(): T {
-  addCommand(FIND_USAGES_CMD_PREFIX)
+fun <T : CommandChain> T.navigateAndFindUsages(expectedElementName: String,
+                                               position: String = "INTO",
+                                               scope: String = "All Places",
+                                               warmup: Boolean = false): T {
+  val command = mutableListOf("${CMD_PREFIX}findUsages")
+  if (expectedElementName.isNotEmpty()) {
+    command.add("-expectedName $expectedElementName")
+  }
+  if (position.isNotEmpty()) {
+    command.add("-position $position")
+  }
+  if(scope.isNotEmpty()) {
+    command.add("-scope $scope")
+  }
+  if (warmup) {
+    command.add("WARMUP")
+  }
+  addCommand(*command.toTypedArray())
   return this
 }
 
@@ -714,16 +733,6 @@ fun <T : CommandChain> T.rebuild(): T {
   return this
 }
 
-fun <T : CommandChain> T.findUsagesJava(elementName: String, position: String = "INTO"): T {
-  addCommand("${CMD_PREFIX}findUsagesJava $position $elementName")
-  return this
-}
-
-fun <T : CommandChain> T.findUsagesJava(elementName: String): T {
-  addCommand("${CMD_PREFIX}findUsagesJava $elementName")
-  return this
-}
-
 fun <T : CommandChain> T.syncJpsLibraries(): T {
   addCommand("${CMD_PREFIX}syncJpsLibraries")
   return this
@@ -752,16 +761,6 @@ fun <T : CommandChain> T.convertJavaToKotlinByDefault(value: Boolean): T {
 
 fun <T : CommandChain> T.assertOpenedKotlinFileInRoot(): T {
   addCommand("${CMD_PREFIX}assertOpenedKotlinFileInRoot")
-  return this
-}
-
-fun <T : CommandChain> T.findUsagesKotlin(elementName: String, position: String = "INTO"): T {
-  addCommand("${CMD_PREFIX}findUsagesKotlin $position $elementName")
-  return this
-}
-
-fun <T : CommandChain> T.findUsagesKotlinWarmup(elementName: String, position: String = "INTO"): T {
-  addCommand("${CMD_PREFIX}findUsagesKotlin $position $elementName WARMUP")
   return this
 }
 
