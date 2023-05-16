@@ -130,6 +130,11 @@ fun <T : CommandChain> T.compareIndices(): T {
 
 const val GO_TO_CMD_PREFIX = "${CMD_PREFIX}goto"
 
+fun <T : CommandChain> T.goto(offset: Int): T {
+  addCommand(GO_TO_CMD_PREFIX, offset.toString())
+  return this
+}
+
 fun <T : CommandChain> T.goto(line: Int, column: Int): T {
   addCommand(GO_TO_CMD_PREFIX, line.toString(), column.toString())
   return this
@@ -602,9 +607,24 @@ fun <T : CommandChain> T.importMavenProject(): T {
 }
 
 fun <T : CommandChain> T.inlineRename(to: String): T {
-  addCommand("${CMD_PREFIX}startInlineRename")
+  startInlineRename()
   delayType(150, to)
+  finishInlineRename()
+  return this
+}
+
+fun <T : CommandChain> T.finishInlineRename(): T {
   addCommand("${CMD_PREFIX}finishInlineRename")
+  return this
+}
+
+fun <T : CommandChain> T.startInlineRename(): T {
+  addCommand("${CMD_PREFIX}startInlineRename")
+  return this
+}
+
+fun <T : CommandChain> T.waitForLlmNameSuggestions(file: String, offset: Int): T {
+  addCommand("${CMD_PREFIX}waitForLlmNameSuggestions $file $offset")
   return this
 }
 
@@ -824,6 +844,16 @@ fun <T : CommandChain> T.disableSettingsSync(deleteSettings: Boolean = false): T
 
 fun <T : CommandChain> T.acceptDecompileNotice(): T {
   addCommand("${CMD_PREFIX}acceptDecompileNotice")
+  return this
+}
+
+fun <T : CommandChain> T.startNameSuggestionBenchmark(): T {
+  addCommand("${CMD_PREFIX}startNameSuggestionBenchmark")
+  return this
+}
+
+fun <T : CommandChain> T.stopNameSuggestionBenchmark(reportPath: String): T {
+  addCommand("${CMD_PREFIX}stopNameSuggestionBenchmark $reportPath")
   return this
 }
 
