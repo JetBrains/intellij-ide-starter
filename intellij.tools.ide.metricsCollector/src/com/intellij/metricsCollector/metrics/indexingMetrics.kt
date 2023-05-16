@@ -10,6 +10,7 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.extension
+import kotlin.math.max
 
 
 data class IndexingMetrics(
@@ -156,6 +157,17 @@ data class IndexingMetrics(
       return map
     }
 
+  private val processingSpeedPerBaseLanguage: Map<String, Int>
+    get() {
+      val speedMap = mutableMapOf<String, Int>()
+      indexingHistories.flatMap { it.totalStatsPerBaseLanguage }.forEach { totalStatsPerLanguage ->
+        val speed = (totalStatsPerLanguage.totalProcessingSpeed.totalBytes.toDouble() * 0.001 /
+                     totalStatsPerLanguage.totalProcessingSpeed.totalTime * TimeUnit.SECONDS.toNanos(1).toDouble()).toInt()
+        speedMap[totalStatsPerLanguage.language] = speedMap[totalStatsPerLanguage.language]?.let { max(speed, it) } ?: speed
+      }
+      return speedMap
+    }
+
   val slowIndexedFiles: Map<String, List<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>
     get() {
       val indexedFiles = hashMapOf<String, MutableList<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>()
@@ -197,7 +209,7 @@ data class IndexingMetrics(
       PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = totalNumberOfIndexedFiles),
       PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = totalNumberOfFilesFullyIndexedByExtensions),
       PerformanceMetrics.Metric(metricNumberOfIndexingRuns, value = totalNumberOfIndexActivitiesRuns)
-    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType)
+    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage)
   }
 }
 
@@ -221,3 +233,8 @@ private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>):
   }
   return list
 }
+
+private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric<*>> =
+  mapBaseLanguageToSpeed.map {
+    PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".createPerformanceMetricCounter(), value = it.value)
+  }
