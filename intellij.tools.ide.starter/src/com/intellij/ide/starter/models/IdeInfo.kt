@@ -27,7 +27,9 @@ data class IdeInfo(
 
   val tag: String? = null,
 
-  val downloadURI: URI? = null
+  val downloadURI: URI? = null,
+
+  val fullName: String
 ) {
   companion object
 
