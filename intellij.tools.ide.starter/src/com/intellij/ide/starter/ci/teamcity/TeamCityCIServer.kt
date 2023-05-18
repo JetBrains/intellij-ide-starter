@@ -110,6 +110,7 @@ open class TeamCityCIServer(
   override val branchName by lazy { buildParams["teamcity.build.branch"] ?: "" }
 
   val configurationName by lazy { getBuildParam("teamcity.buildConfName") }
+  val buildVcsNumber by lazy {getBuildParam("build.vcs.number") ?: "Unknown"}
 
   override val buildParams by lazy {
     val configurationPropertiesFile = systemProperties["teamcity.configuration.properties.file"]
