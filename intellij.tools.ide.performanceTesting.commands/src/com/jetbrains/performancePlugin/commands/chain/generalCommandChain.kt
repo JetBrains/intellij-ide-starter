@@ -856,7 +856,18 @@ fun <T : CommandChain> T.stopNameSuggestionBenchmark(reportPath: String): T {
   return this
 }
 
+/**
+ * Will wait and throw exception if the condition wasn't satisfied
+ */
 fun <T : CommandChain> T.waitVcsLogIndexing(timeout: Duration): T {
   addCommand("${CMD_PREFIX}waitVcsLogIndexing $timeout")
+  return this
+}
+
+/**
+ * Will wait infinitely till timeout of the test occurred
+ */
+fun <T : CommandChain> T.waitVcsLogIndexing(): T {
+  addCommand("${CMD_PREFIX}waitVcsLogIndexing")
   return this
 }
