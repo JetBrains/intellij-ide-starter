@@ -380,19 +380,6 @@ data class IDETestContext(
     }
   }
 
-  fun warmUp(
-    commands: Iterable<MarshallableCommand>,
-    runTimeout: Duration = 10.minutes
-  ): IDEStartResult {
-    val updatedContext = this.copy(testName = "${this.testName}/warmup")
-    val result = updatedContext.runIDE(
-      commands = testCase.commands.plus(commands),
-      runTimeout = runTimeout
-    )
-    updatedContext.publishArtifact(this.paths.reportsDir)
-    return result
-  }
-
   fun removeAndUnpackProject(): IDETestContext {
     testCase.markNotReusable().projectInfo?.downloadAndUnpackProject()
     return this
