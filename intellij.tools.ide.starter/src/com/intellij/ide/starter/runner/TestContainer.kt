@@ -100,7 +100,7 @@ interface TestContainer<T> : Closeable {
         .disableFusSendingOnIdeClose()
         .disableLinuxNativeMenuForce()
         .withGtk2OnLinux()
-        .disableGitLogIndexing()
+        .gitLogIndexingEnabled()
         .enableSlowOperationsInEdtInTests()
         .collectOpenTelemetry()
         .enableAsyncProfiler()

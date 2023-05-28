@@ -84,9 +84,9 @@ data class IDETestContext(
   fun withGCLogs(): IDETestContext =
     applyVMOptionsPatch { withGCLogs(paths.reportsDir / "gcLog.log") }
 
-  fun disableGitLogIndexing(): IDETestContext =
+  fun gitLogIndexingEnabled(isEnabled: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
-      addSystemProperty("vcs.log.index.git", false)
+      addSystemProperty("vcs.log.index.git", isEnabled)
     }
 
   fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = applyVMOptionsPatch {
