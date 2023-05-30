@@ -859,6 +859,7 @@ fun <T : CommandChain> T.stopNameSuggestionBenchmark(reportPath: String): T {
 /**
  * Will wait and throw exception if the condition wasn't satisfied
  */
+@Suppress("unused")
 fun <T : CommandChain> T.waitVcsLogIndexing(timeout: Duration): T {
   addCommand("${CMD_PREFIX}waitVcsLogIndexing $timeout")
   return this
