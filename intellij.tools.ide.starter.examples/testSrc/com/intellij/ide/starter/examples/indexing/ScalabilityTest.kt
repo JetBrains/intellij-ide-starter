@@ -28,22 +28,7 @@ class ScalabilityTest {
   private lateinit var testInfo: TestInfo
   private lateinit var context: TestContainerImpl
 
-  //this can be removed in the next release
-  companion object {
-    init {
-      di = DI {
-        extend(di)
-        bindSingleton<List<ReportPublisher>>(overrides = true) { listOf(ConsoleTestResultPublisher) }
-      }
-    }
-  }
-
-  private fun IDETestContext.setActiveProcessorCount(count: Int): IDETestContext =
-    this.addVMOptionsPatch { //todo change to applyVMOptionsPatch for 2023.2
-      this.addLine("-XX:ActiveProcessorCount=$count", "-XX:ActiveProcessorCount")
-    }
-
-  @Test
+    @Test
   fun scalabilityOfIndexingTest() {
     //CONFIGURATION
     //provide path to your local project

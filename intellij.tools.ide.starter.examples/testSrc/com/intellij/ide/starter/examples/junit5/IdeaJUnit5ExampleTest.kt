@@ -25,17 +25,7 @@ class IdeaJUnit5ExampleTest {
   private lateinit var testInfo: TestInfo
   private lateinit var context: TestContainerImpl
 
-  //this can be removed in the next release
-  companion object{
-    init {
-      di = DI {
-        extend(di)
-        bindSingleton<List<ReportPublisher>>(overrides = true) { listOf(ConsoleTestResultPublisher) }
-      }
-    }
-  }
-
-  @Test
+    @Test
   fun openGradleJitPack() {
 
     val testContext = context

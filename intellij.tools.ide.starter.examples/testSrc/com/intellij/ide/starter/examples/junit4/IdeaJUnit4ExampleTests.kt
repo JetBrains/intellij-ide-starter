@@ -21,17 +21,7 @@ class IdeaJUnit4ExampleTests {
   @get:Rule
   val testContextFactory = initJUnit4StarterRule()
 
-  //this can be removed in the next release
-  companion object{
-    init {
-      di = DI {
-        extend(di)
-        bindSingleton<List<ReportPublisher>>(overrides = true) { listOf(ConsoleTestResultPublisher) }
-      }
-    }
-  }
-
-  @Test
+    @Test
   fun `open gradle project on the latest EAP IJ Community`() {
     val context = testContextFactory
       .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple)

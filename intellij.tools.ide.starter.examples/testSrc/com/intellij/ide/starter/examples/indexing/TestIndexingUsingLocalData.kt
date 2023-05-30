@@ -55,7 +55,6 @@ class TestIndexing {
         "/Users/maxim.kolmakov/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-2/223.8617.56"
       //CONFIGURATION: comment line below if you don't want to use locally installed IDE and want to download one
       bindFactory<IdeInfo, IdeInstallator>(overrides = true) { _ -> IdeLocalInstaller(Paths.get(pathToInstalledIDE)) }
-      bindSingleton<List<ReportPublisher>>(overrides = true) { listOf(ConsoleTestResultPublisher) }
     }
   }
 
