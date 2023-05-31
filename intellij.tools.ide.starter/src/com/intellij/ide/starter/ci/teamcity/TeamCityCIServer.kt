@@ -121,7 +121,6 @@ open class TeamCityCIServer(
 
   /** Root URI of the server */
   val serverUri: URI by lazy {
-    getBuildParam("teamcity.serverUrl")?.let { return@lazy URI(it).normalize() }
     return@lazy di.direct.instance<URI>(tag = "teamcity.uri")
   }
 
