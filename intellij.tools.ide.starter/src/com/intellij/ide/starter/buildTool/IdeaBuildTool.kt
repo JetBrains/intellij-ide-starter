@@ -18,40 +18,66 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
   private val compilerXmlPath: Path
     get() = ideaDir.resolve("compiler.xml")
 
-  fun setBuildProcessHeapSize(heapSizeMb: Int): IdeaBuildTool {
-    if (compilerXmlPath.notExists()) return this
-    val content = compilerXmlPath.readText()
-    if (content.contains("option name=\"BUILD_PROCESS_HEAP_SIZE\" value=\"$heapSizeMb\"")) return this
+  private val workspaceXmlPath: Path
+    get() = ideaDir.resolve("workspace.xml")
 
-    val xmlDoc = XmlBuilder.parse(compilerXmlPath)
+  fun setBuildProcessHeapSize(heapSizeMb: Int): IdeaBuildTool {
+    return patchXmlConfigFile(
+      configFile = compilerXmlPath,
+      componentName = "CompilerConfiguration",
+      optionName = "BUILD_PROCESS_HEAP_SIZE",
+      optionValue = "$heapSizeMb"
+    )
+  }
+
+  fun enableParallelCompilation(): IdeaBuildTool {
+    return patchXmlConfigFile(
+      configFile = workspaceXmlPath,
+      componentName = "CompilerWorkspaceConfiguration",
+      optionName = "PARALLEL_COMPILATION",
+      optionValue = "true")
+  }
+
+  private fun patchXmlConfigFile(
+    configFile: Path,
+    componentName: String,
+    optionName: String,
+    optionValue: String,
+    checkExpression: String = "option name=\"$optionName\" value=\"$optionValue\""
+  ): IdeaBuildTool {
+    if (configFile.notExists()) return this
+    val content = configFile.readText()
+    if (content.contains(checkExpression)) return this
+
+    val xmlDoc = XmlBuilder.parse(configFile)
     xmlDoc.documentElement.normalize()
     val xp: XPath = XPathFactory.newInstance().newXPath()
 
-    if (content.contains("CompilerConfiguration")) {
+    if (content.contains(componentName)) {
 
-      if (compilerXmlPath.readText().contains("BUILD_PROCESS_HEAP_SIZE")) {
-        val node = xp.evaluate("//component/option[@name='BUILD_PROCESS_HEAP_SIZE']", xmlDoc, XPathConstants.NODE) as Element
+      if (configFile.readText().contains(optionName)) {
+        val node = xp.evaluate("//component/option[@name='$optionName']", xmlDoc, XPathConstants.NODE) as Element
         node.removeAttribute("value")
-        node.setAttribute("value", "$heapSizeMb")
+        node.setAttribute("value", optionValue)
       }
       else {
-        val componentNode = xp.evaluate("//component[@name='CompilerConfiguration']", xmlDoc, XPathConstants.NODE) as Element
+        val componentNode = xp.evaluate("//component[@name='$componentName']", xmlDoc, XPathConstants.NODE) as Element
         val optionElement = xmlDoc.createElement("option")
-        optionElement.setAttribute("name", "BUILD_PROCESS_HEAP_SIZE")
-        optionElement.setAttribute("value", "$heapSizeMb")
+        optionElement.setAttribute("name", optionName)
+        optionElement.setAttribute("value", optionValue)
         componentNode.appendChild(optionElement)
       }
     }
     else {
       val firstNode = xmlDoc.firstChild
       val componentElement = xmlDoc.createElement("component")
-      componentElement.setAttribute("name", "CompilerConfiguration")
+      componentElement.setAttribute("name", componentName)
       val optionElement = xmlDoc.createElement("option")
-      optionElement.setAttribute("name", "BUILD_PROCESS_HEAP_SIZE")
-      optionElement.setAttribute("value", "$heapSizeMb")
+      optionElement.setAttribute("name", optionName)
+      optionElement.setAttribute("value", optionValue)
       firstNode.appendChild(componentElement).appendChild(optionElement)
     }
-    XmlBuilder.writeDocument(xmlDoc, compilerXmlPath)
+    XmlBuilder.writeDocument(xmlDoc, configFile)
 
     return this
   }
