@@ -84,7 +84,7 @@ data class IDETestContext(
   fun withGCLogs(): IDETestContext =
     applyVMOptionsPatch { withGCLogs(paths.reportsDir / "gcLog.log") }
 
-  fun gitLogIndexingEnabled(isEnabled: Boolean = false): IDETestContext =
+  fun toggleGitLogIndexing(isEnabled: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("vcs.log.index.git", isEnabled)
     }
