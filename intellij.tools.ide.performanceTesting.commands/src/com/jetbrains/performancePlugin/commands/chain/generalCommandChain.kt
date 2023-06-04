@@ -872,3 +872,8 @@ fun <T : CommandChain> T.waitVcsLogIndexing(): T {
   addCommand("${CMD_PREFIX}waitVcsLogIndexing")
   return this
 }
+
+fun <T : CommandChain> T.disableCodeVision(): T {
+  addCommand("${CMD_PREFIX}disableCodeVision")
+  return this
+}
