@@ -51,8 +51,13 @@ fun getSingleMetric(context: IDETestContext, nameOfSpan: String): Metric<*> {
 }
 
 /**
- * The method reports duration of `nameSpan` and all its children spans.
+ * Reports duration of `nameSpan` and all its children spans.
  * Besides, all attributes are reported as counters.
+ * If there are multiple values with the same name:
+ * 1. They will be re-numbered `<value>_1`, `<value>_2`, etc and the sum will be recorded as `<value>`.
+ * 2. In the sum value, mean value and standard deviation of attribute value will be recorded
+ * 2a. If attribute ends with `#max`, in sum the max of max will be recorded
+ * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
 fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
   val (spanToMetricMap, allSpans) = getSpans(file)
@@ -131,6 +136,18 @@ private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAtt
         .map { (it.metric.value.toDouble() - mean.toDouble()).pow(2) }
         .reduce { acc, d -> acc + d }) / (entry.value.size)
       for (attr in mediumAttributes) {
+        if (attr.key.endsWith("#max")) {
+          result.add(Metric(Duration(attr.key), attr.value.max()))
+          continue
+        }
+        if (attr.key.endsWith("#p90")) {
+          continue
+        }
+        if(attr.key.endsWith("#mean_value")){
+          result.add(Metric(Duration(attr.key), attr.value.average().toLong()))
+          continue
+        }
+
         result.add(Metric(Duration(attr.key + "#mean_value"), attr.value.average().toLong()))
         result.add(Metric(Duration(attr.key + "#standard_deviation"), standardDeviation(attr.value)))
       }

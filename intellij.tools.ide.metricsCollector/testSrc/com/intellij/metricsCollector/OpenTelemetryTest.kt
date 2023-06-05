@@ -5,6 +5,8 @@ import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Count
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
 import com.intellij.metricsCollector.metrics.getMetrics
 import com.intellij.metricsCollector.metrics.getSingleMetric
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -199,6 +201,15 @@ class OpenTelemetryTest {
       Metric(Duration("arrangeItems#standard_deviation"), 16),
       Metric(Counter("test#max_awt_delay"), 714),
       Metric(Counter("test#average_awt_delay"), 7),
+    ))
+  }
+
+  @Test
+  fun metricsWithAttributesMaxAndMeanValue() {
+    val metrics = getMetrics((openTelemetryReports / "opentelemetry_with_max_mean_attributes.json").toFile(), "performance_test")
+    metrics.shouldContainAll(listOf(
+      Metric(Duration("typing#latency#max"), 51),
+      Metric(Duration("typing#latency#mean_value"), 3),
     ))
   }
 }
