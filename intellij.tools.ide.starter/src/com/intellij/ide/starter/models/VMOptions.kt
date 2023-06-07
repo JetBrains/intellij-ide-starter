@@ -237,6 +237,11 @@ data class VMOptions(
     addLine("-XX:+UseG1GC")
   }
 
+  fun withZGC() = run {
+    addLine("-XX:+UnlockExperimentalVMOptions")
+    addLine("-XX:+UseZGC")
+  }
+
 
   fun withGCLogs(gcLogFile: Path) = addLine("-Xlog:gc*:file=${gcLogFile.toAbsolutePath()}")
 
