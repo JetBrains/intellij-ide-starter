@@ -168,6 +168,11 @@ open class TeamCityCIServer(
 
   fun hasBooleanProperty(key: String, default: Boolean) = getBuildParam(key)?.equals("true", ignoreCase = true) ?: default
 
+  fun isSafePush(): Boolean {
+    val isSafePush = System.getenv("SAFE_PUSH")
+    return (isSafePush != null && isSafePush == "true")
+  }
+
   companion object {
     fun String.processStringForTC(): String {
       return this.substring(0, min(7000, this.length))
