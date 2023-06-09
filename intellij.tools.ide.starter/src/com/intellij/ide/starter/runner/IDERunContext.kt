@@ -112,8 +112,7 @@ data class IDERunContext(
       usingStartupFramework()
       setFatalErrorNotificationEnabled()
       setFlagIntegrationTests()
-      takeScreenshotsPeriodically(testContext.paths.logsDir)
-      takeScreenshotOnFailure(testContext.paths.logsDir)
+      takeScreenshotsPeriodically()
       withJvmCrashLogDirectory(jvmCrashLogDirectory)
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
 

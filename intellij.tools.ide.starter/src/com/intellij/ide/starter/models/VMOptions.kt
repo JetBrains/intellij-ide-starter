@@ -184,11 +184,8 @@ data class VMOptions(
   }
 
 
-  fun takeScreenshotsPeriodically(logsDir: Path) =
-    addSystemProperty("ide.performance.screenshot", logsDir.resolve("screenshot.png").toString())
-
-  fun takeScreenshotOnFailure(logsDir: Path) =
-    addSystemProperty("ide.performance.screenshot.on.failure", logsDir.resolve("screenshot_onFailure.png").toString())
+  fun takeScreenshotsPeriodically() =
+    addSystemProperty("ide.performance.screenshot", "heartbeat")
 
   fun installTestScript(testName: String,
                         paths: IDEDataPaths,
