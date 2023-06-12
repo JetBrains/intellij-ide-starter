@@ -27,7 +27,13 @@ class IDEDataPaths(
       else {
         null
       }
-      return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
+      try {
+        return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
+      } catch (e: AccessDeniedException) {
+        //workaround for https://bugs.openjdk.org/browse/JDK-8024496
+        Thread.sleep(500)
+        return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
+      }
     }
   }
 
