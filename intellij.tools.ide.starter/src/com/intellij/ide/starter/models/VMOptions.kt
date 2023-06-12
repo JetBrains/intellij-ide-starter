@@ -227,18 +227,11 @@ data class VMOptions(
     addLine("-XX:+BytecodeVerificationLocal")
   }
 
-
   fun withG1GC() = run {
     filterKeys { it == "-XX:+UseConcMarkSweepGC" }
     filterKeys { it == "-XX:+UseG1GC" }
     addLine("-XX:+UseG1GC")
   }
-
-  fun withZGC() = run {
-    addLine("-XX:+UnlockExperimentalVMOptions")
-    addLine("-XX:+UseZGC")
-  }
-
 
   fun withGCLogs(gcLogFile: Path) = addLine("-Xlog:gc*:file=${gcLogFile.toAbsolutePath()}")
 
