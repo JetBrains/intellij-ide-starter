@@ -4,14 +4,29 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.MAVEN, testContext) {
-  val localMavenRepo: Path
+  companion object {
+    /**
+     * ~/.m2
+     */
+    val DEFAULT_MAVEN_M2_REPO_PATH: Path
+      get() {
+        val userHome = System.getProperty("user.home", null)
+        val path = if (userHome != null) Path(userHome, ".m2/repository")
+        else Path(".m2/repository")
+
+        return path.toAbsolutePath()
+      }
+  }
+
+  val temporaryMavenM3RepoPath: Path
     get() = testContext.paths.tempDir.resolve(".m3").resolve("repository")
 
   fun useNewMavenLocalRepository(): MavenBuildTool {
-    localMavenRepo.toFile().mkdirs()
-    testContext.applyVMOptionsPatch { addSystemProperty("idea.force.m2.home", localMavenRepo.toString()) }
+    temporaryMavenM3RepoPath.toFile().mkdirs()
+    testContext.applyVMOptionsPatch { addSystemProperty("idea.force.m2.home", temporaryMavenM3RepoPath.toString()) }
     return this
   }
 

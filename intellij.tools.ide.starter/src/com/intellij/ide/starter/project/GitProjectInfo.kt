@@ -41,6 +41,16 @@ data class GitProjectInfo(
   private val description: String = ""
 ) : ProjectInfoSpec {
 
+  val repositoryRootDir: Path
+    get() {
+      val globalPaths by di.instance<GlobalPaths>()
+      val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
+      return projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
+    }
+
+  val projectPath: Path
+    get() = repositoryRootDir.let(projectHomeRelativePath)
+
   private fun cloneRepo(projectHome: Path) {
     Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, timeout = downloadTimeout)
   }
@@ -79,26 +89,21 @@ data class GitProjectInfo(
   }
 
   override fun downloadAndUnpackProject(): Path {
-    val globalPaths by di.instance<GlobalPaths>()
-
-    val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
-    val repoRoot = projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
-
     try {
-      projectRootDirectorySetup(repoRoot)
-      setupRepositoryState(repoRoot)
+      projectRootDirectorySetup(repositoryRootDir)
+      setupRepositoryState(repositoryRootDir)
     }
     catch (_: Exception) {
       logError("Failed to setup the test project git repository state as: $this")
       logError("Trying one more time from clean checkout")
 
-      repoRoot.toFile().deleteRecursively()
+      repositoryRootDir.toFile().deleteRecursively()
 
-      cloneRepo(repoRoot)
-      setupRepositoryState(repoRoot)
+      cloneRepo(repositoryRootDir)
+      setupRepositoryState(repositoryRootDir)
     }
 
-    return repoRoot.let(projectHomeRelativePath)
+    return repositoryRootDir.let(projectHomeRelativePath)
   }
 
   fun onCommit(commitHash: String): GitProjectInfo = copy(commitHash = commitHash)
