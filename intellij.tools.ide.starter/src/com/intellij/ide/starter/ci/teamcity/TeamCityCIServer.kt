@@ -57,11 +57,19 @@ open class TeamCityCIServer(
     return false
   }
 
-  private val listOfPatternsWhichShouldBeIgnored = listOf(
-    "No files have been downloaded for .+:.+".toRegex(),
-    "Library '.+' resolution failed".toRegex(),
-    "Too many IDE internal errors. Monitoring stopped.".toRegex()
-  )
+  private val listOfPatternsWhichShouldBeIgnored by lazy {
+    val ignoredPattern = System.getenv("IGNORED_TEST_FAILURE_PATTERN")
+    val patterns = mutableListOf(
+      "No files have been downloaded for .+:.+".toRegex(),
+      "Library '.+' resolution failed".toRegex(),
+      "Too many IDE internal errors. Monitoring stopped.".toRegex()
+    )
+    if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
+      logOutput("Add $ignoredPattern ignored pattern from env")
+      patterns.add(ignoredPattern.toRegex())
+    }
+    patterns
+  }
 
   private fun loadProperties(propertiesPath: Path): Map<String, String> =
     try {
