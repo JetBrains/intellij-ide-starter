@@ -10,7 +10,7 @@ import javax.xml.xpath.XPathFactory
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
-
+//TODO Rename this class due to it is not build tool. This class performs idea compiler configuration
 class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA, testContext) {
   private val ideaDir: Path
     get() = testContext.resolvedProjectHome.resolve(".idea")
