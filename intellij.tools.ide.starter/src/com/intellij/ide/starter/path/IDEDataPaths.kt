@@ -29,7 +29,7 @@ class IDEDataPaths(
       }
       try {
         return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
-      } catch (e: AccessDeniedException) {
+      } catch (e: java.nio.file.AccessDeniedException) {
         //workaround for https://bugs.openjdk.org/browse/JDK-8024496
         Thread.sleep(500)
         return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
