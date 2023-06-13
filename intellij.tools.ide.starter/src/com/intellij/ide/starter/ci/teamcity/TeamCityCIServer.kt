@@ -59,7 +59,8 @@ open class TeamCityCIServer(
 
   private val listOfPatternsWhichShouldBeIgnored = listOf(
     "No files have been downloaded for .+:.+".toRegex(),
-    "Library '.+' resolution failed".toRegex()
+    "Library '.+' resolution failed".toRegex(),
+    "Too many IDE internal errors. Monitoring stopped.".toRegex()
   )
 
   private fun loadProperties(propertiesPath: Path): Map<String, String> =
