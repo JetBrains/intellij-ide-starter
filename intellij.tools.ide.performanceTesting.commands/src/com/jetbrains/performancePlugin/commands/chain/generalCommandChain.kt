@@ -169,14 +169,14 @@ fun <T : CommandChain> T.gotoNamedPsiElementIfExist(name: String, position: Posi
   return this
 }
 
-fun <T : CommandChain> T.findUsages(expectedElementName: String = "", scope: String = "All Places"): T {
+fun <T : CommandChain> T.findUsages(expectedElementName: String = "", scope: String = "Project Files"): T {
   navigateAndFindUsages(expectedElementName, "", scope, warmup = false)
   return this
 }
 
 fun <T : CommandChain> T.navigateAndFindUsages(expectedElementName: String,
                                                position: String = "INTO",
-                                               scope: String = "All Places",
+                                               scope: String = "Project Files",
                                                warmup: Boolean = false): T {
   val command = mutableListOf("${CMD_PREFIX}findUsages")
   if (expectedElementName.isNotEmpty()) {
@@ -191,7 +191,7 @@ fun <T : CommandChain> T.navigateAndFindUsages(expectedElementName: String,
   if (warmup) {
     command.add("WARMUP")
   }
-  addCommand(*command.toTypedArray())
+  addCommandWithSeparator("|", *command.toTypedArray())
   return this
 }
 

@@ -34,6 +34,25 @@ open class CommandChain : MarshallableCommand, Iterable<MarshallableCommand> {
     return this
   }
 
+  /**
+   * Pattern for adding a command: %YOUR_COMMAND_PREFIX COMMAND_PARAM_1<separator>COMMAND_PARAM_2<separator>..COMMAND_PARAM_N
+   */
+  fun addCommandWithSeparator(separator: String, vararg commandArgs: String): CommandChain {
+    val command = if (commandArgs.size < 2) {
+      initMarshallableCommand(commandArgs[0])
+    } else {
+      val modifiedCommandArgs = commandArgs[0] + " " + commandArgs[1] +
+                                if (commandArgs.size > 2) {
+                                  separator + commandArgs.sliceArray(2 until commandArgs.size).joinToString(separator)
+                                } else {
+                                  ""
+                                }
+      initMarshallableCommand(modifiedCommandArgs)
+    }
+    _chain.add(command)
+    return this
+  }
+
   fun addCommandChain(commandChain: CommandChain): CommandChain {
     _chain.addAll(commandChain)
     return this
