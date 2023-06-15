@@ -52,6 +52,7 @@ dependencies {
   implementation('com.jetbrains.intellij.platform:ide-impl:LATEST-TRUNK-SNAPSHOT')
   implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-TRUNK-SNAPSHOT')
   implementation 'commons-io:commons-io:2.11.0'
+  implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
 
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'

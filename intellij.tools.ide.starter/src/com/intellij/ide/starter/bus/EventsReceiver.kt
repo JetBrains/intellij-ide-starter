@@ -16,7 +16,7 @@ open class EventsReceiver @JvmOverloads constructor(
   private val bus: FlowBus = StarterBus
 ) {
 
-  private val jobs = mutableMapOf<Class<*>, Job>()
+  private val jobs = mutableMapOf<Class<*>, List<Job>>()
 
   private var returnDispatcher: CoroutineDispatcher = Dispatchers.IO
 
@@ -47,9 +47,6 @@ open class EventsReceiver @JvmOverloads constructor(
     callback: suspend (event: T) -> Unit
   ): EventsReceiver {
 
-    if (jobs.containsKey(clazz))
-      throw IllegalArgumentException("Already subscribed for event type: $clazz")
-
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
       throw throwable
     }
@@ -65,7 +62,7 @@ open class EventsReceiver @JvmOverloads constructor(
         }
     }
 
-    jobs[clazz] = job
+    jobs.putIfAbsent(clazz, listOf(job))?.let { jobs[clazz] = it + job }
     return this
   }
 
@@ -89,7 +86,9 @@ open class EventsReceiver @JvmOverloads constructor(
    * Unsubscribe from events type of [clazz]
    */
   fun <T : Any> unsubscribe(clazz: Class<T>) {
-    jobs.remove(clazz)?.cancel()
+    jobs.remove(clazz)?.forEach {
+      it.cancel()
+    }
   }
 
   /**
@@ -97,7 +96,7 @@ open class EventsReceiver @JvmOverloads constructor(
    */
   fun unsubscribe() {
     runBlocking {
-      jobs.values.forEach { it.cancelAndJoin() }
+      jobs.values.forEach { it.forEach { it.cancelAndJoin() } }
     }
 
     jobs.clear()

@@ -1,6 +1,9 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.buildTool.BuildToolProvider
+import com.intellij.ide.starter.bus.EventState
+import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.command.CommandChain
@@ -14,6 +17,8 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.ide.starter.runner.IdeLaunchEvent
+import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
@@ -55,6 +60,21 @@ data class IDETestContext(
   val pluginConfigurator: PluginConfigurator by di.newInstance { factory<IDETestContext, PluginConfigurator>().invoke(this@IDETestContext) }
 
   val buildTools: BuildToolProvider by di.newInstance { factory<IDETestContext, BuildToolProvider>().invoke(this@IDETestContext) }
+
+  /**
+   * Make sure that tests are run with: `-Djava.awt.headless=false` option
+   */
+  fun withScreenRecording(): IDETestContext {
+    val screenRecorder = IDEScreenRecorder(this)
+    StarterListener.subscribe { event: IdeLaunchEvent ->
+      if (event.state == EventState.BEFORE) {
+        screenRecorder.start()
+      } else if(event.state == EventState.AFTER){
+        screenRecorder.stop()
+      }
+    }
+    return this
+  }
 
   /**
    * Method applies patch immediately to the whole context.
