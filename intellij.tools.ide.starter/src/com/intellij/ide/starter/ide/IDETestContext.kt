@@ -45,6 +45,10 @@ data class IDETestContext(
     const val OPENTELEMETRY_FILE = "opentelemetry.json"
   }
 
+  init {
+    addIndexOperationFUSReportDetailed(false)
+  }
+
   val resolvedProjectHome: Path
     get() = checkNotNull(_resolvedProjectHome) { "Project is not found for the test $testName" }
 
@@ -60,6 +64,11 @@ data class IDETestContext(
     ide.vmOptions.patchVMOptions()
     return this
   }
+
+  fun addIndexOperationFUSReportDetailed(enabled: Boolean) : IDETestContext =
+    applyVMOptionsPatch {
+      addSystemProperty("IndexOperationFUS.REPORT_DETAILED_STATS_TO_OPEN_TELEMETRY", enabled)
+    }
 
   fun addLockFileForUITest(fileName: String): IDETestContext =
     applyVMOptionsPatch {
