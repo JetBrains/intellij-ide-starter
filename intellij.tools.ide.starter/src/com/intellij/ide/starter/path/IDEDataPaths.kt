@@ -2,6 +2,7 @@ package com.intellij.ide.starter.path
 
 import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize
 import com.intellij.ide.starter.utils.createInMemoryDirectory
+import com.intellij.ide.starter.utils.executeWithRetry
 import com.intellij.ide.starter.utils.logOutput
 import java.io.Closeable
 import java.nio.file.Files
@@ -9,6 +10,7 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.time.Duration.Companion.milliseconds
 
 class IDEDataPaths(
   private val testHome: Path,
@@ -27,11 +29,8 @@ class IDEDataPaths(
       else {
         null
       }
-      try {
-        return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
-      } catch (e: java.nio.file.AccessDeniedException) {
-        //workaround for https://bugs.openjdk.org/browse/JDK-8024496
-        Thread.sleep(500)
+      //workaround for https://bugs.openjdk.org/browse/JDK-8024496
+      return executeWithRetry<java.nio.file.AccessDeniedException, IDEDataPaths>(retries = 5, delay = 500.milliseconds) {
         return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
       }
     }

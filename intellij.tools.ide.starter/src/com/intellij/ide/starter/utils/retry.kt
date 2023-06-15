@@ -41,3 +41,23 @@ fun <T> withRetry(
 ): T? = runBlocking(Dispatchers.IO) {
   withRetryAsync(retries, messageOnFailure) { retryAction() }
 }
+
+inline fun <reified E : Exception, reified T> executeWithRetry(retries: Int = 3,
+                                                               errorMsg: String = "Fail to execute action $retries attempts",
+                                                               delay: Duration,
+                                                               call: () -> T): T {
+  for (i in 0..retries) {
+    try {
+      return call()
+    }
+    catch (e: Exception) {
+      logError("Got error $e on $i attempt")
+      if (e is E) {
+        Thread.sleep(delay.inWholeMilliseconds)
+        call()
+      }
+      else throw e
+    }
+  }
+  throw IllegalStateException(errorMsg)
+}
