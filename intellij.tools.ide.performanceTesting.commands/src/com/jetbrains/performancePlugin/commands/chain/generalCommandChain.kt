@@ -169,8 +169,8 @@ fun <T : CommandChain> T.gotoNamedPsiElementIfExist(name: String, position: Posi
   return this
 }
 
-fun <T : CommandChain> T.findUsages(expectedElementName: String = "", scope: String = "Project Files"): T {
-  navigateAndFindUsages(expectedElementName, "", scope, warmup = false)
+fun <T : CommandChain> T.findUsages(expectedElementName: String = "", scope: String = "Project Files", warmup: Boolean = false): T {
+  navigateAndFindUsages(expectedElementName, "", scope, warmup = warmup)
   return this
 }
 
