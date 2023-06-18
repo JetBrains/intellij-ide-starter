@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.utils
 
+import com.intellij.util.createDocumentBuilder
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
@@ -8,7 +9,6 @@ import java.io.FileNotFoundException
 import java.nio.file.Path
 import java.util.*
 import java.util.stream.IntStream
-import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
@@ -17,7 +17,7 @@ import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
 
 object XmlBuilder {
-  private val documentBuilder = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder()
+  private val documentBuilder = createDocumentBuilder()
 
   fun parse(fileInputStream: FileInputStream): Document {
     val xmlDoc = documentBuilder.parse(fileInputStream)
