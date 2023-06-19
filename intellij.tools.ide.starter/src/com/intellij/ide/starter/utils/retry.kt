@@ -42,7 +42,7 @@ fun <T> withRetry(
   withRetryAsync(retries, messageOnFailure) { retryAction() }
 }
 
-inline fun <reified E : Exception, reified T> executeWithRetry(retries: Int = 3,
+ fun <T> executeWithRetry(retries: Int = 3, exception: Class<*>,
                                                                errorMsg: String = "Fail to execute action $retries attempts",
                                                                delay: Duration,
                                                                call: () -> T): T {
@@ -52,9 +52,8 @@ inline fun <reified E : Exception, reified T> executeWithRetry(retries: Int = 3,
     }
     catch (e: Exception) {
       logError("Got error $e on $i attempt")
-      if (e is E) {
+      if (e::class.java == exception) {
         Thread.sleep(delay.inWholeMilliseconds)
-        call()
       }
       else throw e
     }

@@ -30,8 +30,8 @@ class IDEDataPaths(
         null
       }
       //workaround for https://bugs.openjdk.org/browse/JDK-8024496
-      return executeWithRetry<java.nio.file.AccessDeniedException, IDEDataPaths>(retries = 5, delay = 500.milliseconds) {
-        return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
+      return executeWithRetry(retries = 5, exception = java.nio.file.AccessDeniedException::class.java, delay = 500.milliseconds) {
+        return@executeWithRetry IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
       }
     }
   }
