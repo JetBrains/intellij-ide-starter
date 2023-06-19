@@ -877,3 +877,7 @@ fun <T : CommandChain> T.disableCodeVision(): T {
   addCommand("${CMD_PREFIX}disableCodeVision")
   return this
 }
+
+fun <T : CommandChain> T.setRegistryValue(key: String, value: String): T = apply {
+  addCommand("${CMD_PREFIX}set $key=$value")
+}
