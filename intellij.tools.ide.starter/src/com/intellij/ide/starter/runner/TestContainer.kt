@@ -7,7 +7,10 @@ import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.*
+import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.IdeInstallator
+import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
@@ -111,6 +114,7 @@ interface TestContainer<T> : Closeable {
         .addProjectToTrustedLocations()
         .useNewUIInTests()
         .withGCLogs()
+        .disableReportingStatisticsToProduction()
     }
 
     val contextWithAppliedHooks = setupHooks

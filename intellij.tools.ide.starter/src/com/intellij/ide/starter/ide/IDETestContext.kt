@@ -165,6 +165,10 @@ data class IDETestContext(
       addSystemProperty("feature.usage.event.log.send.on.ide.close", false)
     }
 
+  fun disableReportingStatisticsToProduction(disabled: Boolean = true) = applyVMOptionsPatch {
+    addSystemProperty("idea.local.statistics.without.report", disabled)
+  }
+
   fun withVerboseIndexingDiagnostics(dumpPaths: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("intellij.indexes.diagnostics.should.dump.for.interrupted.index.updaters", true)
