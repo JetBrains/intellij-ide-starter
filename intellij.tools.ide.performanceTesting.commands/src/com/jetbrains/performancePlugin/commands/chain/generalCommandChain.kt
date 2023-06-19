@@ -878,6 +878,11 @@ fun <T : CommandChain> T.disableCodeVision(): T {
   return this
 }
 
+fun <T : CommandChain> T.showRecentFiles(secondsToWaitTillClose: Int): T {
+  addCommand("${CMD_PREFIX}showRecentFiles $secondsToWaitTillClose")
+  return this
+}
+
 fun <T : CommandChain> T.setRegistryValue(key: String, value: String): T = apply {
   addCommand("${CMD_PREFIX}set $key=$value")
 }
