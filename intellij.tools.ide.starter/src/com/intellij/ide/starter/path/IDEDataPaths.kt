@@ -4,13 +4,14 @@ import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSi
 import com.intellij.ide.starter.utils.createInMemoryDirectory
 import com.intellij.ide.starter.utils.executeWithRetry
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.util.SystemInfoRt
 import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class IDEDataPaths(
   private val testHome: Path,
@@ -30,7 +31,10 @@ class IDEDataPaths(
         null
       }
       //workaround for https://bugs.openjdk.org/browse/JDK-8024496
-      return executeWithRetry(retries = 5, exception = java.nio.file.AccessDeniedException::class.java, delay = 500.milliseconds) {
+      if (SystemInfoRt.isWindows) {
+        Thread.sleep(5.seconds.inWholeMilliseconds)
+      }
+      return executeWithRetry(retries = 5, exception = java.nio.file.AccessDeniedException::class.java, delay = 2.seconds) {
         return@executeWithRetry IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
       }
     }
