@@ -72,6 +72,18 @@ fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
   return combineMetrics(spanToMetricMap)
 }
 
+fun getAllSpans(file: File): MutableMap<String, MutableList<MetricWithAttributes>> {
+  val (spanToMetricMap, allSpans) = getSpans(file)
+  for (span in allSpans) {
+    val operationName = span.get("operationName").textValue()
+    val metric = MetricWithAttributes(Metric(Duration(operationName), getDuration(span)))
+    populateAttributes(metric, span)
+    spanToMetricMap.getOrPut(operationName) { mutableListOf() }.add(metric)
+    processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
+  }
+  return spanToMetricMap
+}
+
 fun getMetricsLike(file: File, string: String): MutableCollection<Metric<*>> {
   val (spanToMetricMap, allSpans) = getSpans(file)
   for (span in allSpans) {
