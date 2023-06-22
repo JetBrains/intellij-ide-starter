@@ -22,6 +22,7 @@ import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.ui.NewUi
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
@@ -142,12 +143,12 @@ data class IDETestContext(
 
   fun useNewUIInTests(): IDETestContext =
     applyVMOptionsPatch {
-      addSystemProperty("ide.experimental.ui", true)
+      addSystemProperty(NewUi.KEY, true)
     }
 
   fun useOldUIInTests(): IDETestContext =
     applyVMOptionsPatch {
-      removeSystemProperty("ide.experimental.ui", true)
+      removeSystemProperty(NewUi.KEY, true)
     }
 
   fun enableSlowOperationsInEdtInTests(): IDETestContext =
