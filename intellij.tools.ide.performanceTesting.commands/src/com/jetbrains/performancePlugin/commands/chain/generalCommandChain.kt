@@ -684,10 +684,8 @@ fun <T : CommandChain> T.selectAll(): T {
   return this
 }
 
-const val GIT_CHECKOUT_BRANCH = "${CMD_PREFIX}gitCheckout"
-
 fun <T : CommandChain> T.checkoutBranch(branch: String): T {
-  this.addCommand("$GIT_CHECKOUT_BRANCH $branch")
+  this.addCommand("${CMD_PREFIX}gitCheckout $branch")
   return this
 }
 
