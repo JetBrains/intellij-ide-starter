@@ -267,6 +267,8 @@ fun <T : CommandChain> T.project(project: File): T {
 const val EXIT_APP_CMD_PREFIX = "${CMD_PREFIX}exitApp"
 
 fun <T : CommandChain> T.exitApp(forceExit: Boolean = true): T {
+  recordRegisteredCounterGroups()
+  takeScreenshot("")
   addCommand(EXIT_APP_CMD_PREFIX, forceExit.toString())
   return this
 }
