@@ -62,7 +62,8 @@ open class TeamCityCIServer(
     val patterns = mutableListOf(
       "No files have been downloaded for .+:.+".toRegex(),
       "Library '.+' resolution failed".toRegex(),
-      "Too many IDE internal errors. Monitoring stopped.".toRegex()
+      "Too many IDE internal errors. Monitoring stopped.".toRegex(),
+      "Invalid folding descriptor detected".toRegex()
     )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       logOutput("Add $ignoredPattern ignored pattern from env")
