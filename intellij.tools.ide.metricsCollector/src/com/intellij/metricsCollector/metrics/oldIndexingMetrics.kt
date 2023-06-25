@@ -136,8 +136,7 @@ data class OldIndexingMetrics(
       val map = mutableMapOf<String, Int>()
       for (jsonIndexDiagnostic in jsonIndexDiagnostics) {
         for (totalStatsPerFileType in jsonIndexDiagnostic.projectIndexingHistory.totalStatsPerFileType) {
-          val speed = (totalStatsPerFileType.totalProcessingSpeed.totalBytes.toDouble() * 0.001 /
-                       totalStatsPerFileType.totalProcessingSpeed.totalTime * TimeUnit.SECONDS.toNanos(1).toDouble()).toInt()
+          val speed = totalStatsPerFileType.totalProcessingSpeed.toKiloBitsPerSecond()
           if (map.containsKey(totalStatsPerFileType.fileType)) {
             if (map[totalStatsPerFileType.fileType]!! < speed) {
               map[totalStatsPerFileType.fileType] = speed
