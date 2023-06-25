@@ -22,12 +22,9 @@ data class IndexingMetrics(
   private val indexingHistories: List<JsonProjectDumbIndexingHistory>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectDumbIndexingHistory>()
   private val scanningStatistics: List<JsonScanningStatistics>
-    get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.flatMap { history ->
-      when (history) {
-        is JsonProjectScanningHistory -> history.scanningStatistics
-        is JsonProjectDumbIndexingHistory -> listOf(history.scanningStatisticsOfRefreshedFiles)
-      }
-    }
+    get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
+      .flatMap { history -> history.scanningStatistics }
+
 
   val totalNumberOfIndexActivitiesRuns: Int
     get() = jsonIndexDiagnostics.count {
@@ -72,8 +69,7 @@ data class IndexingMetrics(
     get() = jsonIndexDiagnostics.sumOf {
       when (val fileCount = it.projectIndexingActivityHistory.fileCount) {
         is JsonProjectScanningFileCount -> fileCount.numberOfFilesIndexedByInfrastructureExtensionsDuringScan
-        is JsonProjectDumbIndexingFileCount -> fileCount.numberOfRefreshedFilesIndexedByInfrastructureExtensionsDuringScan +
-                                               fileCount.numberOfFilesIndexedByInfrastructureExtensionsDuringIndexingStage
+        is JsonProjectDumbIndexingFileCount -> fileCount.numberOfFilesIndexedByInfrastructureExtensionsDuringIndexingStage
       }
     }
 
@@ -89,7 +85,6 @@ data class IndexingMetrics(
             history.fileProviderStatistics.forEach {
               indexedFiles.addAll(it.filesFullyIndexedByExtensions)
             }
-            indexedFiles.addAll(history.scanningStatisticsOfRefreshedFiles.filesFullyIndexedByInfrastructureExtensions)
           }
         }
       }
