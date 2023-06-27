@@ -25,7 +25,8 @@ import kotlin.time.Duration.Companion.seconds
  */
 fun killOutdatedProcessesOnUnix(commandsToSearch: Iterable<String> = listOf("/perf-startup/")) {
   if (SystemInfo.isWindows) {
-    logOutput("Current system is Windows. No logic for analysis of outdated processes is yet implemented.")
+    logOutput("Current system is Windows.")
+    killOutdatedProcessesOnWindows()
     return
   }
 
@@ -41,6 +42,21 @@ fun killOutdatedProcessesOnUnix(commandsToSearch: Iterable<String> = listOf("/pe
   logOutput("These Unix processes must be killed before the next test run: [$processIdsToKill]")
   for (pid in processIdsToKill) {
     catchAll { killProcessOnUnix(pid) }
+  }
+}
+
+fun killOutdatedProcessesOnWindows(commandsToSearch: Iterable<String> = listOf("\\perf-startup\\")) {
+  val processes = arrayListOf<ProcessMetaInfo>()
+  processes += dumpListOfProcessesOnWindows()
+
+  val processIdsToKill = processes.filter { process ->
+    commandsToSearch.any { process.command.contains(it) }
+  }.map { it.pid }
+
+  logOutput("These processes must be killed before the next test run: [$processIdsToKill]")
+
+  for (pid in processIdsToKill) {
+    catchAll { killProcessOnWindows(pid) }
   }
 }
 
@@ -110,6 +126,42 @@ fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
     processes += LinuxProcessMetaInfo(pid, vsz, rss, command)
   }
   return processes
+}
+
+fun dumpListOfProcessesOnWindows(): List<WindowsProcessMetaInfo> {
+  check(SystemInfo.isWindows)
+  val stdoutRedirect = ExecOutputRedirect.ToString()
+  ProcessExecutor("wmic",
+                  di.direct.instance<GlobalPaths>().testsDirectory,
+                  timeout = 1.minutes,
+                  args = listOf("wmic", "process", "get", "Description,ExecutablePath,ProcessId", "/format:csv"),
+                  stdoutRedirect = stdoutRedirect
+  ).start()
+
+  val processLines = stdoutRedirect.read().lines().map { it.trim() }.filterNot { it.isBlank() }.drop(1)
+
+  val processes = arrayListOf<WindowsProcessMetaInfo>()
+
+  for (line in processLines) {
+    val rest = line.split(",")
+    processes += WindowsProcessMetaInfo(rest[3].toInt(), rest[2], rest[1])
+  }
+
+  return processes
+}
+
+private fun killProcessOnWindows(pid: Int) {
+  check(SystemInfo.isWindows)
+  logOutput("Killing process $pid")
+
+  ProcessExecutor(
+    "kill-process-$pid",
+    di.direct.instance<GlobalPaths>().testsDirectory,
+    timeout = 1.minutes,
+    args = listOf("wmic", "process","where", "processid=$pid", "call", "terminate"), //wmic process where processid=6064 call terminate
+    stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),
+    stderrRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-err]")
+  ).start()
 }
 
 private fun killProcessOnUnix(pid: Int) {
