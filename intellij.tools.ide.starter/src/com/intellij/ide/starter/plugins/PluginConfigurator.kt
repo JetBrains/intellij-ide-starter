@@ -22,14 +22,14 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   val disabledPluginsPath: Path
     get() = testContext.paths.configDir / "disabled_plugins.txt"
 
-  fun setupPluginFromPath(pathToPluginArchive: Path) = apply {
+  fun installPluginFromPath(pathToPluginArchive: Path) = apply {
     FileSystem.unpack(pathToPluginArchive, testContext.paths.pluginsDir)
   }
 
   /**
    * @param pathToPluginFolder example: ~/Desktop/dev/scala-plugin-ultimate/target/Scala
    */
-  fun setupPluginFromFolder(pathToPluginFolder: File) = apply {
+  fun installPluginFromFolder(pathToPluginFolder: File) = apply {
     val targetPluginsDir = testContext.paths.pluginsDir.toFile()
     val targetPluginDir = targetPluginsDir.resolve(pathToPluginFolder.name)
     logOutput("Copy plugin folder from $pathToPluginFolder to $targetPluginDir")
@@ -42,7 +42,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     FileUtils.copyDirectory(pathToPluginFolder, targetPluginDir, false)
   }
 
-  fun setupPluginFromURL(urlToPluginZipFile: String) = apply {
+  fun installPluginFromURL(urlToPluginZipFile: String) = apply {
     val pluginRootDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins")
     val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
     logOutput("Downloading $urlToPluginZipFile")
@@ -53,19 +53,19 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     FileSystem.unpack(pluginZip, testContext.paths.pluginsDir)
   }
 
-  fun setupPluginFromPluginManager(
+  fun installPluginFromPluginManager(
     pluginId: String,
     ide: InstalledIde,
     channel: String? = null,
-  ) = setupPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel))
+  ) = installPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel))
 
-  fun setupPluginFromPluginManager(
+  fun installPluginFromPluginManager(
     pluginId: String,
     pluginVersion: String,
     channel: String? = null,
-  ) = setupPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel))
+  ) = installPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel))
 
-  fun setupPluginFromPluginManager(
+  fun installPluginFromPluginManager(
     plugin: PluginSourceDescriptor
   ) = apply {
     val pluginId = plugin.pluginId

@@ -222,7 +222,7 @@ class InstallPluginTest {
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {
-          pluginConfigurator.setupPluginFromURL(params.event.file)
+          pluginConfigurator.installPluginFromURL(params.event.file)
         }
         .setLicense(System.getenv("LICENSE_KEY"))
       testContext.runIDE(commands = CommandChain().exitApp())
