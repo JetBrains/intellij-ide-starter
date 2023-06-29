@@ -224,7 +224,6 @@ data class IDETestContext(
     addSystemProperty("integrationTests.profiler", "async")
   }
 
-  @Suppress("unused")
   fun enableYourKitProfiler() = applyVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "yourkit")
   }
