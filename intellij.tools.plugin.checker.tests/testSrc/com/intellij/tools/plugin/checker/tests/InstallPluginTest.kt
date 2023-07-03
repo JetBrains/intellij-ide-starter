@@ -45,7 +45,10 @@ class InstallPluginTest {
   private lateinit var testInfo: TestInfo
   private lateinit var container: TestContainerImpl
 
+
   companion object {
+    private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227)
+
     private fun setDebugBuildParamsForLocalDebug(vararg buildProperties: Pair<String, String>): Path {
       val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
 
@@ -177,6 +180,11 @@ class InstallPluginTest {
 
       if (params.event.pricingModel == "PAID") {
         logOutput(RuntimeException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}"))
+        return emptyList()
+      }
+
+      if (pluginsWithUI.contains(params.event.pluginId)){
+        logOutput(RuntimeException("Plugins with UI on startup are not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
       }
 
