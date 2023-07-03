@@ -4,7 +4,6 @@ import com.intellij.ide.starter.coroutine.supervisorScope
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
-import com.intellij.ide.starter.utils.withRetry
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import java.io.IOException
@@ -92,7 +91,7 @@ class ProcessExecutor(val presentableName: String,
     process.destroy()
     runBlocking(Dispatchers.IO) { withTimeout(20.seconds) { process.onExit().await() } }
 
-    withRetry(delay = 15.seconds) { process.destroyForcibly() }
+    process.destroyForcibly()
   }
 
   private fun analyzeProcessExit(process: Process) {
@@ -216,7 +215,7 @@ class ProcessExecutor(val presentableName: String,
       }
     }
     finally {
-      withRetry(delay = 15.seconds) { process.destroyForcibly() }
+      process.destroyForcibly()
       catchAll { Runtime.getRuntime().removeShutdownHook(stopperThread) }
     }
 

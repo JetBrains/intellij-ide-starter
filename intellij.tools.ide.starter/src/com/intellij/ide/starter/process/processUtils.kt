@@ -23,44 +23,34 @@ import kotlin.time.Duration.Companion.seconds
  * This lead to OOM and other errors during tests, for example,
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
-fun killOutdatedProcessesOnUnix(commandsToSearch: Iterable<String> = listOf("/perf-startup/")) {
-  if (SystemInfo.isWindows) {
-    logOutput("Current system is Windows.")
-    killOutdatedProcessesOnWindows()
-    return
-  }
-
+fun killOutdatedProcesses(commandsToSearch: Iterable<String> = listOf("/perf-startup/", "\\perf-startup\\")) {
   val processes = arrayListOf<ProcessMetaInfo>()
+  var killProcess: (Int) -> Unit = {}
 
-  if (SystemInfo.isLinux) catchAll { processes += dumpListOfProcessesOnLinux() }
-  else catchAll { processes += dumpListOfProcessesOnMacOS() }
-
-  val processIdsToKill = processes.filter { process ->
-    commandsToSearch.any { process.command.contains(it) }
-  }.map { it.pid }
-
-  logOutput("These Unix processes must be killed before the next test run: [$processIdsToKill]")
-  for (pid in processIdsToKill) {
-    catchAll { killProcessOnUnix(pid) }
+  if (SystemInfo.isWindows) catchAll {
+    processes += dumpListOfProcessesOnWindows()
+    killProcess = { killProcessOnWindows(it) }
   }
-}
-
-fun killOutdatedProcessesOnWindows(commandsToSearch: Iterable<String> = listOf("\\perf-startup\\")) {
-  val processes = arrayListOf<ProcessMetaInfo>()
-  processes += dumpListOfProcessesOnWindows()
+  else if (SystemInfo.isLinux) catchAll {
+    processes += dumpListOfProcessesOnLinux()
+    killProcess = { killProcessOnUnix(it) }
+  }
+  else catchAll {
+    processes += dumpListOfProcessesOnMacOS()
+    killProcess = { killProcessOnUnix(it) }
+  }
 
   val processIdsToKill = processes.filter { process ->
     commandsToSearch.any { process.command.contains(it) }
   }.map { it.pid }
 
   logOutput("These processes must be killed before the next test run: [$processIdsToKill]")
-
   for (pid in processIdsToKill) {
-    catchAll { killProcessOnWindows(pid) }
+    catchAll { killProcess(pid) }
   }
 }
 
-fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
+private fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
   check(SystemInfo.isMac)
   val stdoutRedirect = ExecOutputRedirect.ToString()
   ProcessExecutor("ps",
@@ -91,7 +81,7 @@ fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
   return processes
 }
 
-fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
+private fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
   check(SystemInfo.isLinux)
   val stdoutRedirect = ExecOutputRedirect.ToString()
   ProcessExecutor("ps",
@@ -128,7 +118,7 @@ fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
   return processes
 }
 
-fun dumpListOfProcessesOnWindows(): List<WindowsProcessMetaInfo> {
+private fun dumpListOfProcessesOnWindows(): List<WindowsProcessMetaInfo> {
   check(SystemInfo.isWindows)
   val stdoutRedirect = ExecOutputRedirect.ToString()
   ProcessExecutor("wmic",
@@ -158,7 +148,7 @@ private fun killProcessOnWindows(pid: Int) {
     "kill-process-$pid",
     di.direct.instance<GlobalPaths>().testsDirectory,
     timeout = 1.minutes,
-    args = listOf("wmic", "process","where", "processid=$pid", "call", "terminate"), //wmic process where processid=6064 call terminate
+    args = listOf("taskkill", "/pid", pid.toString(), "/f"), //taskkill /pid 23756 /f
     stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),
     stderrRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-err]")
   ).start()

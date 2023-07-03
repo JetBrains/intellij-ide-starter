@@ -7,7 +7,7 @@ import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.process.killOutdatedProcessesOnUnix
+import com.intellij.ide.starter.process.killOutdatedProcesses
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.utils.catchAll
@@ -62,7 +62,7 @@ open class JUnit4StarterRule(
       })
     }
 
-    killOutdatedProcessesOnUnix()
+    killOutdatedProcesses()
 
     super.before()
   }
