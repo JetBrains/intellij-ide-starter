@@ -23,7 +23,7 @@ suspend fun <T> withRetryAsync(retries: Long = 3,
       t.printStackTrace()
 
       if (failureCount < retries) {
-        logError("Retrying in 10 sec ...")
+        logError("Retrying in ${delay} ...")
         delay(delay)
       }
     }
@@ -39,7 +39,7 @@ fun <T> withRetry(
   delay: Duration = 10.seconds,
   retryAction: () -> T
 ): T? = runBlocking(Dispatchers.IO) {
-  withRetryAsync(retries, messageOnFailure) { retryAction() }
+  withRetryAsync(retries, messageOnFailure, delay) { retryAction() }
 }
 
  fun <T> executeWithRetry(retries: Int = 3, exception: Class<*>,
