@@ -47,7 +47,7 @@ class InstallPluginTest {
 
 
   companion object {
-    private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227)
+    private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227, 14823)
 
     private fun setDebugBuildParamsForLocalDebug(vararg buildProperties: Pair<String, String>): Path {
       val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
