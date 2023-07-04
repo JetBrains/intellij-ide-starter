@@ -11,6 +11,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.time.Duration.Companion.minutes
 
 abstract class IdeDistribution {
   abstract fun installIde(unpackDir: Path, executableFileName: String): InstalledIde
@@ -22,7 +23,7 @@ abstract class IdeDistribution {
     val localFile = jbrCacheDirectory / jbrFileName
     val localDir = jbrCacheDirectory / jbrFileName.removeSuffix(".tar.gz")
 
-    val isSuccess = HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1)
+    val isSuccess = HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1, timeout = 5.minutes)
     if (!isSuccess) return Pair(false, localDir)
 
     FileSystem.unpackIfMissing(localFile, localDir)
