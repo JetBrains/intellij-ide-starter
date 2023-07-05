@@ -12,6 +12,14 @@ import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.math.max
 
+val metricIndexing = PerformanceMetrics.MetricId.Duration("indexing")
+val metricScanning = PerformanceMetrics.MetricId.Duration("scanning")
+val metricUpdatingTime = PerformanceMetrics.MetricId.Duration("updatingTime")
+val metricNumberOfIndexedFiles = PerformanceMetrics.MetricId.Counter("numberOfIndexedFiles")
+val metricNumberOfFilesIndexedByExtensions = PerformanceMetrics.MetricId.Counter("numberOfFilesIndexedByExtensions")
+val metricNumberOfIndexingRuns = PerformanceMetrics.MetricId.Counter("numberOfIndexingRuns")
+val metricIds = listOf(metricIndexing, metricScanning, metricNumberOfIndexedFiles, metricNumberOfFilesIndexedByExtensions,
+                       metricNumberOfIndexingRuns)
 
 data class IndexingMetrics(
   val ideStartResult: IDEStartResult,
@@ -231,3 +239,13 @@ private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String
   mapBaseLanguageToSpeed.map {
     PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".createPerformanceMetricCounter(), value = it.value)
   }
+
+data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val scanningTime: Long = 0) {
+  fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
+    return ScanningStatistics(
+      numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
+      numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,
+      scanningTime = scanningTime + scanningStatistics.scanningTime.milliseconds
+    )
+  }
+}
