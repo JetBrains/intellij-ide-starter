@@ -12,14 +12,19 @@ import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.math.max
 
-val metricIndexing = PerformanceMetrics.MetricId.Duration("indexing")
-val metricScanning = PerformanceMetrics.MetricId.Duration("scanning")
-val metricUpdatingTime = PerformanceMetrics.MetricId.Duration("updatingTime")
+val metricIndexingTimeWithoutPauses = PerformanceMetrics.MetricId.Duration("indexingTimeWithoutPauses")
+val metricScanningTimeWithoutPauses = PerformanceMetrics.MetricId.Duration("scanningTimeWithoutPauses")
+val metricPausedTimeInIndexingOrScanning = PerformanceMetrics.MetricId.Duration("pausedTimeInIndexingOrScanning")
+val metricDumbModeTimeWithPauses = PerformanceMetrics.MetricId.Duration("dumbModeTimeWithPauses")
 val metricNumberOfIndexedFiles = PerformanceMetrics.MetricId.Counter("numberOfIndexedFiles")
 val metricNumberOfFilesIndexedByExtensions = PerformanceMetrics.MetricId.Counter("numberOfFilesIndexedByExtensions")
-val metricNumberOfIndexingRuns = PerformanceMetrics.MetricId.Counter("numberOfIndexingRuns")
-val metricIds = listOf(metricIndexing, metricScanning, metricNumberOfIndexedFiles, metricNumberOfFilesIndexedByExtensions,
-                       metricNumberOfIndexingRuns)
+val metricNumberOfFilesIndexedWithoutExtensions = PerformanceMetrics.MetricId.Counter("numberOfFilesIndexedWithoutExtensions")
+val metricNumberOfRunsOfScanning = PerformanceMetrics.MetricId.Counter("numberOfRunsOfScannning")
+val metricNumberOfRunsOfIndexing = PerformanceMetrics.MetricId.Counter("numberOfRunsOfIndexing")
+val metricIds = listOf(metricIndexingTimeWithoutPauses, metricScanningTimeWithoutPauses, metricPausedTimeInIndexingOrScanning,
+                       metricDumbModeTimeWithPauses,
+                       metricNumberOfIndexedFiles, metricNumberOfFilesIndexedByExtensions, metricNumberOfFilesIndexedWithoutExtensions,
+                       metricNumberOfRunsOfScanning, metricNumberOfRunsOfIndexing)
 
 data class IndexingMetrics(
   val ideStartResult: IDEStartResult,
@@ -33,39 +38,30 @@ data class IndexingMetrics(
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
       .flatMap { history -> history.scanningStatistics }
 
+  val totalNumberOfRunsOfScanning: Int
+    get() = scanningHistories.count { it.projectName.isNotEmpty() }
 
-  val totalNumberOfIndexActivitiesRuns: Int
-    get() = jsonIndexDiagnostics.count {
-      //todo[lene] metrics should be renamed to index activities runs; better count scannings in tests as they are more reproducible
-      it.projectIndexingActivityHistory.projectName.isNotEmpty()
-    }
+  val totalNumberOfRunsOfIndexing: Int
+    get() = indexingHistories.count { it.projectName.isNotEmpty() }
 
-  val totalUpdatingTime: Long
-    get() = jsonIndexDiagnostics.sumOf {
-      TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.totalWallTimeWithPauses.nano)
-    }
-
-  //todo[lene] definitely useful to track in tests
-  val totalDumbModeTime: Long
+  private val totalDumbModeTimeWithPauses: Long
     get() = jsonIndexDiagnostics.sumOf {
       TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.dumbWallTimeWithPauses.nano)
     }
 
-  val totalIndexingTime: Long
-    get() = indexingHistories.sumOf { TimeUnit.NANOSECONDS.toMillis(it.times.totalWallTimeWithoutPauses.nano) }
-
-  val totalScanFilesTime: Long
-    get() = scanningHistories.sumOf {
-      //todo[lene] should actually be TimeUnit.NANOSECONDS.toMillis(it.times.totalWallTimeWithoutPauses.nano) Better to rename the metric
-      TimeUnit.NANOSECONDS.toMillis(it.times.collectingIndexableFilesTime.nano)
-    }
-  val totalDelayedFilesPushTime: Long
-    get() = scanningHistories.sumOf {
-      TimeUnit.NANOSECONDS.toMillis(it.times.delayedPushPropertiesStageTime.nano)
+  val totalTimeOfScanningOrIndexing: Long
+    get() = jsonIndexDiagnostics.sumOf {
+      TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.totalWallTimeWithPauses.nano)
     }
 
-  private val suspendedTime: Long
-    get() = jsonIndexDiagnostics.sumOf { TimeUnit.NANOSECONDS.toMillis(it.projectIndexingActivityHistory.times.wallTimeOnPause.nano) }
+  val totalIndexingTimeWithoutPauses: Long
+    get() = TimeUnit.NANOSECONDS.toMillis(indexingHistories.sumOf { it.times.totalWallTimeWithoutPauses.nano })
+
+  val totalScanFilesTimeWithoutPauses: Long
+    get() = TimeUnit.NANOSECONDS.toMillis(scanningHistories.sumOf { it.times.totalWallTimeWithoutPauses.nano })
+
+  private val totalPausedTime: Long
+    get() = TimeUnit.NANOSECONDS.toMillis(jsonIndexDiagnostics.sumOf { it.projectIndexingActivityHistory.times.wallTimeOnPause.nano })
 
   val totalNumberOfIndexedFiles: Int
     get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles } }
@@ -188,28 +184,35 @@ data class IndexingMetrics(
   }
 
   fun toReportTimeAttributes(): Map<String, String> = mapOf(
-    "suspended time" to StringUtil.formatDuration(suspendedTime),
-    "total scan files time" to StringUtil.formatDuration(totalScanFilesTime),
-    "total indexing time" to StringUtil.formatDuration(totalIndexingTime),
-    "total updating time" to StringUtil.formatDuration(totalUpdatingTime),
+    "suspended time" to StringUtil.formatDuration(totalPausedTime),
+    "total scan files time" to StringUtil.formatDuration(totalScanFilesTimeWithoutPauses),
+    "total indexing time" to StringUtil.formatDuration(totalIndexingTimeWithoutPauses),
+    "total updating time" to StringUtil.formatDuration(totalTimeOfScanningOrIndexing),
   )
 
   fun toReportCountersAttributes(): Map<String, String> = mapOf(
     "number of indexed files" to totalNumberOfIndexedFiles.toString(),
     "number of scanned files" to totalNumberOfScannedFiles.toString(),
     "number of files indexed by extensions" to totalNumberOfFilesFullyIndexedByExtensions.toString(),
-    "number of indexing runs" to totalNumberOfIndexActivitiesRuns.toString(),
-    "number of full indexing" to numberOfFullRescanning.toString()
+    "number of scanning runs" to totalNumberOfRunsOfScanning.toString(),
+    "number of indexing runs" to totalNumberOfRunsOfIndexing.toString(),
+    "number of full rescannings" to numberOfFullRescanning.toString()
   )
 
   fun getListOfIndexingMetrics(): List<PerformanceMetrics.Metric<out Number>> {
+    val numberOfIndexedFiles = totalNumberOfIndexedFiles
+    val numberOfFilesFullyIndexedByExtensions = totalNumberOfFilesFullyIndexedByExtensions
     return listOf(
-      PerformanceMetrics.Metric(metricIndexing, value = totalIndexingTime),
-      PerformanceMetrics.Metric(metricScanning, value = totalScanFilesTime),
-      PerformanceMetrics.Metric(metricUpdatingTime, value = totalUpdatingTime),
-      PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = totalNumberOfIndexedFiles),
-      PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = totalNumberOfFilesFullyIndexedByExtensions),
-      PerformanceMetrics.Metric(metricNumberOfIndexingRuns, value = totalNumberOfIndexActivitiesRuns)
+      PerformanceMetrics.Metric(metricIndexingTimeWithoutPauses, value = totalIndexingTimeWithoutPauses),
+      PerformanceMetrics.Metric(metricScanningTimeWithoutPauses, value = totalScanFilesTimeWithoutPauses),
+      PerformanceMetrics.Metric(metricPausedTimeInIndexingOrScanning, value = totalPausedTime),
+      PerformanceMetrics.Metric(metricDumbModeTimeWithPauses, value = totalDumbModeTimeWithPauses),
+      PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = numberOfIndexedFiles),
+      PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = numberOfFilesFullyIndexedByExtensions),
+      PerformanceMetrics.Metric(metricNumberOfFilesIndexedWithoutExtensions,
+                                value = numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions),
+      PerformanceMetrics.Metric(metricNumberOfRunsOfScanning, value = totalNumberOfRunsOfScanning),
+      PerformanceMetrics.Metric(metricNumberOfRunsOfIndexing, value = totalNumberOfRunsOfIndexing)
     ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage)
   }
 }
