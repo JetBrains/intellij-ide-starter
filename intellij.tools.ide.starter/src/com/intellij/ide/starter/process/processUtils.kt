@@ -251,7 +251,7 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
     return candidates.first()
   }
   else {
-    return originalProcessId
+    throw Exception("There are no suitable candidates for the process")
   }
 }
 

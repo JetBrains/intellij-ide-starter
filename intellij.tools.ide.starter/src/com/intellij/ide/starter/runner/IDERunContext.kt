@@ -219,8 +219,7 @@ data class IDERunContext(
           onProcessCreated = { process, pid ->
             StarterBus.post(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
 
-            val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
-            ideProcessId = javaProcessId
+            ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
             val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
 
             var cnt = 0
