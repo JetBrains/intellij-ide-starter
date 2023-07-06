@@ -22,7 +22,7 @@ import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
-import com.jetbrains.performancePlugin.commands.chain.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInfo

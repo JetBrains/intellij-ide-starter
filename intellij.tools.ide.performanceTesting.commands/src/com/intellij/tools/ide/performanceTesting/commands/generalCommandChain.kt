@@ -1,4 +1,4 @@
-package com.jetbrains.performancePlugin.commands.chain
+package com.intellij.tools.ide.performanceTesting.commands
 
 import com.intellij.driver.model.command.CommandChain
 import com.intellij.driver.model.SdkObject
@@ -246,7 +246,7 @@ fun <T : CommandChain> T.inspectCodeEx(
 const val CODE_ANALYSIS_CMD_PREFIX = "${CMD_PREFIX}codeAnalysis"
 
 fun <T : CommandChain> T.checkOnRedCode(): T {
-  addCommand("${CODE_ANALYSIS_CMD_PREFIX} ${CodeAnalysisType.CHECK_ON_RED_CODE}")
+  addCommand("$CODE_ANALYSIS_CMD_PREFIX ${CodeAnalysisType.CHECK_ON_RED_CODE}")
   return this
 }
 
@@ -254,7 +254,7 @@ fun <T : CommandChain> T.checkWarnings(vararg args: String): T {
   val setArgs = args.toSet()
   val stringBuilder = StringBuilder("")
   setArgs.forEach { stringBuilder.append("$it,") }
-  addCommand("${CODE_ANALYSIS_CMD_PREFIX} ${CodeAnalysisType.WARNINGS_ANALYSIS} $stringBuilder")
+  addCommand("$CODE_ANALYSIS_CMD_PREFIX ${CodeAnalysisType.WARNINGS_ANALYSIS} $stringBuilder")
   return this
 }
 
@@ -281,14 +281,14 @@ fun <T : CommandChain> T.exitAppWithTimeout(timeoutInSeconds: Long): T {
 const val START_PROFILE_CMD_PREFIX = "${CMD_PREFIX}startProfile"
 
 fun <T : CommandChain> T.startProfile(args: String): T {
-  addCommand("${START_PROFILE_CMD_PREFIX} $args")
+  addCommand("$START_PROFILE_CMD_PREFIX $args")
   return this
 }
 
 const val STOP_PROFILE_CMD_PREFIX = "${CMD_PREFIX}stopProfile"
 
 fun <T : CommandChain> T.stopProfile(args: String = "jfr"): T {
-  addCommand("${STOP_PROFILE_CMD_PREFIX} $args")
+  addCommand("$STOP_PROFILE_CMD_PREFIX $args")
   return this
 }
 
@@ -474,7 +474,7 @@ fun <T : CommandChain> T.runConfiguration(command: String): T {
 const val OPEN_FILE_WITH_TERMINATE_CMD_PREFIX = "${CMD_PREFIX}openFileWithTerminate"
 
 fun <T : CommandChain> T.openFileWithTerminate(relativePath: String, terminateIdeInSeconds: Long): T {
-  addCommand("${OPEN_FILE_WITH_TERMINATE_CMD_PREFIX} $relativePath $terminateIdeInSeconds")
+  addCommand("$OPEN_FILE_WITH_TERMINATE_CMD_PREFIX $relativePath $terminateIdeInSeconds")
   return this
 }
 
@@ -573,7 +573,7 @@ fun <T : CommandChain> T.reloadFiles(): T {
 
 const val ADD_FILE = "${CMD_PREFIX}addFile"
 fun <T : CommandChain> T.addFile(path: String, fileName: String): T {
-  addCommand("${ADD_FILE} $path, $fileName")
+  addCommand("$ADD_FILE $path, $fileName")
   return this
 }
 
@@ -587,7 +587,7 @@ fun <T : CommandChain> T.call(method: KFunction<String?>, vararg args: String): 
 }
 const val DELETE_FILE = "${CMD_PREFIX}deleteFile"
 fun <T : CommandChain> T.deleteFile(path: String, fileName: String): T {
-  addCommand("${DELETE_FILE} $path, $fileName")
+  addCommand("$DELETE_FILE $path, $fileName")
   return this
 }
 const val DELAY = "${CMD_PREFIX}delay"
@@ -607,7 +607,7 @@ fun <T : CommandChain> T.withSystemMetrics(chain: CommandChain): T {
 const val SELECT_TEXT_CMD_PREFIX = "${CMD_PREFIX}selectText"
 
 fun <T : CommandChain> T.selectText(startLine: Int, startColumn: Int, endLine: Int, endColumn: Int): T {
-  addCommand(SELECT_TEXT_CMD_PREFIX, startLine.toString(), startColumn.toString(),endLine.toString(), endColumn.toString())
+  addCommand(SELECT_TEXT_CMD_PREFIX, startLine.toString(), startColumn.toString(), endLine.toString(), endColumn.toString())
   return this
 }
 

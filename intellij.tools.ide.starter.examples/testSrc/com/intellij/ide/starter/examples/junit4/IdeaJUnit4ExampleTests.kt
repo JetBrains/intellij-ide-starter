@@ -7,7 +7,7 @@ import com.intellij.ide.starter.junit4.initJUnit4StarterRule
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.examples.data.TestCases
-import com.jetbrains.performancePlugin.commands.chain.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestName

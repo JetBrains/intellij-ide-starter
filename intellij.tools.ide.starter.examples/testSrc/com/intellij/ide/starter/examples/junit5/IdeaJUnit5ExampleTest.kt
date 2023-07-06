@@ -9,8 +9,8 @@ import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.examples.data.TestCases
 import com.intellij.metricsCollector.metrics.getOpenTelemetry
-import com.jetbrains.performancePlugin.commands.chain.exitApp
-import com.jetbrains.performancePlugin.commands.chain.inspectCode
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.inspectCode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
