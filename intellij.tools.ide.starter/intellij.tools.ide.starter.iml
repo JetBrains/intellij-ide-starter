@@ -37,7 +37,13 @@
     <orderEntry type="library" name="kodein-di-jvm" level="project" />
     <orderEntry type="module-library">
       <library name="rauschig.jarchivelib" type="repository">
-        <properties include-transitive-deps="false" maven-id="org.rauschig:jarchivelib:1.2.0" />
+        <properties include-transitive-deps="false" maven-id="org.rauschig:jarchivelib:1.2.0">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/rauschig/jarchivelib/1.2.0/jarchivelib-1.2.0.jar">
+              <sha256sum>524142e431fc739120d961457c29ac1f9d384ab03265aaef2d6aa39677c9ad93</sha256sum>
+            </artifact>
+          </verification>
+        </properties>
         <CLASSES>
           <root url="jar://$MAVEN_REPOSITORY$/org/rauschig/jarchivelib/1.2.0/jarchivelib-1.2.0.jar!/" />
         </CLASSES>
@@ -54,7 +60,13 @@
     <orderEntry type="library" name="jackson-datatype-jsr310" level="project" />
     <orderEntry type="module-library">
       <library name="github.stephenc.monte.screen.recorder" type="repository">
-        <properties maven-id="com.github.stephenc.monte:monte-screen-recorder:0.7.7.0" />
+        <properties maven-id="com.github.stephenc.monte:monte-screen-recorder:0.7.7.0">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/com/github/stephenc/monte/monte-screen-recorder/0.7.7.0/monte-screen-recorder-0.7.7.0.jar">
+              <sha256sum>91b98aeb78b6198c39babacee37ef29df6f2083e4f6ea7f35ea4f27b8a8410bc</sha256sum>
+            </artifact>
+          </verification>
+        </properties>
         <CLASSES>
           <root url="jar://$MAVEN_REPOSITORY$/com/github/stephenc/monte/monte-screen-recorder/0.7.7.0/monte-screen-recorder-0.7.7.0.jar!/" />
         </CLASSES>
