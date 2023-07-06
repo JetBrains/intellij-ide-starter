@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.ide.starter.ide.command.MarshallableCommand
+import com.intellij.driver.command.MarshallableCommand
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.logOutput

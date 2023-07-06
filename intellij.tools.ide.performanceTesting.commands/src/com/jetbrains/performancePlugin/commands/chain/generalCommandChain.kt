@@ -1,8 +1,7 @@
 package com.jetbrains.performancePlugin.commands.chain
 
-import com.intellij.ide.starter.ide.command.CommandChain
-import com.intellij.ide.starter.sdk.SdkObject
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.driver.command.CommandChain
+import com.intellij.driver.model.SdkObject
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Path
@@ -328,7 +327,7 @@ fun <T : CommandChain> T.corruptIndexPerDir(indexDir: Path): T {
     .filter { it.toFile().isDirectory }
     .filter { it.toFile().name != "stubs" && it.toFile().name != "filetypes" }
     .toList()
-  logOutput("Corrupting dirs count: ${dirs.size} list: $dirs")
+  println("Corrupting dirs count: ${dirs.size} list: $dirs")
   dirs.forEach {
     corruptIndexes(indexDir, it.toFile().name)
     flushIndexes()
@@ -343,7 +342,7 @@ fun <T : CommandChain> T.corruptIndexPerFile(indexDir: Path): T {
     .walkTopDown()
     .filter { it.isFile }
     .toList()
-  logOutput("Corrupting ${filesInDir.size}")
+  println("Corrupting ${filesInDir.size}")
   filesInDir.forEach {
     corruptIndexes(it.toPath())
     flushIndexes()

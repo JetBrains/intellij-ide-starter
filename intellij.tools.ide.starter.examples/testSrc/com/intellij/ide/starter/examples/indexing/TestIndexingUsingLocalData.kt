@@ -5,7 +5,7 @@ import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeInstallator
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.driver.command.CommandChain
 import com.intellij.ide.starter.ide.installer.IdeInstaller
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IdeInfo

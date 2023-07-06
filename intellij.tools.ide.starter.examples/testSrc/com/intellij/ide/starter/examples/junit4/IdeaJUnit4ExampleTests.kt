@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.examples.junit4
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.driver.command.CommandChain
 import com.intellij.ide.starter.junit4.hyphenateWithClass
 import com.intellij.ide.starter.junit4.initJUnit4StarterRule
 import com.intellij.ide.starter.report.publisher.ReportPublisher

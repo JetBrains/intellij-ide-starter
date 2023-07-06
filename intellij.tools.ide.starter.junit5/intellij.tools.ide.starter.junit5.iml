@@ -30,6 +30,7 @@
     <orderEntry type="library" name="kodein-di-jvm" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="JUnit5" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter" />
+    <orderEntry type="module" module-name="intellij.driver.model" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito-junit-jupiter" level="project" />

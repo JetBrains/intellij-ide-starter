@@ -1,13 +1,14 @@
 package com.intellij.ide.starter.ide
 
+import com.intellij.driver.command.CommandChain
+import com.intellij.driver.command.MarshallableCommand
+import com.intellij.driver.model.SdkObject
 import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.command.CommandChain
-import com.intellij.ide.starter.ide.command.MarshallableCommand
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.models.VMOptions
@@ -70,7 +71,8 @@ data class IDETestContext(
     StarterListener.subscribe { event: IdeLaunchEvent ->
       if (event.state == EventState.BEFORE) {
         screenRecorder.start()
-      } else if(event.state == EventState.AFTER){
+      }
+      else if (event.state == EventState.AFTER) {
         screenRecorder.stop()
       }
     }
@@ -86,7 +88,7 @@ data class IDETestContext(
     return this
   }
 
-  fun addIndexOperationFUSReportDetailed(enabled: Boolean) : IDETestContext =
+  fun addIndexOperationFUSReportDetailed(enabled: Boolean): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("IndexOperationFUS.REPORT_DETAILED_STATS_TO_OPEN_TELEMETRY", enabled)
     }
@@ -249,11 +251,12 @@ data class IDETestContext(
   }
 
   fun wipeSystemDir() = apply {
-    if(!preserveSystemDir) {
+    if (!preserveSystemDir) {
       //TODO: it would be better to allocate a new context instead of wiping the folder
       logOutput("Cleaning system dir for $this at $paths")
       paths.systemDir.toFile().deleteRecursively()
-    } else {
+    }
+    else {
       logOutput("Cleaning system dir for $this at $paths is disabled due to preserveSystemDir")
     }
   }
@@ -556,6 +559,35 @@ data class IDETestContext(
   fun copyExistingPlugins(pluginPath: Path): IDETestContext {
     FileUtils.copyDirectory(pluginPath.toFile(), paths.pluginsDir.toFile())
     return this
+  }
+
+  fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
+    if (sdkObjects == null) return this
+
+    disableAutoImport(true)
+      .executeRightAfterIdeOpened(true)
+      .runIDE(
+        commands = CommandChain()
+          // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
+          // It looks like actual shortcut from test code, so a proper solution for this should be implemented
+          .addCommand("%setupSDK \"${sdkObjects.sdkName}\" \"${sdkObjects.sdkType}\" \"${sdkObjects.sdkPath}\"")
+          .addCommand("%exitApp true"),
+        launchName = "setupSdk",
+        runTimeout = 3.minutes
+      )
+
+    if (cleanDirs)
+      this
+        //some caches from IDE warmup may stay
+        .wipeSystemDir()
+        //some logs and perf snapshots may stay
+        .wipeLogsDir()
+
+
+    return this
+      // rollback changes, that were made only to setup sdk
+      .disableAutoImport(false)
+      .executeRightAfterIdeOpened(false)
   }
 }
 
