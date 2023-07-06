@@ -225,7 +225,7 @@ data class IDERunContext(
 
             var cnt = 0
             while (process.isAlive) {
-              delay(1.minutes)
+              delay(5.minutes)
               if (!process.isAlive) break
 
               val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
