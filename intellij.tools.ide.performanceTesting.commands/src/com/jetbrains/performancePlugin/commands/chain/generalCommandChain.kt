@@ -1,6 +1,6 @@
 package com.jetbrains.performancePlugin.commands.chain
 
-import com.intellij.driver.command.CommandChain
+import com.intellij.driver.model.command.CommandChain
 import com.intellij.driver.model.SdkObject
 import java.io.File
 import java.lang.reflect.Modifier
@@ -606,7 +606,7 @@ fun <T : CommandChain> T.withSystemMetrics(chain: CommandChain): T {
 
 const val SELECT_TEXT_CMD_PREFIX = "${CMD_PREFIX}selectText"
 
-fun <T : CommandChain> T.selectText(startLine: Int, startColumn: Int,endLine: Int, endColumn: Int): T {
+fun <T : CommandChain> T.selectText(startLine: Int, startColumn: Int, endLine: Int, endColumn: Int): T {
   addCommand(SELECT_TEXT_CMD_PREFIX, startLine.toString(), startColumn.toString(),endLine.toString(), endColumn.toString())
   return this
 }

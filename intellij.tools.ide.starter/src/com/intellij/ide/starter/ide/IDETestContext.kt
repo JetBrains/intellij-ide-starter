@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.driver.command.CommandChain
-import com.intellij.driver.command.MarshallableCommand
+import com.intellij.driver.model.command.CommandChain
+import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.driver.model.SdkObject
 import com.intellij.ide.starter.buildTool.BuildToolProvider
 import com.intellij.ide.starter.bus.EventState
