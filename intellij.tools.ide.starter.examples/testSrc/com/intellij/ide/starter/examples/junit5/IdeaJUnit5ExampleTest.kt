@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.examples.junit5
 
 import com.intellij.ide.starter.di.di
-import com.intellij.driver.command.CommandChain
+import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.report.publisher.ReportPublisher

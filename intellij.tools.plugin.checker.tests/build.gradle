@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 buildscript {
-  ext.kotlin_version = '1.8.0'
+  ext.kotlin_version = '1.8.20'
   ext.jackson_version = '2.14.1'
 
   repositories {
@@ -32,9 +32,11 @@ dependencies {
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   testImplementation "org.kodein.di:kodein-di-jvm:7.16.0"
 
-  testImplementation "com.jetbrains.intellij.tools:ide-starter"
-  testImplementation "com.jetbrains.intellij.tools:ide-performance-testing-commands"
-  testImplementation "com.jetbrains.intellij.tools:ide-starter-junit5"
+  // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
+  testImplementation 'com.jetbrains.intellij.driver:driver-model:LATEST-TRUNK-SNAPSHOT'
+  testImplementation "com.jetbrains.intellij.tools:ide-starter:LATEST-TRUNK-SNAPSHOT"
+  testImplementation "com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT"
+  testImplementation "com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-TRUNK-SNAPSHOT"
 
   testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 
