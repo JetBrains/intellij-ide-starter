@@ -206,8 +206,9 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
   for (line in mergedOutput.lines().map { it.trim() }.filterNot { it.isEmpty() }) {
     logOutput(line)
     /*
-    An example of a process line:
+    We need to monitor command line parameters otherwise we might get the locally running IDE in local tests.
 
+    An example of a process line:
     1578401 com.intellij.idea.Main /home/sergey.patrikeev/Documents/intellij/out/perf-startup/tests/IU-211.1852/ijx-jdk-empty/verify-shared-index/temp/projects/idea-startup-performance-project-test-03/idea-startup-performance-project-test-03
 
     An example from TC:
@@ -219,12 +220,13 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
 
     An example from TC TestsDynamicBundledPluginsStableLinux
     1879942 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests4436006118811351792/perf-startup/cache/projects/unpacked/javaproject_1.0.0/java-design-patterns-master
-    */
 
-    //TODO(Monitor case /opt/teamcity-agent/work/)
+    Example from TC
+    39848 com.intellij.idea.Main /mnt/agent/work/71b862de01f59e23/../intellij_copy_8157673bdd3048a6990b1214d6e9780b26b348e6
+    */
     val pid = line.substringBefore(" ", "").toLongOrNull() ?: continue
     if (line.contains("com.intellij.idea.Main") && (line.contains("/perf-startup/tests/") || line.contains(
-        "/perf-startup/cache/") || line.contains("/opt/teamcity-agent/work/"))) {
+        "/perf-startup/cache/") || line.contains("/opt/teamcity-agent/work/") || line.contains("/mnt/agent/work/"))) {
       candidates.add(pid)
     }
   }
