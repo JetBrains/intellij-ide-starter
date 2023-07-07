@@ -4,7 +4,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.EapReleaseConfigurable
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.command.MarshallableCommand
+import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec

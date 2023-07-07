@@ -6,7 +6,7 @@ import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.ide.starter.command.CommandChain
+import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.runner.IdeLaunchEvent

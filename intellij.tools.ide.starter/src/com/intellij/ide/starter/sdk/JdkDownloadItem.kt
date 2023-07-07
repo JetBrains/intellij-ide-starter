@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.sdk
 
-import com.intellij.ide.starter.sdk.SdkObject
+import com.intellij.driver.model.SdkObject
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkItem
 import java.nio.file.Path
 
