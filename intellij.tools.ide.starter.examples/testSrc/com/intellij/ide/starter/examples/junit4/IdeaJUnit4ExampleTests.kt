@@ -1,13 +1,13 @@
 package com.intellij.ide.starter.examples.junit4
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.command.CommandChain
+import com.intellij.driver.command.CommandChain
 import com.intellij.ide.starter.junit4.hyphenateWithClass
 import com.intellij.ide.starter.junit4.initJUnit4StarterRule
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.examples.data.TestCases
-import com.jetbrains.performancePlugin.commands.chain.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestName
@@ -21,7 +21,7 @@ class IdeaJUnit4ExampleTests {
   @get:Rule
   val testContextFactory = initJUnit4StarterRule()
 
-  @Test
+    @Test
   fun `open gradle project on the latest EAP IJ Community`() {
     val context = testContextFactory
       .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple)
