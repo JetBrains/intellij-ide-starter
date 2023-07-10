@@ -3,7 +3,7 @@ package com.intellij.ide.starter.examples.indexing
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.driver.command.CommandChain
+import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
@@ -12,8 +12,8 @@ import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.metricsCollector.metrics.extractIndexingMetrics
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import com.jetbrains.performancePlugin.commands.chain.exitApp
+import com.jetbrains.performancePlugin.commands.chain.waitForSmartMode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -28,12 +28,12 @@ class ScalabilityTest {
   private lateinit var testInfo: TestInfo
   private lateinit var context: TestContainerImpl
 
-    @Test
+  @Test
   fun scalabilityOfIndexingTest() {
     //CONFIGURATION
     //provide path to your local project
     val testCase = TestCase(IdeProductProvider.IU, LocalProjectInfo(Paths.get("/Users/maxim.kolmakov/IdeaProjects/coroutines")))
-    //provide the required release
+      //provide the required release
       .useRelease("2023.1")
 
     //provide path to config with valid license
