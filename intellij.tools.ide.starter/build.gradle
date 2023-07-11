@@ -51,6 +51,7 @@ dependencies {
   implementation "com.jetbrains.qodana:qodana-sarif:0.1.99"
   implementation 'commons-io:commons-io:2.11.0'
   implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
+  implementation 'io.qameta.allure:allure-java-commons:2.22.2'
 
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
   implementation 'com.jetbrains.intellij.driver:driver-model:LATEST-TRUNK-SNAPSHOT'

@@ -20,6 +20,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
+import com.intellij.ide.starter.report.AllureReport
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.system.SystemInfo
@@ -140,6 +141,7 @@ data class IDERunContext(
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
+    AllureReport.setResultDir(paths.logsDir / "allure")
     val snapshotsDir = paths.snapshotsDir.createDirectories()
     //each run produced unique gc logs so we delete existing
     testContext.wipeGcLogs()

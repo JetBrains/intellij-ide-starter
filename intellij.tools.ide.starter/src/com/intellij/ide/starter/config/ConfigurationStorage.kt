@@ -32,6 +32,8 @@ abstract class ConfigurationStorage {
 
   fun getBoolean(key: String): Boolean = get(key).toBoolean()
 
+  fun getOrDefault(key: String, default: String) = get(key) ?: default
+
   /**
    * Reset to default values, that will be performed after each test
    */

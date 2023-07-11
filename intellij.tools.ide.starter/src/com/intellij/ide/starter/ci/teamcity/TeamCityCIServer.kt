@@ -2,6 +2,7 @@ package com.intellij.ide.starter.ci.teamcity
 
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.report.AllureReport
 import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -37,6 +38,7 @@ open class TeamCityCIServer(
       generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId
     ))
     logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s']", generifiedTestName, flowId))
+    AllureReport.reportFailure(generifiedTestName, message, details)
   }
 
   override fun ignoreTestFailure(testName: String, message: String, details: String) {
@@ -121,7 +123,7 @@ open class TeamCityCIServer(
 
   val configurationName by lazy { getBuildParam("teamcity.buildConfName") }
   val buildVcsNumber by lazy {getBuildParam("build.vcs.number") ?: "Unknown"}
-
+  val buildConfigName: String? by lazy {getBuildParam("teamcity.buildConfName")}
   override val buildParams by lazy {
     val configurationPropertiesFile = systemProperties["teamcity.configuration.properties.file"]
 

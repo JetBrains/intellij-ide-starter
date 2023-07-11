@@ -11,10 +11,7 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Semaphore
-import kotlin.io.path.createDirectories
-import kotlin.io.path.fileSize
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.outputStream
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -50,8 +47,9 @@ object HttpClient {
           withRetry(retries = retries) {
             sendRequest(HttpGet(url)) { response ->
               require(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
-
-              outPath.parent.createDirectories()
+              if (!outPath.parent.exists()) {
+                outPath.parent.createDirectories()
+              }
               outPath.outputStream().buffered(10 * 1024 * 1024).use { stream ->
                 response.entity?.writeTo(stream)
               }

@@ -77,5 +77,6 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" name="io.qameta.allure.java.commons" level="project" />
   </component>
 </module>
