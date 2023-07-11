@@ -18,3 +18,11 @@ interface FailureAnalysis {
                      testName: String,
                      notifierHook: (Conclusion) -> Unit)
 }
+
+class NoFailureAnalysis: FailureAnalysis{
+  override fun analyseResults(sortedPreviousMetrics: MutableList<PerformanceMetrics>,
+                              metricName: String,
+                              currentResult: Number,
+                              testName: String,
+                              notifierHook: (Conclusion) -> Unit) {}
+}
