@@ -1,10 +1,9 @@
 package com.intellij.ide.starter.models
 
+import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.EapReleaseConfigurable
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -14,14 +13,12 @@ import org.kodein.di.instance
 data class TestCase(
   val ideInfo: IdeInfo,
   val projectInfo: ProjectInfoSpec? = null,
-  val contextConfiguration: IDETestContext.() -> IDETestContext = { this },
   val commands: Iterable<MarshallableCommand> = listOf(),
   val useInMemoryFileSystem: Boolean = false
 ) {
   private val eapReleaseConfigurable: EapReleaseConfigurable by di.instance<EapReleaseConfigurable>()
 
-  fun withProject(projectInfo: ProjectInfoSpec, contextConfiguration: IDETestContext.() -> IDETestContext = { this }): TestCase =
-    copy(projectInfo = projectInfo, contextConfiguration = contextConfiguration)
+  fun withProject(projectInfo: ProjectInfoSpec): TestCase = copy(projectInfo = projectInfo)
 
   fun withCommands(commands: Iterable<MarshallableCommand> = this.commands): TestCase = copy(commands = commands.toList())
 
@@ -45,9 +42,9 @@ data class TestCase(
       copy(projectInfo = projectInfo.copy(isReusable = false))
     }
     else -> {
-        throw IllegalStateException("Can't mark not reusable for ${projectInfo?.javaClass}")
-      }
+      throw IllegalStateException("Can't mark not reusable for ${projectInfo?.javaClass}")
     }
+  }
 
 
   fun useRC(): TestCase = copy(ideInfo = eapReleaseConfigurable.useRC(ideInfo))
@@ -65,8 +62,4 @@ data class TestCase(
 
   /** E.g: "2022.1.2" */
   fun withVersion(version: String): TestCase = copy(ideInfo = eapReleaseConfigurable.withVersion(ideInfo, version))
-
-  fun contextConfiguration(context: IDETestContext): IDETestContext {
-    return context.contextConfiguration()
-  }
 }

@@ -134,6 +134,7 @@ fun main() {
   downloadLatestAndroidSdk(resolveInstalledJdk11())
 }
 
+// TODO: move it to Android stuff
 fun IDETestContext.downloadAndroidPluginProject(): IDETestContext {
   val projectHome = resolvedProjectHome
   if (projectHome.toFile().name.startsWith("intellij-community") && !(projectHome / "android").toFile().exists()) {

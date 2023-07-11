@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.project
 
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.Git
 import com.intellij.ide.starter.utils.logError
@@ -38,6 +39,7 @@ data class GitProjectInfo(
    * Relative path inside Image file, where project home is located
    */
   override val projectHomeRelativePath: (Path) -> Path = { it },
+  override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""
 ) : ProjectInfoSpec {
 

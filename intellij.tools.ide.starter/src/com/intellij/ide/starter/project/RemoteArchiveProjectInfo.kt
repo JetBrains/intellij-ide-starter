@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.project
 
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.FileSystem.isDirUpToDate
@@ -23,6 +24,7 @@ data class RemoteArchiveProjectInfo(
   override val isReusable: Boolean = true,
   override val downloadTimeout: Duration = 10.minutes,
   override val projectHomeRelativePath: (Path) -> Path = { it / projectURL.split("/").last().split(".zip").first() },
+  override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""
 ) : ProjectInfoSpec {
 

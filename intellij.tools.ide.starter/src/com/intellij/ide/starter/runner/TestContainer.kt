@@ -89,7 +89,7 @@ interface TestContainer<T> : Closeable {
     logOutput("IDE to run for '$testName': $ide")
 
     val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
-    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, ciServer = ciServer, preserveSystemDir=preserveSystemDir)
+    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, ciServer = ciServer, preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 
     testContext = when (testCase.ideInfo == IdeProductProvider.AI) {
@@ -121,8 +121,10 @@ interface TestContainer<T> : Closeable {
       .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
       .apply { installPerformanceTestingPluginIfMissing(this) }
 
+    testCase.projectInfo?.configureProjectBeforeUse?.invoke(contextWithAppliedHooks)
+
     StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
 
-    return testCase.contextConfiguration(contextWithAppliedHooks)
+    return contextWithAppliedHooks
   }
 }

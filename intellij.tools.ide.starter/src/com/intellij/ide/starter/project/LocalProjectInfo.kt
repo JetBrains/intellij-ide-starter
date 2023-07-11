@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.project
 
+import com.intellij.ide.starter.ide.IDETestContext
 import java.nio.file.Path
 import kotlin.io.path.notExists
 import kotlin.time.Duration
@@ -14,6 +15,7 @@ data class LocalProjectInfo(
   override val isReusable: Boolean = true,
   override val downloadTimeout: Duration = 1.minutes,
   override val projectHomeRelativePath: (Path) -> Path = { it },
+  override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""
 ) : ProjectInfoSpec {
   override fun downloadAndUnpackProject(): Path? {
