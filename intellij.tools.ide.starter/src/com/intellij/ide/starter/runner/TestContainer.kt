@@ -99,6 +99,7 @@ interface TestContainer<T> : Closeable {
           withEnv("STUDIO_VM_OPTIONS", ide.patchedVMOptionsFile.toString())
         }
       false -> testContext
+        .addIndexOperationFUSReportDetailed(false)
         .disableInstantIdeShutdown()
         .disableFusSendingOnIdeClose()
         .disableLinuxNativeMenuForce()
