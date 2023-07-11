@@ -53,3 +53,5 @@ fun String.generifyHexCode(): String = this.replace("0x[\\da-fA-F]+".toRegex(), 
 
 /** text1234text => text<NUM>text */
 fun String.generifyNumber(): String = this.replace("\\d+".toRegex(), "<NUM>")
+
+fun String.generifyDollarSign(): String = this.replace("\\$<NUM>+", "")

@@ -22,4 +22,6 @@ interface FailureDetailsOnCI {
   fun getFailureDetailsForCrash(runContext: IDERunContext): String {
     return getFailureDetails(runContext)
   }
+
+  fun getLinkToCIArtifacts(runContext: IDERunContext, forCrash: Boolean): String? = null
 }
