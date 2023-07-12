@@ -8,10 +8,10 @@ interface ReportPublisher {
   /**
    * Publish report only if run ide return result @see com.intellij.ide.starter.runner.IDERunContext.runIDE
    */
-  fun publishResult(ideStartResult: IDEStartResult)
+  fun publishResultOnSuccess(ideStartResult: IDEStartResult)
 
   /**
    * Publish report even if error occurred during run ide
    */
-  fun publishAfterRun(context: IDETestContext)
+  fun publishAnywayAfterRun(context: IDETestContext)
 }

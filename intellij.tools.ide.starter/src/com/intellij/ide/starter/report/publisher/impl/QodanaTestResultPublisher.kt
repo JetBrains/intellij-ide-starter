@@ -9,9 +9,9 @@ import com.intellij.ide.starter.report.sarif.TestContextToQodanaSarifMapper
 
 object QodanaTestResultPublisher : ReportPublisher {
 
-  override fun publishResult(ideStartResult: IDEStartResult) {
+  override fun publishResultOnSuccess(ideStartResult: IDEStartResult) {
     QodanaClient.report(TestContextToQodanaSarifMapper.map(ideStartResult))
   }
 
-  override fun publishAfterRun(context: IDETestContext) {}
+  override fun publishAnywayAfterRun(context: IDETestContext) {}
 }

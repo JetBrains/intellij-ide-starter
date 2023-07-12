@@ -7,11 +7,11 @@ import com.intellij.ide.starter.utils.logOutput
 
 object ConsoleTestResultPublisher : ReportPublisher {
 
-  override fun publishResult(ideStartResult: IDEStartResult) {
+  override fun publishResultOnSuccess(ideStartResult: IDEStartResult) {
     logOutput(ideStartResult)
   }
 
-  override fun publishAfterRun(context: IDETestContext) {
+  override fun publishAnywayAfterRun(context: IDETestContext) {
     logOutput(context)
   }
 }

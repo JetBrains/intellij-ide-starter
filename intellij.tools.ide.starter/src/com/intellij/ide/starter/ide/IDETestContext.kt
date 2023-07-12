@@ -54,7 +54,7 @@ data class IDETestContext(
   }
 
   val resolvedProjectHome: Path
-    get() = checkNotNull(_resolvedProjectHome) { "Project is not found for the test '$testName'" }
+    get() = checkNotNull(_resolvedProjectHome) { "Project directory is not specified for the test '$testName'" }
 
   val pluginConfigurator: PluginConfigurator by di.newInstance { factory<IDETestContext, PluginConfigurator>().invoke(this@IDETestContext) }
 
@@ -407,14 +407,14 @@ data class IDETestContext(
     try {
       val ideRunResult = context.runIDE()
       if (isReportPublishingEnabled) publishers.forEach {
-        it.publishResult(ideRunResult)
+        it.publishResultOnSuccess(ideRunResult)
       }
       if (ideRunResult.failureError != null) throw ideRunResult.failureError
       return ideRunResult
     }
     finally {
       if (isReportPublishingEnabled) publishers.forEach {
-        it.publishAfterRun(context.testContext)
+        it.publishAnywayAfterRun(context.testContext)
       }
     }
   }
