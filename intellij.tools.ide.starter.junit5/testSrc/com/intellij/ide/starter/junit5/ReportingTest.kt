@@ -7,6 +7,7 @@ import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSi
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.formatSize
 import com.intellij.ide.starter.utils.generifyErrorMessage
+import com.intellij.ide.starter.utils.replaceSpecialCharacters
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -69,6 +70,12 @@ class ReportingTest {
   fun testHash() {
     convertToHashCodeWithOnlyLetters(1232390123).shouldBe("BFJESZ")
     convertToHashCodeWithOnlyLetters(234790123).shouldBe("AKCQIU")
+  }
+
+  @Test
+  fun testReplacingSpecialCharacters() {
+    " 123 xd/fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters()
+      .shouldBe("123-xd-fmt-join-view-it-sentinel-char-hot")
   }
 
   @Test

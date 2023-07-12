@@ -23,6 +23,7 @@ import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.ide.starter.utils.replaceSpecialCharacters
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.ui.NewUiValue
 import org.apache.commons.io.FileUtils
@@ -521,7 +522,9 @@ data class IDETestContext(
 
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
-                      artifactName: String = source.fileName.toString()) = ciServer.publishArtifact(source, artifactPath, artifactName)
+                      artifactName: String = source.fileName.toString()) = ciServer.publishArtifact(source,
+                                                                                                    artifactPath.replaceSpecialCharacters(),
+                                                                                                    artifactName.replaceSpecialCharacters())
 
   @Suppress("unused")
   fun withReportPublishing(isEnabled: Boolean): IDETestContext {

@@ -54,4 +54,12 @@ fun String.generifyHexCode(): String = this.replace("0x[\\da-fA-F]+".toRegex(), 
 /** text1234text => text<NUM>text */
 fun String.generifyNumber(): String = this.replace("\\d+".toRegex(), "<NUM>")
 
-fun String.generifyDollarSign(): String = this.replace("\\$<NUM>+", "")
+fun String.generifyDollarSign(): String = this.replace("\\$<NUM>+".toRegex(), "")
+
+/** Leave only numbers and characters */
+fun String.replaceSpecialCharacters(): String = this
+  .replace("[^a-zA-Z0-9]".toRegex(), "-")
+  .replace("[-]+".toRegex(), "-")
+  .removePrefix("-")
+  .removeSuffix("-")
+  .lowercase()
