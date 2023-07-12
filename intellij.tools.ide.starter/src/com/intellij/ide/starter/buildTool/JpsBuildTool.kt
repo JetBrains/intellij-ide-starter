@@ -10,8 +10,7 @@ import javax.xml.xpath.XPathFactory
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
 
-//TODO Rename this class due to it is not build tool. This class performs idea compiler configuration
-class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA, testContext) {
+class JpsBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.JPS, testContext) {
   private val ideaDir: Path
     get() = testContext.resolvedProjectHome.resolve(".idea")
 
@@ -21,7 +20,7 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
   private val workspaceXmlPath: Path
     get() = ideaDir.resolve("workspace.xml")
 
-  fun setBuildProcessHeapSize(heapSizeMb: Int): IdeaBuildTool {
+  fun setBuildProcessHeapSize(heapSizeMb: Int): JpsBuildTool {
     return patchXmlConfigFile(
       configFile = compilerXmlPath,
       componentName = "CompilerConfiguration",
@@ -30,7 +29,7 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
     )
   }
 
-  fun enableParallelCompilation(): IdeaBuildTool {
+  fun enableParallelCompilation(): JpsBuildTool {
     return patchXmlConfigFile(
       configFile = workspaceXmlPath,
       componentName = "CompilerWorkspaceConfiguration",
@@ -44,7 +43,7 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
     optionName: String,
     optionValue: String,
     checkExpression: String = "option name=\"$optionName\" value=\"$optionValue\""
-  ): IdeaBuildTool {
+  ): JpsBuildTool {
     if (configFile.notExists()) return this
     val content = configFile.readText()
     if (content.contains(checkExpression)) return this
@@ -82,7 +81,7 @@ class IdeaBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.IDEA,
     return this
   }
 
-  fun addBuildVmOption(key: String, value: String): IdeaBuildTool {
+  fun addBuildVmOption(key: String, value: String): JpsBuildTool {
     if (compilerXmlPath.notExists()) return this
     val content = compilerXmlPath.readText()
     if (content.contains("-D$key=$value")) return this

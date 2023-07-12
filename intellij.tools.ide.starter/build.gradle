@@ -45,7 +45,7 @@ dependencies {
   implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
   implementation "org.apache.httpcomponents:httpmime:4.5.14"
   implementation "org.jetbrains.intellij.deps:gradle-api:7.5.1"
-  implementation "org.kodein.di:kodein-di-jvm:7.16.0"
+  implementation "org.kodein.di:kodein-di-jvm:7.20.1"
   implementation "org.rauschig:jarchivelib:1.2.0"
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3"
   implementation "com.jetbrains.qodana:qodana-sarif:0.1.99"

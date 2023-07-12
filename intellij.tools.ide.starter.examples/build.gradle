@@ -35,7 +35,7 @@ dependencies {
   testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-EAP-SNAPSHOT'
-  testImplementation "org.kodein.di:kodein-di-jvm:7.16.0"
+  testImplementation "org.kodein.di:kodein-di-jvm:7.20.1"
 
   testImplementation 'junit:junit:4.13.2'
   testImplementation 'commons-io:commons-io:2.11.0'

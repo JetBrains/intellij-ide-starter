@@ -3,12 +3,13 @@ package com.intellij.ide.starter.ide
 import com.intellij.driver.model.SdkObject
 import com.intellij.driver.model.command.CommandChain
 import com.intellij.driver.model.command.MarshallableCommand
-import com.intellij.ide.starter.buildTool.BuildToolProvider
+import com.intellij.ide.starter.buildTool.BuildTool
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.models.VMOptions
@@ -53,11 +54,18 @@ data class IDETestContext(
   }
 
   val resolvedProjectHome: Path
-    get() = checkNotNull(_resolvedProjectHome) { "Project is not found for the test $testName" }
+    get() = checkNotNull(_resolvedProjectHome) { "Project is not found for the test '$testName'" }
 
   val pluginConfigurator: PluginConfigurator by di.newInstance { factory<IDETestContext, PluginConfigurator>().invoke(this@IDETestContext) }
 
-  val buildTools: BuildToolProvider by di.newInstance { factory<IDETestContext, BuildToolProvider>().invoke(this@IDETestContext) }
+  inline fun <reified T, reified M : T> getInstanceFromBindSet(): M {
+    val bindings: Set<T> by di.instance(arg = this@IDETestContext)
+    return bindings.filterIsInstance<M>().single()
+  }
+
+  inline fun <reified M : BuildTool> withBuildTool(): M = getInstanceFromBindSet<BuildTool, M>()
+
+  inline fun <reified M : Framework> withFramework(): M = getInstanceFromBindSet<Framework, M>()
 
   /**
    * Make sure that tests are run with: `-Djava.awt.headless=false` option
