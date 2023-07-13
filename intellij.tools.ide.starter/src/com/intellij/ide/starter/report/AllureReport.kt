@@ -26,9 +26,14 @@ object AllureReport {
       Allure.label("testName", testName)
       Allure.label("launchName", launchName)
       Allure.parameter("hash", generateHash(message))
+      val className = testName.substringBeforeLast(".")
+      val methodName = testName.substringAfterLast(".") + "()"
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
-        it.name = testName
+        it.fullName = testName
+        it.name="Exception in $methodName"
+        it.testCaseId = "[engine:junit-jupiter]/[class:$className]/[method:$methodName]"
+        it.testCaseName= methodName
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
       }
       Allure.getLifecycle().stopTestCase(uuid)
