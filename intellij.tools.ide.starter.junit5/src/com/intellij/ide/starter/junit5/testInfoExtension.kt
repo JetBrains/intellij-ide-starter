@@ -9,7 +9,7 @@ import org.junit.jupiter.api.TestInfo
 fun TestInfo.hyphenateWithClass(): String {
 
   val className = this.testClass.get().simpleName
-  val methodName = this.testMethod.get().name
+  val methodName = this.testMethodName()
 
   return "$className/$methodName".hyphenateTestName()
 }

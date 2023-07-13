@@ -23,25 +23,24 @@ import java.util.*
 import kotlin.reflect.jvm.javaField
 
 open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
-
   open fun injectTestContainerProperty(testInstance: Any) {
     val containerProp = TestInstanceReflexer.getProperty(testInstance, TestContainerImpl::class)
-    if (containerProp != null) {
-      val containerInstance = TestContainerImpl()
 
-      try {
-        containerProp.javaField!!.trySetAccessible()
+    if (containerProp == null) return
+    val containerInstance = TestContainerImpl()
 
-        if (containerProp.javaField!!.get(testInstance) != null) {
-          logOutput("Property `${containerProp.name}` already manually initialized in the code")
-          return
-        }
+    try {
+      containerProp.javaField!!.trySetAccessible()
 
-        containerProp.javaField!!.set(testInstance, containerInstance)
+      if (containerProp.javaField!!.get(testInstance) != null) {
+        logOutput("Property `${containerProp.name}` already manually initialized in the code")
+        return
       }
-      catch (e: Throwable) {
-        logError("Unable to inject value for property `${containerProp.name}`")
-      }
+
+      containerProp.javaField!!.set(testInstance, containerInstance)
+    }
+    catch (e: Throwable) {
+      logError("Unable to inject value for property `${containerProp.name}`")
     }
   }
 
@@ -49,27 +48,27 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
     val testInstance = context.testInstance.get()
 
     val testInfoProperty = TestInstanceReflexer.getProperty(testInstance, TestInfo::class)
-    if (testInfoProperty != null) {
-      val testInfoInstance = object : TestInfo {
-        override fun getDisplayName(): String = context.displayName
-        override fun getTags(): MutableSet<String> = context.tags
-        override fun getTestClass(): Optional<Class<*>> = context.testClass
-        override fun getTestMethod(): Optional<Method> = context.testMethod
+    if (testInfoProperty == null) return
+
+    val testInfoInstance = object : TestInfo {
+      override fun getDisplayName(): String = context.displayName
+      override fun getTags(): MutableSet<String> = context.tags
+      override fun getTestClass(): Optional<Class<*>> = context.testClass
+      override fun getTestMethod(): Optional<Method> = context.testMethod
+    }
+
+    try {
+      testInfoProperty.javaField!!.trySetAccessible()
+
+      if (testInfoProperty.javaField!!.get(testInstance) != null) {
+        logOutput("Property `${testInfoProperty.name}` already manually initialized in the code")
+        return
       }
 
-      try {
-        testInfoProperty.javaField!!.trySetAccessible()
-
-        if (testInfoProperty.javaField!!.get(testInstance) != null) {
-          logOutput("Property `${testInfoProperty.name}` already manually initialized in the code")
-          return
-        }
-
-        testInfoProperty.javaField!!.set(testInstance, testInfoInstance)
-      }
-      catch (e: Throwable) {
-        logError("Unable to inject value for property `${testInfoProperty.name}`")
-      }
+      testInfoProperty.javaField!!.set(testInstance, testInfoInstance)
+    }
+    catch (e: Throwable) {
+      logError("Unable to inject value for property `${testInfoProperty.name}`")
     }
   }
 

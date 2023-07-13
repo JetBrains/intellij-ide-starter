@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.runner
 
+import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.config.ConfigurationStorage
@@ -8,7 +9,6 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.CodeInjector
 import com.intellij.ide.starter.ide.EapReleaseConfigurable
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.collectJavaThreadDump
@@ -48,7 +48,7 @@ interface IDERunCloseContext {
 
 data class IDERunContext(
   val testContext: IDETestContext,
-  val commandLine: IDECommandLine? = null,
+  val commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(testContext),
   val commands: Iterable<MarshallableCommand> = listOf(),
   val codeBuilder: (CodeInjector.() -> Unit)? = null,
   val runTimeout: Duration = 10.minutes,
@@ -135,7 +135,7 @@ data class IDERunContext(
 
   // TODO: refactor this https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext
   @OptIn(kotlin.time.ExperimentalTime::class)
-  private fun prepareToRunIDE(): IDEStartResult {
+  fun runIDE(): IDEStartResult {
     StarterBus.post(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
     deleteSavedAppStateOnMac()
@@ -190,15 +190,10 @@ data class IDERunContext(
         addCompletionHandler { startConfig.close() }
       }
 
-      val commandLineArgs = when (val cmd = commandLine ?: IDECommandLine.OpenTestCaseProject) {
-        is IDECommandLine.Args -> cmd.args
-        is IDECommandLine.OpenTestCaseProject -> listOf(testContext.resolvedProjectHome.toAbsolutePath().toString())
-      }
-
       val finalEnvVariables = startConfig.environmentVariables + finalOptions.environmentVariables
       val extendedEnvVariablesWithJavaHome = finalEnvVariables.toMutableMap()
       extendedEnvVariablesWithJavaHome.putIfAbsent("JAVA_HOME", jdkHome.absolutePathString())
-      val finalArgs = startConfig.commandLine + commandLineArgs
+      val finalArgs = startConfig.commandLine + commandLine.args
       logOutput(buildString {
         appendLine("Starting IDE for ${contextName} with timeout $runTimeout")
         appendLine("  Command line: [" + finalArgs.joinToString() + "]")
@@ -377,10 +372,6 @@ data class IDERunContext(
       artifactPath = artifactPath,
       artifactName = formatArtifactName("reports", testContext.testName)
     )
-  }
-
-  fun runIDE(): IDEStartResult {
-    return prepareToRunIDE()
   }
 
   private fun deleteSavedAppStateOnMac() {

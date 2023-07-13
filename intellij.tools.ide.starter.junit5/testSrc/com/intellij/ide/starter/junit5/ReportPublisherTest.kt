@@ -68,7 +68,7 @@ class ReportPublisherTest {
     val spyTestContext = spy(ideTestContext)
 
     //WHEN
-    doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain)
+    //doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain)
     doReturn(ideStartResult).`when`(spyIdeRunContext).runIDE()
     doReturn(context).`when`(spyIdeRunContext).testContext
 
@@ -88,7 +88,7 @@ class ReportPublisherTest {
     val spyTestContext = spy(ideTestContext)
 
     //WHEN
-    doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain)
+    //doReturn(spyIdeRunContext).`when`(spyTestContext).runContext(commands = commandChain)
     doThrow(IllegalArgumentException::class.java).`when`(spyIdeRunContext).runIDE()
     doReturn(context).`when`(spyIdeRunContext).testContext
     //THEN

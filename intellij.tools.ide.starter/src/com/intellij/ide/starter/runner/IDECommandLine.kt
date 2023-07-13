@@ -1,10 +1,17 @@
 package com.intellij.ide.starter.runner
 
-sealed class IDECommandLine {
-  data class Args(val args: List<String>) : IDECommandLine()
-  object OpenTestCaseProject : IDECommandLine()
-}
+import com.intellij.ide.starter.ide.IDETestContext
 
-fun args(vararg args: String) = IDECommandLine.Args(args.toList())
-fun args(args: List<String>) = IDECommandLine.Args(args.toList())
-operator fun IDECommandLine.Args.plus(params: List<String>) = copy(args = this.args + params)
+sealed class IDECommandLine(open val args: List<String>) {
+  data class Args(override val args: List<String>) : IDECommandLine(args) {
+    constructor(vararg args: String) : this(args.toList())
+
+    operator fun plus(params: List<String>) = copy(args = this.args + params)
+  }
+
+  object StartIdeWithoutProject : IDECommandLine(listOf())
+
+  data class OpenTestCaseProject(val testContext: IDETestContext) : IDECommandLine(
+    listOf(testContext.resolvedProjectHome.toAbsolutePath().toString())
+  )
+}

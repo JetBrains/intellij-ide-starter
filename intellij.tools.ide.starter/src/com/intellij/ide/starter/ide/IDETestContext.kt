@@ -8,6 +8,7 @@ import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.coroutine.supervisorScope
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.models.IDEStartResult
@@ -22,10 +23,13 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.replaceSpecialCharacters
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.ui.NewUiValue
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
@@ -312,30 +316,6 @@ data class IDETestContext(
     path.toFile().deleteRecursively()
   }
 
-  fun runContext(
-    commandLine: IDECommandLine? = null,
-    commands: Iterable<MarshallableCommand> = CommandChain(),
-    codeBuilder: (CodeInjector.() -> Unit)? = null,
-    runTimeout: Duration = 10.minutes,
-    useStartupScript: Boolean = true,
-    launchName: String = "",
-    expectedKill: Boolean = false,
-    collectNativeThreads: Boolean = false,
-    patchVMOptions: VMOptions.() -> Unit = { }
-  ): IDERunContext {
-    return IDERunContext(testContext = this,
-                         commandLine = commandLine,
-                         commands = commands,
-                         codeBuilder = codeBuilder,
-                         runTimeout = runTimeout,
-                         useStartupScript = useStartupScript,
-                         launchName = launchName,
-                         expectedKill = expectedKill,
-                         collectNativeThreads = collectNativeThreads
-    )
-      .addVMOptionsPatch(patchVMOptions)
-  }
-
   /**
    * Setup profiler injection
    */
@@ -391,8 +371,12 @@ data class IDETestContext(
     return this
   }
 
+  /**
+   * Entry point to run IDE.
+   * If you want to run IDE without any project on start use [com.intellij.ide.starter.runner.IDECommandLine.StartIdeWithoutProject]
+   */
   fun runIDE(
-    commandLine: IDECommandLine? = null,
+    commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(this),
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
     runTimeout: Duration = 10.minutes,
@@ -402,11 +386,20 @@ data class IDETestContext(
     collectNativeThreads: Boolean = false,
     patchVMOptions: VMOptions.() -> Unit = { }
   ): IDEStartResult {
-    val context = runContext(commandLine = commandLine, commands = commands, codeBuilder = codeBuilder, runTimeout = runTimeout,
-                             useStartupScript = useStartupScript, launchName = launchName, expectedKill = expectedKill,
-                             collectNativeThreads = collectNativeThreads, patchVMOptions = patchVMOptions)
+    val runContext = IDERunContext(testContext = this,
+                                   commandLine = commandLine,
+                                   commands = commands,
+                                   codeBuilder = codeBuilder,
+                                   runTimeout = runTimeout,
+                                   useStartupScript = useStartupScript,
+                                   launchName = launchName,
+                                   expectedKill = expectedKill,
+                                   collectNativeThreads = collectNativeThreads
+    )
+      .addVMOptionsPatch(patchVMOptions)
+
     try {
-      val ideRunResult = context.runIDE()
+      val ideRunResult = runContext.runIDE()
       if (isReportPublishingEnabled) publishers.forEach {
         it.publishResultOnSuccess(ideRunResult)
       }
@@ -415,7 +408,47 @@ data class IDETestContext(
     }
     finally {
       if (isReportPublishingEnabled) publishers.forEach {
-        it.publishAnywayAfterRun(context.testContext)
+        it.publishAnywayAfterRun(runContext.testContext)
+      }
+    }
+  }
+
+  /**
+   * Run IDE in background.
+   * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterListener.subscribe]
+   */
+  fun runIdeInBackground(commandLine: IDECommandLine = run {
+    if (this.testCase.projectInfo == null) IDECommandLine.StartIdeWithoutProject
+    else IDECommandLine.OpenTestCaseProject(this)
+  },
+                         commands: Iterable<MarshallableCommand> = CommandChain(),
+                         codeBuilder: (CodeInjector.() -> Unit)? = null,
+                         runTimeout: Duration = 10.minutes,
+                         useStartupScript: Boolean = true,
+                         launchName: String = "",
+                         expectedKill: Boolean = false,
+                         collectNativeThreads: Boolean = false,
+                         patchVMOptions: VMOptions.() -> Unit = { }): Deferred<IDEStartResult> {
+
+    val runIdeAction: (IDETestContext) -> IDEStartResult = {
+      this.runIDE(commandLine,
+                  commands,
+                  codeBuilder,
+                  runTimeout,
+                  useStartupScript,
+                  launchName,
+                  expectedKill,
+                  collectNativeThreads,
+                  patchVMOptions)
+    }
+
+    return supervisorScope.async {
+      try {
+        runIdeAction(this@IDETestContext)
+      }
+      catch (e: Throwable) {
+        logError("Error during IDE execution", e)
+        throw e
       }
     }
   }
