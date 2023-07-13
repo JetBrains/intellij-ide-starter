@@ -56,9 +56,9 @@ fun String.generifyNumber(): String = this.replace("\\d+".toRegex(), "<NUM>")
 
 fun String.generifyDollarSign(): String = this.replace("\\$<NUM>+".toRegex(), "")
 
-/** Leave only numbers and characters */
+/** Leave only numbers and characters and slash */
 fun String.replaceSpecialCharacters(): String = this
-  .replace("[^a-zA-Z0-9]".toRegex(), "-")
+  .replace("[^a-zA-Z0-9/]".toRegex(), "-")
   .replace("[-]+".toRegex(), "-")
   .removePrefix("-")
   .removeSuffix("-")
