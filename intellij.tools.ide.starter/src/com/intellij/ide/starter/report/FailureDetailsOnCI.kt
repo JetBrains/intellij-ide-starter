@@ -7,10 +7,13 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 
 interface FailureDetailsOnCI {
-  fun getTestMethodName(): String {
-    val method = di.direct.instance<CurrentTestMethod>().get()
-    return if (method == null) "" else "${method.declaringClass.name}.${method.name}"
+  companion object{
+    fun getTestMethodName(): String {
+      val method = di.direct.instance<CurrentTestMethod>().get()
+      return if (method == null) "" else "${method.declaringClass.name}.${method.name}"
+    }
   }
+
 
   fun getFailureDetails(runContext: IDERunContext): String {
     val testMethodName = getTestMethodName().ifEmpty { runContext.contextName }
