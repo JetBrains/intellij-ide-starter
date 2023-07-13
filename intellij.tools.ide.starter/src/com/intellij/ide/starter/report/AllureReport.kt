@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.utils.*
-import com.intellij.openapi.util.io.toNioPath
 import io.qameta.allure.Allure
 import io.qameta.allure.model.Status
 import io.qameta.allure.model.StatusDetails
@@ -14,7 +13,7 @@ import java.util.*
 
 object AllureReport {
 
-  fun reportFailure(testName: String, message: String, stackTrace: String, link: String? = null) {
+  fun reportFailure(testName: String, launchName: String, message: String, stackTrace: String, link: String? = null) {
     try {
       val uuid = UUID.randomUUID().toString()
       val result = TestResult()
@@ -24,6 +23,8 @@ object AllureReport {
       if (link != null) {
         Allure.link(link)
       }
+      Allure.label("testName", testName)
+      Allure.label("launchName", launchName)
       Allure.parameter("hash", generateHash(message))
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED

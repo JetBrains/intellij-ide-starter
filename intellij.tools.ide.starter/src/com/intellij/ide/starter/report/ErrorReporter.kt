@@ -59,7 +59,8 @@ object ErrorReporter {
         di.direct.instance<CIServer>().reportTestFailure(testName = generifyErrorMessage(testName),
                                                          message = failureDetailsMessage,
                                                          details = stackTraceContent)
-        AllureReport.reportFailure(failureDetails.getTestMethodName().ifEmpty { runContext.contextName },
+        AllureReport.reportFailure(failureDetails.getTestMethodName().ifEmpty { "missing-test-name"},
+                                   runContext.contextName,
                                    messageText,
                                    stackTraceContent,
                                    failureDetails.getLinkToCIArtifacts(runContext, isRunSuccessful))
