@@ -75,7 +75,7 @@ class ReportingTest {
   @Test
   fun testReplacingSpecialCharacters() {
     " 123 xd/fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters()
-      .shouldBe("123-xd-fmt-join-view-it-sentinel-char-hot")
+      .shouldBe("123-xd/fmt-join-view-it-sentinel-char-hot")
   }
 
   @Test
