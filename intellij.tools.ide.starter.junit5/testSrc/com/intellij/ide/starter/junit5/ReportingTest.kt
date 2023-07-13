@@ -74,8 +74,14 @@ class ReportingTest {
 
   @Test
   fun testReplacingSpecialCharacters() {
-    " 123 xd/fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters()
-      .shouldBe("123-xd/fmt-join-view-it-sentinel-char-hot")
+    " /123 xd/\\fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters()
+      .shouldBe("123-xd-fmt-join-view-it-sentinel-char-hot")
+  }
+
+  @Test
+  fun testReplacingSpecialCharactersIgnoringSlash() {
+    " /123 xd/\\fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters(ignoreSlash = true)
+      .shouldBe("/123-xd/-fmt-join-view-it-sentinel-char-hot")
   }
 
   @Test

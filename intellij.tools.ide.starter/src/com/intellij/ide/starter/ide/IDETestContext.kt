@@ -556,7 +556,7 @@ data class IDETestContext(
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
                       artifactName: String = source.fileName.toString()) = ciServer.publishArtifact(source,
-                                                                                                    artifactPath.replaceSpecialCharacters(),
+                                                                                                    artifactPath.replaceSpecialCharacters(ignoreSlash = true),
                                                                                                     artifactName.replaceSpecialCharacters())
 
   @Suppress("unused")

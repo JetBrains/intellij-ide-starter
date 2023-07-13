@@ -56,10 +56,14 @@ fun String.generifyNumber(): String = this.replace("\\d+".toRegex(), "<NUM>")
 
 fun String.generifyDollarSign(): String = this.replace("\\$<NUM>+".toRegex(), "")
 
-/** Leave only numbers and characters and slash */
-fun String.replaceSpecialCharacters(): String = this
-  .replace("[^a-zA-Z0-9/]".toRegex(), "-")
-  .replace("[-]+".toRegex(), "-")
-  .removePrefix("-")
-  .removeSuffix("-")
-  .lowercase()
+/** Leave only numbers and characters */
+fun String.replaceSpecialCharacters(ignoreSlash: Boolean = false): String {
+  val regex = Regex(if (ignoreSlash) "[^a-zA-Z0-9/]" else "[^a-zA-Z0-9]")
+
+  return this
+    .replace(regex, "-")
+    .replace("[-]+".toRegex(), "-")
+    .removePrefix("-")
+    .removeSuffix("-")
+    .lowercase()
+}
