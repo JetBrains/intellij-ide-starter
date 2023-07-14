@@ -57,11 +57,20 @@ fun String.generifyNumber(): String = this.replace("\\d+".toRegex(), "<NUM>")
 fun String.generifyDollarSign(): String = this.replace("\\$<NUM>+".toRegex(), "")
 
 /** Leave only numbers and characters */
-fun String.replaceSpecialCharacters(ignoreSlash: Boolean = false): String {
-  val regex = Regex(if (ignoreSlash) "[^a-zA-Z0-9/]" else "[^a-zA-Z0-9]")
+fun String.replaceSpecialCharacters(newValue: String, vararg ignoreSymbols: String): String {
+  val regex = Regex("[^a-zA-Z0-9${ignoreSymbols.joinToString(separator = "")}]")
 
   return this
-    .replace(regex, "-")
+    .replace(regex, newValue)
+    .lowercase()
+}
+
+/** Leave only numbers and characters.
+ * Replace everything else with hyphens.
+ */
+fun String.replaceSpecialCharactersWithHyphens(ignoreSymbols: List<String> = listOf("./")): String {
+  return this
+    .replaceSpecialCharacters(newValue = "-", *ignoreSymbols.toTypedArray())
     .replace("[-]+".toRegex(), "-")
     .removePrefix("-")
     .removeSuffix("-")

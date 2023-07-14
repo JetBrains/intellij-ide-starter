@@ -87,8 +87,8 @@ object TeamCityClient {
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
   ) {
-    val artifactPathPure = artifactPath.replaceSpecialCharacters(ignoreSlash = true)
-    val artifactNamePure = artifactName.replaceSpecialCharacters()
+    val artifactPathPure = artifactPath.replaceSpecialCharactersWithHyphens()
+    val artifactNamePure = artifactName.replaceSpecialCharactersWithHyphens()
 
     if (!source.exists()) {
       logOutput("TeamCity artifact $source does not exist")

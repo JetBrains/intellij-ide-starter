@@ -7,7 +7,7 @@ import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSi
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.formatSize
 import com.intellij.ide.starter.utils.generifyErrorMessage
-import com.intellij.ide.starter.utils.replaceSpecialCharacters
+import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -73,21 +73,30 @@ class ReportingTest {
   }
 
   @Test
-  fun testReplacingSpecialCharacters() {
-    " /123 xd/\\fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters()
+  fun testReplacingAllSpecialCharacters() {
+    " /123 xd/\\fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharactersWithHyphens(listOf())
       .shouldBe("123-xd-fmt-join-view-it-sentinel-char-hot")
   }
 
   @Test
   fun testReplacingSpecialCharactersIgnoringSlash() {
-    " /123 xd/\\fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharacters(ignoreSlash = true)
+    " /123 xd/\\fmt::join_view<It, Sentinel, Char> (hot)".replaceSpecialCharactersWithHyphens()
       .shouldBe("/123-xd/-fmt-join-view-it-sentinel-char-hot")
   }
 
   @Test
   fun relativePathShouldBeUnaffectedAfterReplacingSpecialChars() {
-    "some/strange/path with:: ><special < (characters".replaceSpecialCharacters(ignoreSlash = true)
-      .shouldBe("some/strange/path-with-special-characters")
+    "some/strange/path with:: ><special < (characters.json".replaceSpecialCharactersWithHyphens()
+      .shouldBe("some/strange/path-with-special-characters.json")
+  }
+
+  @Test
+  fun multiplePassesOfReplacementWorks() {
+    "some/strange/path-with-special-characters.json".replaceSpecialCharactersWithHyphens()
+      .shouldBe("some/strange/path-with-special-characters.json")
+
+    "/123-xd/-fmt-join-view-it-sentinel-char-hot".replaceSpecialCharactersWithHyphens()
+      .shouldBe("/123-xd/-fmt-join-view-it-sentinel-char-hot")
   }
 
   @Test

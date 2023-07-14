@@ -34,5 +34,5 @@ fun String.hyphenateTestName(): String {
     return hyphenateString(this)
   }
 
-  return hyphenatedPath
+  return hyphenatedPath.replaceSpecialCharactersWithHyphens()
 }
