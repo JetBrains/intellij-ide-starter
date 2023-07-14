@@ -15,34 +15,6 @@ import java.util.*
 
 
 object AllureReport {
-  private fun getWriterField(allureLifecycle: AllureLifecycle): FileSystemResultsWriter? {
-    val field: Field?
-    var writer: FileSystemResultsWriter? = null
-    try {
-      val classType: Class<*> = allureLifecycle::class.java
-      field = classType.getDeclaredField("writer")
-      field.isAccessible = true
-      writer = field.get(allureLifecycle) as? FileSystemResultsWriter
-    } catch (ex: NoSuchFieldException) {
-      println("No such field: " + ex.localizedMessage)
-    } catch (ex: IllegalAccessException) {
-      println("Cannot access field: " + ex.localizedMessage)
-    }
-    return writer
-  }
-
-  private fun setOutputDirectoryField(fileSystemResultsWriter: FileSystemResultsWriter, newPath: Path) {
-    try {
-      val classType: Class<*> = fileSystemResultsWriter::class.java
-      val field = classType.getDeclaredField("outputDirectory")
-      field.isAccessible = true
-      field.set(fileSystemResultsWriter, newPath)
-    } catch (ex: NoSuchFieldException) {
-      println("No such field: " + ex.localizedMessage)
-    } catch (ex: IllegalAccessException) {
-      println("Cannot access field: " + ex.localizedMessage)
-    }
-  }
 
   fun reportFailure(testName: String, launchName: String, message: String, stackTrace: String, link: String? = null) {
     try {
@@ -75,11 +47,7 @@ object AllureReport {
   }
 
   fun setResultDir(path: Path) {
-    //Allure does writer initialization too early and there is no way to configure it without setting system properties
-    //but we need to configure output directory per test
-    getWriterField(Allure.getLifecycle())?.let {
-      setOutputDirectoryField(it, path)
-    }
+    AllureWriter.path = path
   }
 
   private fun generateHash(message: String): String {
