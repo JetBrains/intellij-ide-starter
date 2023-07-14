@@ -54,7 +54,7 @@ class LinuxIdeDistribution : IdeDistribution() {
     val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir)
 
     val buildTxtPath = appHome.resolve("build.txt")
-    require(buildTxtPath.isRegularFile()) { "Cannot find LinuxOS IDE vmoptions file in $unpackDir" }
+    require(buildTxtPath.isRegularFile()) { "Cannot find build.txt file in $appHome" }
     val (productCode, build) = buildTxtPath.readText().trim().split("-", limit = 2)
 
     val binDir = appHome / "bin"
