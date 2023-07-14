@@ -430,21 +430,17 @@ data class IDETestContext(
                          collectNativeThreads: Boolean = false,
                          patchVMOptions: VMOptions.() -> Unit = { }): Deferred<IDEStartResult> {
 
-    val runIdeAction: (IDETestContext) -> IDEStartResult = {
-      this.runIDE(commandLine,
-                  commands,
-                  codeBuilder,
-                  runTimeout,
-                  useStartupScript,
-                  launchName,
-                  expectedKill,
-                  collectNativeThreads,
-                  patchVMOptions)
-    }
-
     return supervisorScope.async {
       try {
-        runIdeAction(this@IDETestContext)
+        runIDE(commandLine,
+               commands,
+               codeBuilder,
+               runTimeout,
+               useStartupScript,
+               launchName,
+               expectedKill,
+               collectNativeThreads,
+               patchVMOptions)
       }
       catch (e: Throwable) {
         logError("Error during IDE execution", e)
@@ -555,9 +551,9 @@ data class IDETestContext(
 
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
-                      artifactName: String = source.fileName.toString()) = ciServer.publishArtifact(source,
-                                                                                                    artifactPath.replaceSpecialCharactersWithHyphens(),
-                                                                                                    artifactName.replaceSpecialCharactersWithHyphens())
+                      artifactName: String = source.fileName.toString()) {
+    ciServer.publishArtifact(source, artifactPath.replaceSpecialCharactersWithHyphens(), artifactName.replaceSpecialCharactersWithHyphens())
+  }
 
   @Suppress("unused")
   fun withReportPublishing(isEnabled: Boolean): IDETestContext {
