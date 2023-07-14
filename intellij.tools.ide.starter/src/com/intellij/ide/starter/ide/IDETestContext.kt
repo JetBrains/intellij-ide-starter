@@ -430,17 +430,21 @@ data class IDETestContext(
                          collectNativeThreads: Boolean = false,
                          patchVMOptions: VMOptions.() -> Unit = { }): Deferred<IDEStartResult> {
 
+    val runIdeAction: (IDETestContext) -> IDEStartResult = {
+      this.runIDE(commandLine,
+                  commands,
+                  codeBuilder,
+                  runTimeout,
+                  useStartupScript,
+                  launchName,
+                  expectedKill,
+                  collectNativeThreads,
+                  patchVMOptions)
+    }
+
     return supervisorScope.async {
       try {
-        runIDE(commandLine,
-               commands,
-               codeBuilder,
-               runTimeout,
-               useStartupScript,
-               launchName,
-               expectedKill,
-               collectNativeThreads,
-               patchVMOptions)
+        runIdeAction(this@IDETestContext)
       }
       catch (e: Throwable) {
         logError("Error during IDE execution", e)
