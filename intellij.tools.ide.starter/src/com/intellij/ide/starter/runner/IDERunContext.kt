@@ -20,13 +20,10 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
-import com.intellij.ide.starter.report.AllureReport
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
-import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
-import io.qameta.allure.Allure
 import kotlinx.coroutines.delay
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -143,7 +140,6 @@ data class IDERunContext(
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
-    AllureReport.setResultDir(paths.logsDir / "allure")
     val snapshotsDir = paths.snapshotsDir.createDirectories()
     //each run produced unique gc logs so we delete existing
     testContext.wipeGcLogs()
@@ -319,7 +315,6 @@ data class IDERunContext(
 
         val rootErrorsDir = logsDir / ERRORS_DIR_NAME
 
-        setAllureLabels()
         ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this, isRunSuccessful)
         publishArtifacts(isRunSuccessful)
 
@@ -348,11 +343,6 @@ data class IDERunContext(
         di.direct.instance<EapReleaseConfigurable>().resetDIToDefaultDownloading()
       }
     }
-  }
-
-  private fun setAllureLabels() {
-    Allure.label("testName", FailureDetailsOnCI.getTestMethodName())
-    Allure.label("launchName", contextName)
   }
 
   private fun publishArtifacts(isRunSuccessful: Boolean) {

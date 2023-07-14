@@ -46,10 +46,6 @@ object AllureReport {
     }
   }
 
-  fun setResultDir(path: Path) {
-    AllureWriter.path = path
-  }
-
   private fun generateHash(message: String): String {
     val digest = MessageDigest.getInstance("SHA-256")
     return Base64.getEncoder().encodeToString(digest.digest(message
