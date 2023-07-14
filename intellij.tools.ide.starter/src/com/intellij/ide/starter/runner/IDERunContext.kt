@@ -23,8 +23,10 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.AllureReport
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
+import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
+import io.qameta.allure.Allure
 import kotlinx.coroutines.delay
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -317,6 +319,7 @@ data class IDERunContext(
 
         val rootErrorsDir = logsDir / ERRORS_DIR_NAME
 
+        setAllureLabels()
         ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this, isRunSuccessful)
         publishArtifacts(isRunSuccessful)
 
@@ -345,6 +348,11 @@ data class IDERunContext(
         di.direct.instance<EapReleaseConfigurable>().resetDIToDefaultDownloading()
       }
     }
+  }
+
+  private fun setAllureLabels() {
+    Allure.label("testName", FailureDetailsOnCI.getTestMethodName())
+    Allure.label("launchName", contextName)
   }
 
   private fun publishArtifacts(isRunSuccessful: Boolean) {
