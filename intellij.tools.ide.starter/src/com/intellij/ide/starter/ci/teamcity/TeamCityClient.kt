@@ -6,10 +6,7 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logError
-import com.intellij.ide.starter.utils.logOutput
-import com.intellij.ide.starter.utils.withRetry
+import com.intellij.ide.starter.utils.*
 import org.apache.http.HttpRequest
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.methods.HttpGet
@@ -90,6 +87,9 @@ object TeamCityClient {
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
   ) {
+    val artifactPathPure = artifactPath.replaceSpecialCharacters(ignoreSlash = true)
+    val artifactNamePure = artifactName.replaceSpecialCharacters()
+
     if (!source.exists()) {
       logOutput("TeamCity artifact $source does not exist")
       return
@@ -105,7 +105,7 @@ object TeamCityClient {
     var artifactDir: Path
     do {
       suffix = if (nextSuffix == 0) "" else "-$nextSuffix"
-      artifactDir = (artifactForPublishingDir / artifactPath / (artifactName + suffix)).normalize().toAbsolutePath()
+      artifactDir = (artifactForPublishingDir / artifactPathPure / (artifactNamePure + suffix)).normalize().toAbsolutePath()
       nextSuffix++
     }
     while (artifactDir.exists())
@@ -120,20 +120,20 @@ object TeamCityClient {
         }
       }
       if (zipContent) {
-        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $artifactPath/$artifactName$suffix.zip")
+        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $artifactPathPure/$artifactNamePure$suffix.zip")
       }
       else {
-        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $artifactPath$suffix")
+        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $artifactPathPure$suffix")
       }
     }
     else {
       val tempFile = artifactDir
       source.copyTo(tempFile, overwrite = true)
       if (zipContent) {
-        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $artifactPath/${artifactName + suffix}.zip")
+        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $artifactPathPure/${artifactNamePure + suffix}.zip")
       }
       else {
-        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $artifactPath")
+        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $artifactPathPure")
       }
     }
   }

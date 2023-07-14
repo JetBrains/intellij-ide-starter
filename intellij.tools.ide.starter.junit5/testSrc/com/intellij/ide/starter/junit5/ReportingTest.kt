@@ -85,6 +85,12 @@ class ReportingTest {
   }
 
   @Test
+  fun relativePathShouldBeUnaffectedAfterReplacingSpecialChars() {
+    "some/strange/path with:: ><special < (characters".replaceSpecialCharacters(ignoreSlash = true)
+      .shouldBe("some/strange/path-with-special-characters")
+  }
+
+  @Test
   fun testSizeOfFolder() {
     val folder = Files.createTempDirectory(Random.nextInt().toString())
     print(folder)
