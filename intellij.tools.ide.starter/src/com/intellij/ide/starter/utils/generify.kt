@@ -68,7 +68,7 @@ fun String.replaceSpecialCharacters(newValue: String, vararg ignoreSymbols: Stri
 /** Leave only numbers and characters.
  * Replace everything else with hyphens.
  */
-fun String.replaceSpecialCharactersWithHyphens(ignoreSymbols: List<String> = listOf("./")): String {
+fun String.replaceSpecialCharactersWithHyphens(ignoreSymbols: List<String> = listOf(".", "/", """\\""")): String {
   return this
     .replaceSpecialCharacters(newValue = "-", *ignoreSymbols.toTypedArray())
     .replace("[-]+".toRegex(), "-")
