@@ -19,6 +19,8 @@ inline fun <reified T : Any> FlowBus.getFlow() = getFlow(T::class.java)
  * Simplified [EventsReceiver.subscribeTo] for Kotlin.
  * Type of event is automatically inferred from [callback] parameter type.
  *
+ * The subscription will be unsubscribed after the test.
+ *
  * @param skipRetained Skips event already present in the flow. This is `false` by default
  * @param callback The callback function
  * @return This instance of [EventsReceiver] for chaining
