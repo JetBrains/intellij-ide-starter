@@ -142,7 +142,7 @@ data class IndexingMetrics(
     get() {
       val map = mutableMapOf<String, Int>()
       indexingHistories.flatMap { it.totalStatsPerFileType }.forEach { totalStatsPerFileType ->
-        val speed = totalStatsPerFileType.totalProcessingSpeed.toKiloBitsPerSecond()
+        val speed = totalStatsPerFileType.totalProcessingSpeed.toKiloBytesPerSecond()
         if (map.containsKey(totalStatsPerFileType.fileType)) {
           if (map[totalStatsPerFileType.fileType]!! < speed) {
             map[totalStatsPerFileType.fileType] = speed
@@ -159,7 +159,7 @@ data class IndexingMetrics(
     get() {
       val speedMap = mutableMapOf<String, Int>()
       indexingHistories.flatMap { it.totalStatsPerBaseLanguage }.forEach { totalStatsPerLanguage ->
-        val speed = totalStatsPerLanguage.totalProcessingSpeed.toKiloBitsPerSecond()
+        val speed = totalStatsPerLanguage.totalProcessingSpeed.toKiloBytesPerSecond()
         speedMap[totalStatsPerLanguage.language] = speedMap[totalStatsPerLanguage.language]?.let { max(speed, it) } ?: speed
       }
       return speedMap
