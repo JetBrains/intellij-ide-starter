@@ -124,7 +124,7 @@ class ReportingTest {
     val failureDetails = di.direct.instance<FailureDetailsOnCI>().getFailureDetails(runContext = runContextMock)
     failureDetails.shouldBe("""
       Test: $testName
-      You can find logs and other useful info in CI artifacts under the path $testName
+      You can find logs and other useful info in CI artifacts under the path ${testName.replaceSpecialCharactersWithHyphens()}
     """.trimIndent())
   }
 }

@@ -3,6 +3,7 @@ package com.intellij.ide.starter.report
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import org.kodein.di.direct
 import org.kodein.di.instance
 
@@ -19,7 +20,7 @@ interface FailureDetailsOnCI {
     val testMethodName = getTestMethodName().ifEmpty { runContext.contextName }
 
     return "Test: $testMethodName" + System.lineSeparator() +
-           "You can find logs and other useful info in CI artifacts under the path ${runContext.contextName}"
+           "You can find logs and other useful info in CI artifacts under the path ${runContext.contextName.replaceSpecialCharactersWithHyphens()}"
   }
 
   fun getFailureDetailsForCrash(runContext: IDERunContext): String {
