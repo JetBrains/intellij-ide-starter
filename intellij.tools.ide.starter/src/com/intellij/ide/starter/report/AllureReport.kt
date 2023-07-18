@@ -2,41 +2,42 @@ package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.utils.*
 import io.qameta.allure.Allure
-import io.qameta.allure.AllureLifecycle
-import io.qameta.allure.FileSystemResultsWriter
+import io.qameta.allure.model.Label
 import io.qameta.allure.model.Status
 import io.qameta.allure.model.StatusDetails
 import io.qameta.allure.model.TestResult
-import java.lang.reflect.Field
 import java.nio.charset.StandardCharsets
-import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.*
 
 
 object AllureReport {
 
-  fun reportFailure(testName: String, launchName: String, message: String, stackTrace: String, link: String? = null) {
+  fun reportFailure(message: String, stackTrace: String, link: String? = null) {
     try {
       val uuid = UUID.randomUUID().toString()
       val result = TestResult()
       result.uuid = uuid
+      //inherit labels from the main test case for the exception
+      var labels: MutableList<Label> = mutableListOf()
+      var testName = ""
+      Allure.getLifecycle().updateTestCase {
+        labels = it.labels
+        testName = it.name
+      }
+
       Allure.getLifecycle().scheduleTestCase(result)
       Allure.getLifecycle().startTestCase(uuid)
+      labels.forEach {
+        Allure.label(it.name, it.value)
+      }
       if (link != null) {
         Allure.link(link)
       }
-      Allure.label("testName", testName)
-      Allure.label("launchName", launchName)
       Allure.parameter("hash", generateHash(message))
-      val className = testName.substringBeforeLast(".")
-      val methodName = testName.substringAfterLast(".") + "()"
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
-        it.fullName = testName
-        it.name="Exception in $methodName"
-        it.testCaseId = "[engine:junit-jupiter]/[class:$className]/[method:$methodName]"
-        it.testCaseName= methodName
+        it.name="Exception in $testName"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
       }
       Allure.getLifecycle().stopTestCase(uuid)
