@@ -97,11 +97,6 @@ data class IDETestContext(
     return this
   }
 
-  fun addIndexOperationFUSReportDetailed(enabled: Boolean): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty("IndexOperationFUS.REPORT_DETAILED_STATS_TO_OPEN_TELEMETRY", enabled)
-    }
-
   fun addLockFileForUITest(fileName: String): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("uiLockTempFile", paths.tempDir / fileName)
