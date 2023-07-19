@@ -285,6 +285,11 @@ fun <T : CommandChain> T.startProfile(args: String): T {
   return this
 }
 
+fun <T : CommandChain> T.startProfile(args: String, profilerParams: String): T {
+  addCommand("$START_PROFILE_CMD_PREFIX $args $profilerParams")
+  return this
+}
+
 const val STOP_PROFILE_CMD_PREFIX = "${CMD_PREFIX}stopProfile"
 
 fun <T : CommandChain> T.stopProfile(args: String = "jfr"): T {
