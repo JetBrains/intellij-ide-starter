@@ -384,6 +384,16 @@ fun <T : CommandChain> T.doComplete(completionType: CompletionType = CompletionT
   return this
 }
 
+fun <T : CommandChain> T.doCompleteInEvaluateExpression(completionType: CompletionType = CompletionType.BASIC): T {
+  addCommand("${CMD_PREFIX}doCompleteInEvaluateExpression", completionType.name)
+  return this
+}
+
+fun <T : CommandChain> T.doCompleteInEvaluateExpressionWarmup(completionType: CompletionType = CompletionType.BASIC): T {
+  addCommand("${CMD_PREFIX}doCompleteInEvaluateExpression", completionType.name, WARMUP)
+  return this
+}
+
 fun <T : CommandChain> T.doCompleteWarmup(completionType: CompletionType = CompletionType.BASIC): T {
   addCommand(COMPLETION_CMD_PREFIX, completionType.name, WARMUP)
   return this
@@ -664,7 +674,10 @@ fun <T : CommandChain> T.importGradleProject(): T {
   return this
 }
 
-fun <T : CommandChain> T.executeEditorAction(action: String): T {
+fun <T : CommandChain> T.showEvaluateExpression(): T {
+  this.addCommand("${CMD_PREFIX}showEvaluateExpression")
+  return this
+}fun <T : CommandChain> T.executeEditorAction(action: String): T {
   this.addCommand("${CMD_PREFIX}executeEditorAction $action")
   return this
 }
