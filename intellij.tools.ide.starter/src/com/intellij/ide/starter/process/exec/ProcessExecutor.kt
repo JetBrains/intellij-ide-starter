@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.process.exec
 
-import com.intellij.ide.starter.coroutine.supervisorScope
+import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
@@ -170,7 +170,7 @@ class ProcessExecutor(val presentableName: String,
     val process = processBuilder.start()
 
     val processId = process.pid()
-    val onProcessCreatedJob: Job = supervisorScope.launch {
+    val onProcessCreatedJob: Job = perTestSupervisorScope.launch {
       logOutput("  ... started external process `$presentableName` with process ID = $processId")
       onProcessCreated(process, processId)
     }

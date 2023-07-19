@@ -8,7 +8,7 @@ import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.coroutine.supervisorScope
+import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.models.IDEStartResult
@@ -425,7 +425,7 @@ data class IDETestContext(
                          collectNativeThreads: Boolean = false,
                          patchVMOptions: VMOptions.() -> Unit = { }): Deferred<IDEStartResult> {
 
-    return supervisorScope.async {
+    return perTestSupervisorScope.async {
       try {
         runIDE(commandLine,
                commands,
