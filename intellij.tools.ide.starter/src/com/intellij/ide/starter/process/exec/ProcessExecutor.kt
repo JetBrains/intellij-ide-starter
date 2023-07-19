@@ -145,16 +145,7 @@ class ProcessExecutor(val presentableName: String,
    */
   @Throws(ExecTimeoutException::class)
   fun start() {
-    logOutput(buildString {
-      appendLine("Running external process for `$presentableName`")
-      appendLine("  Working directory: $workDir")
-      appendLine("  Arguments: [${args.joinToString()}]")
-      appendLine("  STDOUT will be redirected to: $stdoutRedirect")
-      appendLine("  STDERR will be redirected to: $stderrRedirect")
-      append("  STDIN is empty: " + stdInBytes.isEmpty())
-    })
-
-    require(args.isNotEmpty()) { "Arguments must be not empty to start external process" }
+    require(args.isNotEmpty()) { "Arguments must be not empty to start external process `$presentableName`" }
 
     val processBuilder = ProcessBuilder()
       .directory(workDir?.toFile())
@@ -164,12 +155,18 @@ class ProcessExecutor(val presentableName: String,
       .redirectError(ProcessBuilder.Redirect.PIPE)
       .actualizeEnvVariables(environmentVariables, onlyEnrichExistedEnvVariables)
 
-    logOutput(
-      """
-      Process: `$presentableName`
-      Arguments: ${args.joinToString(separator = " ")}
-      Environment variables: [${processBuilder.environment().entries.joinToString { "${it.key}=${it.value}" }}]
-    """.trimIndent())
+    logOutput(buildString {
+      appendLine("Starting external process for `$presentableName`")
+      appendLine("  Working directory: $workDir")
+      appendLine("  Arguments: [${args.joinToString(separator = " ")}]")
+      appendLine(
+        "  STDOUT will be redirected to: $stdoutRedirect. STDERR will be redirected to: $stderrRedirect. STDIN is empty: ${stdInBytes.isEmpty()}"
+      )
+      appendLine(
+        "  Environment variables: [${processBuilder.environment().entries.joinToString { "${it.key}=${it.value}" }}]"
+      )
+    })
+
     val process = processBuilder.start()
 
     val processId = process.pid()
