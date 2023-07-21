@@ -674,10 +674,20 @@ fun <T : CommandChain> T.importGradleProject(): T {
   return this
 }
 
-fun <T : CommandChain> T.showEvaluateExpression(): T {
-  this.addCommand("${CMD_PREFIX}showEvaluateExpression")
+fun <T : CommandChain> T.showEvaluateExpression(expression: String = "", performEvaluateCount: Int = 0, warmup: Boolean = false): T {
+  val command = mutableListOf("${CMD_PREFIX}showEvaluateExpression")
+  if (expression.isNotEmpty()) {
+    command.add("-expression $expression")
+  }
+  command.add("-performEvaluateCount $performEvaluateCount")
+  if (warmup) {
+    command.add("WARMUP")
+  }
+  addCommandWithSeparator("|", *command.toTypedArray())
   return this
-}fun <T : CommandChain> T.executeEditorAction(action: String): T {
+}
+
+fun <T : CommandChain> T.executeEditorAction(action: String): T {
   this.addCommand("${CMD_PREFIX}executeEditorAction $action")
   return this
 }
