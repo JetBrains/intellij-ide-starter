@@ -309,6 +309,11 @@ fun <T : CommandChain> T.conditionalMemoryDump(targetMessageCount: Int): T {
   return this
 }
 
+fun <T : CommandChain> T.conditionalMemoryDumpWithErrorMessage(targetMessageCount: Int): T {
+  addCommand("${CMD_PREFIX}conditionalMemoryDumpCommand $targetMessageCount WITH_ERROR_MESSAGE")
+  return this
+}
+
 fun <T : CommandChain> T.profileIndexing(args: String): T {
   addCommand("%%profileIndexing $args")
   return this
