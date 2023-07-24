@@ -5,7 +5,6 @@ import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Count
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
 import com.intellij.metricsCollector.metrics.getMetrics
 import com.intellij.metricsCollector.metrics.getSingleMetric
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
