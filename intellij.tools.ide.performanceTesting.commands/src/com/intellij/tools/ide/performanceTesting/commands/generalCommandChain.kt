@@ -917,3 +917,7 @@ fun <T : CommandChain> T.showRecentFiles(secondsToWaitTillClose: Int): T {
 fun <T : CommandChain> T.setRegistryValue(key: String, value: String): T = apply {
   addCommand("${CMD_PREFIX}set $key=$value")
 }
+
+fun <T : CommandChain> T.collectFilesNotMarkedAsIndex(): T = apply {
+  addCommand("${CMD_PREFIX}collectFilesNotMarkedAsIndex")
+}
