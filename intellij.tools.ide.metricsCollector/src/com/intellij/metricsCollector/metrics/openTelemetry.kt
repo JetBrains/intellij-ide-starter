@@ -34,20 +34,8 @@ fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): Perfor
   )
 }
 
-fun findMetricValue(metrics: List<Metric<*>>, metric: Duration): Number = try {
-  metrics.first { it.id.name == metric.name }.value
-}
-catch (e: NoSuchElementException) {
-  throw NoSuchElementException("Metric with name '${metric.name}' wasn't found")
-}
-
-
 fun getSingleMetric(file: File, nameOfSpan: String): Metric<*> {
   return getMetrics(file, DEFAULT_SPAN_NAME).first { it.id.name == nameOfSpan }
-}
-
-fun getSingleMetric(context: IDETestContext, nameOfSpan: String): Metric<*> {
-  return getMetrics(context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile(), DEFAULT_SPAN_NAME).first { it.id.name == nameOfSpan }
 }
 
 /**
@@ -60,49 +48,26 @@ fun getSingleMetric(context: IDETestContext, nameOfSpan: String): Metric<*> {
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
 fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
-  val (spanToMetricMap, allSpans) = getSpans(file)
-  for (span in allSpans) {
-    if (span.get("operationName").textValue() == nameOfSpan) {
-      val metric = MetricWithAttributes(Metric(Duration(nameOfSpan), getDuration(span)))
-      populateAttributes(metric, span)
-      spanToMetricMap.getOrPut(nameOfSpan) { mutableListOf() }.add(metric)
-      processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
-    }
-  }
-  return combineMetrics(spanToMetricMap)
+  return getAllSpansCombined(file, filterFunction = { spanName -> spanName == nameOfSpan })
 }
 
-fun getAllSpans(file: File): MutableMap<String, MutableList<MetricWithAttributes>> {
+fun getAllSpans(file: File,
+                filterFunction: (spanName: String) -> Boolean = { true }): MutableMap<String, MutableList<MetricWithAttributes>> {
   val (spanToMetricMap, allSpans) = getSpans(file)
   for (span in allSpans) {
     val operationName = span.get("operationName").textValue()
-    val metric = MetricWithAttributes(Metric(Duration(operationName), getDuration(span)))
-    populateAttributes(metric, span)
-    spanToMetricMap.getOrPut(operationName) { mutableListOf() }.add(metric)
-    processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
-  }
-  return spanToMetricMap
-}
-
-fun getMetricsLike(file: File, string: String): MutableCollection<Metric<*>> {
-  val (spanToMetricMap, allSpans) = getSpans(file)
-  for (span in allSpans) {
-    val operationName = span.get("operationName").textValue()
-    if (operationName.contains(string)) {
+    if (filterFunction(operationName)) {
       val metric = MetricWithAttributes(Metric(Duration(operationName), getDuration(span)))
       populateAttributes(metric, span)
       spanToMetricMap.getOrPut(operationName) { mutableListOf() }.add(metric)
       processChildren(spanToMetricMap, allSpans, span.get("spanID").textValue())
     }
   }
-  return combineMetrics(spanToMetricMap)
+  return spanToMetricMap
 }
-private fun getSpans(file: File): Pair<MutableMap<String, MutableList<MetricWithAttributes>>, JsonNode> {
-  val root = jacksonObjectMapper().readTree(file)
-  val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
-  val allSpans = root.get("data")[0].get("spans")
-  if (allSpans.isEmpty) println("No spans have been found")
-  return Pair(spanToMetricMap, allSpans)
+
+fun getAllSpansCombined(file: File, filterFunction: (spanName: String) -> Boolean = { true }): MutableCollection<Metric<*>>{
+  return combineMetrics(getAllSpans(file, filterFunction))
 }
 
 /**
@@ -110,10 +75,19 @@ private fun getSpans(file: File): Pair<MutableMap<String, MutableList<MetricWith
  * Besides, all attributes are reported as counters.
  */
 fun getMetrics(context: IDETestContext, nameOfSpan: String, publishOnlyParent: Boolean = false): MutableCollection<Metric<*>> {
+  val opentelemetryFile = context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
   if (publishOnlyParent) {
-    return mutableListOf(getSingleMetric(context, nameOfSpan))
+    return mutableListOf(getSingleMetric(opentelemetryFile, nameOfSpan))
   }
-  return getMetrics(context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile(), nameOfSpan)
+  return getMetrics(opentelemetryFile, nameOfSpan)
+}
+
+private fun getSpans(file: File): Pair<MutableMap<String, MutableList<MetricWithAttributes>>, JsonNode> {
+  val root = jacksonObjectMapper().readTree(file)
+  val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
+  val allSpans = root.get("data")[0].get("spans")
+  if (allSpans.isEmpty) println("No spans have been found")
+  return Pair(spanToMetricMap, allSpans)
 }
 
 private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAttributes>>): MutableCollection<Metric<*>> {
