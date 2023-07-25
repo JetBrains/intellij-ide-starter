@@ -115,6 +115,7 @@ interface TestContainer<T> : Closeable {
         .useNewUIInTests()
         .withGCLogs()
         .disableReportingStatisticsToProduction()
+        .disableMigrationNotification()
     }
 
     val contextWithAppliedHooks = setupHooks

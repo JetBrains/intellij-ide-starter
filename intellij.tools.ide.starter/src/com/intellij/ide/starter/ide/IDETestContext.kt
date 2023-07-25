@@ -544,6 +544,12 @@ data class IDETestContext(
     return this
   }
 
+  fun disableMigrationNotification(): IDETestContext {
+    val migrationFile = paths.configDir.resolve("migrate.config").toFile()
+    migrationFile.writeText("properties intellij.first.ide.session")
+    return this
+  }
+
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
                       artifactName: String = source.fileName.toString()) {
