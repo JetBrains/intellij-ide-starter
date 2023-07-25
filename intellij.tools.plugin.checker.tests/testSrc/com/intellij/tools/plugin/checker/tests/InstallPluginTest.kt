@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
@@ -18,11 +18,11 @@ import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInfo
@@ -47,7 +47,7 @@ class InstallPluginTest {
 
 
   companion object {
-    private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227, 14823, 21709, 14946, 16478)
+    private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227, 14823, 21709, 14946, 16478, 10253)
 
     private fun setDebugBuildParamsForLocalDebug(vararg buildProperties: Pair<String, String>): Path {
       val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
