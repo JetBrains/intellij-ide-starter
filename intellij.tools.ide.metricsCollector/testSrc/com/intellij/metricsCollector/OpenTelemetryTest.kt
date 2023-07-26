@@ -3,6 +3,7 @@ package com.intellij.metricsCollector
 import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
+import com.intellij.metricsCollector.metrics.SpanFilters
 import com.intellij.metricsCollector.metrics.getMetricsFromSpanAndChildren
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -18,8 +19,19 @@ class OpenTelemetryTest {
   }
 
   @Test
+  fun testContainsInFilter(){
+    val spanNames = listOf("%findUsages", "run activity")
+    val file = (openTelemetryReports / "opentelemetry.json").toFile()
+    val expected = spanNames.map { spanName ->
+      getMetricsFromSpanAndChildren(file, SpanFilters.Equals(spanName))
+    }.flatten()
+    val result = getMetricsFromSpanAndChildren(file, SpanFilters.ContainsIn(spanNames))
+    result.shouldContainExactlyInAnyOrder(expected)
+  }
+
+  @Test
   fun metricsCorrectlyCollected() {
-    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry.json").toFile(), "%findUsages")
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry.json").toFile(), SpanFilters.Equals("%findUsages"))
     metrics.shouldContainExactlyInAnyOrder(listOf(
       Metric(Duration("%findUsages_1"), 531),
       Metric(Duration("%findUsages_2"), 4110),
@@ -43,7 +55,7 @@ class OpenTelemetryTest {
 
   @Test
   fun metricsWithSingleSpan() {
-    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_main_timer.json").toFile(), "performance_test")
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_main_timer.json").toFile(), SpanFilters.Equals("performance_test"))
     metrics.shouldContainExactlyInAnyOrder(listOf(
       Metric(Duration("performance_test"), 13497),
       Metric(Duration("delayType"), 3739),
@@ -54,7 +66,8 @@ class OpenTelemetryTest {
 
   @Test
   fun metricsCorrectlyCollected2() {
-    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry2.json").toFile(), "performance_test")
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry2.json").toFile(),
+                                                SpanFilters.Equals("performance_test"))
     metrics.shouldContainExactlyInAnyOrder(listOf(
       Metric(Duration("performance_test"), 81444),
       Metric(Duration("timer_1"), 1184),
@@ -83,7 +96,8 @@ class OpenTelemetryTest {
 
   @Test
   fun metricsCorrectlyCollectedAvoidingZeroValue() {
-    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_zero_values.json").toFile(), "performance_test")
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_zero_values.json").toFile(),
+                                                SpanFilters.Equals("performance_test"))
     metrics.shouldContainExactlyInAnyOrder(listOf(
       Metric(Duration("performance_test"), 27990),
       Metric(Duration("firstCodeAnalysis"), 1726),
@@ -197,7 +211,8 @@ class OpenTelemetryTest {
 
   @Test
   fun metricsWithAttributesMaxAndMeanValue() {
-    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_max_mean_attributes.json").toFile(), "performance_test")
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_max_mean_attributes.json").toFile(),
+                                                SpanFilters.Equals("performance_test"))
     metrics.shouldContainAll(listOf(
       Metric(Duration("typing#latency#max"), 51),
       Metric(Duration("typing#latency#mean_value"), 3),

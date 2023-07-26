@@ -26,12 +26,18 @@ fun getOpenTelemetry(context: IDETestContext): PerformanceMetricsDto {
 }
 
 fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): PerformanceMetricsDto {
-  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(context, spanName) }.flatten()
+  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(context, SpanFilters.Equals(spanName)) }.flatten()
   return PerformanceMetricsDto.create(
     projectName = context.testName,
     buildNumber = BuildNumber.fromStringWithProductCode(context.ide.build, context.ide.productCode)!!,
     metrics = metrics
   )
+}
+
+sealed class SpanFilters(val filter: (String) -> Boolean) {
+  class Equals(name: String) : SpanFilters({ it == name })
+  class ContainsIn(names: List<String>) : SpanFilters({ it in names })
+  class Contain(substring: String) : SpanFilters({ it.contains(substring) })
 }
 
 /**
@@ -43,17 +49,17 @@ fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): Perfor
  * 2a. If attribute ends with `#max`, in sum the max of max will be recorded
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
-fun getMetricsFromSpanAndChildren(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
-  return getMetricsFromSpanAndChildren(file, filterFunction = { spanName -> spanName == nameOfSpan })
+fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilters): List<Metric<*>>{
+  return getMetricsFromSpanAndChildren(file, filter.filter)
 }
 
-fun getMetricsFromSpanAndChildren(file: File, filterFunction: (spanName: String) -> Boolean): MutableCollection<Metric<*>>{
+fun getMetricsFromSpanAndChildren(file: File, filterFunction: (spanName: String) -> Boolean): List<Metric<*>>{
   return combineMetrics(getSpansMetricsMap(file, filterFunction))
 }
 
-fun getMetricsFromSpanAndChildren(context: IDETestContext, nameOfSpan: String): MutableCollection<Metric<*>> {
+fun getMetricsFromSpanAndChildren(context: IDETestContext, filter: SpanFilters): List<Metric<*>> {
   val opentelemetryFile = context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
-  return getMetricsFromSpanAndChildren(opentelemetryFile, nameOfSpan)
+  return getMetricsFromSpanAndChildren(opentelemetryFile, filter)
 }
 
 fun getSpansMetricsMap(file: File,
@@ -97,7 +103,7 @@ private fun getSpans(file: File): JsonNode {
   return allSpans
 }
 
-private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): MutableCollection<Metric<*>> {
+private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): List<Metric<*>> {
   val result = mutableListOf<Metric<*>>()
   metrics.forEach { entry ->
     if (entry.value.size == 1) {
