@@ -72,7 +72,6 @@ fun getSpansMetricsMap(file: File,
   return spanToMetricMap
 }
 
-
 fun processSpans(
   file: File,
   spanFilter: (spanName: String) -> Boolean,
@@ -98,7 +97,7 @@ private fun getSpans(file: File): JsonNode {
   return allSpans
 }
 
-private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAttributes>>): MutableCollection<Metric<*>> {
+private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): MutableCollection<Metric<*>> {
   val result = mutableListOf<Metric<*>>()
   metrics.forEach { entry ->
     if (entry.value.size == 1) {
@@ -124,11 +123,6 @@ private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAtt
         }
         counter++
       }
-      val sum = entry.value.sumOf { it.metric.value.toLong() }
-      val mean = sum / entry.value.size
-      val variance = (entry.value
-        .map { (it.metric.value.toDouble() - mean.toDouble()).pow(2) }
-        .reduce { acc, d -> acc + d }) / (entry.value.size)
       for (attr in mediumAttributes) {
         if (attr.key.endsWith("#max")) {
           result.add(Metric(Duration(attr.key), attr.value.max()))
@@ -145,20 +139,19 @@ private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAtt
         result.add(Metric(Duration(attr.key + "#mean_value"), attr.value.average().toLong()))
         result.add(Metric(Duration(attr.key + "#standard_deviation"), standardDeviation(attr.value)))
       }
+      val sum = entry.value.sumOf { it.metric.value.toLong() }
+      val mean = sum / entry.value.size
+      val standardDeviation = standardDeviation(entry.value.map { it.metric.value })
       result.add(Metric(Duration(entry.key), sum))
       result.add(Metric(Duration(entry.key + "#mean_value"), mean))
-      result.add(Metric(Duration(entry.key + "#standard_deviation"), sqrt(variance).toLong()))
+      result.add(Metric(Duration(entry.key + "#standard_deviation"), standardDeviation))
     }
   }
   return result
 }
-
-private fun standardDeviation(data: Collection<Long>): Long {
-  val mean = data.average()
-  val variance = (data
-    .map { (it - mean).pow(2) }
-    .reduce { acc, d -> acc + d }) / (data.size)
-  return sqrt(variance).toLong()
+private fun <T : Number> standardDeviation(data: Collection<T>): Long {
+  val mean = data.map { it.toDouble() }.average()
+  return sqrt(data.map { (it.toDouble() - mean).pow(2) }.average()).toLong()
 }
 
 private fun getAttributes(spanName: String, metric: MetricWithAttributes): Collection<Metric<*>> {
