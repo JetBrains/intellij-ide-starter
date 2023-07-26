@@ -58,7 +58,8 @@ fun getMetricsFromSpanAndChildren(context: IDETestContext, nameOfSpan: String): 
 
 fun getSpansMetricsMap(file: File,
                        filterFunction: (spanName: String) -> Boolean = { true }): MutableMap<String, MutableList<MetricWithAttributes>> {
-  val (spanToMetricMap, allSpans) = getSpans(file)
+  val allSpans = getSpans(file)
+  val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
   for (span in allSpans) {
     val operationName = span.get("operationName").textValue()
     if (filterFunction(operationName)) {
@@ -71,12 +72,30 @@ fun getSpansMetricsMap(file: File,
   return spanToMetricMap
 }
 
-private fun getSpans(file: File): Pair<MutableMap<String, MutableList<MetricWithAttributes>>, JsonNode> {
+
+fun processSpans(
+  file: File,
+  spanFilter: (spanName: String) -> Boolean,
+  processSpan: (duration: Long, attributes: Map<String, String>) -> Unit) {
+  val allSpans = getSpans(file)
+  for (span in allSpans) {
+    if (spanFilter(span.get("operationName").textValue())) {
+      val spanDuration = getDuration(span)
+      val spanAttributes = span.get("tags").mapNotNull {
+        val key = it.get("key")?.textValue()
+        val value = it.get("value")?.textValue()
+        if (key != null && value != null) key to value else null
+      }.toMap()
+      processSpan(spanDuration, spanAttributes)
+    }
+  }
+}
+
+private fun getSpans(file: File): JsonNode {
   val root = jacksonObjectMapper().readTree(file)
-  val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
   val allSpans = root.get("data")[0].get("spans")
   if (allSpans.isEmpty) println("No spans have been found")
-  return Pair(spanToMetricMap, allSpans)
+  return allSpans
 }
 
 private fun combineMetrics(metrics: MutableMap<String, MutableList<MetricWithAttributes>>): MutableCollection<Metric<*>> {
@@ -172,7 +191,6 @@ private fun processChildren(spanToMetricMap: MutableMap<String, MutableList<Metr
 
 private fun getDuration(span: JsonNode) = (span.get("duration").longValue() / 1000.0).roundToLong()
 
-
 private fun shouldAvoidIfZero(span: JsonNode): Boolean {
   span.get("tags")?.forEach { tag ->
     val attributeName = tag.get("key").textValue()
@@ -192,25 +210,4 @@ private fun populateAttributes(metric: MetricWithAttributes, span: JsonNode) {
       metric.attributes.add(Metric(Counter(attributeName), it))
     }
   }
-}
-
-data class FilePathMetric(val value: Long, val path: String, val timeout: Boolean)
-
-fun getFilePathMetrics(file: File, nameOfSpan: String): List<FilePathMetric> {
-  val res = mutableListOf<FilePathMetric>()
-  val root = jacksonObjectMapper().readTree(file)
-  val allSpans = root.get("data")[0].get("spans")
-  if (allSpans.isEmpty) println("No spans have been found")
-  for (span in allSpans) {
-    if (span.get("operationName").textValue() == nameOfSpan) {
-      val duration = getDuration(span)
-      val path = span.get("tags").firstOrNull { it.get("key").textValue() == "filePath" }?.get("value")?.textValue()
-      val timeout = span.get("tags").firstOrNull { it.get("key").textValue() == "timeout" }?.get("value")?.textValue()
-      if (path != null) {
-        val time = timeout != null
-        res.add(FilePathMetric(duration, path, time))
-      }
-    }
-  }
-  return res
 }
