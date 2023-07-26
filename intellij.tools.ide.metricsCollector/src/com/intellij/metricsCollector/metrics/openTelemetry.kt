@@ -26,16 +26,12 @@ fun getOpenTelemetry(context: IDETestContext): PerformanceMetricsDto {
 }
 
 fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): PerformanceMetricsDto {
-  val metrics = spansNames.map { spanName -> getMetrics(context, spanName) }.flatten()
+  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(context, spanName) }.flatten()
   return PerformanceMetricsDto.create(
     projectName = context.testName,
     buildNumber = BuildNumber.fromStringWithProductCode(context.ide.build, context.ide.productCode)!!,
     metrics = metrics
   )
-}
-
-fun getSingleMetric(file: File, nameOfSpan: String): Metric<*> {
-  return getMetrics(file, DEFAULT_SPAN_NAME).first { it.id.name == nameOfSpan }
 }
 
 /**
@@ -47,12 +43,21 @@ fun getSingleMetric(file: File, nameOfSpan: String): Metric<*> {
  * 2a. If attribute ends with `#max`, in sum the max of max will be recorded
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
-fun getMetrics(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
-  return getAllSpansCombined(file, filterFunction = { spanName -> spanName == nameOfSpan })
+fun getMetricsFromSpanAndChildren(file: File, nameOfSpan: String): MutableCollection<Metric<*>> {
+  return getMetricsFromSpanAndChildren(file, filterFunction = { spanName -> spanName == nameOfSpan })
 }
 
-fun getAllSpans(file: File,
-                filterFunction: (spanName: String) -> Boolean = { true }): MutableMap<String, MutableList<MetricWithAttributes>> {
+fun getMetricsFromSpanAndChildren(file: File, filterFunction: (spanName: String) -> Boolean): MutableCollection<Metric<*>>{
+  return combineMetrics(getSpansMetricsMap(file, filterFunction))
+}
+
+fun getMetricsFromSpanAndChildren(context: IDETestContext, nameOfSpan: String): MutableCollection<Metric<*>> {
+  val opentelemetryFile = context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
+  return getMetricsFromSpanAndChildren(opentelemetryFile, nameOfSpan)
+}
+
+fun getSpansMetricsMap(file: File,
+                       filterFunction: (spanName: String) -> Boolean = { true }): MutableMap<String, MutableList<MetricWithAttributes>> {
   val (spanToMetricMap, allSpans) = getSpans(file)
   for (span in allSpans) {
     val operationName = span.get("operationName").textValue()
@@ -64,22 +69,6 @@ fun getAllSpans(file: File,
     }
   }
   return spanToMetricMap
-}
-
-fun getAllSpansCombined(file: File, filterFunction: (spanName: String) -> Boolean = { true }): MutableCollection<Metric<*>>{
-  return combineMetrics(getAllSpans(file, filterFunction))
-}
-
-/**
- * The method reports duration of `nameSpan` and in case of all publishOnlyParent=false its children spans.
- * Besides, all attributes are reported as counters.
- */
-fun getMetrics(context: IDETestContext, nameOfSpan: String, publishOnlyParent: Boolean = false): MutableCollection<Metric<*>> {
-  val opentelemetryFile = context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
-  if (publishOnlyParent) {
-    return mutableListOf(getSingleMetric(opentelemetryFile, nameOfSpan))
-  }
-  return getMetrics(opentelemetryFile, nameOfSpan)
 }
 
 private fun getSpans(file: File): Pair<MutableMap<String, MutableList<MetricWithAttributes>>, JsonNode> {
@@ -205,10 +194,10 @@ private fun populateAttributes(metric: MetricWithAttributes, span: JsonNode) {
   }
 }
 
-data class FilePathFieMetric(val value: Long, val path: String, val timeout: Boolean)
+data class FilePathMetric(val value: Long, val path: String, val timeout: Boolean)
 
-fun getValues(file: File, nameOfSpan: String): List<FilePathFieMetric> {
-  val res = mutableListOf<FilePathFieMetric>()
+fun getFilePathMetrics(file: File, nameOfSpan: String): List<FilePathMetric> {
+  val res = mutableListOf<FilePathMetric>()
   val root = jacksonObjectMapper().readTree(file)
   val allSpans = root.get("data")[0].get("spans")
   if (allSpans.isEmpty) println("No spans have been found")
@@ -219,7 +208,7 @@ fun getValues(file: File, nameOfSpan: String): List<FilePathFieMetric> {
       val timeout = span.get("tags").firstOrNull { it.get("key").textValue() == "timeout" }?.get("value")?.textValue()
       if (path != null) {
         val time = timeout != null
-        res.add(FilePathFieMetric(duration, path, time))
+        res.add(FilePathMetric(duration, path, time))
       }
     }
   }
