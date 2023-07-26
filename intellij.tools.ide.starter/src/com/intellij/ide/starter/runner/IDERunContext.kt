@@ -6,11 +6,11 @@ import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.CodeInjector
-import com.intellij.ide.starter.ide.EapReleaseConfigurable
-import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.models.VMOptionsDiff
+import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.process.collectJavaThreadDump
 import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.destroyGradleDaemonProcessIfExists
@@ -143,69 +143,37 @@ data class IDERunContext(
     val snapshotsDir = paths.snapshotsDir.createDirectories()
     //each run produced unique gc logs so we delete existing
     testContext.wipeGcLogs()
-    val disabledPlugins = paths.configDir.resolve("disabled_plugins.txt")
-    if (disabledPlugins.toFile().exists()) {
-      logOutput("The list of disabled plugins: " + disabledPlugins.toFile().readText())
-    }
 
-    val stdout = if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
-    val stderr = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
+    val stdout = getStdout()
+    val stderr = getStderr()
     var ideProcessId = 0L
-
     var isRunSuccessful = true
-    val host by lazy { di.direct.instance<CodeInjector>() }
 
+    val ideHost = IDEHost(codeBuilder, testContext).also { it.setup() }
     try {
-      val codeBuilder = codeBuilder
-      if (codeBuilder != null) {
-        host.codeBuilder()
-      }
-
-      val finalOptions: VMOptions = calculateVmOptions()
-
-      if (codeBuilder != null) {
-        host.setup(testContext)
-      }
-
       testContext.setProviderMemoryOnlyOnLinux()
+      val jdkHome: Path = resolveAndDownloadSameJDK()
 
-      val jdkHome: Path by lazy {
-        try {
-          testContext.ide.resolveAndDownloadTheSameJDK()
-        }
-        catch (e: Exception) {
-          logError("Failed to download the same JDK as in ${testContext.ide.build}")
-          logError(e.stackTraceToString())
-
-          val defaultJavaHome = resolveInstalledJdk11()
-          logOutput("JDK is not found in ${testContext.ide.build}. Fallback to default java: $defaultJavaHome")
-          defaultJavaHome
-        }
-      }
-
-      val startConfig = testContext.ide.startConfig(finalOptions, logsDir)
+      val vmOptions: VMOptions = calculateVmOptions()
+      val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
       if (startConfig is Closeable) {
         addCompletionHandler { startConfig.close() }
       }
 
-      val finalEnvVariables = startConfig.environmentVariables + finalOptions.environmentVariables
-      val extendedEnvVariablesWithJavaHome = finalEnvVariables.toMutableMap()
-      extendedEnvVariablesWithJavaHome.putIfAbsent("JAVA_HOME", jdkHome.absolutePathString())
+      val mergedEnvVariables = (startConfig.environmentVariables + vmOptions.environmentVariables).toMutableMap().apply {
+        putIfAbsent("JAVA_HOME", jdkHome.absolutePathString())
+      }
       val finalArgs = startConfig.commandLine + commandLine.args
-      logOutput(buildString {
-        appendLine("Starting IDE for ${contextName} with timeout $runTimeout")
-        appendLine("  Command line: [" + finalArgs.joinToString() + "]")
-        appendLine("  VM Options: [" + finalOptions.toString().lineSequence().map { it.trim() }.joinToString(" ") + "]")
-        appendLine("  On Java : [" + System.getProperty("java.home") + "]")
-      })
+
+      logDisabledPlugins(paths)
+      logStartupInfo(finalArgs, vmOptions)
 
       File(finalArgs.first()).setExecutable(true)
-
       val executionTime = measureTime {
         ProcessExecutor(
           presentableName = "run-ide-$contextName",
           workDir = startConfig.workDir,
-          environmentVariables = extendedEnvVariablesWithJavaHome,
+          environmentVariables = mergedEnvVariables,
           timeout = runTimeout,
           args = finalArgs,
           errorDiagnosticFiles = startConfig.errorDiagnosticFiles,
@@ -213,136 +181,187 @@ data class IDERunContext(
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
             StarterBus.post(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
-
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
-            val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
-
-            var cnt = 0
-            while (process.isAlive) {
-              delay(1.minutes)
-              if (!process.isAlive) break
-
-              val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
-              logOutput("Dumping threads to $dumpFile")
-              catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile) }
-            }
+            startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig, ideProcessId)
           },
           onBeforeKilled = { process, pid ->
-            catchAll {
-              takeScreenshot(logsDir)
-            }
-            if (!expectedKill) {
-              val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
-
-              if (collectNativeThreads) {
-                val fileToStoreNativeThreads = logsDir.resolve("native-thread-dumps.txt")
-                startProfileNativeThreads(javaProcessId.toString())
-                delay(15.seconds)
-                stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
-              }
-              val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}" + ".txt")
-              val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof.gz")
-              catchAll {
-                collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
-              }
-              catchAll {
-                collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
-              }
-            }
+            captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           }
         ).start()
       }
-
       logOutput("IDE run $contextName completed in $executionTime")
+      validateVMOptionsWereSet(paths)
+      logVmOptionDiff(startConfig.vmOptionsDiff())
 
-      require(FileSystem.countFiles(paths.configDir) > 3) {
-        "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
-      }
-
-      require(FileSystem.countFiles(paths.systemDir) > 1) {
-        "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
-      }
-
-      val vmOptionsDiff = startConfig.vmOptionsDiff()
-
-      if (vmOptionsDiff != null && !vmOptionsDiff.isEmpty) {
-        logOutput("VMOptions were changed:")
-        logOutput("new lines:")
-        vmOptionsDiff.newLines.forEach { logOutput("  $it") }
-        logOutput("removed lines:")
-        vmOptionsDiff.missingLines.forEach { logOutput("  $it") }
-        logOutput()
-      }
-
-      return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = vmOptionsDiff)
+      return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = startConfig.vmOptionsDiff())
     }
-    catch (t: Throwable) {
+    catch (exception: Throwable) {
       isRunSuccessful = false
-      if (t is ExecTimeoutException && !expectedKill) {
+      if (exception is ExecTimeoutException && !expectedKill) {
         error("Timeout of IDE run $contextName for $runTimeout")
       }
       else {
         logOutput("IDE run for $contextName has been expected to be killed after $runTimeout")
       }
-
-      val failureCauseFile = testContext.paths.logsDir.resolve("failure_cause.txt")
-      val errorMessage = if (Files.exists(failureCauseFile)) {
-        Files.readString(failureCauseFile)
-      }
-      else {
-        t.message ?: t.javaClass.name
-      }
       if (!expectedKill) {
-        throw Exception(errorMessage, t)
+        throw Exception(getErrorMessage(exception), exception)
       }
       else {
         return IDEStartResult(runContext = this, executionTime = runTimeout)
       }
     }
     finally {
-      if (ideProcessId != 0L) {
-        testContext.collectJBRDiagnosticFilesIfExist(ideProcessId)
-      }
-
+      testContext.collectJBRDiagnosticFiles(ideProcessId)
       try {
         if (SystemInfo.isWindows) {
           destroyGradleDaemonProcessIfExists()
         }
-
-        listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
-          dir.listDirectoryEntries().isEmpty()
-        }.forEach { it.toFile().deleteRecursively() }
-
-        val rootErrorsDir = logsDir / ERRORS_DIR_NAME
-
-        ErrorReporter.reportErrorsAsFailedTests(rootErrorsDir, this, isRunSuccessful)
+        deleteJVMCrashes()
+        ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, isRunSuccessful)
         publishArtifacts(isRunSuccessful)
-
-        if (codeBuilder != null) {
-          host.tearDown(testContext)
-        }
-
-        val closeContext = object : IDERunCloseContext {
-          override val wasRunSuccessful: Boolean = isRunSuccessful
-        }
-
-        closeHandlers.forEach {
-          try {
-            it.invoke(closeContext)
-          }
-          catch (t: Throwable) {
-            logOutput("Failed to complete close step. ${t.message}.\n" + t)
-            t.printStackTrace(System.err)
-          }
-        }
+        ideHost.tearDown()
+        runCloseHandlers(isRunSuccessful)
       }
       finally {
         StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
-
         // quick hack. need to refactor this (either completely reset DI, or redesign test workflow completely)
         di.direct.instance<EapReleaseConfigurable>().resetDIToDefaultDownloading()
       }
     }
+  }
+
+  private fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
+
+  private fun getStdout() =
+    if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
+
+  private fun validateVMOptionsWereSet(paths: IDEDataPaths) {
+    require(FileSystem.countFiles(paths.configDir) > 3) {
+      "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
+    }
+
+    require(FileSystem.countFiles(paths.systemDir) > 1) {
+      "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
+    }
+  }
+
+  private fun getErrorMessage(t: Throwable): String? {
+    val failureCauseFile = testContext.paths.logsDir.resolve("failure_cause.txt")
+    val errorMessage = if (Files.exists(failureCauseFile)) {
+      Files.readString(failureCauseFile)
+    }
+    else {
+      t.message ?: t.javaClass.name
+    }
+    return errorMessage
+  }
+
+  private fun deleteJVMCrashes() {
+    listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
+      dir.listDirectoryEntries().isEmpty()
+    }.forEach { it.toFile().deleteRecursively() }
+  }
+
+  private fun runCloseHandlers(isRunSuccessful: Boolean) {
+    val closeContext = object : IDERunCloseContext {
+      override val wasRunSuccessful: Boolean = isRunSuccessful
+    }
+
+    closeHandlers.forEach {
+      try {
+        it.invoke(closeContext)
+      }
+      catch (t: Throwable) {
+        logOutput("Failed to complete close step. ${t.message}.\n" + t)
+        t.printStackTrace(System.err)
+      }
+    }
+  }
+
+  private fun logDisabledPlugins(paths: IDEDataPaths) {
+    val disabledPlugins = paths.configDir.resolve("disabled_plugins.txt")
+    if (disabledPlugins.toFile().exists()) {
+      logOutput("The list of disabled plugins: " + disabledPlugins.toFile().readText())
+    }
+  }
+
+  private suspend fun captureDiagnosticOnKill(logsDir: Path,
+                                              jdkHome: Path,
+                                              startConfig: IDEStartConfig,
+                                              pid: Long,
+                                              process: Process,
+                                              snapshotsDir: Path) {
+    catchAll {
+      takeScreenshot(logsDir)
+    }
+    if (!expectedKill) {
+      val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
+
+      if (collectNativeThreads) {
+        val fileToStoreNativeThreads = logsDir.resolve("native-thread-dumps.txt")
+        startProfileNativeThreads(javaProcessId.toString())
+        delay(15.seconds)
+        stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
+      }
+      val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}" + ".txt")
+      val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof.gz")
+      catchAll {
+        collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
+      }
+      catchAll {
+        collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
+      }
+    }
+  }
+
+  private suspend fun startCollectThreadDumpsLoop(logsDir: Path,
+                                                  process: Process,
+                                                  jdkHome: Path,
+                                                  startConfig: IDEStartConfig,
+                                                  ideProcessId: Long) {
+    val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
+
+    var cnt = 0
+    while (process.isAlive) {
+      delay(1.minutes)
+      if (!process.isAlive) break
+
+      val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
+      logOutput("Dumping threads to $dumpFile")
+      catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile) }
+    }
+  }
+
+  private fun resolveAndDownloadSameJDK() = try {
+    testContext.ide.resolveAndDownloadTheSameJDK()
+  }
+  catch (e: Exception) {
+    logError("Failed to download the same JDK as in ${testContext.ide.build}")
+    logError(e.stackTraceToString())
+
+    val defaultJavaHome = resolveInstalledJdk11()
+    logOutput("JDK is not found in ${testContext.ide.build}. Fallback to default java: $defaultJavaHome")
+    defaultJavaHome
+  }
+
+  private fun logVmOptionDiff(vmOptionsDiff: VMOptionsDiff?) {
+    if (vmOptionsDiff != null && !vmOptionsDiff.isEmpty) {
+      logOutput("VMOptions were changed:")
+      logOutput("new lines:")
+      vmOptionsDiff.newLines.forEach { logOutput("  $it") }
+      logOutput("removed lines:")
+      vmOptionsDiff.missingLines.forEach { logOutput("  $it") }
+      logOutput()
+    }
+  }
+
+  private fun logStartupInfo(finalArgs: List<String>, finalOptions: VMOptions) {
+    logOutput(buildString {
+      appendLine("Starting IDE for ${contextName} with timeout $runTimeout")
+      appendLine("  Command line: [" + finalArgs.joinToString() + "]")
+      appendLine("  VM Options: [" + finalOptions.toString().lineSequence().map { it.trim() }.joinToString(" ") + "]")
+      appendLine("  On Java : [" + System.getProperty("java.home") + "]")
+    })
   }
 
   private fun publishArtifacts(isRunSuccessful: Boolean) {
