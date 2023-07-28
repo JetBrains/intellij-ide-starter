@@ -807,6 +807,11 @@ fun <T : CommandChain> T.setBreakpoint(line: Int, relativePath: String? = null, 
   return this
 }
 
+fun <T : CommandChain> T.removeAllBreakpoints(): T {
+  addCommand("${CMD_PREFIX}removeBreakpoint all")
+  return this
+}
+
 fun <T : CommandChain> T.debugRunConfiguration(runConfigurationName: String, maxWaitingTimeInSec: Int? = null): T {
   addCommand("${CMD_PREFIX}debugRunConfiguration $runConfigurationName" +
              if (maxWaitingTimeInSec != null) ",$maxWaitingTimeInSec" else "")
