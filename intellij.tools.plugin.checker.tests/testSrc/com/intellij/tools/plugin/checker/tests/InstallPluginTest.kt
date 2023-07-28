@@ -167,6 +167,11 @@ class InstallPluginTest {
         return emptyList()
       }
 
+      if (params.event.productVersion.startsWith("RM-232.")) {
+        logOutput(RuntimeException("Product ${params.event.productCode} is not supported since it freezes on IDEA-320042"))
+        return emptyList()
+      }
+
       if (params.event.productVersion.startsWith("DB") && versionNumber < 232) {
         logOutput(
           RuntimeException("Product ${params.event.productVersion} is not supported: https://youtrack.jetbrains.com/issue/DBE-16528"))
