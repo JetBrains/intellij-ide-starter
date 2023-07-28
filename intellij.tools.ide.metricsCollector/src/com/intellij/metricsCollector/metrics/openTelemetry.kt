@@ -26,7 +26,7 @@ fun getOpenTelemetry(context: IDETestContext): PerformanceMetricsDto {
 }
 
 fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): PerformanceMetricsDto {
-  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(context, SpanFilters.Equals(spanName)) }.flatten()
+  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(context, SpanFilter.equals(spanName)) }.flatten()
   return PerformanceMetricsDto.create(
     projectName = context.testName,
     buildNumber = BuildNumber.fromStringWithProductCode(context.ide.build, context.ide.productCode)!!,
@@ -34,10 +34,12 @@ fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): Perfor
   )
 }
 
-sealed class SpanFilters(val filter: (String) -> Boolean) {
-  class Equals(name: String) : SpanFilters({ it == name })
-  class ContainsIn(names: List<String>) : SpanFilters({ it in names })
-  class Contain(substring: String) : SpanFilters({ it.contains(substring) })
+class SpanFilter(val filter: (String) -> Boolean) {
+  companion object {
+    fun equals(name: String) = SpanFilter { it == name }
+    fun containsIn(names: List<String>) = SpanFilter { it in names }
+    fun contain(substring: String) = SpanFilter { it.contains(substring) }
+  }
 }
 
 /**
@@ -49,26 +51,22 @@ sealed class SpanFilters(val filter: (String) -> Boolean) {
  * 2a. If attribute ends with `#max`, in sum the max of max will be recorded
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
-fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilters): List<Metric<*>>{
-  return getMetricsFromSpanAndChildren(file, filter.filter)
-}
 
-fun getMetricsFromSpanAndChildren(file: File, filterFunction: (spanName: String) -> Boolean): List<Metric<*>>{
-  return combineMetrics(getSpansMetricsMap(file, filterFunction))
+fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric<*>>{
+  return combineMetrics(getSpansMetricsMap(file, filter))
 }
-
-fun getMetricsFromSpanAndChildren(context: IDETestContext, filter: SpanFilters): List<Metric<*>> {
+fun getMetricsFromSpanAndChildren(context: IDETestContext, filter: SpanFilter): List<Metric<*>> {
   val opentelemetryFile = context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
   return getMetricsFromSpanAndChildren(opentelemetryFile, filter)
 }
 
 fun getSpansMetricsMap(file: File,
-                       filterFunction: (spanName: String) -> Boolean = { true }): MutableMap<String, MutableList<MetricWithAttributes>> {
+                       spanFilter: SpanFilter = SpanFilter { true }): MutableMap<String, MutableList<MetricWithAttributes>> {
   val allSpans = getSpans(file)
   val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
   for (span in allSpans) {
     val operationName = span.get("operationName").textValue()
-    if (filterFunction(operationName)) {
+    if (spanFilter.filter(operationName)) {
       val metric = MetricWithAttributes(Metric(Duration(operationName), getDuration(span)))
       populateAttributes(metric, span)
       spanToMetricMap.getOrPut(operationName) { mutableListOf() }.add(metric)
@@ -80,11 +78,11 @@ fun getSpansMetricsMap(file: File,
 
 fun processSpans(
   file: File,
-  spanFilter: (spanName: String) -> Boolean,
+  spanFilter: SpanFilter,
   processSpan: (duration: Long, attributes: Map<String, String>) -> Unit) {
   val allSpans = getSpans(file)
   for (span in allSpans) {
-    if (spanFilter(span.get("operationName").textValue())) {
+    if (spanFilter.filter(span.get("operationName").textValue())) {
       val spanDuration = getDuration(span)
       val spanAttributes = span.get("tags").mapNotNull {
         val key = it.get("key")?.textValue()
@@ -137,7 +135,7 @@ private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): Li
         if (attr.key.endsWith("#p90")) {
           continue
         }
-        if(attr.key.endsWith("#mean_value")){
+        if (attr.key.endsWith("#mean_value")) {
           result.add(Metric(Duration(attr.key), attr.value.average().toLong()))
           continue
         }
@@ -155,6 +153,7 @@ private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): Li
   }
   return result
 }
+
 private fun <T : Number> standardDeviation(data: Collection<T>): Long {
   val mean = data.map { it.toDouble() }.average()
   return sqrt(data.map { (it.toDouble() - mean).pow(2) }.average()).toLong()
