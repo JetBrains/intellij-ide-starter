@@ -24,7 +24,7 @@ data class PerformanceMetrics(
     /**
      * Metric used to count the number of times an event has occurred
      */
-    data class Counter(override val name: String) : MetricId<Int>()
+    data class Counter(override val name: String) : MetricId<Number>()
   }
 
   data class Metric<T : Number>(val id: MetricId<T>, val value: T, val compareSetting: CompareSetting = CompareSetting.notComparing)
