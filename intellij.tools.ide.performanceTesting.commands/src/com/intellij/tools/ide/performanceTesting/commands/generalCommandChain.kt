@@ -1,7 +1,7 @@
 package com.intellij.tools.ide.performanceTesting.commands
 
-import com.intellij.driver.model.command.CommandChain
 import com.intellij.driver.model.SdkObject
+import com.intellij.driver.model.command.CommandChain
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Path
@@ -184,7 +184,7 @@ fun <T : CommandChain> T.navigateAndFindUsages(expectedElementName: String,
   if (position.isNotEmpty()) {
     command.add("-position $position")
   }
-  if(scope.isNotEmpty()) {
+  if (scope.isNotEmpty()) {
     command.add("-scope $scope")
   }
   if (warmup) {
@@ -466,7 +466,7 @@ fun <T : CommandChain> T.doLocalInspectionWarmup(): T {
 const val SHOW_ALT_ENTER_CMD_PREFIX = "${CMD_PREFIX}altEnter"
 
 fun <T : CommandChain> T.altEnter(intention: String, invoke: Boolean): T {
-  addCommand(SHOW_ALT_ENTER_CMD_PREFIX, "$intention|$invoke" )
+  addCommand(SHOW_ALT_ENTER_CMD_PREFIX, "$intention|$invoke")
   return this
 }
 
@@ -514,7 +514,11 @@ fun <T : CommandChain> T.stopPowerSave(): T {
 
 const val SEARCH_EVERYWHERE_CMD_PREFIX = "${CMD_PREFIX}searchEverywhere"
 
-fun <T : CommandChain> T.searchEverywhere(tab: String = "all", textToInsert: String = "", textToType: String = "", close: Boolean = false, selectFirst:Boolean = false): T {
+fun <T : CommandChain> T.searchEverywhere(tab: String = "all",
+                                          textToInsert: String = "",
+                                          textToType: String = "",
+                                          close: Boolean = false,
+                                          selectFirst: Boolean = false): T {
   val closeOnOpenArgument = when {
     close -> "-close"
     else -> ""
@@ -527,7 +531,7 @@ fun <T : CommandChain> T.searchEverywhere(tab: String = "all", textToInsert: Str
     textToType.isNotEmpty() -> "-type $textToType"
     else -> ""
   }
-  if(selectFirstArgument.isNotEmpty() && closeOnOpenArgument.isNotEmpty()){
+  if (selectFirstArgument.isNotEmpty() && closeOnOpenArgument.isNotEmpty()) {
     throw Exception("selectFirst=true argument will be ignored since close=true and SE will be closed first")
   }
   addCommand(SEARCH_EVERYWHERE_CMD_PREFIX, "-tab $tab $closeOnOpenArgument $selectFirstArgument $argumentForTyping|$textToInsert")
@@ -605,11 +609,13 @@ fun <T : CommandChain> T.call(method: KFunction<String?>, vararg args: String): 
   addCommand(CMD_PREFIX + "call" + " " + javaMethod.name + "(" + args.joinToString(", ") + ")")
   return this
 }
+
 const val DELETE_FILE = "${CMD_PREFIX}deleteFile"
 fun <T : CommandChain> T.deleteFile(path: String, fileName: String): T {
   addCommand("$DELETE_FILE $path, $fileName")
   return this
 }
+
 const val DELAY = "${CMD_PREFIX}delay"
 fun <T : CommandChain> T.delay(delay: Int): T {
   addCommand("$DELAY $delay")
@@ -802,8 +808,9 @@ fun <T : CommandChain> T.assertFindUsagesCount(count: Int): T {
 
 fun <T : CommandChain> T.setBreakpoint(line: Int, relativePath: String? = null, isLambdaBreakpoint: Boolean = false): T {
   addCommand("${CMD_PREFIX}setBreakpoint $line" +
-             if (relativePath != null) ", $relativePath" else "" +
-             if (isLambdaBreakpoint) ", lambda-type" else "")
+             if (relativePath != null) ", $relativePath"
+             else "" +
+                  if (isLambdaBreakpoint) ", lambda-type" else "")
   return this
 }
 
@@ -853,11 +860,12 @@ fun <T : CommandChain> T.createKotlinFile(fileName: String, filePath: String, fi
   return this
 }
 
-enum class EnableSettingSyncOptions{
+enum class EnableSettingSyncOptions {
   GET, PUSH, NONE
 }
 
-fun <T : CommandChain> T.enableSettingsSync(enableCrossIdeSync: Boolean = false, action: EnableSettingSyncOptions = EnableSettingSyncOptions.NONE): T {
+fun <T : CommandChain> T.enableSettingsSync(enableCrossIdeSync: Boolean = false,
+                                            action: EnableSettingSyncOptions = EnableSettingSyncOptions.NONE): T {
   addCommand("${CMD_PREFIX}enableSettingsSync ${enableCrossIdeSync} ${action.name}")
   return this
 }
@@ -925,4 +933,19 @@ fun <T : CommandChain> T.setRegistryValue(key: String, value: String): T = apply
 
 fun <T : CommandChain> T.collectFilesNotMarkedAsIndex(): T = apply {
   addCommand("${CMD_PREFIX}collectFilesNotMarkedAsIndex")
+}
+
+fun <T : CommandChain> T.replaceText(startPosition: Int? = null, endPosition: Int? = null, newText: String? = null): T = apply {
+  val options = StringBuilder()
+
+  if (startPosition != null) {
+    options.append(" -startPosition ${startPosition}")
+  }
+  if (endPosition != null) {
+    options.append(" -endPosition ${endPosition}")
+  }
+  if (newText != null) {
+    options.append(" -newText ${newText}")
+  }
+  addCommand("${CMD_PREFIX}replaceText ${options}")
 }
