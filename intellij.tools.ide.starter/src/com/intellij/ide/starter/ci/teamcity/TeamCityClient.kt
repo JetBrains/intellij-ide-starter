@@ -87,8 +87,8 @@ object TeamCityClient {
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
   ) {
-    val artifactPathPure = artifactPath.replaceSpecialCharactersWithHyphens()
-    val artifactNamePure = artifactName.replaceSpecialCharactersWithHyphens()
+    val sanitizedArtifactPath = artifactPath.replaceSpecialCharactersWithHyphens()
+    val sanitizedArtifactName = artifactName.replaceSpecialCharactersWithHyphens()
 
     if (!source.exists()) {
       logOutput("TeamCity artifact $source does not exist")
@@ -105,7 +105,7 @@ object TeamCityClient {
     var artifactDir: Path
     do {
       suffix = if (nextSuffix == 0) "" else "-$nextSuffix"
-      artifactDir = (artifactForPublishingDir / artifactPathPure / (artifactNamePure + suffix)).normalize().toAbsolutePath()
+      artifactDir = (artifactForPublishingDir / sanitizedArtifactPath / (sanitizedArtifactName + suffix)).normalize().toAbsolutePath()
       nextSuffix++
     }
     while (artifactDir.exists())
@@ -120,20 +120,20 @@ object TeamCityClient {
         }
       }
       if (zipContent) {
-        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $artifactPathPure/$artifactNamePure$suffix.zip")
+        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $sanitizedArtifactPath/$sanitizedArtifactName$suffix.zip")
       }
       else {
-        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $artifactPathPure$suffix")
+        printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $sanitizedArtifactPath$suffix")
       }
     }
     else {
       val tempFile = artifactDir
       source.copyTo(tempFile, overwrite = true)
       if (zipContent) {
-        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $artifactPathPure/${artifactNamePure + suffix}.zip")
+        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $sanitizedArtifactPath/${sanitizedArtifactName + suffix}.zip")
       }
       else {
-        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $artifactPathPure")
+        printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $sanitizedArtifactPath")
       }
     }
   }
