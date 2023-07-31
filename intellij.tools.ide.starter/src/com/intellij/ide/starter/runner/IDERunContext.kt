@@ -303,8 +303,8 @@ data class IDERunContext(
         delay(15.seconds)
         stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
       }
-      val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}" + ".txt")
-      val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}" + ".hprof.gz")
+      val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}.txt")
+      val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}.hprof.gz")
       catchAll {
         collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
       }
@@ -326,7 +326,7 @@ data class IDERunContext(
       delay(1.minutes)
       if (!process.isAlive) break
 
-      val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}" + ".txt")
+      val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}.txt")
       logOutput("Dumping threads to $dumpFile")
       catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile) }
     }

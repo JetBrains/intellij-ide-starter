@@ -11,9 +11,6 @@ class IDEHost(private val codeBuilder: (CodeInjector.() -> Unit)?, private val t
     val codeBuilder = codeBuilder
     if (codeBuilder != null) {
       host.codeBuilder()
-    }
-
-    if (codeBuilder != null) {
       host.setup(testContext)
     }
   }
