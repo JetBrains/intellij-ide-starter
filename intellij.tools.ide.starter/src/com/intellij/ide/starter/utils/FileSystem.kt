@@ -180,12 +180,14 @@ object FileSystem {
       this.toFile().length()
     }
     else {
-      Files.walk(this).mapToLong { p: Path ->
-        if (p.toFile().isFile) {
-          p.toFile().length()
-        }
-        else 0
-      }.sum()
+      Files.walk(this).use { pathStream ->
+        pathStream.mapToLong { p: Path ->
+          if (p.toFile().isFile) {
+            p.toFile().length()
+          }
+          else 0
+        }.sum()
+      }
     }
     return size.formatSize()
   }

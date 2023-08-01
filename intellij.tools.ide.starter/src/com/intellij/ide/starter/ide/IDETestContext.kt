@@ -273,18 +273,20 @@ data class IDETestContext(
 
   fun wipeReportDir() = apply {
     logOutput("Cleaning report dir for $this at $paths")
-    Files.walk(paths.reportsDir)
-      .filter { Files.isRegularFile(it) }
+    Files.walk(paths.reportsDir).use { pathStream ->
+      pathStream.filter { Files.isRegularFile(it) }
       .map { it.toFile() }
       .forEach { it.delete() }
+    }
   }
 
   fun wipeGcLogs() = apply {
     logOutput("removing gclogs files for $this at $paths")
-    Files.walk(paths.reportsDir)
-      .filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log") }
+    Files.walk(paths.reportsDir).use { pathStream ->
+      pathStream.filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log") }
       .map { it.toFile() }
       .forEach { it.delete() }
+    }
   }
 
   fun wipeProjectsDir() = apply {
