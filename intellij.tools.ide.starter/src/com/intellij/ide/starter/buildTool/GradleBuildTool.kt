@@ -1,6 +1,9 @@
 package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
+import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
@@ -13,6 +16,8 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.GRADLE, testContext) {
   private val localGradleRepoPath: Path
@@ -176,4 +181,35 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
     return false
   }
+}
+
+fun IDETestContext.execGradlew(args: List<String>, timeout: Duration = 1.minutes): IDETestContext {
+  val stdout = ExecOutputRedirect.ToString()
+  val stderr = ExecOutputRedirect.ToString()
+
+  val command = when (SystemInfo.isWindows) {
+    true -> (resolvedProjectHome / "gradlew.bat").toString()
+    false -> "./gradlew"
+  }
+
+  if (!SystemInfo.isWindows) {
+    ProcessExecutor(
+      presentableName = "chmod gradlew",
+      workDir = resolvedProjectHome,
+      timeout = 1.minutes,
+      args = listOf("chmod", "+x", "gradlew"),
+      stdoutRedirect = stdout,
+      stderrRedirect = stderr
+    ).start()
+  }
+
+  ProcessExecutor(
+    presentableName = "Calling gradlew with parameters: $args",
+    workDir = resolvedProjectHome,
+    timeout = timeout,
+    args = listOf(command) + args,
+    stdoutRedirect = stdout,
+    stderrRedirect = stderr
+  ).start()
+  return this
 }
