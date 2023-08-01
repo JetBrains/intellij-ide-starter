@@ -209,20 +209,19 @@ fun takeScreenshot(logsDir: Path) {
 }
 
 fun IDETestContext.collectJBRDiagnosticFiles(javaProcessId: Long) {
-  if(javaProcessId != 0L) {
-    val userHome = System.getProperty("user.home")
-    val pathUserHome = Paths.get(userHome)
-    val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
-    val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
-    if (javaErrorInIdeaFile.exists()) {
-      javaErrorInIdeaFile.toFile().copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
-    }
-    if (jbrErrFile.exists()) {
-      jbrErrFile.toFile().copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
-    }
-    if (paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
-      publishArtifact(paths.jbrDiagnostic)
-    }
+  if (javaProcessId == 0L) return
+  val userHome = System.getProperty("user.home")
+  val pathUserHome = Paths.get(userHome)
+  val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
+  val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
+  if (javaErrorInIdeaFile.exists()) {
+    javaErrorInIdeaFile.toFile().copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
+  }
+  if (jbrErrFile.exists()) {
+    jbrErrFile.toFile().copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
+  }
+  if (paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
+    publishArtifact(paths.jbrDiagnostic)
   }
 }
 

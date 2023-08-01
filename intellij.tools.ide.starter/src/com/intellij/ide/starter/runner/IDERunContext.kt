@@ -163,11 +163,11 @@ data class IDERunContext(
       val mergedEnvVariables = (startConfig.environmentVariables + vmOptions.environmentVariables).toMutableMap().apply {
         putIfAbsent("JAVA_HOME", jdkHome.absolutePathString())
       }
-      val finalArgs = startConfig.commandLine + commandLine.args
 
       logDisabledPlugins(paths)
-      logStartupInfo(finalArgs, vmOptions)
+      logStartupInfo(vmOptions)
 
+      val finalArgs = startConfig.commandLine + commandLine.args
       File(finalArgs.first()).setExecutable(true)
       val executionTime = measureTime {
         ProcessExecutor(
@@ -195,20 +195,19 @@ data class IDERunContext(
 
       return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = startConfig.vmOptionsDiff())
     }
-    catch (exception: Throwable) {
-      isRunSuccessful = false
-      if (exception is ExecTimeoutException && !expectedKill) {
-        error("Timeout of IDE run $contextName for $runTimeout")
-      }
-      else {
+    catch (timeoutException: ExecTimeoutException) {
+      if (expectedKill) {
         logOutput("IDE run for $contextName has been expected to be killed after $runTimeout")
-      }
-      if (!expectedKill) {
-        throw Exception(getErrorMessage(exception), exception)
-      }
-      else {
         return IDEStartResult(runContext = this, executionTime = runTimeout)
       }
+      else {
+        isRunSuccessful = false
+        error("Timeout of IDE run $contextName for $runTimeout")
+      }
+    }
+    catch (exception: Throwable) {
+      isRunSuccessful = false
+      throw Exception(getErrorMessage(exception), exception)
     }
     finally {
       testContext.collectJBRDiagnosticFiles(ideProcessId)
@@ -224,7 +223,7 @@ data class IDERunContext(
       }
       finally {
         StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
-        // quick hack. need to refactor this (either completely reset DI, or redesign test workflow completely)
+        // https://youtrack.jetbrains.com/issue/AT-190/Full-DI-reset-after-IDE-run
         di.direct.instance<EapReleaseConfigurable>().resetDIToDefaultDownloading()
       }
     }
@@ -294,23 +293,22 @@ data class IDERunContext(
     catchAll {
       takeScreenshot(logsDir)
     }
-    if (!expectedKill) {
-      val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
+    if (expectedKill) return
+    val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
 
-      if (collectNativeThreads) {
-        val fileToStoreNativeThreads = logsDir.resolve("native-thread-dumps.txt")
-        startProfileNativeThreads(javaProcessId.toString())
-        delay(15.seconds)
-        stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
-      }
-      val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}.txt")
-      val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}.hprof.gz")
-      catchAll {
-        collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
-      }
-      catchAll {
-        collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
-      }
+    if (collectNativeThreads) {
+      val fileToStoreNativeThreads = logsDir.resolve("native-thread-dumps.txt")
+      startProfileNativeThreads(javaProcessId.toString())
+      delay(15.seconds)
+      stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
+    }
+    val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}.txt")
+    val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}.hprof.gz")
+    catchAll {
+      collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
+    }
+    catchAll {
+      collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
     }
   }
 
@@ -355,10 +353,9 @@ data class IDERunContext(
     }
   }
 
-  private fun logStartupInfo(finalArgs: List<String>, finalOptions: VMOptions) {
+  private fun logStartupInfo(finalOptions: VMOptions) {
     logOutput(buildString {
       appendLine("Starting IDE for ${contextName} with timeout $runTimeout")
-      appendLine("  Command line: [" + finalArgs.joinToString() + "]")
       appendLine("  VM Options: [" + finalOptions.toString().lineSequence().map { it.trim() }.joinToString(" ") + "]")
       appendLine("  On Java : [" + System.getProperty("java.home") + "]")
     })
