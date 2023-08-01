@@ -18,14 +18,13 @@ object AllureReport {
       result.uuid = uuid
       //inherit labels from the main test case for the exception
       var labels: MutableList<Label> = mutableListOf()
+      Allure.getLifecycle().scheduleTestCase(result)
+      Allure.getLifecycle().startTestCase(uuid)
       var testName = ""
       Allure.getLifecycle().updateTestCase {
         labels = it.labels
         testName = it.name
       }
-
-      Allure.getLifecycle().scheduleTestCase(result)
-      Allure.getLifecycle().startTestCase(uuid)
       labels.forEach {
         Allure.label(it.name, it.value)
       }
