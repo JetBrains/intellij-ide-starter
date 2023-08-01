@@ -935,14 +935,14 @@ fun <T : CommandChain> T.collectFilesNotMarkedAsIndex(): T = apply {
   addCommand("${CMD_PREFIX}collectFilesNotMarkedAsIndex")
 }
 
-fun <T : CommandChain> T.replaceText(startPosition: Int? = null, endPosition: Int? = null, newText: String? = null): T = apply {
+fun <T : CommandChain> T.replaceText(startOffset: Int? = null, endOffset: Int? = null, newText: String? = null): T = apply {
   val options = StringBuilder()
 
-  if (startPosition != null) {
-    options.append(" -startPosition ${startPosition}")
+  if (startOffset != null) {
+    options.append(" -startOffset ${startOffset}")
   }
-  if (endPosition != null) {
-    options.append(" -endPosition ${endPosition}")
+  if (endOffset != null) {
+    options.append(" -endOffset ${endOffset}")
   }
   if (newText != null) {
     options.append(" -newText ${newText}")
