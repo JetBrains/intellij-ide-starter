@@ -603,7 +603,7 @@ data class IDETestContext(
     if (sdkObjects == null) return this
 
     disableAutoImport(true)
-      .executeRightAfterIdeOpened(true)
+      .skipIndicesInitialization(true)
       .runIDE(
         commands = CommandChain()
           // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
@@ -625,7 +625,7 @@ data class IDETestContext(
     return this
       // rollback changes, that were made only to setup sdk
       .disableAutoImport(false)
-      .executeRightAfterIdeOpened(false)
+      .skipIndicesInitialization(false)
   }
 }
 
