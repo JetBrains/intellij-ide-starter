@@ -2,8 +2,8 @@ package com.intellij.metricsCollector.metrics
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IDETestContext.Companion.OPENTELEMETRY_FILE
+import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
@@ -21,15 +21,15 @@ data class MetricWithAttributes(val metric: Metric<*>,
                                 val attributes: MutableList<Metric<*>> = mutableListOf())
 
 @Suppress("unused")
-fun getOpenTelemetry(context: IDETestContext): PerformanceMetricsDto {
-  return getOpenTelemetry(context, DEFAULT_SPAN_NAME)
+fun getOpenTelemetry(startResult: IDEStartResult): PerformanceMetricsDto {
+  return getOpenTelemetry(startResult, DEFAULT_SPAN_NAME)
 }
 
-fun getOpenTelemetry(context: IDETestContext, vararg spansNames: String): PerformanceMetricsDto {
-  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(context, SpanFilter.equals(spanName)) }.flatten()
+fun getOpenTelemetry(startResult: IDEStartResult, vararg spansNames: String): PerformanceMetricsDto {
+  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(startResult, SpanFilter.equals(spanName)) }.flatten()
   return PerformanceMetricsDto.create(
-    projectName = context.testName,
-    buildNumber = BuildNumber.fromStringWithProductCode(context.ide.build, context.ide.productCode)!!,
+    projectName = startResult.context.testName,
+    buildNumber = BuildNumber.fromStringWithProductCode(startResult.context.ide.build, startResult.context.ide.productCode)!!,
     metrics = metrics
   )
 }
@@ -55,8 +55,8 @@ class SpanFilter(val filter: (String) -> Boolean) {
 fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric<*>>{
   return combineMetrics(getSpansMetricsMap(file, filter))
 }
-fun getMetricsFromSpanAndChildren(context: IDETestContext, filter: SpanFilter): List<Metric<*>> {
-  val opentelemetryFile = context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
+fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric<*>> {
+  val opentelemetryFile = startResult.context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
   return getMetricsFromSpanAndChildren(opentelemetryFile, filter)
 }
 
