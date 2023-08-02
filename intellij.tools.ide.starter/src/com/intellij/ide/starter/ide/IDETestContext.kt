@@ -283,7 +283,7 @@ data class IDETestContext(
   fun wipeGcLogs() = apply {
     logOutput("removing gclogs files for $this at $paths")
     Files.walk(paths.reportsDir).use { pathStream ->
-      pathStream.filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log") }
+      pathStream.filter { Files.isRegularFile(it) && (it.name.startsWith("gc"))}
       .map { it.toFile() }
       .forEach { it.delete() }
     }
