@@ -13,7 +13,7 @@ import org.kodein.di.bindSingleton
  * Determines behaviour for downloading/using EAP / RELEASE builds
  * Might be customized/overriden via DI
  */
-interface EapReleaseConfigurable {
+interface IdeInfoConfigurable {
   fun useRC(ideInfo: IdeInfo): IdeInfo = ideInfo.copy(buildType = BuildType.RC.type)
 
   fun useEAP(ideInfo: IdeInfo): IdeInfo = ideInfo.copy(buildType = BuildType.EAP.type)

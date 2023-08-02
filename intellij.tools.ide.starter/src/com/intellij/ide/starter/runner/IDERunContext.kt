@@ -224,7 +224,7 @@ data class IDERunContext(
       finally {
         StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
         // https://youtrack.jetbrains.com/issue/AT-190/Full-DI-reset-after-IDE-run
-        di.direct.instance<EapReleaseConfigurable>().resetDIToDefaultDownloading()
+        di.direct.instance<IdeInfoConfigurable>().resetDIToDefaultDownloading()
       }
     }
   }
