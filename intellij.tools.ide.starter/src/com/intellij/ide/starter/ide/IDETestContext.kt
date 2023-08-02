@@ -273,18 +273,20 @@ data class IDETestContext(
 
   fun wipeReportDir() = apply {
     logOutput("Cleaning report dir for $this at $paths")
-    Files.walk(paths.reportsDir)
-      .filter { Files.isRegularFile(it) }
+    Files.walk(paths.reportsDir).use { pathStream ->
+      pathStream.filter { Files.isRegularFile(it) }
       .map { it.toFile() }
       .forEach { it.delete() }
+    }
   }
 
   fun wipeGcLogs() = apply {
     logOutput("removing gclogs files for $this at $paths")
-    Files.walk(paths.reportsDir)
-      .filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log") }
+    Files.walk(paths.reportsDir).use { pathStream ->
+      pathStream.filter { Files.isRegularFile(it) && it.name.startsWith("gcLog.log") }
       .map { it.toFile() }
       .forEach { it.delete() }
+    }
   }
 
   fun wipeProjectsDir() = apply {
@@ -601,7 +603,7 @@ data class IDETestContext(
     if (sdkObjects == null) return this
 
     disableAutoImport(true)
-      .executeRightAfterIdeOpened(true)
+      .skipIndicesInitialization(true)
       .runIDE(
         commands = CommandChain()
           // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
@@ -623,7 +625,7 @@ data class IDETestContext(
     return this
       // rollback changes, that were made only to setup sdk
       .disableAutoImport(false)
-      .executeRightAfterIdeOpened(false)
+      .skipIndicesInitialization(false)
   }
 }
 
