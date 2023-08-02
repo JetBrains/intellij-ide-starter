@@ -280,15 +280,6 @@ data class IDETestContext(
     }
   }
 
-  fun wipeGcLogs() = apply {
-    logOutput("removing gclogs files for $this at $paths")
-    Files.walk(paths.reportsDir).use { pathStream ->
-      pathStream.filter { Files.isRegularFile(it) && (it.name.startsWith("gc"))}
-      .map { it.toFile() }
-      .forEach { it.delete() }
-    }
-  }
-
   fun wipeProjectsDir() = apply {
     val path = paths.systemDir / "projects"
     logOutput("Cleaning project cache dir for $this at $path")
