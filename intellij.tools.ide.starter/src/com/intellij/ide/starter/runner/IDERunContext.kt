@@ -141,8 +141,6 @@ data class IDERunContext(
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
     val snapshotsDir = paths.snapshotsDir.createDirectories()
-    //each run produced unique gc logs so we delete existing
-    testContext.wipeGcLogs()
 
     val stdout = getStdout()
     val stderr = getStderr()
