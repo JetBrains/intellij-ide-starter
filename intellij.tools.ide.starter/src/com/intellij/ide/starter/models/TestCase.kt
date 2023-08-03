@@ -31,15 +31,17 @@ data class TestCase(
    * On each test run the project will be unpacked again.
    * This guarantees that there is not side effects from previous test runs
    **/
-  fun markNotReusable(): TestCase = when (projectInfo) {
+
+  fun markNotReusable(): TestCase = markReusable(false)
+  fun markReusable(reusable: Boolean = true): TestCase = when (projectInfo) {
     is RemoteArchiveProjectInfo -> {
-      copy(projectInfo = projectInfo.copy(isReusable = false))
+      copy(projectInfo = projectInfo.copy(isReusable = reusable))
     }
     is GitProjectInfo -> {
-      copy(projectInfo = projectInfo.copy(isReusable = false))
+      copy(projectInfo = projectInfo.copy(isReusable = reusable))
     }
     is LocalProjectInfo -> {
-      copy(projectInfo = projectInfo.copy(isReusable = false))
+      copy(projectInfo = projectInfo.copy(isReusable = reusable))
     }
     else -> {
       throw IllegalStateException("Can't mark not reusable for ${projectInfo?.javaClass}")
