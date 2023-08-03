@@ -34,6 +34,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.bufferedReader
 import kotlin.io.path.div
 import kotlin.io.path.listDirectoryEntries
 import kotlin.time.Duration
@@ -310,7 +311,17 @@ data class IDERunContext(
       collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
     }
     catchAll {
-      collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
+      if (isLowMemorySignalPresent(logsDir)) {
+        collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
+      }
+    }
+  }
+
+  private fun isLowMemorySignalPresent(logsDir: Path): Boolean {
+    return (logsDir / "idea.log").bufferedReader().useLines { lines ->
+      lines.any { line ->
+        line.contains("Low memory signal received: afterGc=true")
+      }
     }
   }
 
