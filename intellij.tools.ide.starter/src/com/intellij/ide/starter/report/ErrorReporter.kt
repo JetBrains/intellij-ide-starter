@@ -5,6 +5,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
+import com.intellij.util.SystemProperties
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
@@ -24,6 +25,7 @@ object ErrorReporter {
    */
   fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext, isRunSuccessful: Boolean) {
     if (!rootErrorsDir.isDirectory()) return
+    if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
 
     for (errorDir in errorsDirectories) {

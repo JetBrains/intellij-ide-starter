@@ -581,9 +581,7 @@ data class IDETestContext(
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
     if (sdkObjects == null) return this
 
-    disableAutoImport(true)
-      .skipIndicesInitialization(true)
-      .runIDE(
+    runIDE(
         commands = CommandChain()
           // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
           // It looks like actual shortcut from test code, so a proper solution for this should be implemented
@@ -591,7 +589,13 @@ data class IDETestContext(
           .addCommand("%exitApp true"),
         launchName = "setupSdk",
         runTimeout = 3.minutes
-      )
+      ) {
+        applyVMOptionsPatch {
+          addSystemProperty("DO_NOT_REPORT_ERRORS", true) }
+          .disableAutoImport(true)
+          .executeRightAfterIdeOpened(true)
+          .skipIndicesInitialization(true)
+      }
 
     if (cleanDirs)
       this
@@ -604,6 +608,8 @@ data class IDETestContext(
     return this
       // rollback changes, that were made only to setup sdk
       .disableAutoImport(false)
+      .executeRightAfterIdeOpened(false)
+      .applyVMOptionsPatch { addSystemProperty("DO_NOT_REPORT_ERRORS", false) }
       .skipIndicesInitialization(false)
   }
 }
