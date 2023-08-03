@@ -35,7 +35,6 @@ import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
 import org.kodein.di.newInstance
-import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.*
@@ -116,9 +115,6 @@ data class IDETestContext(
     applyVMOptionsPatch {
       withActiveProcessorCount(count)
     }
-
-  fun withGCLogs(): IDETestContext =
-    applyVMOptionsPatch { withGCLogs(paths.reportsDir / "gcLog.log") }
 
   fun toggleGitLogIndexing(isEnabled: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
@@ -271,15 +267,6 @@ data class IDETestContext(
     paths.logsDir.toFile().deleteRecursively()
   }
 
-  fun wipeReportDir() = apply {
-    logOutput("Cleaning report dir for $this at $paths")
-    Files.walk(paths.reportsDir).use { pathStream ->
-      pathStream.filter { Files.isRegularFile(it) }
-      .map { it.toFile() }
-      .forEach { it.delete() }
-    }
-  }
-
   fun wipeProjectsDir() = apply {
     val path = paths.systemDir / "projects"
     logOutput("Cleaning project cache dir for $this at $path")
@@ -372,7 +359,7 @@ data class IDETestContext(
     launchName: String = "",
     expectedKill: Boolean = false,
     collectNativeThreads: Boolean = false,
-    patchVMOptions: VMOptions.() -> Unit = { }
+    configure: IDERunContext.() -> Unit = {}
   ): IDEStartResult {
     val runContext = IDERunContext(testContext = this,
                                    commandLine = commandLine,
@@ -383,8 +370,7 @@ data class IDETestContext(
                                    launchName = launchName,
                                    expectedKill = expectedKill,
                                    collectNativeThreads = collectNativeThreads
-    )
-      .addVMOptionsPatch(patchVMOptions)
+    ). also(configure)
 
     try {
       val ideRunResult = runContext.runIDE()
@@ -427,8 +413,10 @@ data class IDETestContext(
                useStartupScript,
                launchName,
                expectedKill,
-               collectNativeThreads,
-               patchVMOptions)
+               collectNativeThreads) {
+          addVMOptionsPatch { patchVMOptions() }
+        }
+
       }
       catch (e: Throwable) {
         logError("Error during IDE execution", e)
