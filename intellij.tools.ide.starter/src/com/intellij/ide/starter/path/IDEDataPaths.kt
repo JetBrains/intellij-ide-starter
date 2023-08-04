@@ -14,7 +14,7 @@ import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 
 class IDEDataPaths(
-  private val testHome: Path,
+  val testHome: Path,
   private val inMemoryRoot: Path?
 ) : Closeable {
 
@@ -41,7 +41,6 @@ class IDEDataPaths(
   }
 
   val logsDir = (testHome / "log").createDirectories()
-  val reportsDir = (testHome / "reports").createDirectories()
   val snapshotsDir = (testHome / "snapshots").createDirectories()
   val tempDir = (testHome / "temp").createDirectories()
 

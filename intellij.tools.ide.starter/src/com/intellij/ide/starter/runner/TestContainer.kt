@@ -113,7 +113,6 @@ interface TestContainer<T> : Closeable {
         .disableMinimap()
         .addProjectToTrustedLocations()
         .useNewUIInTests()
-        .withGCLogs()
         .disableReportingStatisticsToProduction()
         .disableMigrationNotification()
     }

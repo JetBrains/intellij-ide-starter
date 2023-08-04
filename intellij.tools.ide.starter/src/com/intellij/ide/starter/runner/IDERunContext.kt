@@ -24,6 +24,7 @@ import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
+import com.intellij.util.io.createDirectories
 import kotlinx.coroutines.delay
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -33,7 +34,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
-import kotlin.io.path.createDirectories
+import kotlin.io.path.bufferedReader
 import kotlin.io.path.div
 import kotlin.io.path.listDirectoryEntries
 import kotlin.time.Duration
@@ -68,7 +69,10 @@ data class IDERunContext(
 
   private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
+  val reportsDir = (testContext.paths.testHome / contextName / "reports").createDirectories()
+
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
+
 
   fun verbose() = copy(verboseOutput = true)
 
@@ -115,6 +119,7 @@ data class IDERunContext(
       takeScreenshotsPeriodically()
       withJvmCrashLogDirectory(jvmCrashLogDirectory)
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
+      withGCLogs(reportsDir / "gcLog.log")
 
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
         withClassFileVerification()
@@ -306,7 +311,17 @@ data class IDERunContext(
       collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
     }
     catchAll {
-      collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
+      if (isLowMemorySignalPresent(logsDir)) {
+        collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
+      }
+    }
+  }
+
+  private fun isLowMemorySignalPresent(logsDir: Path): Boolean {
+    return (logsDir / "idea.log").bufferedReader().useLines { lines ->
+      lines.any { line ->
+        line.contains("Low memory signal received: afterGc=true")
+      }
     }
   }
 
@@ -380,7 +395,7 @@ data class IDERunContext(
       artifactName = formatArtifactName("snapshots", testContext.testName)
     )
     testContext.publishArtifact(
-      source = testContext.paths.reportsDir,
+      source = reportsDir,
       artifactPath = artifactPath,
       artifactName = formatArtifactName("reports", testContext.testName)
     )

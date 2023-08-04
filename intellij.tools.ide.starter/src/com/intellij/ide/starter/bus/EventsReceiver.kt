@@ -12,24 +12,10 @@ import kotlinx.coroutines.flow.filterNotNull
  *
  * @param bus [FlowBus] instance to subscribe to. If not set, [StarterBus] will be used
  */
-open class EventsReceiver @JvmOverloads constructor(
-  private val bus: FlowBus = StarterBus
-) {
-
+open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus = StarterBus) {
   private val jobs = mutableMapOf<Class<*>, List<Job>>()
 
   private var returnDispatcher: CoroutineDispatcher = Dispatchers.IO
-
-  /**
-   * Set the `CoroutineDispatcher` which will be used to launch your callbacks.
-   *
-   * If this [EventsReceiver] was created on the main thread the default dispatcher will be [Dispatchers.Main].
-   * In any other case [Dispatchers.IO] will be used.
-   */
-  fun returnOn(dispatcher: CoroutineDispatcher): EventsReceiver {
-    returnDispatcher = dispatcher
-    return this
-  }
 
   /**
    * Subscribe to events that are type of [clazz] with the given [callback] function.
@@ -41,12 +27,7 @@ open class EventsReceiver @JvmOverloads constructor(
    * @return This instance of [EventsReceiver] for chaining
    */
   @JvmOverloads
-  fun <T : Any> subscribeTo(
-    clazz: Class<T>,
-    skipRetained: Boolean = false,
-    callback: suspend (event: T) -> Unit
-  ): EventsReceiver {
-
+  fun <T : Any> subscribeTo(clazz: Class<T>, skipRetained: Boolean = false, callback: suspend (event: T) -> Unit): EventsReceiver {
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
       throw throwable
     }
@@ -76,19 +57,8 @@ open class EventsReceiver @JvmOverloads constructor(
    * @see [subscribeTo]
    */
   @JvmOverloads
-  fun <T : Any> subscribeTo(
-    clazz: Class<T>,
-    callback: EventCallback<T>,
-    skipRetained: Boolean = false
-  ): EventsReceiver = subscribeTo(clazz, skipRetained) { callback.onEvent(it) }
-
-  /**
-   * Unsubscribe from events type of [clazz]
-   */
-  fun <T : Any> unsubscribe(clazz: Class<T>) {
-    jobs.remove(clazz)?.forEach {
-      it.cancel()
-    }
+  fun <T : Any> subscribeTo(clazz: Class<T>, callback: EventCallback<T>, skipRetained: Boolean = false): EventsReceiver {
+    return subscribeTo(clazz, skipRetained) { callback.onEvent(it) }
   }
 
   /**
@@ -96,7 +66,11 @@ open class EventsReceiver @JvmOverloads constructor(
    */
   fun unsubscribe() {
     runBlocking {
-      jobs.values.forEach { it.forEach { it.cancelAndJoin() } }
+      for (jobList in jobs.values) {
+        for (job in jobList) {
+          job.cancelAndJoin()
+        }
+      }
     }
 
     jobs.clear()

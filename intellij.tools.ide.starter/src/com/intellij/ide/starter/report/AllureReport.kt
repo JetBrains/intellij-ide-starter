@@ -17,14 +17,15 @@ object AllureReport {
       val result = TestResult()
       result.uuid = uuid
       //inherit labels from the main test case for the exception
-      var labels: MutableList<Label> = mutableListOf()
-      Allure.getLifecycle().scheduleTestCase(result)
-      Allure.getLifecycle().startTestCase(uuid)
+      var labels: List<Label> = mutableListOf()
+
       var testName = ""
       Allure.getLifecycle().updateTestCase {
-        labels = it.labels
-        testName = it.name
+        labels = it?.labels.orEmpty()
+        testName = it?.name.orEmpty()
       }
+      Allure.getLifecycle().scheduleTestCase(result)
+      Allure.getLifecycle().startTestCase(uuid)
       labels.forEach {
         Allure.label(it.name, it.value)
       }
@@ -33,7 +34,7 @@ object AllureReport {
       }
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
-        it.name="Exception in $testName"
+        it.name = "Exception in $testName"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
       }
       Allure.getLifecycle().stopTestCase(uuid)
