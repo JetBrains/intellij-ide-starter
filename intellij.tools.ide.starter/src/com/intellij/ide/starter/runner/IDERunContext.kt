@@ -71,7 +71,7 @@ data class IDERunContext(
 
   private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
-  val reportsDir = (testContext.paths.testHome / contextName / "reports").createDirectories()
+  val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectories()
 
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
 
