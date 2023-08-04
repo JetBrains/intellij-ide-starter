@@ -170,7 +170,7 @@ private fun killProcessOnUnix(pid: Int) {
 
 fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
   return requireNotNull(
-    withRetry(retries = 5, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId") {
+    withRetry(retries = 10, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId") {
       getJavaProcessId(javaHome, workDir, originalProcessId, originalProcess)
     }
   ) { "Java process id must not be null" }
