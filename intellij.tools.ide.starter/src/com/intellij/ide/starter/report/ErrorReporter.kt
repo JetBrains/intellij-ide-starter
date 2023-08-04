@@ -67,4 +67,9 @@ object ErrorReporter {
       }
     }
   }
+
+  fun getLinkToCIArtifacts(runContext: IDERunContext, forCrash: Boolean) : String? {
+    val failureDetails = di.direct.instance<FailureDetailsOnCI>()
+    return failureDetails.getLinkToCIArtifacts(runContext, forCrash)
+  }
 }

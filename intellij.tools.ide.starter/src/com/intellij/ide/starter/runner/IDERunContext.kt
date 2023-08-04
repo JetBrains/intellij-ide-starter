@@ -3,6 +3,7 @@ package com.intellij.ide.starter.runner
 import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -22,6 +23,7 @@ import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
+import com.intellij.ide.starter.report.ErrorReporter.getLinkToCIArtifacts
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
 import com.intellij.util.io.createDirectories
@@ -205,7 +207,16 @@ data class IDERunContext(
       }
       else {
         isRunSuccessful = false
-        error("Timeout of IDE run $contextName for $runTimeout")
+        val ciServer = di.direct.instance<CIServer>()
+        val reason = "Timeout of IDE run $contextName for $runTimeout"
+        val message = when (ciServer.isBuildRunningOnCI) {
+          true -> {
+            val uri = getLinkToCIArtifacts(this, true)
+            "$reason\nLink on TC artifacts $uri"
+          }
+          false -> reason
+        }
+        error(message)
       }
     }
     catch (exception: Throwable) {
