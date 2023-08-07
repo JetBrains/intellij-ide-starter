@@ -392,10 +392,7 @@ data class IDETestContext(
    * Run IDE in background.
    * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterListener.subscribe]
    */
-  fun runIdeInBackground(commandLine: IDECommandLine = run {
-    if (this.testCase.projectInfo == null) IDECommandLine.StartIdeWithoutProject
-    else IDECommandLine.OpenTestCaseProject(this)
-  },
+  fun runIdeInBackground(commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(this),
                          commands: Iterable<MarshallableCommand> = CommandChain(),
                          codeBuilder: (CodeInjector.() -> Unit)? = null,
                          runTimeout: Duration = 10.minutes,
