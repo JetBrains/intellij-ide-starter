@@ -39,7 +39,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
     testContext.resolvedProjectHome.toFile().walkTopDown()
       .forEach {
-        if (it.isFile && (it.extension == "gradle" || (it.name in listOf("gradlew", "gradlew.bat", "gradle.properties")))) {
+        if (it.isFile && (it.extension in listOf("gradle", "kts") || (it.name in listOf("gradlew", "gradlew.bat", "gradle.properties")))) {
           it.delete()
           logOutput("File ${it.path} is deleted")
         }
