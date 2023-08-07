@@ -4,8 +4,8 @@ import com.intellij.ide.starter.buildTool.BuildToolType
 import com.intellij.ide.starter.buildTool.GradleBuildTool
 import com.intellij.ide.starter.buildTool.MavenBuildTool
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.frameworks.android.AndroidFramework
-import com.intellij.ide.starter.frameworks.android.SpringFramework
+import com.intellij.ide.starter.frameworks.AndroidFramework
+import com.intellij.ide.starter.frameworks.SpringFramework
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.TestCase

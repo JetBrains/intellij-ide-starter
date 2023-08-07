@@ -1,7 +1,6 @@
-package com.intellij.ide.starter.frameworks.android
+package com.intellij.ide.starter.frameworks
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
