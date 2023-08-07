@@ -11,8 +11,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 object Git {
-  val branch by lazy { getShortBranchName() }
-  val localBranch by lazy { getLocalGitBranch() }
+  val branch by lazy { getShortBranchName(Paths.get("")) }
+  val localBranch by lazy { getLocalGitBranch(Paths.get("")) }
   val getDefaultBranch by lazy {
     when (val majorBranch = localBranch.substringBefore(".")) {
       "HEAD", "master" -> "master"
@@ -21,12 +21,12 @@ object Git {
   }
 
   @Throws(IOException::class, InterruptedException::class)
-  fun getLocalGitBranch(repositoryDirectory: Path? = null): String {
+  fun getLocalGitBranch(repositoryDirectory: Path): String {
     val stdout = ExecOutputRedirect.ToString()
 
     ProcessExecutor(
       "git-local-branch-get",
-      workDir = repositoryDirectory?.toAbsolutePath(),
+      workDir = repositoryDirectory.toAbsolutePath(),
       timeout = 1.minutes,
       args = listOf("git", "rev-parse", "--abbrev-ref", "HEAD"),
       stdoutRedirect = stdout
@@ -50,10 +50,10 @@ object Git {
     return stdout.read().trim()
   }
 
-  private fun getShortBranchName(): String {
+  private fun getShortBranchName(repositoryDirectory: Path): String {
     val master = "master"
     return runCatching {
-      when (val branch = getLocalGitBranch().substringBefore(".")) {
+      when (val branch = getLocalGitBranch(repositoryDirectory).substringBefore(".")) {
         master -> return branch
         else -> when (branch.toIntOrNull()) {
           null -> return master
@@ -248,6 +248,9 @@ object Git {
     return stdout.read()
   }
 
+  /**
+   * If commitHash is specified, only branches with this commit will be returned.
+   * */
   fun getLocalBranches(repositoryDirectory: Path, commitHash: String = ""): List<String> {
     val arguments = mutableListOf("git", "for-each-ref", "--format='%(refname:short)'", "refs/heads/")
     if (commitHash.isNotEmpty()) arguments.addAll(listOf("--contains", commitHash))
