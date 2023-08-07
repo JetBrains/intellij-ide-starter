@@ -76,7 +76,7 @@ interface TestContainer<T> : Closeable {
    * Starting point to run your test
    * @param preserveSystemDir Only for local runs when you know that having "dirty" system folder is ok and want to speed up test execution.
    */
-  fun initializeTestContext(testName: String, testCase: TestCase, preserveSystemDir: Boolean = false): IDETestContext {
+  fun initializeTestContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext {
     logOutput("Resolving IDE build for $testName...")
     val (buildNumber, ide) = resolveIDE(testCase.ideInfo)
 
@@ -88,7 +88,7 @@ interface TestContainer<T> : Closeable {
     logOutput("Using IDE paths for '$testName': $paths")
     logOutput("IDE to run for '$testName': $ide")
 
-    val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
+    val projectHome = testCase.projectInfo.downloadAndUnpackProject()
     testContext = IDETestContext(paths, ide, testCase, testName, projectHome, ciServer = ciServer, preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 
