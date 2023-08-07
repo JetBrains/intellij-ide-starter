@@ -5,13 +5,14 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import kotlin.io.path.Path
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 object Git {
-  val branch by lazy { getShortBranchName() }
-  val localBranch by lazy { getLocalGitBranch() }
+  val branch by lazy { getShortBranchName(Paths.get("")) }
+  val localBranch by lazy { getLocalGitBranch(Paths.get("")) }
   val getDefaultBranch by lazy {
     when (val majorBranch = localBranch.substringBefore(".")) {
       "HEAD", "master" -> "master"
@@ -20,12 +21,12 @@ object Git {
   }
 
   @Throws(IOException::class, InterruptedException::class)
-  private fun getLocalGitBranch(): String {
+  fun getLocalGitBranch(repositoryDirectory: Path): String {
     val stdout = ExecOutputRedirect.ToString()
 
     ProcessExecutor(
       "git-local-branch-get",
-      workDir = null,
+      workDir = repositoryDirectory.toAbsolutePath(),
       timeout = 1.minutes,
       args = listOf("git", "rev-parse", "--abbrev-ref", "HEAD"),
       stdoutRedirect = stdout
@@ -34,10 +35,25 @@ object Git {
     return stdout.read().trim()
   }
 
-  private fun getShortBranchName(): String {
+  @Throws(IOException::class, InterruptedException::class)
+  fun getLocalCurrentCommitHash(repositoryDirectory: Path): String {
+    val stdout = ExecOutputRedirect.ToString()
+
+    ProcessExecutor(
+      "git-local-current-commit-get",
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 1.minutes,
+      args = listOf("git", "rev-parse", "HEAD"),
+      stdoutRedirect = stdout
+    ).start()
+
+    return stdout.read().trim()
+  }
+
+  private fun getShortBranchName(repositoryDirectory: Path): String {
     val master = "master"
     return runCatching {
-      when (val branch = getLocalGitBranch().substringBefore(".")) {
+      when (val branch = getLocalGitBranch(repositoryDirectory).substringBefore(".")) {
         master -> return branch
         else -> when (branch.toIntOrNull()) {
           null -> return master
@@ -199,6 +215,118 @@ object Git {
       stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
       onlyEnrichExistedEnvVariables = true
     ).start()
+  }
+
+  fun deleteBranch(workDir: Path, targetBranch: String) {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git-delete-branch",
+      workDir = workDir, timeout = 1.minutes,
+      args = listOf("git", "branch", "-D", targetBranch),
+      stdoutRedirect = stdout
+    ).start()
+  }
+
+  fun pruneWorktree(pathToDir: Path) {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git-prune-worktree",
+      workDir = pathToDir, timeout = 1.minutes,
+      args = listOf("git", "worktree", "prune"),
+      stdoutRedirect = stdout
+    ).start()
+  }
+
+  fun getStatus(pathToDir: Path): String {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git-status",
+      workDir = pathToDir, timeout = 1.minutes,
+      args = listOf("git", "status"),
+      stdoutRedirect = stdout
+    ).start()
+    return stdout.read()
+  }
+
+  /**
+   * If commitHash is specified, only branches with this commit will be returned.
+   * */
+  fun getLocalBranches(repositoryDirectory: Path, commitHash: String = ""): List<String> {
+    val arguments = mutableListOf("git", "for-each-ref", "--format='%(refname:short)'", "refs/heads/")
+    if (commitHash.isNotEmpty()) arguments.addAll(listOf("--contains", commitHash))
+    val stdout = ExecOutputRedirect.ToString()
+    try {
+      ProcessExecutor(
+        "git-local-branches",
+        workDir = repositoryDirectory.toAbsolutePath(),
+        timeout = 1.minutes,
+        args = arguments,
+        stdoutRedirect = stdout
+      ).start()
+    }
+    catch (e: IllegalStateException) {
+      // == false - safe check
+      // Exception "no such commit" is not error. Just don't have this commit
+      if (e.message?.contains("no such commit") == false) throw IllegalStateException(e)
+    }
+    return stdout.read().trim().split("\n")
+  }
+
+  fun getRandomCommitInThePast(date: String, dir: Path): String {
+    val stdout = ExecOutputRedirect.ToString()
+
+    ProcessExecutor(
+      "git-get-commits-on-specific-day",
+      workDir = dir, timeout = 1.minutes,
+      args = listOf("git", "log", "--after=\\\"$date 00:00\\\"", "--before=\\\"$date 23:59\\\"", "--format=%h"),
+      stdoutRedirect = stdout
+    ).start()
+
+    val commits = stdout.read().split("\n")
+    return commits[Random().nextInt(commits.size)]
+  }
+
+  fun getLastCommit(dir: Path, targetBranch: String = ""): String {
+    val stdout = ExecOutputRedirect.ToString()
+    val arguments = mutableListOf("git", "log")
+    if (targetBranch.isNotEmpty()) arguments.addAll(listOf("-b", targetBranch))
+    arguments.addAll(listOf("-n1", "--format=%h"))
+    ProcessExecutor(
+      "git-last-commit-get",
+      workDir = dir,
+      timeout = 1.minutes,
+      args = arguments,
+      stdoutRedirect = stdout
+    ).start()
+
+    return stdout.read().trim()
+  }
+
+  fun createWorktree(dir: Path, targetBranch: String, worktree_dir: String, commit: String = ""): String {
+    val stdout = ExecOutputRedirect.ToString()
+    val stderr = ExecOutputRedirect.ToString()
+    val arguments = mutableListOf("git", "worktree", "add")
+    val isBranchCreated = getLocalBranches(dir).contains(targetBranch)
+    when (isBranchCreated) {
+      false -> {
+        arguments.addAll(listOf("-b", targetBranch, worktree_dir))
+        if (commit.isNotEmpty()) arguments.add(commit)
+      }
+      true -> {
+        pruneWorktree(dir)
+        arguments.addAll(listOf(worktree_dir, targetBranch))
+      }
+    }
+    ProcessExecutor(
+      "git-create-worktree",
+      workDir = dir,
+      timeout = 10.minutes,
+      args = arguments,
+      stdoutRedirect = stdout,
+      stderrRedirect = stderr
+    ).start()
+
+    return stdout.read().trim()
   }
 }
 

@@ -58,12 +58,20 @@ data class GitProjectInfo(
   }
 
   private fun setupRepositoryState(projectHome: Path) {
-    Git.reset(repositoryDirectory = projectHome)
-    Git.clean(projectHome)
+    if (!isReusable) {
+      Git.reset(repositoryDirectory = projectHome)
+      Git.clean(projectHome)
+    }
+    val localBranch = Git.getLocalGitBranch(projectHome)
+    if (branchName.isNotEmpty() && localBranch != branchName) {
+      Git.checkout(repositoryDirectory = projectHome, branchName = branchName)
+    }
 
-    if (branchName.isNotEmpty()) Git.checkout(repositoryDirectory = projectHome, branchName = branchName)
-    Git.pull(projectHome)
-    if (commitHash.isNotEmpty()) Git.reset(repositoryDirectory = projectHome, commitHash = commitHash)
+    if (commitHash.isNotEmpty() && Git.getLocalCurrentCommitHash(projectHome) != commitHash) {
+      val hasCommit = Git.getLocalBranches(projectHome, commitHash).contains(branchName)
+      if (!hasCommit) Git.pull(projectHome)
+      Git.reset(repositoryDirectory = projectHome, commitHash = commitHash)
+    }
   }
 
   private fun isGitMetadataExist(repoRoot: Path) = repoRoot.listDirectoryEntries(".git").isNotEmpty()

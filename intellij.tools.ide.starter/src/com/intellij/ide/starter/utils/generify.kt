@@ -62,7 +62,6 @@ fun String.replaceSpecialCharacters(newValue: String, vararg ignoreSymbols: Stri
 
   return this
     .replace(regex, newValue)
-    .lowercase()
 }
 
 /** Leave only numbers and characters.
@@ -74,5 +73,4 @@ fun String.replaceSpecialCharactersWithHyphens(ignoreSymbols: List<String> = lis
     .replace("[-]+".toRegex(), "-")
     .removePrefix("-")
     .removeSuffix("-")
-    .lowercase()
 }
