@@ -347,12 +347,16 @@ data class IDETestContext(
     return this
   }
 
+  private fun determineDefaultCommandLineArguments() =
+    if (this.testCase.projectInfo == NoProject) IDECommandLine.StartIdeWithoutProject
+    else IDECommandLine.OpenTestCaseProject(this)
+
   /**
    * Entry point to run IDE.
    * If you want to run IDE without any project on start use [com.intellij.ide.starter.runner.IDECommandLine.StartIdeWithoutProject]
    */
   fun runIDE(
-    commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(this),
+    commandLine: IDECommandLine = determineDefaultCommandLineArguments(),
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
     runTimeout: Duration = 10.minutes,
@@ -392,7 +396,7 @@ data class IDETestContext(
    * Run IDE in background.
    * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterListener.subscribe]
    */
-  fun runIdeInBackground(commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(this),
+  fun runIdeInBackground(commandLine: IDECommandLine = determineDefaultCommandLineArguments(),
                          commands: Iterable<MarshallableCommand> = CommandChain(),
                          codeBuilder: (CodeInjector.() -> Unit)? = null,
                          runTimeout: Duration = 10.minutes,
