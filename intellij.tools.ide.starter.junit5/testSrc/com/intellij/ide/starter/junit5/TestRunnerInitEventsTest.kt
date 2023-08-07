@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
 @ExtendWith(JUnit5StarterAssistant::class)
 class TestRunnerInitEventsTest {
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  private lateinit var testCase: TestCase
+  private lateinit var testCase: TestCase<*>
 
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private lateinit var installedIde: InstalledIde

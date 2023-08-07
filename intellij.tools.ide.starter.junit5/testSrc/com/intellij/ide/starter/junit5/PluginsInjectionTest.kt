@@ -25,7 +25,7 @@ class PluginsInjectionTest {
   lateinit var testDirectory: Path
 
   @Mock
-  private lateinit var testCase: TestCase
+  private lateinit var testCase: TestCase<*>
 
   @Mock
   private lateinit var ide: InstalledIde

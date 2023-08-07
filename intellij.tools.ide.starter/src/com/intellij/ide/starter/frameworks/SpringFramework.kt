@@ -1,6 +1,5 @@
-package com.intellij.ide.starter.frameworks.android
+package com.intellij.ide.starter.frameworks
 
-import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.ide.IDETestContext
 import kotlin.io.path.exists
 import kotlin.io.path.readText

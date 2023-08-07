@@ -4,8 +4,8 @@ import com.intellij.ide.starter.buildTool.BuildToolType
 import com.intellij.ide.starter.buildTool.GradleBuildTool
 import com.intellij.ide.starter.buildTool.MavenBuildTool
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.frameworks.android.AndroidFramework
-import com.intellij.ide.starter.frameworks.android.SpringFramework
+import com.intellij.ide.starter.frameworks.AndroidFramework
+import com.intellij.ide.starter.frameworks.SpringFramework
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.TestCase
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import org.kodein.di.direct
 import org.kodein.di.instance
+import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import java.nio.file.Path
@@ -28,8 +29,8 @@ class FrameworksInjectionTest {
   @TempDir
   lateinit var testDirectory: Path
 
-  @Mock
-  private lateinit var testCase: TestCase
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private lateinit var testCase: TestCase<*>
 
   @Mock
   private lateinit var ide: InstalledIde
@@ -39,7 +40,7 @@ class FrameworksInjectionTest {
     val testName = object {}.javaClass.enclosingMethod.name.hyphenateTestName()
     val paths = IDEDataPaths.createPaths(testName, testDirectory, useInMemoryFs = false)
 
-    val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
+    val projectHome = testCase.projectInfo.downloadAndUnpackProject()
     val context = IDETestContext(paths = paths,
                                  ide = ide,
                                  testCase = testCase,

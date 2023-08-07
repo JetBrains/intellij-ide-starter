@@ -7,21 +7,21 @@ import kotlin.io.path.div
 
 object IdeaUltimateCases : TestCaseTemplate(IdeProductProvider.IU) {
 
-  val GradleJitPackSimple = getTemplate().withProject(
+  val GradleJitPackSimple = withProject(
     RemoteArchiveProjectInfo(
       projectURL = "https://github.com/jitpack/gradle-simple/archive/refs/heads/master.zip",
       projectHomeRelativePath = { it / "gradle-simple-master" }
     )
   )
 
-  val MavenSimpleApp = getTemplate().withProject(
+  val MavenSimpleApp = withProject(
     RemoteArchiveProjectInfo(
       projectURL = "https://github.com/jenkins-docs/simple-java-maven-app/archive/refs/heads/master.zip",
       projectHomeRelativePath = { it / "simple-java-maven-app-master" }
     )
   )
 
-  val IntelliJCommunityProject = getTemplate().withProject(
+  val IntelliJCommunityProject = withProject(
     RemoteArchiveProjectInfo(
       projectURL = "https://github.com/JetBrains/intellij-community/archive/master.zip",
       projectHomeRelativePath = { it / "intellij-community-master" }

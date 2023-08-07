@@ -17,6 +17,7 @@ import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.profiler.ProfilerType
+import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
@@ -44,7 +45,7 @@ import kotlin.time.Duration.Companion.minutes
 data class IDETestContext(
   val paths: IDEDataPaths,
   val ide: InstalledIde,
-  val testCase: TestCase,
+  val testCase: TestCase<*>,
   val testName: String,
   private val _resolvedProjectHome: Path?,
   val ciServer: CIServer,
@@ -370,7 +371,7 @@ data class IDETestContext(
                                    launchName = launchName,
                                    expectedKill = expectedKill,
                                    collectNativeThreads = collectNativeThreads
-    ). also(configure)
+    ).also(configure)
 
     try {
       val ideRunResult = runContext.runIDE()
@@ -391,10 +392,7 @@ data class IDETestContext(
    * Run IDE in background.
    * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterListener.subscribe]
    */
-  fun runIdeInBackground(commandLine: IDECommandLine = run {
-    if (this.testCase.projectInfo == null) IDECommandLine.StartIdeWithoutProject
-    else IDECommandLine.OpenTestCaseProject(this)
-  },
+  fun runIdeInBackground(commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(this),
                          commands: Iterable<MarshallableCommand> = CommandChain(),
                          codeBuilder: (CodeInjector.() -> Unit)? = null,
                          runTimeout: Duration = 10.minutes,
@@ -544,25 +542,26 @@ data class IDETestContext(
   }
 
   fun addProjectToTrustedLocations(addParentDir: Boolean = false): IDETestContext {
-    if (this.testCase.projectInfo != null) {
-      val projectPath = this.resolvedProjectHome.normalize()
-      val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
+    if (this.testCase.projectInfo == NoProject) return this
 
-      trustedXml.parent.createDirectories()
-      if (addParentDir) {
-        val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
-        trustedXml.writeText(
-          text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
-            .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
-        )
-      }
-      else {
-        val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
-        trustedXml.writeText(
-          text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
-        )
-      }
+    val projectPath = this.resolvedProjectHome.normalize()
+    val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
+
+    trustedXml.parent.createDirectories()
+    if (addParentDir) {
+      val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
+      trustedXml.writeText(
+        text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
+          .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
+      )
     }
+    else {
+      val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
+      trustedXml.writeText(
+        text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
+      )
+    }
+
     return this
   }
 
@@ -582,20 +581,21 @@ data class IDETestContext(
     if (sdkObjects == null) return this
 
     runIDE(
-        commands = CommandChain()
-          // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
-          // It looks like actual shortcut from test code, so a proper solution for this should be implemented
-          .addCommand("%setupSDK \"${sdkObjects.sdkName}\" \"${sdkObjects.sdkType}\" \"${sdkObjects.sdkPath}\"")
-          .addCommand("%exitApp true"),
-        launchName = "setupSdk",
-        runTimeout = 3.minutes
-      ) {
-        applyVMOptionsPatch {
-          addSystemProperty("DO_NOT_REPORT_ERRORS", true) }
-          .disableAutoImport(true)
-          .executeRightAfterIdeOpened(true)
-          .skipIndicesInitialization(true)
+      commands = CommandChain()
+        // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
+        // It looks like actual shortcut from test code, so a proper solution for this should be implemented
+        .addCommand("%setupSDK \"${sdkObjects.sdkName}\" \"${sdkObjects.sdkType}\" \"${sdkObjects.sdkPath}\"")
+        .addCommand("%exitApp true"),
+      launchName = "setupSdk",
+      runTimeout = 3.minutes
+    ) {
+      applyVMOptionsPatch {
+        addSystemProperty("DO_NOT_REPORT_ERRORS", true)
       }
+        .disableAutoImport(true)
+        .executeRightAfterIdeOpened(true)
+        .skipIndicesInitialization(true)
+    }
 
     if (cleanDirs)
       this
