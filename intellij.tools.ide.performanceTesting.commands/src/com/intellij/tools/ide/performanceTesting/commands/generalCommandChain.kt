@@ -949,3 +949,8 @@ fun <T : CommandChain> T.replaceText(startOffset: Int? = null, endOffset: Int? =
   }
   addCommand("${CMD_PREFIX}replaceText ${options}")
 }
+
+fun <T : CommandChain> T.saveDocumentsAndSettings(): T {
+  addCommand("${CMD_PREFIX}saveDocumentsAndSettings")
+  return this
+}
