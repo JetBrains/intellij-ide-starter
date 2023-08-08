@@ -145,9 +145,14 @@ data class IDERunContext(
     StarterBus.post(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
     deleteSavedAppStateOnMac()
+    val ciServer = di.direct.instance<CIServer>()
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
     val snapshotsDir = paths.snapshotsDir.createDirectories()
+    val linkToArtefactsOnTC = when (ciServer.isBuildRunningOnCI) {
+      true -> getLinkToCIArtifacts(this)
+      false -> ""
+    }
 
     val stdout = getStdout()
     val stderr = getStderr()
@@ -191,7 +196,8 @@ data class IDERunContext(
           },
           onBeforeKilled = { process, pid ->
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
-          }
+          },
+          linkToArtefactsOnTC = linkToArtefactsOnTC
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")
@@ -207,12 +213,10 @@ data class IDERunContext(
       }
       else {
         isRunSuccessful = false
-        val ciServer = di.direct.instance<CIServer>()
         val reason = "Timeout of IDE run $contextName for $runTimeout"
-        val message = when (ciServer.isBuildRunningOnCI) {
+        val message = when (!linkToArtefactsOnTC.isNullOrEmpty()) {
           true -> {
-            val uri = getLinkToCIArtifacts(this, true)
-            "$reason\nLink on TC artifacts $uri"
+            "$reason\nLink on TC artifacts $linkToArtefactsOnTC"
           }
           false -> reason
         }
@@ -231,7 +235,7 @@ data class IDERunContext(
         }
         deleteJVMCrashes()
         ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, isRunSuccessful)
-        publishArtifacts(isRunSuccessful)
+        publishArtifacts()
         ideHost.tearDown()
         runCloseHandlers(isRunSuccessful)
       }
@@ -385,11 +389,9 @@ data class IDERunContext(
     })
   }
 
-  private fun publishArtifacts(isRunSuccessful: Boolean) {
-    val artifactPath = when (isRunSuccessful) {
-      true -> contextName
-      false -> "_crashes/$contextName"
-    }
+  private fun publishArtifacts() {
+    val artifactPath = contextName
+
     testContext.publishArtifact(
       source = testContext.paths.logsDir,
       artifactPath = artifactPath,

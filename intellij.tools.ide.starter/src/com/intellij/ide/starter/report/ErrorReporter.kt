@@ -63,13 +63,13 @@ object ErrorReporter {
                                                          details = stackTraceContent)
         AllureReport.reportFailure(messageText,
                                    stackTraceContent,
-                                   failureDetails.getLinkToCIArtifacts(runContext, isRunSuccessful))
+                                   failureDetails.getLinkToCIArtifacts(runContext))
       }
     }
   }
 
-  fun getLinkToCIArtifacts(runContext: IDERunContext, forCrash: Boolean) : String? {
+  fun getLinkToCIArtifacts(runContext: IDERunContext) : String? {
     val failureDetails = di.direct.instance<FailureDetailsOnCI>()
-    return failureDetails.getLinkToCIArtifacts(runContext, forCrash)
+    return failureDetails.getLinkToCIArtifacts(runContext)
   }
 }
