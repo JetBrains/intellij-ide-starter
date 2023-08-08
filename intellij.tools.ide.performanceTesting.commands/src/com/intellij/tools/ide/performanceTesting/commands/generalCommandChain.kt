@@ -444,10 +444,8 @@ fun <T : CommandChain> T.pressKey(key: Keys): T {
   return this
 }
 
-const val DELAY_TYPE_CMD_PREFIX = "${CMD_PREFIX}delayType"
-
-fun <T : CommandChain> T.delayType(delay: Int, text: String, calculateAnalyzesTime: Boolean = false): T {
-  addCommand(DELAY_TYPE_CMD_PREFIX, "$delay|$text|$calculateAnalyzesTime")
+fun <T : CommandChain> T.delayType(delayMs: Int, text: String, calculateAnalyzesTime: Boolean = false): T {
+  addCommand("${CMD_PREFIX}delayType", "$delayMs|$text|$calculateAnalyzesTime")
   return this
 }
 
@@ -616,9 +614,8 @@ fun <T : CommandChain> T.deleteFile(path: String, fileName: String): T {
   return this
 }
 
-const val DELAY = "${CMD_PREFIX}delay"
-fun <T : CommandChain> T.delay(delay: Int): T {
-  addCommand("$DELAY $delay")
+fun <T : CommandChain> T.delay(delayMs: Int): T {
+  addCommand("${CMD_PREFIX}delay $delayMs")
   return this
 }
 
@@ -934,6 +931,9 @@ fun <T : CommandChain> T.setRegistryValue(key: String, value: String): T = apply
 fun <T : CommandChain> T.collectFilesNotMarkedAsIndex(): T = apply {
   addCommand("${CMD_PREFIX}collectFilesNotMarkedAsIndex")
 }
+
+fun <T : CommandChain> T.gitCommitFile(pathToFile: String, commitMessage: String) = addCommand(
+  "${CMD_PREFIX}gitCommit $pathToFile,$commitMessage")
 
 fun <T : CommandChain> T.replaceText(startOffset: Int? = null, endOffset: Int? = null, newText: String? = null): T = apply {
   val options = StringBuilder()
