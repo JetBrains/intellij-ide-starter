@@ -7,7 +7,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.system.SystemInfo
-import com.intellij.util.io.createFile
+import com.intellij.util.io.createParentDirectories
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
@@ -184,7 +184,7 @@ fun takeScreenshot(logsDir: Path) {
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName / "$toolName.jar"
   if (!File(screenshotTool.toString()).exists()) {
-    screenshotTool.createFile()
+    screenshotTool.createParentDirectories().createFile()
     val screenshotJar = File(IDERunContext::class.java.classLoader.getResource("tools/$toolName.jar")!!.toURI())
     screenshotJar.copyTo(screenshotTool.toFile(), true)
   }
