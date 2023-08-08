@@ -59,8 +59,8 @@ var di = DI {
   bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
-  bindSingleton<EapReleaseConfigurable> {
-    object : EapReleaseConfigurable {
+  bindSingleton<IdeInfoConfigurable> {
+    object : IdeInfoConfigurable {
       override fun resetDIToDefaultDownloading() = usePublicIdeDownloader()
     }
   }
