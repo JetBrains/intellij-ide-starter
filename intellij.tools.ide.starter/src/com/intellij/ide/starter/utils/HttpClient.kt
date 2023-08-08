@@ -8,16 +8,18 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.impl.client.HttpClientBuilder
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Semaphore
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 // TODO: migrate on okhttp ?
 object HttpClient {
-  private val locks = ConcurrentHashMap<String, Semaphore>()
+  private val locks = ConcurrentHashMap<String, ReentrantLock>()
 
   fun <Y> sendRequest(request: HttpUriRequest, processor: (HttpResponse) -> Y): Y {
     HttpClientBuilder.create().build().use { client ->
@@ -27,43 +29,51 @@ object HttpClient {
     }
   }
 
-  fun download(url: String, outFile: File, retries: Long = 3): Boolean = download(url, outFile.toPath(), retries)
+  fun download(url: String, outFile: File, retries: Long = 3) = download(url, outFile.toPath(), retries)
 
   /**
    * Downloading file from [url] to [outPath] with [retries].
    * @return true - if successful, false - otherwise
    */
-  fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes): Boolean {
-    val lock = locks.getOrPut(outPath.toAbsolutePath().toString()) { Semaphore(1) }
-    lock.acquire()
-
-    return try {
+  fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
+    getLock(outPath).withLock {
       logOutput("Downloading $url to $outPath")
-      var isSuccessful = false
 
       @Suppress("RAW_RUN_BLOCKING")
       runBlocking {
         withTimeout(timeout = timeout) {
           withRetry(retries = retries) {
             sendRequest(HttpGet(url)) { response ->
-              require(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
+              if (response.statusLine.statusCode == 404) {
+                throw HttpNotFound("Server returned 404 Not Found: $url")
+              }
+
+              if (response.statusLine.statusCode == 403 && url.startsWith("https://cache-redirector.jetbrains.com/")) {
+                // all downloads from https://cache-redirector.jetbrains.com should be public, but some endpoints return 403 instead of 404
+                // due to blocking of files listing on S3 bucket
+                throw HttpNotFound("Server returned 403 which we interpret as not found for cache-redirector urls: $url")
+              }
+
+              check(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
               if (!outPath.parent.exists()) {
                 outPath.parent.createDirectories()
               }
-              outPath.outputStream().buffered(10 * 1024 * 1024).use { stream ->
-                response.entity?.writeTo(stream)
-              }
+              outPath.deleteIfExists()
 
-              isSuccessful = true
+              val tempFile = Files.createTempFile(outPath.parent, outPath.name, "-download.tmp")
+              try {
+                tempFile.outputStream().buffered(10 * 1024 * 1024).use { stream ->
+                  response.entity?.writeTo(stream)
+                }
+                tempFile.moveTo(outPath)
+              }
+              finally {
+                tempFile.deleteIfExists()
+              }
             }
           }
         }
       }
-
-      isSuccessful
-    }
-    finally {
-      lock.release()
     }
   }
 
@@ -73,11 +83,8 @@ object HttpClient {
    * [retries] - how many times retry to download in case of failure
    * @return true - if successful, false - otherwise
    */
-  fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3, timeout: Duration = 10.minutes): Boolean {
-    val lock = locks[targetFile.toAbsolutePath().toString()]
-    lock?.tryAcquire()
-
-    try {
+  fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
+    getLock(targetFile).withLock {
       // TODO: move this check to appropriate place
       if (url.contains("https://github.com")) {
         if (!targetFile.isFileUpToDate()) {
@@ -87,13 +94,14 @@ object HttpClient {
 
       if (targetFile.isRegularFile() && targetFile.fileSize() > 0) {
         logOutput("File $targetFile was already downloaded. Size ${targetFile.fileSize().formatSize()}")
-        return true
+        return
       }
-    }
-    finally {
-      lock?.release()
-    }
 
-    return download(url, targetFile, retries, timeout)
+      return download(url, targetFile, retries, timeout)
+    }
   }
+
+  class HttpNotFound(message: String, cause: Throwable? = null): NoRetryException(message, cause)
+
+  private fun getLock(path: Path): ReentrantLock = locks.getOrPut(path.toAbsolutePath().toString()) { ReentrantLock() }
 }

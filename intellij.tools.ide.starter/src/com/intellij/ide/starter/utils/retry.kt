@@ -16,6 +16,9 @@ suspend fun <T> withRetryAsync(retries: Long = 3,
     try {
       return retryAction()
     }
+    catch (e: NoRetryException) {
+      throw e
+    }
     catch (t: Throwable) {
       if (messageOnFailure.isNotBlank())
         logError(messageOnFailure)
@@ -31,6 +34,11 @@ suspend fun <T> withRetryAsync(retries: Long = 3,
 
   return null
 }
+
+/**
+ * Do not retry if code fails with this exception or its inheritors
+ */
+open class NoRetryException(message: String, cause: Throwable?): IllegalStateException(message, cause)
 
 /** @return T - if successful; null - otherwise */
 fun <T> withRetry(
