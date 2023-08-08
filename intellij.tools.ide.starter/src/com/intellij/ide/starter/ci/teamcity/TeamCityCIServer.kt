@@ -31,12 +31,12 @@ open class TeamCityCIServer(
 
     val generifiedTestName = testName.processStringForTC()
 
-    logOutput(String.format("##teamcity[testStarted name='%s' flowId='%s']", generifiedTestName, flowId))
+    logOutput(String.format("##teamcity[testStarted name='%s' flowId='%s' nodeId='${generifiedTestName}' parentNodeId='0']", generifiedTestName, flowId))
     logOutput(String.format(
-      "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s']",
+      "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='${generifiedTestName}' parentNodeId='0']",
       generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId
     ))
-    logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s']", generifiedTestName, flowId))
+    logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='${generifiedTestName}' parentNodeId='0']", generifiedTestName, flowId))
   }
 
   override fun ignoreTestFailure(testName: String, message: String, details: String) {
