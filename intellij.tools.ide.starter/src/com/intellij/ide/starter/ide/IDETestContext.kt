@@ -428,7 +428,7 @@ data class IDETestContext(
   }
 
   fun removeAndUnpackProject(): IDETestContext {
-    testCase.markNotReusable().projectInfo?.downloadAndUnpackProject()
+    testCase.markNotReusable().projectInfo.downloadAndUnpackProject()
     return this
   }
 
