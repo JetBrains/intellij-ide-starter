@@ -8,6 +8,7 @@ import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.util.io.readText
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -27,6 +28,20 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     get() = testContext.resolvedProjectHome.resolve(".idea").resolve("gradle.xml")
 
   private fun parseGradleXmlConfig(): Document = XmlBuilder.parse(gradleXmlPath)
+
+  fun getGradleVersionInWrapperProperties(): String {
+    val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
+    if (propFile.notExists()) return ""
+    val distributionUrl = propFile.readLines().first() { it.startsWith("distributionUrl") }
+    val version = "\\d.\\d".toRegex().find(distributionUrl)?.value ?: ""
+    return version
+  }
+
+  fun getGradleDaemonLog(): Path {
+    return localGradleRepoPath.resolve("daemon").resolve(getGradleVersionInWrapperProperties())
+      .listDirectoryEntries()
+      .first { it.last().extension == "log" }
+  }
 
   fun useNewGradleLocalCache(): GradleBuildTool {
     localGradleRepoPath.toFile().mkdirs()
@@ -134,10 +149,11 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
-  fun setLogLevel(logLevel: LogLevel) {
+  fun setLogLevel(logLevel: LogLevel): GradleBuildTool {
     testContext.applyVMOptionsPatch {
       configureLoggers(logLevel, "org.jetbrains.plugins.gradle")
     }
+    return this
   }
 
   /*
