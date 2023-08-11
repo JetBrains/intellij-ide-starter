@@ -92,7 +92,21 @@ interface TestContainer<T> : Closeable {
     testContext = IDETestContext(paths, ide, testCase, testName, projectHome, ciServer = ciServer, preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 
-    testContext = when (testCase.ideInfo == IdeProductProvider.AI) {
+    testContext = updateVMOptions(testContext)
+
+    val contextWithAppliedHooks = setupHooks
+      .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
+      .apply { installPerformanceTestingPluginIfMissing(this) }
+
+    testCase.projectInfo?.configureProjectBeforeUse?.invoke(contextWithAppliedHooks)
+
+    StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
+
+    return contextWithAppliedHooks
+  }
+
+  fun updateVMOptions(context: IDETestContext): IDETestContext {
+    return when (context.testCase.ideInfo == IdeProductProvider.AI) {
       true -> testContext
         .applyVMOptionsPatch {
           overrideDirectories(paths)
@@ -116,15 +130,5 @@ interface TestContainer<T> : Closeable {
         .disableReportingStatisticsToProduction()
         .disableMigrationNotification()
     }
-
-    val contextWithAppliedHooks = setupHooks
-      .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
-      .apply { installPerformanceTestingPluginIfMissing(this) }
-
-    testCase.projectInfo?.configureProjectBeforeUse?.invoke(contextWithAppliedHooks)
-
-    StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
-
-    return contextWithAppliedHooks
   }
 }
