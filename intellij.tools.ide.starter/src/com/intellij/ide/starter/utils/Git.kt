@@ -189,6 +189,20 @@ object Git {
     ).start()
   }
 
+  fun fetch(repositoryDirectory: Path) {
+    val cmdName = "git-fetch"
+
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.minutes,
+      args = listOf("git", "fetch"),
+      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+  }
+
   fun pull(repositoryDirectory: Path) {
     val cmdName = "git-pull"
 
