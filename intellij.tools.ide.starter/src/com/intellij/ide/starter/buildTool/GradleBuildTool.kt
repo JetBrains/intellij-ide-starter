@@ -29,7 +29,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
   private fun parseGradleXmlConfig(): Document = XmlBuilder.parse(gradleXmlPath)
 
-  fun getGradleVersionInWrapperProperties(): String {
+  fun getGradleVersionFromWrapperProperties(): String {
     val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
     if (propFile.notExists()) return ""
     val distributionUrl = propFile.readLines().first() { it.startsWith("distributionUrl") }
@@ -38,7 +38,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   fun getGradleDaemonLog(): Path {
-    return localGradleRepoPath.resolve("daemon").resolve(getGradleVersionInWrapperProperties())
+    return localGradleRepoPath.resolve("daemon").resolve(getGradleVersionFromWrapperProperties())
       .listDirectoryEntries()
       .first { it.last().extension == "log" }
   }
@@ -197,35 +197,35 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
     return false
   }
-}
+  fun execGradlew(args: List<String>, timeout: Duration = 1.minutes): GradleBuildTool {
+    val stdout = ExecOutputRedirect.ToString()
+    val stderr = ExecOutputRedirect.ToString()
 
-fun IDETestContext.execGradlew(args: List<String>, timeout: Duration = 1.minutes): IDETestContext {
-  val stdout = ExecOutputRedirect.ToString()
-  val stderr = ExecOutputRedirect.ToString()
+    val command = when (SystemInfo.isWindows) {
+      true -> (testContext.resolvedProjectHome / "gradlew.bat").toString()
+      false -> "./gradlew"
+    }
 
-  val command = when (SystemInfo.isWindows) {
-    true -> (resolvedProjectHome / "gradlew.bat").toString()
-    false -> "./gradlew"
-  }
+    if (!SystemInfo.isWindows) {
+      ProcessExecutor(
+        presentableName = "chmod gradlew",
+        workDir = testContext.resolvedProjectHome,
+        timeout = 1.minutes,
+        args = listOf("chmod", "+x", "gradlew"),
+        stdoutRedirect = stdout,
+        stderrRedirect = stderr
+      ).start()
+    }
 
-  if (!SystemInfo.isWindows) {
     ProcessExecutor(
-      presentableName = "chmod gradlew",
-      workDir = resolvedProjectHome,
-      timeout = 1.minutes,
-      args = listOf("chmod", "+x", "gradlew"),
+      presentableName = "Calling gradlew with parameters: $args",
+      workDir = testContext.resolvedProjectHome,
+      timeout = timeout,
+      args = listOf(command) + args,
       stdoutRedirect = stdout,
       stderrRedirect = stderr
     ).start()
+    return this
   }
-
-  ProcessExecutor(
-    presentableName = "Calling gradlew with parameters: $args",
-    workDir = resolvedProjectHome,
-    timeout = timeout,
-    args = listOf(command) + args,
-    stdoutRedirect = stdout,
-    stderrRedirect = stderr
-  ).start()
-  return this
 }
+
