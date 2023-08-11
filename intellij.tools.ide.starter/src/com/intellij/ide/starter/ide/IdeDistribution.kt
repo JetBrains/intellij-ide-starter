@@ -5,7 +5,6 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -16,19 +15,18 @@ import kotlin.time.Duration.Companion.minutes
 abstract class IdeDistribution {
   abstract fun installIde(unpackDir: Path, executableFileName: String): InstalledIde
 
-  private fun downloadJbr(jbrFileName: String): Pair<Boolean, Path> {
+  private fun downloadJbr(jbrFileName: String): Path {
     val downloadUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/$jbrFileName"
 
     val jbrCacheDirectory = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("jbr")
     val localFile = jbrCacheDirectory / jbrFileName
     val localDir = jbrCacheDirectory / jbrFileName.removeSuffix(".tar.gz")
 
-    val isSuccess = HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1, timeout = 5.minutes)
-    if (!isSuccess) return Pair(false, localDir)
+    HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1, timeout = 5.minutes)
 
     FileSystem.unpackIfMissing(localFile, localDir)
 
-    return Pair(true, localDir)
+    return localDir
   }
 
   protected fun downloadAndUnpackJbrIfNeeded(jbrFullVersion: String): Path {
@@ -63,14 +61,14 @@ abstract class IdeDistribution {
     }
 
     val jbrFileName = "jbrsdk-$majorVersion-$os-$arch-b$buildNumber.tar.gz"
-    var downloadResult = downloadJbr(jbrFileName)
-
-    if (!downloadResult.first) {
-      logError("Couldn't download '$jbrFileName'. Trying download jbrsdk_nomod")
-      downloadResult = downloadJbr("jbrsdk_nomod-$majorVersion-$os-$arch-b$buildNumber.tar.gz")
+    val path = try {
+      downloadJbr(jbrFileName)
+    }
+    catch (e: HttpClient.HttpNotFound) {
+      downloadJbr("jbrsdk_nomod-$majorVersion-$os-$arch-b$buildNumber.tar.gz")
     }
 
-    val appHome = (downloadResult.second.toFile().listFiles() ?: arrayOf()).singleOrNull { it.isDirectory }?.toPath()
+    val appHome = (path.toFile().listFiles() ?: arrayOf()).singleOrNull { it.isDirectory }?.toPath()
     requireNotNull(appHome) {
       "appHome is null: $appHome"
     }

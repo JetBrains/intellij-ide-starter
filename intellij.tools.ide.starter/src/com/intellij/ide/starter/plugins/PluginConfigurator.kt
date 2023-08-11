@@ -6,7 +6,6 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
@@ -46,10 +45,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     val pluginRootDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins")
     val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
     logOutput("Downloading $urlToPluginZipFile")
-    if (!HttpClient.download(urlToPluginZipFile, pluginZip)) {
-      throw PluginNotFoundException("Plugin $urlToPluginZipFile couldn't be downloaded.")
-    }
-
+    HttpClient.download(urlToPluginZipFile, pluginZip)
     FileSystem.unpack(pluginZip, testContext.paths.pluginsDir)
   }
 
@@ -81,19 +77,9 @@ open class PluginConfigurator(val testContext: IDETestContext) {
         (pluginsCacheDor / plugin.version).createDirectories() / fileName
     }
 
-    if (!downloadedPlugin.toFile().exists()) {
-      val url: String = plugin.downloadUrl()
-      if (HttpClient.download(url, downloadedPlugin, retries = 1)) {
-        FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
-      }
-      else {
-        logError("Plugin $pluginId downloading failed, skipping")
-        return@apply
-      }
-    }
-    else {
-      FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
-    }
+    HttpClient.downloadIfMissing(plugin.downloadUrl(), downloadedPlugin, retries = 1)
+    FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
+
     logOutput("Plugin $pluginId setup finished")
   }
 
