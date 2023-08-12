@@ -29,7 +29,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
   private fun parseGradleXmlConfig(): Document = XmlBuilder.parse(gradleXmlPath)
 
-  fun getGradleVersionFromWrapperProperties(): String {
+  private fun getGradleVersionFromWrapperProperties(): String {
     val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
     if (propFile.notExists()) return ""
     val distributionUrl = propFile.readLines().first() { it.startsWith("distributionUrl") }

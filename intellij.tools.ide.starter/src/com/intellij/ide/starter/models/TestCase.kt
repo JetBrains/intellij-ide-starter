@@ -47,7 +47,7 @@ data class TestCase<T : ProjectInfoSpec>(
   fun useEAP(): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useEAP(ideInfo))
 
   /** E.g: "222.3244.1" */
-  fun useEAP(buildNumber: String = ""): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useEAP(ideInfo, buildNumber))
+  private fun useEAP(buildNumber: String = ""): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useEAP(ideInfo, buildNumber))
 
   fun useRelease(): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useRelease(ideInfo))
 

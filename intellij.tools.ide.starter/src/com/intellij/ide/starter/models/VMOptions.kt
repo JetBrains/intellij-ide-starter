@@ -94,7 +94,7 @@ data class VMOptions(
     data = (if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) }) + line
   }
 
-  fun removeLine(line: String) {
+  private fun removeLine(line: String) {
     if (!data.contains(line)) return
     data =  data - line
   }
