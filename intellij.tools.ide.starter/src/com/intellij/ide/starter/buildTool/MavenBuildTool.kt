@@ -21,8 +21,16 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
       }
   }
 
+  private val temporaryMavenM3CashPath: Path
+    get() = testContext.paths.tempDir.resolve(".m3")
+
+  val temporaryMavenM3UserSettingsPath: Path
+    get() = temporaryMavenM3CashPath.resolve("settings.xml")
+
   val temporaryMavenM3RepoPath: Path
-    get() = testContext.paths.tempDir.resolve(".m3").resolve("repository")
+    get() = temporaryMavenM3CashPath.resolve("repository")
+
+
 
   fun useNewMavenLocalRepository(): MavenBuildTool {
     temporaryMavenM3RepoPath.toFile().mkdirs()
