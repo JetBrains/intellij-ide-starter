@@ -117,6 +117,7 @@ data class IDETestContext(
       withActiveProcessorCount(count)
     }
 
+  //TODO rename to `skipGitLogIndexing` like `skipIndicesInitialization`
   fun toggleGitLogIndexing(isEnabled: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("vcs.log.index.git", isEnabled)
