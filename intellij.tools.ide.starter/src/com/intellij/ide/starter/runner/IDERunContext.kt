@@ -35,10 +35,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.bufferedReader
-import kotlin.io.path.div
-import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -71,9 +68,18 @@ data class IDERunContext(
 
   private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
-  val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectories()
+  val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectoriesIfNotExist()
 
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
+
+  private fun Path.createDirectoriesIfNotExist(): Path {
+    if (exists()) {
+      logOutput("Reports dir is already created")
+      return this
+    }
+    logOutput("Creating reports dir")
+    return createDirectories()
+  }
 
 
   fun verbose() = copy(verboseOutput = true)
