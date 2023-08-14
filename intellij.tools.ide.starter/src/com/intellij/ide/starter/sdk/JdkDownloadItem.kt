@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.sdk
 
-import com.intellij.driver.model.SdkObject
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkItem
+import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import java.nio.file.Path
 
 data class JdkDownloadItem(

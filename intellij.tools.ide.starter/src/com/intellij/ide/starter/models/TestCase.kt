@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.models
 
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeInfoConfigurable
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -8,6 +7,7 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import org.kodein.di.instance
 
 data class TestCase<T : ProjectInfoSpec>(

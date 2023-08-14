@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
@@ -26,6 +25,7 @@ import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.report.ErrorReporter.getLinkToCIArtifacts
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.util.io.createDirectories
 import kotlinx.coroutines.delay
 import org.kodein.di.direct

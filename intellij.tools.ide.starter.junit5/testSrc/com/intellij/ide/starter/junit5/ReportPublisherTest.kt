@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
@@ -9,6 +8,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import examples.data.TestCases
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach

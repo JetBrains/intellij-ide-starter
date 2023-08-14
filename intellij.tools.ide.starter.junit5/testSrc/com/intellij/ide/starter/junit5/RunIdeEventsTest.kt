@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
@@ -11,6 +10,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.utils.hyphenateTestName
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.timing.eventually
 import io.kotest.assertions.withClue

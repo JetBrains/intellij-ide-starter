@@ -1,12 +1,12 @@
 package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.writeJvmArgsFile
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.createDirectories

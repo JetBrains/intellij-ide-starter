@@ -1,7 +1,5 @@
 package com.intellij.tools.ide.performanceTesting.commands
 
-import com.intellij.driver.model.SdkObject
-import com.intellij.driver.model.command.CommandChain
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Path
