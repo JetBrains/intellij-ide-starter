@@ -54,7 +54,7 @@ dependencies {
   implementation 'io.qameta.allure:allure-java-commons:2.22.2'
 
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
-  implementation 'com.jetbrains.intellij.driver:driver-model:LATEST-TRUNK-SNAPSHOT'
+  implementation("com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT")
   implementation('com.jetbrains.intellij.platform:ide-impl:LATEST-TRUNK-SNAPSHOT')
   implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-TRUNK-SNAPSHOT')
 
