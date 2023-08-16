@@ -6,7 +6,7 @@ fun String.createPerformanceMetricCounter(): PerformanceMetrics.MetricId.Counter
 
 fun String.createPerformanceMetricDuration(): PerformanceMetrics.MetricId.Duration = PerformanceMetrics.MetricId.Duration(this)
 
-fun findMetricValue(metrics: List<PerformanceMetrics.Metric<*>>, metric: PerformanceMetrics.MetricId.Duration): Number = try {
+fun findMetricValue(metrics: List<PerformanceMetrics.Metric>, metric: PerformanceMetrics.MetricId.Duration): Number = try {
   metrics.first { it.id.name == metric.name }.value
 }
 catch (e: NoSuchElementException) {

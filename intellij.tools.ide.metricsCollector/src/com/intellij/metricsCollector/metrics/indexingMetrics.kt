@@ -199,7 +199,7 @@ data class IndexingMetrics(
     "number of full rescannings" to numberOfFullRescanning.toString()
   )
 
-  fun getListOfIndexingMetrics(): List<PerformanceMetrics.Metric<out Number>> {
+  fun getListOfIndexingMetrics(): List<PerformanceMetrics.Metric> {
     val numberOfIndexedFiles = totalNumberOfIndexedFiles
     val numberOfFilesFullyIndexedByExtensions = totalNumberOfFilesFullyIndexedByExtensions
     return listOf(
@@ -207,12 +207,12 @@ data class IndexingMetrics(
       PerformanceMetrics.Metric(metricScanningTimeWithoutPauses, value = totalScanFilesTimeWithoutPauses),
       PerformanceMetrics.Metric(metricPausedTimeInIndexingOrScanning, value = totalPausedTime),
       PerformanceMetrics.Metric(metricDumbModeTimeWithPauses, value = totalDumbModeTimeWithPauses),
-      PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = numberOfIndexedFiles),
-      PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = numberOfFilesFullyIndexedByExtensions),
+      PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = numberOfIndexedFiles.toLong()),
+      PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = numberOfFilesFullyIndexedByExtensions.toLong()),
       PerformanceMetrics.Metric(metricNumberOfFilesIndexedWithoutExtensions,
-                                value = numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions),
-      PerformanceMetrics.Metric(metricNumberOfRunsOfScanning, value = totalNumberOfRunsOfScanning),
-      PerformanceMetrics.Metric(metricNumberOfRunsOfIndexing, value = totalNumberOfRunsOfIndexing)
+                                value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
+      PerformanceMetrics.Metric(metricNumberOfRunsOfScanning, value = totalNumberOfRunsOfScanning.toLong()),
+      PerformanceMetrics.Metric(metricNumberOfRunsOfIndexing, value = totalNumberOfRunsOfIndexing.toLong())
     ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage)
   }
 }
@@ -230,20 +230,20 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   return IndexingMetrics(startResult, jsonIndexDiagnostics)
 }
 
-private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric<*>> {
-  val list = mutableListOf<PerformanceMetrics.Metric<*>>()
+private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> {
+  val list = mutableListOf<PerformanceMetrics.Metric>()
   mapFileTypeToSpeed.forEach {
-    list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value))
+    list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value.toLong()))
   }
   return list
 }
 
-private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric<*>> =
+private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> =
   mapBaseLanguageToSpeed.map {
-    PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".createPerformanceMetricCounter(), value = it.value)
+    PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".createPerformanceMetricCounter(), value = it.value.toLong())
   }
 
-data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val scanningTime: Long = 0) {
+data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val scanningTime: Long = 0) {
   fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
     return ScanningStatistics(
       numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
