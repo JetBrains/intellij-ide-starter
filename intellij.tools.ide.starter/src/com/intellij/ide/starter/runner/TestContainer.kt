@@ -98,7 +98,7 @@ interface TestContainer<T> : Closeable {
       .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
       .apply { installPerformanceTestingPluginIfMissing(this) }
 
-    testCase.projectInfo?.configureProjectBeforeUse?.invoke(contextWithAppliedHooks)
+    testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
 
     StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
 
