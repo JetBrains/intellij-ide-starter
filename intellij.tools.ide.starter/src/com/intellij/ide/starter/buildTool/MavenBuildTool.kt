@@ -21,14 +21,14 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
       }
   }
 
-  private val temporaryMavenM3CashPath: Path
+  private val temporaryMavenM3CachePath: Path
     get() = testContext.paths.tempDir.resolve(".m3")
 
   val temporaryMavenM3UserSettingsPath: Path
-    get() = temporaryMavenM3CashPath.resolve("settings.xml")
+    get() = temporaryMavenM3CachePath.resolve("settings.xml")
 
   val temporaryMavenM3RepoPath: Path
-    get() = temporaryMavenM3CashPath.resolve("repository")
+    get() = temporaryMavenM3CachePath.resolve("repository")
 
 
 
