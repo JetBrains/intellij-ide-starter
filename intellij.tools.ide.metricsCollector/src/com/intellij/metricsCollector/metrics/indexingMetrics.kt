@@ -243,12 +243,12 @@ private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String
     PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".createPerformanceMetricCounter(), value = it.value.toLong())
   }
 
-data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val scanningTime: Long = 0) {
+data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val totalCPUTimeWithPauses: Long = 0) {
   fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
     return ScanningStatistics(
       numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
       numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,
-      scanningTime = scanningTime + scanningStatistics.scanningTime.milliseconds
+      totalCPUTimeWithPauses = totalCPUTimeWithPauses + scanningStatistics.totalCPUTimeWithPauses.milliseconds
     )
   }
 }
