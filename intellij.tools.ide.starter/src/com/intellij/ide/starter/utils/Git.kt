@@ -2,6 +2,7 @@ package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.openapi.application.PathManager
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -11,8 +12,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 object Git {
-  val branch by lazy { getShortBranchName(Paths.get("")) }
-  val localBranch by lazy { getLocalGitBranch(Paths.get("")) }
+  val branch by lazy { getShortBranchName(Paths.get(PathManager.getHomePath())) }
+  val localBranch by lazy { getLocalGitBranch(Paths.get(PathManager.getHomePath())) }
   val getDefaultBranch by lazy {
     when (val majorBranch = localBranch.substringBefore(".")) {
       "HEAD", "master" -> "master"
@@ -283,7 +284,7 @@ object Git {
       // Exception "no such commit" is not error. Just don't have this commit
       if (e.message?.contains("no such commit") == false) throw IllegalStateException(e)
     }
-    return stdout.read().trim().split("\n")
+    return stdout.read().trim().split("\n").map { it.replace("\'", "") }
   }
 
   fun getRandomCommitInThePast(date: String, dir: Path): String {
