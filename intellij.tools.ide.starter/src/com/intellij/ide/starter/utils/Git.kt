@@ -301,11 +301,11 @@ object Git {
     return commits[Random().nextInt(commits.size)]
   }
 
-  fun getLastCommit(dir: Path, targetBranch: String = ""): String {
+  fun getLastCommit(dir: Path, targetBranch: String = "", format: String = "--format=%h"): String {
     val stdout = ExecOutputRedirect.ToString()
     val arguments = mutableListOf("git", "log")
     if (targetBranch.isNotEmpty()) arguments.addAll(listOf("-b", targetBranch))
-    arguments.addAll(listOf("-n1", "--format=%h"))
+    arguments.addAll(listOf("-n1", format))
     ProcessExecutor(
       "git-last-commit-get",
       workDir = dir,
