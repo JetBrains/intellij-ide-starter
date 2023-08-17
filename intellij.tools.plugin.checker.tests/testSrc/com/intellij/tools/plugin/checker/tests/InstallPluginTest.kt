@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.intellij.driver.model.command.CommandChain
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
@@ -18,6 +17,7 @@ import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI

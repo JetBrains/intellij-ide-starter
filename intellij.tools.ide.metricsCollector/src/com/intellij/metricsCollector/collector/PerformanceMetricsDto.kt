@@ -24,7 +24,7 @@ data class PerformanceMetricsDto(
     fun create(
       projectName: String,
       buildNumber: BuildNumber,
-      metrics: Collection<PerformanceMetrics.Metric<*>>
+      metrics: Collection<PerformanceMetrics.Metric>
     ) = PerformanceMetricsDto(
       generated = ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME),
       project = projectName,

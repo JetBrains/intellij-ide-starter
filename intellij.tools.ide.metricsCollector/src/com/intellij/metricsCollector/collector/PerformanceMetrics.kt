@@ -11,27 +11,27 @@ data class PerformanceMetrics(
   val machineName: String,
   val branchName: String,
   val os: String,
-  val metrics: List<Metric<*>>
+  val metrics: List<Metric>
 ) {
-  sealed class MetricId<T : Number> {
+  sealed class MetricId {
     abstract val name: String
 
     /**
      * Metric used to measure duration of events in ms
      */
-    data class Duration(override val name: String) : MetricId<Long>()
+    data class Duration(override val name: String) : MetricId()
 
     /**
      * Metric used to count the number of times an event has occurred
      */
-    data class Counter(override val name: String) : MetricId<Number>()
+    data class Counter(override val name: String) : MetricId()
   }
 
-  data class Metric<T : Number>(val id: MetricId<T>, val value: T, val compareSetting: CompareSetting = CompareSetting.notComparing)
+  data class Metric(val id: MetricId, val value: Long, val compareSetting: CompareSetting = CompareSetting.notComparing)
 }
 
-fun PerformanceMetrics.Metric<*>.toJson() = ApplicationMetricDto(
+fun PerformanceMetrics.Metric.toJson() = ApplicationMetricDto(
   n = id.name,
-  d = if (id is PerformanceMetrics.MetricId.Duration) (this.value as? Number)?.toLong() else null,
-  c = if (id is PerformanceMetrics.MetricId.Counter) (this.value as? Number)?.toLong() else null
+  d = if (id is PerformanceMetrics.MetricId.Duration) this.value else null,
+  c = if (id is PerformanceMetrics.MetricId.Counter) this.value else null
 )

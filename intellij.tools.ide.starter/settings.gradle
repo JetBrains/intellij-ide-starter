@@ -1,3 +1,4 @@
 rootProject.name ="ide-starter"
 
 includeBuild "../intellij.tools.ide.starter"
+includeBuild "../../community/plugins/performanceTesting/commands-model"

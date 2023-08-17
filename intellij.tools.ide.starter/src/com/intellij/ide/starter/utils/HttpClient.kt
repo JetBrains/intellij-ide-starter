@@ -36,40 +36,40 @@ object HttpClient {
    * @return true - if successful, false - otherwise
    */
   fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
-    getLock(outPath).withLock {
-      logOutput("Downloading $url to $outPath")
+    logOutput("Downloading $url to $outPath")
 
-      @Suppress("RAW_RUN_BLOCKING")
-      runBlocking {
-        withTimeout(timeout = timeout) {
-          withRetry(retries = retries) {
-            sendRequest(HttpGet(url)) { response ->
-              if (response.statusLine.statusCode == 404) {
-                throw HttpNotFound("Server returned 404 Not Found: $url")
+    @Suppress("RAW_RUN_BLOCKING")
+    runBlocking {
+      withTimeout(timeout = timeout) {
+        withRetry(retries = retries) {
+          sendRequest(HttpGet(url)) { response ->
+            if (response.statusLine.statusCode == 404) {
+              throw HttpNotFound("Server returned 404 Not Found: $url")
+            }
+
+            if (response.statusLine.statusCode == 403 && url.startsWith("https://cache-redirector.jetbrains.com/")) {
+              // all downloads from https://cache-redirector.jetbrains.com should be public, but some endpoints return 403 instead of 404
+              // due to blocking of files listing on S3 bucket
+              throw HttpNotFound("Server returned 403 which we interpret as not found for cache-redirector urls: $url")
+            }
+
+            check(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
+            if (!outPath.parent.exists()) {
+              outPath.parent.createDirectories()
+            }
+            outPath.deleteIfExists()
+
+            val tempFile = Files.createTempFile(outPath.parent, outPath.name, "-download.tmp")
+            try {
+              tempFile.outputStream().buffered(10 * 1024 * 1024).use { stream ->
+                response.entity?.writeTo(stream)
               }
 
-              if (response.statusLine.statusCode == 403 && url.startsWith("https://cache-redirector.jetbrains.com/")) {
-                // all downloads from https://cache-redirector.jetbrains.com should be public, but some endpoints return 403 instead of 404
-                // due to blocking of files listing on S3 bucket
-                throw HttpNotFound("Server returned 403 which we interpret as not found for cache-redirector urls: $url")
-              }
-
-              check(response.statusLine.statusCode == 200) { "Failed to download $url: $response" }
-              if (!outPath.parent.exists()) {
-                outPath.parent.createDirectories()
-              }
-              outPath.deleteIfExists()
-
-              val tempFile = Files.createTempFile(outPath.parent, outPath.name, "-download.tmp")
-              try {
-                tempFile.outputStream().buffered(10 * 1024 * 1024).use { stream ->
-                  response.entity?.writeTo(stream)
-                }
-                tempFile.moveTo(outPath)
-              }
-              finally {
-                tempFile.deleteIfExists()
-              }
+              // there could a parallel download to the same destination, handle it gracefully (both will succeed)
+              tempFile.moveTo(outPath, overwrite = true)
+            }
+            finally {
+              tempFile.deleteIfExists()
             }
           }
         }

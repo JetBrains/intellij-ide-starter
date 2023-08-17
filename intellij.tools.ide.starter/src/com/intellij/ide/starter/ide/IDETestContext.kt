@@ -1,8 +1,5 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.driver.model.SdkObject
-import com.intellij.driver.model.command.CommandChain
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.buildTool.BuildTool
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
@@ -28,6 +25,9 @@ import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
+import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.ui.NewUiValue
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -117,6 +117,7 @@ data class IDETestContext(
       withActiveProcessorCount(count)
     }
 
+  //TODO rename to `skipGitLogIndexing` like `skipIndicesInitialization`
   fun toggleGitLogIndexing(isEnabled: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("vcs.log.index.git", isEnabled)

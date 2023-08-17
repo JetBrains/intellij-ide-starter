@@ -17,8 +17,8 @@ import kotlin.math.sqrt
 const val TOTAL_TEST_TIMER_NAME: String = "test"
 const val DEFAULT_SPAN_NAME: String = "performance_test"
 
-data class MetricWithAttributes(val metric: Metric<*>,
-                                val attributes: MutableList<Metric<*>> = mutableListOf())
+data class MetricWithAttributes(val metric: Metric,
+                                val attributes: MutableList<Metric> = mutableListOf())
 
 @Suppress("unused")
 fun getOpenTelemetry(startResult: IDEStartResult): PerformanceMetricsDto {
@@ -52,10 +52,10 @@ class SpanFilter(val filter: (String) -> Boolean) {
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
 
-fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric<*>>{
+fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric>{
   return combineMetrics(getSpansMetricsMap(file, filter))
 }
-fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric<*>> {
+fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric> {
   val opentelemetryFile = startResult.context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
   return getMetricsFromSpanAndChildren(opentelemetryFile, filter)
 }
@@ -101,8 +101,8 @@ private fun getSpans(file: File): JsonNode {
   return allSpans
 }
 
-private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): List<Metric<*>> {
-  val result = mutableListOf<Metric<*>>()
+private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): List<Metric> {
+  val result = mutableListOf<Metric>()
   metrics.forEach { entry ->
     if (entry.value.size == 1) {
       val metric = entry.value.first()
@@ -159,9 +159,9 @@ private fun <T : Number> standardDeviation(data: Collection<T>): Long {
   return sqrt(data.map { (it.toDouble() - mean).pow(2) }.average()).toLong()
 }
 
-private fun getAttributes(spanName: String, metric: MetricWithAttributes): Collection<Metric<*>> {
+private fun getAttributes(spanName: String, metric: MetricWithAttributes): Collection<Metric> {
   return metric.attributes.map { attributeMetric ->
-    Metric(Counter("$spanName#" + attributeMetric.id.name), attributeMetric.value.toInt())
+    Metric(Counter("$spanName#" + attributeMetric.id.name), attributeMetric.value)
   }
 }
 
@@ -205,7 +205,7 @@ private fun populateAttributes(metric: MetricWithAttributes, span: JsonNode) {
   span.get("tags")?.forEach { tag ->
     val attributeName = tag.get("key").textValue()
     tag.get("value").textValue().runCatching { toInt() }.onSuccess {
-      metric.attributes.add(Metric(Counter(attributeName), it))
+      metric.attributes.add(Metric(Counter(attributeName), it.toLong()))
     }
   }
 }

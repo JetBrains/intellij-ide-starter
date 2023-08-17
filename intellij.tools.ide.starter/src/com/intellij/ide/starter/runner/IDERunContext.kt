@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
@@ -26,6 +25,7 @@ import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.report.ErrorReporter.getLinkToCIArtifacts
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.util.io.createDirectories
 import kotlinx.coroutines.delay
 import org.kodein.di.direct
@@ -35,10 +35,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.bufferedReader
-import kotlin.io.path.div
-import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -71,9 +68,18 @@ data class IDERunContext(
 
   private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
-  val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectories()
+  val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectoriesIfNotExist()
 
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
+
+  private fun Path.createDirectoriesIfNotExist(): Path {
+    if (exists()) {
+      logOutput("Reports dir is already created")
+      return this
+    }
+    logOutput("Creating reports dir")
+    return createDirectories()
+  }
 
 
   fun verbose() = copy(verboseOutput = true)

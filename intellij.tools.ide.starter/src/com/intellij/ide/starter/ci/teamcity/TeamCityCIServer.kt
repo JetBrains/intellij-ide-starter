@@ -176,7 +176,7 @@ open class TeamCityCIServer(
       return false
     }
 
-  fun hasBooleanProperty(key: String, default: Boolean) = getBuildParam(key)?.equals("true", ignoreCase = true) ?: default
+  private fun hasBooleanProperty(key: String, default: Boolean) = getBuildParam(key)?.equals("true", ignoreCase = true) ?: default
 
   fun isSafePush(): Boolean {
     val isSafePush = System.getenv("SAFE_PUSH")

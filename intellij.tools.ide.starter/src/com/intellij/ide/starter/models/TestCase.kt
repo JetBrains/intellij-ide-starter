@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.models
 
-import com.intellij.driver.model.command.MarshallableCommand
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeInfoConfigurable
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -8,6 +7,7 @@ import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import org.kodein.di.instance
 
 data class TestCase<T : ProjectInfoSpec>(
@@ -47,7 +47,7 @@ data class TestCase<T : ProjectInfoSpec>(
   fun useEAP(): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useEAP(ideInfo))
 
   /** E.g: "222.3244.1" */
-  fun useEAP(buildNumber: String = ""): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useEAP(ideInfo, buildNumber))
+  private fun useEAP(buildNumber: String = ""): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useEAP(ideInfo, buildNumber))
 
   fun useRelease(): TestCase<T> = copy(ideInfo = ideInfoConfigurable.useRelease(ideInfo))
 

@@ -52,8 +52,8 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="qodana-sarif" level="project" />
-    <orderEntry type="module" module-name="intellij.driver.model" />
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
+    <orderEntry type="module" module-name="intellij.tools.ide.performanceTesting.commands" exported="" />
     <orderEntry type="library" name="jetbrains-annotations" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
