@@ -582,6 +582,13 @@ data class IDETestContext(
     return this
   }
 
+  /*
+    This method returns the context with the changed following parameters
+    "external.system.auto.import.disabled" to false
+    "performance.execute.script.right.after.ide.opened" to false
+    "DO_NOT_REPORT_ERRORS" to false
+    "idea.skip.indices.initialization" to false
+   */
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
     if (sdkObjects == null) return this
 
@@ -592,16 +599,16 @@ data class IDETestContext(
         .addCommand("%setupSDK \"${sdkObjects.sdkName}\" \"${sdkObjects.sdkType}\" \"${sdkObjects.sdkPath}\"")
         .addCommand("%exitApp true"),
       launchName = "setupSdk",
-      runTimeout = 3.minutes
-    ) {
-      applyVMOptionsPatch {
-        addSystemProperty("DO_NOT_REPORT_ERRORS", true)
+      runTimeout = 3.minutes,
+      configure = {
+        applyVMOptionsPatch {
+          addSystemProperty("DO_NOT_REPORT_ERRORS", true)
+        }
+          .disableAutoImport(true)
+          .executeRightAfterIdeOpened(true)
+          .skipIndicesInitialization(true)
       }
-        .disableAutoImport(true)
-        .executeRightAfterIdeOpened(true)
-        .skipIndicesInitialization(true)
-    }
-
+    )
     if (cleanDirs)
       this
         //some caches from IDE warmup may stay
