@@ -1,3 +1,2 @@
 includeBuild "../intellij.tools.ide.starter"
 includeBuild "../intellij.tools.ide.starter.junit5"
-includeBuild "../../community/plugins/performanceTesting/commands-model"
