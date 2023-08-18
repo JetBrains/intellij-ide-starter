@@ -45,7 +45,7 @@ class HttpClientTests {
 
   @Test
   @Timeout(value = 10, unit = TimeUnit.SECONDS)
-  fun `downloadIfMissing does not download existing files`() {
+  fun `downloadIfMissing does not download if file is not empty`() {
     val tmpFile = Files.createTempFile("download", "")
     tmpFile.writeText("a")
 
@@ -56,7 +56,7 @@ class HttpClientTests {
 
   @Test
   @Timeout(value = 10, unit = TimeUnit.SECONDS)
-  fun `downloadIfMissing download zero-sized files`() {
+  fun `downloadIfMissing downloads if file is empty`() {
     val tmpFile = Files.createTempFile("download", "")
     assertEquals(0, tmpFile.fileSize())
     HttpClient.downloadIfMissing("https://www.jetbrains.com/favicon.ico", tmpFile)

@@ -33,7 +33,6 @@ dependencies {
   testImplementation "org.kodein.di:kodein-di-jvm:7.20.1"
 
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
-  testImplementation 'com.jetbrains.intellij.driver:driver-model:LATEST-TRUNK-SNAPSHOT'
   testImplementation "com.jetbrains.intellij.tools:ide-starter:LATEST-TRUNK-SNAPSHOT"
   testImplementation "com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT"
   testImplementation "com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-TRUNK-SNAPSHOT"
