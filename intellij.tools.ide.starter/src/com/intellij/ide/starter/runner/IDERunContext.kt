@@ -128,14 +128,13 @@ data class IDERunContext(
       withJvmCrashLogDirectory(jvmCrashLogDirectory)
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
       withGCLogs(reportsDir / "gcLog.log")
+      setOpenTelemetryMaxFilesNumber()
 
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
         withClassFileVerification()
       installProfiler()
 
-      patchesForVMOptions.forEach { patchVMOptions ->
-        patchVMOptions()
-      }
+      patchesForVMOptions.forEach { patchVMOptions -> patchVMOptions() }
 
       if (!useStartupScript) {
         require(commands.count() > 0) { "script builder is not allowed when useStartupScript is disabled" }

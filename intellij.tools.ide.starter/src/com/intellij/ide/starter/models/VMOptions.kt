@@ -96,7 +96,7 @@ data class VMOptions(
 
   private fun removeLine(line: String) {
     if (!data.contains(line)) return
-    data =  data - line
+    data = data - line
   }
 
   fun removeProfilerAgents() {
@@ -249,4 +249,11 @@ data class VMOptions(
     addLine("-XX:+UseEpsilonGC")
     addLine("-Xmx16g", "-Xmx")
   }
+
+  /**
+   * 1 file will be produced each minute (depends on the configuration in OpenTelemetry)
+   * Thus by default it's better to set it to a high number, so long-running tests will not report invalid metrics
+   */
+  fun setOpenTelemetryMaxFilesNumber(maxFilesNumber: Int = 120) =
+    addSystemProperty("idea.diagnostic.opentelemetry.metrics.max-files-to-keep", maxFilesNumber)
 }
