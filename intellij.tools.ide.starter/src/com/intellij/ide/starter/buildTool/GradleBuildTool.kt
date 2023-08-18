@@ -33,7 +33,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
     if (propFile.notExists()) return ""
     val distributionUrl = propFile.readLines().first() { it.startsWith("distributionUrl") }
-    val version = "\\d.\\d".toRegex().find(distributionUrl)?.value ?: ""
+    val version = "\\d.{1,4}\\d".toRegex().find(distributionUrl)?.value ?: ""
     return version
   }
 
