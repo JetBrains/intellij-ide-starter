@@ -107,12 +107,12 @@ interface TestContainer<T> : Closeable {
 
   fun updateVMOptions(context: IDETestContext): IDETestContext {
     return when (context.testCase.ideInfo == IdeProductProvider.AI) {
-      true -> testContext
+      true -> context
         .applyVMOptionsPatch {
-          overrideDirectories(testContext.paths)
+          overrideDirectories(context.paths)
           withEnv("STUDIO_VM_OPTIONS", context.ide.patchedVMOptionsFile.toString())
         }
-      false -> testContext
+      false -> context
         .disableInstantIdeShutdown()
         .disableFusSendingOnIdeClose()
         .disableLinuxNativeMenuForce()
@@ -122,7 +122,7 @@ interface TestContainer<T> : Closeable {
         .collectOpenTelemetry()
         .enableAsyncProfiler()
         .applyVMOptionsPatch {
-          overrideDirectories(testContext.paths)
+          overrideDirectories(context.paths)
         }
         .disableMinimap()
         .addProjectToTrustedLocations()
