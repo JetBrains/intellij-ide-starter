@@ -256,4 +256,12 @@ data class VMOptions(
    */
   fun setOpenTelemetryMaxFilesNumber(maxFilesNumber: Int = 120) =
     addSystemProperty("idea.diagnostic.opentelemetry.metrics.max-files-to-keep", maxFilesNumber)
+
+  fun disableAutoImport(disabled: Boolean = true) = addSystemProperty("external.system.auto.import.disabled", disabled)
+
+  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
+
+  fun skipIndicesInitialization(value: Boolean = true) = addSystemProperty("idea.skip.indices.initialization", value)
+
+  fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
 }

@@ -123,7 +123,7 @@ data class IDETestContext(
     }
 
   fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = applyVMOptionsPatch {
-    addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
+    executeRightAfterIdeOpened(executeRightAfterIdeOpened)
   }
 
   fun executeDuringIndexing(): IDETestContext =
@@ -206,7 +206,7 @@ data class IDETestContext(
 
   // seems, doesn't work for Maven
   fun disableAutoImport(disabled: Boolean = true) = applyVMOptionsPatch {
-    addSystemProperty("external.system.auto.import.disabled", disabled)
+    disableAutoImport(disabled)
   }
 
   fun disableOrdinaryIndexes() = applyVMOptionsPatch {
@@ -220,7 +220,7 @@ data class IDETestContext(
   }
 
   fun skipIndicesInitialization(value: Boolean = true) = applyVMOptionsPatch {
-    addSystemProperty("idea.skip.indices.initialization", value)
+    skipIndicesInitialization(value)
   }
 
   fun enableAsyncProfiler() = applyVMOptionsPatch {
@@ -231,9 +231,6 @@ data class IDETestContext(
     addSystemProperty("integrationTests.profiler", "yourkit")
   }
 
-  fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = applyVMOptionsPatch {
-    addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
-  }
 
   fun collectImportProjectPerfMetrics() = applyVMOptionsPatch {
     addSystemProperty("idea.collect.project.import.performance", true)
@@ -600,12 +597,12 @@ data class IDETestContext(
       launchName = "setupSdk",
       runTimeout = 3.minutes,
       configure = {
-        applyVMOptionsPatch {
+        addVMOptionsPatch {
           addSystemProperty("DO_NOT_REPORT_ERRORS", true)
+          disableAutoImport(true)
+          executeRightAfterIdeOpened(true)
+          skipIndicesInitialization(true)
         }
-          .disableAutoImport(true)
-          .executeRightAfterIdeOpened(true)
-          .skipIndicesInitialization(true)
       }
     )
     if (cleanDirs)
@@ -615,13 +612,7 @@ data class IDETestContext(
         //some logs and perf snapshots may stay
         .wipeLogsDir()
 
-
     return this
-      // rollback changes, that were made only to setup sdk
-      .disableAutoImport(false)
-      .executeRightAfterIdeOpened(false)
-      .applyVMOptionsPatch { addSystemProperty("DO_NOT_REPORT_ERRORS", false) }
-      .skipIndicesInitialization(false)
   }
 }
 
