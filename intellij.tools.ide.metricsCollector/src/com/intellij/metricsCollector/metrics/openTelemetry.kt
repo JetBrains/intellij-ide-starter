@@ -7,8 +7,6 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
-import com.intellij.metricsCollector.collector.PerformanceMetricsDto
-import com.intellij.openapi.util.BuildNumber
 import java.io.File
 import kotlin.math.pow
 import kotlin.math.roundToLong
@@ -20,19 +18,6 @@ const val DEFAULT_SPAN_NAME: String = "performance_test"
 data class MetricWithAttributes(val metric: Metric,
                                 val attributes: MutableList<Metric> = mutableListOf())
 
-@Suppress("unused")
-fun getOpenTelemetry(startResult: IDEStartResult): PerformanceMetricsDto {
-  return getOpenTelemetry(startResult, DEFAULT_SPAN_NAME)
-}
-
-fun getOpenTelemetry(startResult: IDEStartResult, vararg spansNames: String): PerformanceMetricsDto {
-  val metrics = spansNames.map { spanName -> getMetricsFromSpanAndChildren(startResult, SpanFilter.equals(spanName)) }.flatten()
-  return PerformanceMetricsDto.create(
-    projectName = startResult.context.testName,
-    buildNumber = BuildNumber.fromStringWithProductCode(startResult.context.ide.build, startResult.context.ide.productCode)!!,
-    metrics = metrics
-  )
-}
 
 class SpanFilter(val filter: (String) -> Boolean) {
   companion object {
@@ -46,7 +31,7 @@ class SpanFilter(val filter: (String) -> Boolean) {
  * Reports duration of `nameSpan` and all its children spans.
  * Besides, all attributes are reported as counters.
  * If there are multiple values with the same name:
- * 1. They will be re-numbered `<value>_1`, `<value>_2`, etc and the sum will be recorded as `<value>`.
+ * 1. They will be re-numbered `<value>_1`, `<value>_2`, etc. and the sum will be recorded as `<value>`.
  * 2. In the sum value, mean value and standard deviation of attribute value will be recorded
  * 2a. If attribute ends with `#max`, in sum the max of max will be recorded
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
@@ -115,14 +100,14 @@ private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): Li
       var counter = 1
       val mediumAttributes: MutableMap<String, MutableList<Long>> = mutableMapOf()
       entry.value.forEach { metric ->
-        val value = metric.metric.value.toLong()
+        val value = metric.metric.value
         val spanUpdatedName = entry.key + "_$counter"
         result.add(Metric(Duration(spanUpdatedName), value))
         result.addAll(getAttributes(spanUpdatedName, metric))
         getAttributes(entry.key, metric).forEach {
           val key = it.id.name
           val collection = mediumAttributes.getOrDefault(key, mutableListOf())
-          collection.add(it.value.toLong())
+          collection.add(it.value)
           mediumAttributes[key] = collection
         }
         counter++
@@ -143,7 +128,7 @@ private fun combineMetrics(metrics: Map<String, List<MetricWithAttributes>>): Li
         result.add(Metric(Duration(attr.key + "#mean_value"), attr.value.average().toLong()))
         result.add(Metric(Duration(attr.key + "#standard_deviation"), standardDeviation(attr.value)))
       }
-      val sum = entry.value.sumOf { it.metric.value.toLong() }
+      val sum = entry.value.sumOf { it.metric.value }
       val mean = sum / entry.value.size
       val standardDeviation = standardDeviation(entry.value.map { it.metric.value })
       result.add(Metric(Duration(entry.key), sum))
