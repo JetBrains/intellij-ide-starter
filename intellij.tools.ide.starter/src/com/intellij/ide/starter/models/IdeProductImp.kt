@@ -104,4 +104,12 @@ object IdeProductImp : IdeProduct {
     executableFileName = "aqua",
     fullName = "Aqua"
   )
+
+  /** RustIde */
+  override val RR: IdeInfo = IdeInfo(
+    productCode = "RR",
+    platformPrefix = "RustIde",
+    executableFileName = "RustIde",
+    fullName = "RustIde"
+  )
 }

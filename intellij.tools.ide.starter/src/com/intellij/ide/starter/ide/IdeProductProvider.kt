@@ -47,6 +47,9 @@ object IdeProductProvider {
   /** Aqua */
   val QA: IdeInfo = di.direct.instance<IdeProduct>().QA
 
+  /** RustIDE */
+  val RR: IdeInfo = di.direct.instance<IdeProduct>().RR
+
   fun getProducts(): List<IdeInfo> = IdeProductProvider::class.declaredMemberProperties.map { it.get(IdeProductProvider) as IdeInfo }
 
   fun isProductSupported(productCode: String): Boolean = getProducts().any { it.productCode == productCode }

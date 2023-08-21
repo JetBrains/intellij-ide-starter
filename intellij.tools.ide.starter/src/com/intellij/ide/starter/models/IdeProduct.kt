@@ -39,4 +39,7 @@ interface IdeProduct {
 
   /** Aqua */
   val QA: IdeInfo
+
+  /** RustIDE */
+  val RR: IdeInfo
 }
