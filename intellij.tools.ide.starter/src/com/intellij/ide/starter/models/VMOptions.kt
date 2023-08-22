@@ -219,6 +219,10 @@ data class VMOptions(
 
   fun setFatalErrorNotificationEnabled() = addSystemProperty("idea.fatal.error.notification", true)
 
+  fun setSnapshotPath(snapshotsDir: Path){
+    addSystemProperty("snapshots.path", snapshotsDir)
+  }
+
   fun withJvmCrashLogDirectory(jvmCrashLogDirectory: Path) =
     addLine("-XX:ErrorFile=${jvmCrashLogDirectory.toAbsolutePath()}${File.separator}java_error_in_idea_%p.log", "-XX:ErrorFile=")
 

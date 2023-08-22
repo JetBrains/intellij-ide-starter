@@ -16,9 +16,7 @@ import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
-import com.intellij.ide.starter.runner.IDECommandLine
-import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.ide.starter.runner.IdeLaunchEvent
+import com.intellij.ide.starter.runner.*
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logError
@@ -187,11 +185,6 @@ data class IDETestContext(
       addSystemProperty("memory.snapshots.path", paths.logsDir)
     }
 
-  fun setPathForSnapshots(): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty("snapshots.path", paths.snapshotsDir)
-    }
-
   @Suppress("unused")
   fun collectMemorySnapshotOnFailedPluginUnload(): IDETestContext =
     applyVMOptionsPatch {
@@ -277,12 +270,6 @@ data class IDETestContext(
     path.toFile().deleteRecursively()
   }
 
-  fun wipeSnapshotDir() = apply {
-    val path = paths.snapshotsDir
-    logOutput("Cleaning snapshot dir for $this at $path")
-    path.toFile().deleteRecursively()
-  }
-
   fun wipeWorkspaceState() = apply {
     val path = paths.configDir.resolve("workspace")
     logOutput("Cleaning workspace dir in config dir for $this at $path")
@@ -345,15 +332,15 @@ data class IDETestContext(
   }
 
   private fun determineDefaultCommandLineArguments() =
-    if (this.testCase.projectInfo == NoProject) IDECommandLine.StartIdeWithoutProject
-    else IDECommandLine.OpenTestCaseProject(this)
+    if (this.testCase.projectInfo == NoProject) ::startIdeWithoutProject
+    else ::openTestCaseProject
 
   /**
    * Entry point to run IDE.
    * If you want to run IDE without any project on start use [com.intellij.ide.starter.runner.IDECommandLine.StartIdeWithoutProject]
    */
   fun runIDE(
-    commandLine: IDECommandLine = determineDefaultCommandLineArguments(),
+    commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
     commands: Iterable<MarshallableCommand> = CommandChain(),
     codeBuilder: (CodeInjector.() -> Unit)? = null,
     runTimeout: Duration = 10.minutes,
@@ -393,7 +380,7 @@ data class IDETestContext(
    * Run IDE in background.
    * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterListener.subscribe]
    */
-  fun runIdeInBackground(commandLine: IDECommandLine = determineDefaultCommandLineArguments(),
+  fun runIdeInBackground(commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
                          commands: Iterable<MarshallableCommand> = CommandChain(),
                          codeBuilder: (CodeInjector.() -> Unit)? = null,
                          runTimeout: Duration = 10.minutes,

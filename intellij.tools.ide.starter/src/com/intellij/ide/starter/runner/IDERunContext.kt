@@ -46,7 +46,7 @@ interface IDERunCloseContext {
 
 data class IDERunContext(
   val testContext: IDETestContext,
-  val commandLine: IDECommandLine = IDECommandLine.OpenTestCaseProject(testContext),
+  val commandLine: (IDERunContext) -> IDECommandLine = ::openTestCaseProject,
   val commands: Iterable<MarshallableCommand> = listOf(),
   val codeBuilder: (CodeInjector.() -> Unit)? = null,
   val runTimeout: Duration = 10.minutes,
@@ -68,6 +68,7 @@ data class IDERunContext(
   private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
   val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectoriesIfNotExist()
+  val snapshotsDir = (testContext.paths.testHome / launchName / "snapshots")
 
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
 
@@ -132,6 +133,7 @@ data class IDERunContext(
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
         withClassFileVerification()
       installProfiler()
+      setSnapshotPath(snapshotsDir)
 
       patchesForVMOptions.forEach { patchVMOptions -> patchVMOptions() }
 
@@ -151,7 +153,7 @@ data class IDERunContext(
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
-    val snapshotsDir = paths.snapshotsDir.createDirectories()
+    val snapshotsDir = snapshotsDir.createDirectories()
 
     val stdout = getStdout()
     val stderr = getStderr()
@@ -177,7 +179,7 @@ data class IDERunContext(
       logDisabledPlugins(paths)
       logStartupInfo(vmOptions)
 
-      val finalArgs = startConfig.commandLine + commandLine.args
+      val finalArgs = startConfig.commandLine + commandLine(this).args
       File(finalArgs.first()).setExecutable(true)
       val executionTime = measureTime {
         ProcessExecutor(
@@ -394,7 +396,7 @@ data class IDERunContext(
       artifactName = formatArtifactName("event-log-data", testContext.testName)
     )
     testContext.publishArtifact(
-      source = testContext.paths.snapshotsDir,
+      source = snapshotsDir,
       artifactPath = contextName,
       artifactName = formatArtifactName("snapshots", testContext.testName)
     )
