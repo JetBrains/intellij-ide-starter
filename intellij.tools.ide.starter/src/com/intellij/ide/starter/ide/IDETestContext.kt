@@ -401,7 +401,7 @@ data class IDETestContext(
                          launchName: String = "",
                          expectedKill: Boolean = false,
                          collectNativeThreads: Boolean = false,
-                         patchVMOptions: VMOptions.() -> Unit = { }): Deferred<IDEStartResult> {
+                         configure: IDERunContext.() -> Unit = {}): Deferred<IDEStartResult> {
 
     return perTestSupervisorScope.async {
       try {
@@ -412,10 +412,8 @@ data class IDETestContext(
                useStartupScript,
                launchName,
                expectedKill,
-               collectNativeThreads) {
-          addVMOptionsPatch { patchVMOptions() }
-        }
-
+               collectNativeThreads,
+               configure)
       }
       catch (e: Throwable) {
         logError("Error during IDE execution", e)
