@@ -2,7 +2,6 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
-import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -22,7 +21,7 @@ import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
-import com.intellij.ide.starter.report.ErrorReporter.getLinkToCIArtifacts
+import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
@@ -150,19 +149,15 @@ data class IDERunContext(
     StarterBus.post(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
     deleteSavedAppStateOnMac()
-    val ciServer = di.direct.instance<CIServer>()
     val paths = testContext.paths
     val logsDir = paths.logsDir.createDirectories()
     val snapshotsDir = paths.snapshotsDir.createDirectories()
-    val linkToArtefactsOnTC = when (ciServer.isBuildRunningOnCI) {
-      true -> getLinkToCIArtifacts(this)
-      false -> ""
-    }
 
     val stdout = getStdout()
     val stderr = getStderr()
     var ideProcessId = 0L
     var isRunSuccessful = true
+    val ciFailureDetails = di.direct.instance<FailureDetailsOnCI>().getLinkToCIArtifacts(this)?.let { "Link on TC artifacts ${it}" }
 
     val ideHost = IDEHost(codeBuilder, testContext).also { it.setup() }
     try {
@@ -202,7 +197,7 @@ data class IDERunContext(
           onBeforeKilled = { process, pid ->
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
-          linkToArtefactsOnTC = linkToArtefactsOnTC
+          errorDetailProvider = { _ -> ciFailureDetails }
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")
@@ -218,14 +213,7 @@ data class IDERunContext(
       }
       else {
         isRunSuccessful = false
-        val reason = "Timeout of IDE run $contextName for $runTimeout"
-        val message = when (!linkToArtefactsOnTC.isNullOrEmpty()) {
-          true -> {
-            "$reason\nLink on TC artifacts $linkToArtefactsOnTC"
-          }
-          false -> reason
-        }
-        error(message)
+        error("Timeout of IDE run $contextName for $runTimeout" + (ciFailureDetails?.let { "\n$it" } ?: ""))
       }
     }
     catch (exception: Throwable) {
@@ -395,26 +383,24 @@ data class IDERunContext(
   }
 
   private fun publishArtifacts() {
-    val artifactPath = contextName
-
     testContext.publishArtifact(
       source = testContext.paths.logsDir,
-      artifactPath = artifactPath,
+      artifactPath = contextName,
       artifactName = formatArtifactName("logs", testContext.testName)
     )
     testContext.publishArtifact(
       source = testContext.paths.systemDir.resolve("event-log-data/logs/FUS"),
-      artifactPath = artifactPath,
+      artifactPath = contextName,
       artifactName = formatArtifactName("event-log-data", testContext.testName)
     )
     testContext.publishArtifact(
       source = testContext.paths.snapshotsDir,
-      artifactPath = artifactPath,
+      artifactPath = contextName,
       artifactName = formatArtifactName("snapshots", testContext.testName)
     )
     testContext.publishArtifact(
       source = reportsDir,
-      artifactPath = artifactPath,
+      artifactPath = contextName,
       artifactName = formatArtifactName("reports", testContext.testName)
     )
   }

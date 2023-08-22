@@ -48,9 +48,8 @@ object ErrorReporter {
         "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
       }
 
-      val failureDetails = di.direct.instance<FailureDetailsOnCI>()
-      val failureDetailsMessage = if (isRunSuccessful) failureDetails.getFailureDetails(runContext)
-      else failureDetails.getFailureDetailsForCrash(runContext)
+      val failureDetailsProvider = di.direct.instance<FailureDetailsOnCI>()
+      val failureDetailsMessage =failureDetailsProvider.getFailureDetails(runContext)
 
       if (di.direct.instance<CIServer>().isTestFailureShouldBeIgnored(messageText)) {
         di.direct.instance<CIServer>().ignoreTestFailure(testName = generifyErrorMessage(testName),
@@ -63,13 +62,8 @@ object ErrorReporter {
                                                          details = stackTraceContent)
         AllureReport.reportFailure(messageText,
                                    stackTraceContent,
-                                   failureDetails.getLinkToCIArtifacts(runContext))
+                                   failureDetailsProvider.getLinkToCIArtifacts(runContext))
       }
     }
-  }
-
-  fun getLinkToCIArtifacts(runContext: IDERunContext) : String? {
-    val failureDetails = di.direct.instance<FailureDetailsOnCI>()
-    return failureDetails.getLinkToCIArtifacts(runContext)
   }
 }

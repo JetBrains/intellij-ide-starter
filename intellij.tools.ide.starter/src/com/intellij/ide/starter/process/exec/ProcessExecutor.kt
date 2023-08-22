@@ -30,7 +30,7 @@ class ProcessExecutor(val presentableName: String,
                       val onBeforeKilled: suspend (Process, Long) -> Unit = { _, _ -> },
                       val stdInBytes: ByteArray = byteArrayOf(),
                       val onlyEnrichExistedEnvVariables: Boolean = false,
-                      val linkToArtefactsOnTC: String? = null) {
+                      val errorDetailProvider: (Process) -> String? = { _ -> null}) {
 
   private fun redirectProcessOutput(
     process: Process,
@@ -95,7 +95,7 @@ class ProcessExecutor(val presentableName: String,
     process.destroyForcibly()
   }
 
-  private fun analyzeProcessExit(process: Process, linkToArtefactsOnTC: String?) {
+  private fun analyzeProcessExit(process: Process) {
     val code = process.exitValue()
     if (code != 0) {
       val linesLimit = 100
@@ -103,9 +103,7 @@ class ProcessExecutor(val presentableName: String,
       logOutput("  ... failed external process `$presentableName` with exit code $code")
       val message = buildString {
         appendLine("External process `$presentableName` failed with code $code")
-        if (!linkToArtefactsOnTC.isNullOrEmpty()) {
-          appendLine("Link on TC artifacts $linkToArtefactsOnTC")
-        }
+        errorDetailProvider(process)?.let { appendLine(it) }
         for (diagnosticFile in errorDiagnosticFiles.filter { it.exists() && Files.size(it) > 0 }) {
           appendLine(diagnosticFile.fileName.toString())
           appendLine(diagnosticFile.readText().lines().joinToString(System.lineSeparator()) { "  $it" })
@@ -222,6 +220,6 @@ class ProcessExecutor(val presentableName: String,
 
     ioThreads.forEach { catchAll { it.join() } }
 
-    analyzeProcessExit(process, linkToArtefactsOnTC)
+    analyzeProcessExit(process)
   }
 }

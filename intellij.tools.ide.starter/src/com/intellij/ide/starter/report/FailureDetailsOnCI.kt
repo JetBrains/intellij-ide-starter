@@ -23,9 +23,5 @@ interface FailureDetailsOnCI {
            "You can find logs and other useful info in CI artifacts under the path ${runContext.contextName.replaceSpecialCharactersWithHyphens()}"
   }
 
-  fun getFailureDetailsForCrash(runContext: IDERunContext): String {
-    return getFailureDetails(runContext)
-  }
-
   fun getLinkToCIArtifacts(runContext: IDERunContext): String? = null
 }
