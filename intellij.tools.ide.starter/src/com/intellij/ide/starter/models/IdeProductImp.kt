@@ -105,11 +105,11 @@ object IdeProductImp : IdeProduct {
     fullName = "Aqua"
   )
 
-  /** RustIde */
+  /** RustRover */
   override val RR: IdeInfo = IdeInfo(
     productCode = "RR",
-    platformPrefix = "RustIde",
-    executableFileName = "RustIde",
-    fullName = "RustIde"
+    platformPrefix = "RustRover",
+    executableFileName = "rustrover",
+    fullName = "RustRover"
   )
 }

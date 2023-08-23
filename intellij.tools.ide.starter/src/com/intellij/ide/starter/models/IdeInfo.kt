@@ -47,7 +47,7 @@ data class IdeInfo(
       "DS" -> "dataspell"
       "PC" -> "pycharmPC"
       "QA" -> "aqua"
-      "RR" -> "RustIde"
+      "RR" -> "RustRover"
       else -> error("Unknown product code: $productCode")
     }
 
@@ -57,7 +57,7 @@ data class IdeInfo(
       "IC" -> "intellij.ce"
       "RM" -> "rubymine"
       "PY" -> "pycharm"
-      "RR" -> "RustIde"
+      "RR" -> "RustRover"
       else -> installerFilePrefix
     }
 
