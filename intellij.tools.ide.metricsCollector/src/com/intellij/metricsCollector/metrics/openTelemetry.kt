@@ -41,7 +41,7 @@ fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric>{
   return combineMetrics(getSpansMetricsMap(file, filter))
 }
 fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric> {
-  val opentelemetryFile = startResult.context.paths.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
+  val opentelemetryFile = startResult.runContext.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
   return getMetricsFromSpanAndChildren(opentelemetryFile, filter)
 }
 

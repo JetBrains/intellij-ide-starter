@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.screenRecorder
 
-import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.runner.IDERunContext
 import org.monte.media.Format
 import org.monte.media.FormatKeys.MediaType
 import org.monte.media.VideoFormatKeys.*
@@ -11,7 +11,7 @@ import java.awt.Rectangle
 import java.awt.Toolkit
 import kotlin.io.path.div
 
-class IDEScreenRecorder(ideTestContext: IDETestContext) : ScreenRecorder(
+class IDEScreenRecorder(runContext: IDERunContext) : ScreenRecorder(
   GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration,
   Rectangle(0, 0, Toolkit.getDefaultToolkit().screenSize.width,
             Toolkit.getDefaultToolkit().screenSize.height),
@@ -23,4 +23,4 @@ class IDEScreenRecorder(ideTestContext: IDETestContext) : ScreenRecorder(
          KeyFrameIntervalKey, 15 * 60),
   Format(MediaTypeKey, MediaType.VIDEO, EncodingKey, "black", FrameRateKey,
          Rational.valueOf(30.0)), null,
-  (ideTestContext.paths.logsDir / "screenRecording").toFile())
+  (runContext.logsDir / "screenRecording").toFile())

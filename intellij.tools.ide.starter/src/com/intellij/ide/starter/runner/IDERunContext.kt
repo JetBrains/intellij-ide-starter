@@ -2,6 +2,8 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -22,6 +24,7 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.report.FailureDetailsOnCI
+import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.*
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
@@ -65,10 +68,11 @@ data class IDERunContext(
       testContext.testName
     }
 
-  private val jvmCrashLogDirectory by lazy { testContext.paths.logsDir.resolve("jvm-crash").createDirectories() }
-  private val heapDumpOnOomDirectory by lazy { testContext.paths.logsDir.resolve("heap-dump").createDirectories() }
+  private val jvmCrashLogDirectory by lazy { logsDir.resolve("jvm-crash").createDirectories() }
+  private val heapDumpOnOomDirectory by lazy { logsDir.resolve("heap-dump").createDirectories() }
   val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectoriesIfNotExist()
-  val snapshotsDir = (testContext.paths.testHome / launchName / "snapshots")
+  val snapshotsDir = (testContext.paths.testHome / launchName / "snapshots").createDirectoriesIfNotExist()
+  val logsDir = (testContext.paths.testHome / launchName / "log").createDirectoriesIfNotExist()
 
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
 
@@ -134,6 +138,9 @@ data class IDERunContext(
         withClassFileVerification()
       installProfiler()
       setSnapshotPath(snapshotsDir)
+      setPathForMemorySnapshot()
+      collectOpenTelemetry()
+      setupLogDir()
 
       patchesForVMOptions.forEach { patchVMOptions -> patchVMOptions() }
 
@@ -152,8 +159,6 @@ data class IDERunContext(
 
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
-    val logsDir = paths.logsDir.createDirectories()
-    val snapshotsDir = snapshotsDir.createDirectories()
 
     val stdout = getStdout()
     val stderr = getStderr()
@@ -258,7 +263,7 @@ data class IDERunContext(
   }
 
   private fun getErrorMessage(t: Throwable): String? {
-    val failureCauseFile = testContext.paths.logsDir.resolve("failure_cause.txt")
+    val failureCauseFile = logsDir.resolve("failure_cause.txt")
     val errorMessage = if (Files.exists(failureCauseFile)) {
       Files.readString(failureCauseFile)
     }
@@ -386,7 +391,7 @@ data class IDERunContext(
 
   private fun publishArtifacts() {
     testContext.publishArtifact(
-      source = testContext.paths.logsDir,
+      source = logsDir,
       artifactPath = contextName,
       artifactName = formatArtifactName("logs", testContext.testName)
     )
@@ -421,4 +426,34 @@ data class IDERunContext(
         .forEach { it.deleteRecursively() }
     }
   }
+
+  fun setPathForMemorySnapshot() {
+    addVMOptionsPatch {
+      addSystemProperty("memory.snapshots.path", logsDir)
+    }
+  }
+
+  fun collectOpenTelemetry() = addVMOptionsPatch {
+    addSystemProperty("idea.diagnostic.opentelemetry.file", logsDir.resolve(IDETestContext.OPENTELEMETRY_FILE))
+  }
+
+  fun setupLogDir() = addVMOptionsPatch {
+    addSystemProperty("idea.log.path", logsDir)
+  }
+
+  /**
+   * Make sure that tests are run with: `-Djava.awt.headless=false` option
+   */
+  fun withScreenRecording() {
+    val screenRecorder = IDEScreenRecorder(this)
+    StarterListener.subscribe { event: IdeLaunchEvent ->
+      if (event.state == EventState.BEFORE) {
+        screenRecorder.start()
+      }
+      else if (event.state == EventState.AFTER) {
+        screenRecorder.stop()
+      }
+    }
+  }
+
 }

@@ -1,8 +1,8 @@
 // Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.ide.starter.report.publisher
 
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
+import com.intellij.ide.starter.runner.IDERunContext
 
 interface ReportPublisher {
   /**
@@ -13,5 +13,5 @@ interface ReportPublisher {
   /**
    * Publish report even if error occurred during run ide
    */
-  fun publishAnywayAfterRun(context: IDETestContext)
+  fun publishAnywayAfterRun(context: IDERunContext)
 }

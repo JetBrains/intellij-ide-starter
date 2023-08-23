@@ -76,7 +76,7 @@ class ReportPublisherTest {
     spyTestContext.runIDE(commands = commandChain)
     //ASSERT
     verify(publisherSpy, times(1)).publishResultOnSuccess(ideStartResult)
-    verify(publisherSpy, times(1)).publishAnywayAfterRun(context)
+    verify(publisherSpy, times(1)).publishAnywayAfterRun(ideRunContext)
   }
 
   @Test
@@ -97,6 +97,6 @@ class ReportPublisherTest {
     }
     //ASSERT
     verify(publisherSpy, times(0)).publishResultOnSuccess(ideStartResult)
-    verify(publisherSpy, times(1)).publishAnywayAfterRun(context)
+    verify(publisherSpy, times(1)).publishAnywayAfterRun(ideRunContext)
   }
 }

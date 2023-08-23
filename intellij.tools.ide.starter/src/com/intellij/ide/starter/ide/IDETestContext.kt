@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.buildTool.BuildTool
-import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
@@ -17,7 +16,6 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
-import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
@@ -69,22 +67,6 @@ data class IDETestContext(
   inline fun <reified M : BuildTool> withBuildTool(): M = getInstanceFromBindSet<BuildTool, M>()
 
   inline fun <reified M : Framework> withFramework(): M = getInstanceFromBindSet<Framework, M>()
-
-  /**
-   * Make sure that tests are run with: `-Djava.awt.headless=false` option
-   */
-  fun withScreenRecording(): IDETestContext {
-    val screenRecorder = IDEScreenRecorder(this)
-    StarterListener.subscribe { event: IdeLaunchEvent ->
-      if (event.state == EventState.BEFORE) {
-        screenRecorder.start()
-      }
-      else if (event.state == EventState.AFTER) {
-        screenRecorder.stop()
-      }
-    }
-    return this
-  }
 
   /**
    * Method applies patch immediately to the whole context.
@@ -180,11 +162,6 @@ data class IDETestContext(
       withXmx(4 * 1024)
     }
 
-  fun setPathForMemorySnapshot(): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty("memory.snapshots.path", paths.logsDir)
-    }
-
   @Suppress("unused")
   fun collectMemorySnapshotOnFailedPluginUnload(): IDETestContext =
     applyVMOptionsPatch {
@@ -228,11 +205,6 @@ data class IDETestContext(
   fun collectImportProjectPerfMetrics() = applyVMOptionsPatch {
     addSystemProperty("idea.collect.project.import.performance", true)
   }
-
-  fun collectOpenTelemetry() = applyVMOptionsPatch {
-    addSystemProperty("idea.diagnostic.opentelemetry.file", paths.logsDir.resolve(OPENTELEMETRY_FILE))
-  }
-
   fun enableVerboseOpenTelemetry() = applyVMOptionsPatch {
     addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
   }
@@ -250,12 +222,6 @@ data class IDETestContext(
     else {
       logOutput("Cleaning system dir for $this at $paths is disabled due to preserveSystemDir")
     }
-  }
-
-  fun wipeLogsDir() = apply {
-    //TODO: it would be better to allocate a new context instead of wiping the folder
-    logOutput("Cleaning logs dir for $this at $paths")
-    paths.logsDir.toFile().deleteRecursively()
   }
 
   fun wipeProjectsDir() = apply {
@@ -371,7 +337,7 @@ data class IDETestContext(
     }
     finally {
       if (isReportPublishingEnabled) publishers.forEach {
-        it.publishAnywayAfterRun(runContext.testContext)
+        it.publishAnywayAfterRun(runContext)
       }
     }
   }
@@ -594,8 +560,6 @@ data class IDETestContext(
       this
         //some caches from IDE warmup may stay
         .wipeSystemDir()
-        //some logs and perf snapshots may stay
-        .wipeLogsDir()
 
     return this
   }

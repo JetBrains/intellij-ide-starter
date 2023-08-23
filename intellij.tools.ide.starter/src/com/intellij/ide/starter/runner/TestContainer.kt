@@ -119,7 +119,6 @@ interface TestContainer<T> : Closeable {
         .withGtk2OnLinux()
         .skipGitLogIndexing()
         .enableSlowOperationsInEdtInTests()
-        .collectOpenTelemetry()
         .enableAsyncProfiler()
         .applyVMOptionsPatch {
           overrideDirectories(context.paths)

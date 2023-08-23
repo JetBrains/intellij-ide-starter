@@ -31,7 +31,6 @@ class IDEDataPaths(
     }
   }
 
-  val logsDir = (testHome / "log").createDirectories()
   val tempDir = (testHome / "temp").createDirectories()
 
   /**

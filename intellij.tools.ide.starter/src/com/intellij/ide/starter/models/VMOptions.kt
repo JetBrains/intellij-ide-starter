@@ -137,7 +137,6 @@ data class VMOptions(
     addSystemProperty("idea.config.path", paths.configDir)
     addSystemProperty("idea.system.path", paths.systemDir)
     addSystemProperty("idea.plugins.path", paths.pluginsDir)
-    addSystemProperty("idea.log.path", paths.logsDir)
   }
 
 
