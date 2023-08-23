@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
+import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
 import java.util.*
@@ -227,7 +228,12 @@ class InstallPluginTest {
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {
-          pluginConfigurator.installPluginFromURL(params.event.file)
+          try {
+            pluginConfigurator.installPluginFromURL(params.event.file)
+          } catch (e: IOException){
+            //plugin is in removal state and not available
+            return
+          }
         }
         .setLicense(System.getenv("LICENSE_KEY"))
       testContext.runIDE(commands = CommandChain().exitApp())
