@@ -29,8 +29,7 @@ class ProcessExecutor(val presentableName: String,
                       val onProcessCreated: suspend (Process, Long) -> Unit = { _, _ -> },
                       val onBeforeKilled: suspend (Process, Long) -> Unit = { _, _ -> },
                       val stdInBytes: ByteArray = byteArrayOf(),
-                      val onlyEnrichExistedEnvVariables: Boolean = false,
-                      val errorDetailProvider: (Process) -> String? = { _ -> null}) {
+                      val onlyEnrichExistedEnvVariables: Boolean = false) {
 
   private fun redirectProcessOutput(
     process: Process,
@@ -103,7 +102,6 @@ class ProcessExecutor(val presentableName: String,
       logOutput("  ... failed external process `$presentableName` with exit code $code")
       val message = buildString {
         appendLine("External process `$presentableName` failed with code $code")
-        errorDetailProvider(process)?.let { appendLine(it) }
         for (diagnosticFile in errorDiagnosticFiles.filter { it.exists() && Files.size(it) > 0 }) {
           appendLine(diagnosticFile.fileName.toString())
           appendLine(diagnosticFile.readText().lines().joinToString(System.lineSeparator()) { "  $it" })

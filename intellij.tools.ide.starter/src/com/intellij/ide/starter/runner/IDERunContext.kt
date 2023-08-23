@@ -204,7 +204,6 @@ data class IDERunContext(
           onBeforeKilled = { process, pid ->
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
-          errorDetailProvider = { _ -> ciFailureDetails }
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")
@@ -220,12 +219,12 @@ data class IDERunContext(
       }
       else {
         isRunSuccessful = false
-        error("Timeout of IDE run $contextName for $runTimeout" + (ciFailureDetails?.let { "\n$it" } ?: ""))
+        error((ciFailureDetails?.let { "$it\n" } ?: "") + "Timeout of IDE run $contextName for $runTimeout")
       }
     }
     catch (exception: Throwable) {
       isRunSuccessful = false
-      throw Exception(getErrorMessage(exception), exception)
+      throw Exception(getErrorMessage(exception, ciFailureDetails), exception)
     }
     finally {
       testContext.collectJBRDiagnosticFiles(ideProcessId)
@@ -262,7 +261,7 @@ data class IDERunContext(
     }
   }
 
-  private fun getErrorMessage(t: Throwable): String? {
+  private fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
     val failureCauseFile = logsDir.resolve("failure_cause.txt")
     val errorMessage = if (Files.exists(failureCauseFile)) {
       Files.readString(failureCauseFile)
@@ -270,7 +269,11 @@ data class IDERunContext(
     else {
       t.message ?: t.javaClass.name
     }
-    return errorMessage
+    return when {
+      ciFailureDetails == null -> errorMessage
+      errorMessage == null -> ciFailureDetails
+      else -> ciFailureDetails + errorMessage
+    }
   }
 
   private fun deleteJVMCrashes() {
