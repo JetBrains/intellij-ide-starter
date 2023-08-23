@@ -281,6 +281,20 @@ data class IDETestContext(
     return this
   }
 
+  fun wipeWorkspaceXml() = apply {
+    val workspaceXml = resolvedProjectHome / ".idea" / "workspace.xml"
+
+    logOutput("Removing $workspaceXml ...")
+
+    if (workspaceXml.notExists()) {
+      logOutput("Workspace file $workspaceXml doesn't exist. So, it will not be deleted")
+      return this
+    }
+
+    workspaceXml.toFile().delete()
+    return this
+  }
+
   fun removeAllImlFilesInProject(): IDETestContext {
     val projectDir = resolvedProjectHome
 
