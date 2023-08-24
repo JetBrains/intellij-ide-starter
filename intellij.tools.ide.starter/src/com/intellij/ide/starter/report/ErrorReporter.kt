@@ -51,13 +51,13 @@ object ErrorReporter {
       val failureDetailsProvider = FailureDetailsOnCI.instance
       val failureDetailsMessage =failureDetailsProvider.getFailureDetails(runContext)
 
-      if (di.direct.instance<CIServer>().isTestFailureShouldBeIgnored(messageText)) {
-        di.direct.instance<CIServer>().ignoreTestFailure(testName = generifyErrorMessage(testName),
+      if (CIServer.instance.isTestFailureShouldBeIgnored(messageText)) {
+        CIServer.instance.ignoreTestFailure(testName = generifyErrorMessage(testName),
                                                          message = failureDetailsMessage,
                                                          details = stackTraceContent)
       }
       else {
-        di.direct.instance<CIServer>().reportTestFailure(testName = generifyErrorMessage(testName),
+        CIServer.instance.reportTestFailure(testName = generifyErrorMessage(testName),
                                                          message = failureDetailsMessage,
                                                          details = stackTraceContent)
         AllureReport.reportFailure(messageText,

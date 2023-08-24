@@ -121,7 +121,7 @@ class InstallPluginTest {
     private fun getMarketplaceEvent(): MarketplaceEvent {
       val triggeredByJsonNode = TeamCityClient.run {
         get(
-          fullUrl = restUri.resolve("builds/id:${di.direct.instance<CIServer>().asTeamCity().buildId}?fields=triggered(displayText)")
+          fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}?fields=triggered(displayText)")
         ) { it.withAuth() }
       }
       val displayTextField = requireNotNull(triggeredByJsonNode.first().first().asText())

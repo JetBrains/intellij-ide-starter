@@ -3,7 +3,6 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.buildTool.BuildToolType
 import com.intellij.ide.starter.buildTool.GradleBuildTool
 import com.intellij.ide.starter.buildTool.MavenBuildTool
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.frameworks.AndroidFramework
 import com.intellij.ide.starter.frameworks.SpringFramework
 import com.intellij.ide.starter.ide.IDETestContext
@@ -15,8 +14,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
-import org.kodein.di.direct
-import org.kodein.di.instance
 import org.mockito.Answers
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -45,8 +42,7 @@ class FrameworksInjectionTest {
                                  ide = ide,
                                  testCase = testCase,
                                  testName = testName,
-                                 _resolvedProjectHome = projectHome,
-                                 ciServer = di.direct.instance())
+                                 _resolvedProjectHome = projectHome)
 
     val spring = context.withFramework<SpringFramework>()
     spring.testContext.shouldBe(context)

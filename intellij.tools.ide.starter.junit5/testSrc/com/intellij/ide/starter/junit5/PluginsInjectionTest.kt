@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.TestCase
@@ -10,8 +9,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
-import org.kodein.di.direct
-import org.kodein.di.instance
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import java.nio.file.Path
@@ -40,8 +37,7 @@ class PluginsInjectionTest {
                                  ide = ide,
                                  testCase = testCase,
                                  testName = testName,
-                                 _resolvedProjectHome = projectHome,
-                                 ciServer = di.direct.instance())
+                                 _resolvedProjectHome = projectHome)
 
     context.pluginConfigurator.testContext.shouldBe(context)
   }

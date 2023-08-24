@@ -80,7 +80,7 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
       logError("Couldn't acquire test method")
     }
 
-    if (di.direct.instance<CIServer>().isBuildRunningOnCI) {
+    if (CIServer.instance.isBuildRunningOnCI) {
       logOutput(buildString {
         appendLine("Disk usage diagnostics before test ${context.displayName}")
         appendLine(GlobalPaths.instance.getDiskUsageDiagnostics().withIndent("  "))

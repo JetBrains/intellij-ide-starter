@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
@@ -43,8 +42,7 @@ class ProfilerInjectionTest {
       ide = installedIDE,
       testCase = TestCases.IC.GradleJitPackSimple,
       testName = testInfo.hyphenateWithClass(),
-      _resolvedProjectHome = null,
-      ciServer = NoCIServer,
+      _resolvedProjectHome = null
     )
 
     val ideRunContext = IDERunContext(ideTestContext)

@@ -44,7 +44,6 @@ data class IDETestContext(
   val testCase: TestCase<*>,
   val testName: String,
   private val _resolvedProjectHome: Path?,
-  val ciServer: CIServer,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),
   var isReportPublishingEnabled: Boolean = true,
@@ -498,7 +497,9 @@ data class IDETestContext(
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
                       artifactName: String = source.fileName.toString()) {
-    ciServer.publishArtifact(source, artifactPath.replaceSpecialCharactersWithHyphens(), artifactName.replaceSpecialCharactersWithHyphens())
+    CIServer.instance.publishArtifact(source = source,
+                                      artifactPath = artifactPath.replaceSpecialCharactersWithHyphens(),
+                                      artifactName = artifactName.replaceSpecialCharactersWithHyphens())
   }
 
   @Suppress("unused")

@@ -3,7 +3,6 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.TestCase
@@ -24,8 +23,6 @@ import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
-import org.kodein.di.direct
-import org.kodein.di.instance
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import java.nio.file.Path
@@ -61,13 +58,12 @@ class RunIdeEventsTest {
     val testName = testInfo.displayName.hyphenateTestName()
     val paths = IDEDataPaths.createPaths(testName, testDirectory, useInMemoryFs = false)
 
-    val projectHome = testCase.projectInfo?.downloadAndUnpackProject()
+    val projectHome = testCase.projectInfo.downloadAndUnpackProject()
     val context = IDETestContext(paths = paths,
                                  ide = ide,
                                  testCase = testCase,
                                  testName = testName,
-                                 _resolvedProjectHome = projectHome,
-                                 ciServer = di.direct.instance())
+                                 _resolvedProjectHome = projectHome)
 
     try {
       context.runIDE(commands = CommandChain())

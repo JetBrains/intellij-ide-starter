@@ -15,7 +15,7 @@ import org.kodein.di.instance
  */
 open class TweakUseLatestDownloadedIdeBuild : BeforeAllCallback, BeforeEachCallback {
   private fun configure() {
-    require(!di.direct.instance<CIServer>().isBuildRunningOnCI) {
+    require(!CIServer.instance.isBuildRunningOnCI) {
       "${StarterConfigurationStorage.ENV_USE_LATEST_DOWNLOADED_IDE_BUILD} should not be used on CI. Downloaded build may not correspond with the changes"
     }
     ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, true)

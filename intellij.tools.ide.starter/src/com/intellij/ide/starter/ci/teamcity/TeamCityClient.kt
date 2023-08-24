@@ -21,7 +21,7 @@ import java.nio.file.Path
 import kotlin.io.path.*
 
 fun <T : HttpRequest> T.withAuth(): T = this.apply {
-  val teamCityCI by lazy { di.direct.instance<CIServer>().asTeamCity() }
+  val teamCityCI by lazy { CIServer.instance.asTeamCity() }
 
   addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(teamCityCI.userName, teamCityCI.password), this, null))
 }
