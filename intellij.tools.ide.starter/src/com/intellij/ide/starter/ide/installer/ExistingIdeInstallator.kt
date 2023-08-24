@@ -20,7 +20,7 @@ import kotlin.io.path.div
 class ExistingIdeInstallator(private val installedIdePath: Path) : IdeInstallator {
   override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val ideInstaller = IdeInstaller(installedIdePath, "locally-installed-ide")
-    val installDir = di.direct.instance<GlobalPaths>()
+    val installDir = GlobalPaths.instance
                        .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
     installDir.toFile().deleteRecursively()
     FileUtils.copyDirectory(installedIdePath.toFile(), installDir.toFile())

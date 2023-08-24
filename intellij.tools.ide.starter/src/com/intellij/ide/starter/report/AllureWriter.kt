@@ -13,7 +13,7 @@ import java.nio.file.Path
 import kotlin.io.path.div
 
 object AllureWriter: AllureResultsWriter {
-  var path: Path = di.direct.instance<GlobalPaths>().testHomePath / "tmp" / "allure"
+  var path: Path = GlobalPaths.instance.testHomePath / "tmp" / "allure"
   override fun write(testResult: TestResult?) {
     FileSystemResultsWriter(path).write(testResult)
   }

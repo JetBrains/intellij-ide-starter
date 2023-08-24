@@ -89,7 +89,7 @@ object IdeArchiveExtractor {
 
     //we use 7-Zip to unpack NSIS binaries, same way as in Toolbox App
     val sevenZipUrl = "https://repo.labs.intellij.net/thirdparty/7z-cmdline-15.06.zip"
-    val sevenZipCacheDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("7zip")
+    val sevenZipCacheDir = GlobalPaths.instance.getCacheDirectoryFor("7zip")
 
     val sevenZipFile = sevenZipCacheDir / sevenZipUrl.split("/").last()
     val sevenZipTool = sevenZipCacheDir / sevenZipFile.fileName.nameWithoutExtension

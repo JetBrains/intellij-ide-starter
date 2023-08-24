@@ -13,11 +13,11 @@ import kotlin.io.path.div
 class SimpleInstaller : IdeInstallator {
 
   override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
-    val installersDirectory = (di.direct.instance<GlobalPaths>().installersDirectory / ideInfo.productCode).createDirectories()
+    val installersDirectory = (GlobalPaths.instance.installersDirectory / ideInfo.productCode).createDirectories()
 
     //Download
     val ideInstaller = di.direct.instance<IdeDownloader>().downloadIdeInstaller(ideInfo, installersDirectory)
-    val installDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
+    val installDir = GlobalPaths.instance.getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
 
     if (ideInstaller.buildNumber == "SNAPSHOT") {
       logOutput("Cleaning up SNAPSHOT IDE installation $installDir")

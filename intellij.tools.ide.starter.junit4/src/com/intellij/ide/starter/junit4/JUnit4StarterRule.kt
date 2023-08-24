@@ -58,7 +58,7 @@ open class JUnit4StarterRule(
     if (ciServer.isBuildRunningOnCI) {
       logOutput(buildString {
         appendLine("Disk usage diagnostics before test ${testDescription.displayName}")
-        appendLine(di.direct.instance<GlobalPaths>().getDiskUsageDiagnostics().withIndent("  "))
+        appendLine(GlobalPaths.instance.getDiskUsageDiagnostics().withIndent("  "))
       })
     }
 

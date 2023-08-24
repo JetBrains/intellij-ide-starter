@@ -82,7 +82,7 @@ interface TestContainer<T> : Closeable {
 
     require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
 
-    val testDirectory = (di.direct.instance<GlobalPaths>().testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
+    val testDirectory = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
 
     val paths = IDEDataPaths.createPaths(testName, testDirectory, testCase.useInMemoryFileSystem)
     logOutput("Using IDE paths for '$testName': $paths")

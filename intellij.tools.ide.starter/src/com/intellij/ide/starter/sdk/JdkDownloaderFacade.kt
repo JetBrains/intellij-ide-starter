@@ -82,7 +82,7 @@ object JdkDownloaderFacade {
       Path.of(WslDistributionManager.getInstance().installedDistributions[0].getWindowsPath("/tmp/jdks/${jdk.installFolderName}"))
     }
     else {
-      di.direct.instance<GlobalPaths>().getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
+      GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
     }
 
   private fun isWSL(predicate: JdkPredicate): Boolean = predicate == JdkPredicate.forWSL(null)
@@ -117,7 +117,7 @@ object JdkDownloaderFacade {
     if (wslDistribution != null && item.os != "linux") {
       error("Cannot install non-linux JDK into WSL environment to $targetDir from $item")
     }
-    val temp = di.direct.instance<GlobalPaths>().testHomePath.resolve("tmp/jdk").toAbsolutePath().toString()
+    val temp = GlobalPaths.instance.testHomePath.resolve("tmp/jdk").toAbsolutePath().toString()
     val downloadFile = Paths.get(temp, "jdk-${System.nanoTime()}-${item.archiveFileName}")
     try {
       try {

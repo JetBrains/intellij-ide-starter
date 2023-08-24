@@ -42,7 +42,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   }
 
   fun installPluginFromURL(urlToPluginZipFile: String) = apply {
-    val pluginRootDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins")
+    val pluginRootDir = GlobalPaths.instance.getCacheDirectoryFor("plugins")
     val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
     logOutput("Downloading $urlToPluginZipFile")
 
@@ -74,7 +74,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     val pluginId = plugin.pluginId
     logOutput("Setting up plugin: $pluginId ...")
 
-    val pluginsCacheDor = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("plugins")
+    val pluginsCacheDor = GlobalPaths.instance.getCacheDirectoryFor("plugins")
     val fileName = pluginId.replace(".", "-") + ".zip"
 
     val downloadedPlugin: Path = when (plugin) {

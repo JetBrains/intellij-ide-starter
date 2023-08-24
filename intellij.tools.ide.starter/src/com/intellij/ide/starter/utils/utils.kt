@@ -180,7 +180,7 @@ fun writeJvmArgsFile(argFile: Path,
 }
 
 fun takeScreenshot(logsDir: Path) {
-  val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
+  val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName / "$toolName.jar"
   if (!File(screenshotTool.toString()).exists()) {
@@ -227,7 +227,7 @@ fun IDETestContext.collectJBRDiagnosticFiles(javaProcessId: Long) {
 
 fun startProfileNativeThreads(pid: String) {
   if (!SystemInfo.isWindows) {
-    val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
+    val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
     val toolName = when {
       SystemInfo.isMac -> "async-profiler-2.7-macos"
       SystemInfo.isLinux -> "async-profiler-2.7-linux-x64"
@@ -264,7 +264,7 @@ private fun givePermissionsToExecutables(profiler: Path) {
 
 fun stopProfileNativeThreads(pid: String, fileToStoreInfo: String) {
   if (!SystemInfo.isWindows) {
-    val toolsDir = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("tools")
+    val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
     val toolName = "async-profiler-2.7-macos"
     val profiler = toolsDir / toolName
 

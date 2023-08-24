@@ -35,7 +35,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
       // we use unique home folder per installation to ensure only expected
       // packages are included into the SDK home path
       val packagesHash = Hashing.sha1().hashString(packages.joinToString("$"))
-      val home = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("android-sdk") / "sdk-roots" / "sdk-root-$packagesHash"
+      val home = GlobalPaths.instance.getCacheDirectoryFor("android-sdk") / "sdk-roots" / "sdk-root-$packagesHash"
       if (home.isDirectory() && home.toFile().walk().count() > 10) return home
 
       val envVariablesWithJavaHome = System.getenv() + ("JAVA_HOME" to javaHome.toAbsolutePath().toString())
@@ -87,7 +87,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
       }
 
       val name = url.split("/").last()
-      val androidSdkCache = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("android-sdk")
+      val androidSdkCache = GlobalPaths.instance.getCacheDirectoryFor("android-sdk")
       val targetArchive = androidSdkCache / "archives" / name
       val targetUnpack = androidSdkCache / "builds" / name
       HttpClient.downloadIfMissing(url, targetArchive)

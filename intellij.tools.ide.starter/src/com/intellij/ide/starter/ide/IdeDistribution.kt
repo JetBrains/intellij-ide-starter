@@ -18,7 +18,7 @@ abstract class IdeDistribution {
   private fun downloadJbr(jbrFileName: String): Path {
     val downloadUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/$jbrFileName"
 
-    val jbrCacheDirectory = di.direct.instance<GlobalPaths>().getCacheDirectoryFor("jbr")
+    val jbrCacheDirectory = GlobalPaths.instance.getCacheDirectoryFor("jbr")
     val localFile = jbrCacheDirectory / jbrFileName
     val localDir = jbrCacheDirectory / jbrFileName.removeSuffix(".tar.gz")
 

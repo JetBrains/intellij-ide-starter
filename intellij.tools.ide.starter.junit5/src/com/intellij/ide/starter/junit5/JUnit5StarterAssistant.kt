@@ -83,7 +83,7 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
     if (di.direct.instance<CIServer>().isBuildRunningOnCI) {
       logOutput(buildString {
         appendLine("Disk usage diagnostics before test ${context.displayName}")
-        appendLine(di.direct.instance<GlobalPaths>().getDiskUsageDiagnostics().withIndent("  "))
+        appendLine(GlobalPaths.instance.getDiskUsageDiagnostics().withIndent("  "))
       })
     }
 

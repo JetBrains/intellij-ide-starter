@@ -54,7 +54,7 @@ private fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
   check(SystemInfo.isMac)
   val stdoutRedirect = ExecOutputRedirect.ToString()
   ProcessExecutor("ps",
-                  di.direct.instance<GlobalPaths>().testsDirectory,
+                  GlobalPaths.instance.testsDirectory,
                   timeout = 1.minutes,
                   args = listOf("ps", "-ax"),
                   stdoutRedirect = stdoutRedirect
@@ -85,7 +85,7 @@ private fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
   check(SystemInfo.isLinux)
   val stdoutRedirect = ExecOutputRedirect.ToString()
   ProcessExecutor("ps",
-                  di.direct.instance<GlobalPaths>().testsDirectory,
+                  GlobalPaths.instance.testsDirectory,
                   timeout = 1.minutes,
                   args = listOf("ps", "-aux"),
                   stdoutRedirect = stdoutRedirect
@@ -122,7 +122,7 @@ private fun dumpListOfProcessesOnWindows(): List<WindowsProcessMetaInfo> {
   check(SystemInfo.isWindows)
   val stdoutRedirect = ExecOutputRedirect.ToString()
   ProcessExecutor("wmic",
-                  di.direct.instance<GlobalPaths>().testsDirectory,
+                  GlobalPaths.instance.testsDirectory,
                   timeout = 1.minutes,
                   args = listOf("wmic", "process", "get", "Description,ExecutablePath,ProcessId", "/format:csv"),
                   stdoutRedirect = stdoutRedirect
@@ -146,7 +146,7 @@ private fun killProcessOnWindows(pid: Int) {
 
   ProcessExecutor(
     "kill-process-$pid",
-    di.direct.instance<GlobalPaths>().testsDirectory,
+    GlobalPaths.instance.testsDirectory,
     timeout = 1.minutes,
     args = listOf("taskkill", "/pid", pid.toString(), "/f"), //taskkill /pid 23756 /f
     stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),
@@ -160,7 +160,7 @@ private fun killProcessOnUnix(pid: Int) {
 
   ProcessExecutor(
     "kill-process-$pid",
-    di.direct.instance<GlobalPaths>().testsDirectory,
+    GlobalPaths.instance.testsDirectory,
     timeout = 1.minutes,
     args = listOf("kill", "-9", pid.toString()),
     stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),

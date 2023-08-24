@@ -55,4 +55,9 @@ abstract class GlobalPaths(val checkoutDir: Path) {
       }
     }
   }
+
+  companion object {
+    val instance: GlobalPaths
+      get() = di.direct.instance<GlobalPaths>()
+  }
 }

@@ -31,7 +31,7 @@ object TeamCityClient {
   private val teamCityURI by lazy { di.direct.instance<URI>(tag = "teamcity.uri") }
 
   // temporary directory, where artifact will be moved for preparation for publishing
-  val artifactForPublishingDir: Path by lazy { di.direct.instance<GlobalPaths>().testsDirectory / "teamcity-artifacts-for-publish" }
+  val artifactForPublishingDir: Path by lazy { GlobalPaths.instance.testsDirectory / "teamcity-artifacts-for-publish" }
 
   val restUri: URI = teamCityURI.resolve("/app/rest/")
   val guestAuthUri: URI = teamCityURI.resolve("/guestAuth/app/rest/")
