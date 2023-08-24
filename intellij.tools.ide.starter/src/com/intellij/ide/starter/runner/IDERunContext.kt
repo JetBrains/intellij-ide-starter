@@ -164,7 +164,7 @@ data class IDERunContext(
     val stderr = getStderr()
     var ideProcessId = 0L
     var isRunSuccessful = true
-    val ciFailureDetails = di.direct.instance<FailureDetailsOnCI>().getLinkToCIArtifacts(this)?.let { "Link on TC artifacts ${it}" }
+    val ciFailureDetails = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)?.let { "Link on TC artifacts ${it}" }
 
     val ideHost = IDEHost(codeBuilder, testContext).also { it.setup() }
     try {

@@ -48,7 +48,7 @@ object ErrorReporter {
         "($onlyLettersHash ${messageText.substring(0, MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
       }
 
-      val failureDetailsProvider = di.direct.instance<FailureDetailsOnCI>()
+      val failureDetailsProvider = FailureDetailsOnCI.instance
       val failureDetailsMessage =failureDetailsProvider.getFailureDetails(runContext)
 
       if (di.direct.instance<CIServer>().isTestFailureShouldBeIgnored(messageText)) {
