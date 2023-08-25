@@ -144,7 +144,11 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
 
   fun setupAndroidSdkToProject(androidSdkPath: Path) {
     val localPropertiesFile = testContext.resolvedProjectHome / "local.properties"
+    val file = localPropertiesFile.toFile()
+    if (!file.exists()) {
+      file.createNewFile()
+    }
     val path = androidSdkPath.toFile().absolutePath.replace("""\""", """\\""")
-    localPropertiesFile.toFile().writeText("sdk.dir=${path}")
+    file.appendText("${System.lineSeparator()}sdk.dir=${path}")
   }
 }
