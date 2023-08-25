@@ -37,8 +37,12 @@ class SpanFilter(val filter: (String) -> Boolean) {
  * 3a. If attribute ends with `#mean_value`, the mean value of mean values will be recorded
  */
 
-fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric>{
+fun getMetricsFromSpanAndChildren(file: File, filter: SpanFilter): List<Metric> {
   return combineMetrics(getSpansMetricsMap(file, filter))
+}
+
+fun getMetricsBasedOnDiffBetweenSpans(name: String, file: File, parentSpanName: String, fromSpan: String, toSpan: String) : List<Metric> {
+  return combineMetrics(getDurationBetweenSpans(name, file, parentSpanName, fromSpan, toSpan))
 }
 fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric> {
   val opentelemetryFile = startResult.runContext.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
@@ -60,6 +64,74 @@ fun getSpansMetricsMap(file: File,
   }
   return spanToMetricMap
 }
+
+/**
+ * Calculates the duration between two spans in a given file.
+ *
+ * @param name The name of the metric.
+ * @param file The file containing the spans.
+ * @param parentSpanName The name of the parent span.
+ * @param fromSpan The start span ID.
+ * @param toSpan The end span ID.
+ * @return A map containing the metric with attributes.
+ */
+fun getDurationBetweenSpans(name: String, file: File, parentSpanName: String, fromSpan: String, toSpan: String):  Map<String, List<MetricWithAttributes>> {
+  val allSpans = getSpans(file)
+  val fromSpans = mutableListOf<SpanInfo>()
+  val toSpans = mutableListOf<SpanInfo>()
+  for (span in allSpans) {
+    val operationName = span.get("operationName").textValue()
+    if (operationName == parentSpanName) {
+      processChildrenSemantic(fromSpans, toSpans, allSpans, fromSpan, toSpan, span.get("spanID").textValue())
+    }
+  }
+  val sortedFromSpans = fromSpans.sortedByDescending { info -> info.timeStamp }
+  val sortedToSpans = toSpans.sortedByDescending { info -> info.timeStamp }
+  val metrics = mutableListOf<MetricWithAttributes>()
+  assert(toSpans.size >= fromSpans.size) {
+    "size of toSpans is ${toSpans.size}, but size of fromSpans is ${fromSpans.size}"
+  }
+  for(i in fromSpans.size -1 downTo 0 ) {
+    val duration = sortedToSpans[i].timeStamp - sortedFromSpans[i].timeStamp + sortedToSpans[i].duration
+    val metric = MetricWithAttributes(Metric(Duration(name), duration))
+    metrics.add(metric)
+  }
+  val map = mutableMapOf<String, List<MetricWithAttributes>>()
+  map[name] = metrics
+  return map
+}
+
+
+fun processChildrenSemantic(fromSpans: MutableList<SpanInfo>, toSpans: MutableList<SpanInfo>,
+                            allSpans: JsonNode,
+                            fromSpan: String,
+                            toSpan: String,
+                            parentSpanId: String?) {
+  allSpans.forEach { span ->
+    span.get("references")?.forEach { reference ->
+      if (reference.get("refType")?.textValue() == "CHILD_OF") {
+        val spanId = reference.get("spanID").textValue()
+        if (spanId == parentSpanId) {
+          val spanName = span.get("operationName").textValue()
+          if (spanName == toSpan) {
+            val value = getDuration(span)
+            val timeStamp = getStartTime(span)
+            toSpans.add(SpanInfo(spanName, value, timeStamp))
+          }
+          if (spanName == fromSpan) {
+            val value = getDuration(span)
+            val timeStamp = getStartTime(span)
+            fromSpans.add(SpanInfo(spanName, value, timeStamp))
+          }
+          processChildrenSemantic(fromSpans, toSpans, allSpans, fromSpan, toSpan, span.get("spanID").textValue())
+        }
+      }
+    }
+  }
+
+}
+
+data class SpanInfo(val name: String, val duration: Long, val timeStamp: Long)
 
 fun processSpans(
   file: File,
@@ -173,7 +245,7 @@ private fun processChildren(spanToMetricMap: MutableMap<String, MutableList<Metr
 }
 
 private fun getDuration(span: JsonNode) = (span.get("duration").longValue() / 1000.0).roundToLong()
-
+private fun getStartTime(span: JsonNode) = (span.get("startTime").longValue() / 1000.0).roundToLong()
 private fun shouldAvoidIfZero(span: JsonNode): Boolean {
   span.get("tags")?.forEach { tag ->
     val attributeName = tag.get("key").textValue()
