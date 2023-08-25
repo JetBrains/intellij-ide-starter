@@ -197,6 +197,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
     return false
   }
+
   fun execGradlew(args: List<String>, timeout: Duration = 1.minutes): GradleBuildTool {
     val stdout = ExecOutputRedirect.ToString()
     val stderr = ExecOutputRedirect.ToString()
@@ -225,6 +226,16 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       stdoutRedirect = stdout,
       stderrRedirect = stderr
     ).start()
+    return this
+  }
+
+  fun setGradleVersionInWrapperProperties(newVersion: String): GradleBuildTool {
+    val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
+    if (propFile.exists()) {
+      val lineToReplace = propFile.readLines().filter { it.startsWith("distributionUrl") }[0]
+      val newLine = lineToReplace.replace("\\d\\.\\d".toRegex(), newVersion)
+      propFile.writeText(propFile.readText().replace(lineToReplace, newLine))
+    }
     return this
   }
 }
