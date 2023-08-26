@@ -272,7 +272,7 @@ data class IDERunContext(
     return when {
       ciFailureDetails == null -> errorMessage
       errorMessage == null -> ciFailureDetails
-      else -> ciFailureDetails + errorMessage
+      else -> "$ciFailureDetails\n$errorMessage"
     }
   }
 
