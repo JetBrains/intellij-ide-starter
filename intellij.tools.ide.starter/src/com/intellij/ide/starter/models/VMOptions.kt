@@ -267,4 +267,7 @@ data class VMOptions(
   fun skipIndicesInitialization(value: Boolean = true) = addSystemProperty("idea.skip.indices.initialization", value)
 
   fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
+  fun hasOption(option: String): Boolean {
+    return data.any { it.contains(option) }
+  }
 }

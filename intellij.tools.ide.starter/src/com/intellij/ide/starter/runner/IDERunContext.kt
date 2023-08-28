@@ -122,7 +122,7 @@ data class IDERunContext(
     }
   }
 
-  private fun calculateVmOptions(): VMOptions {
+  fun calculateVmOptions(): VMOptions {
     return testContext.ide.vmOptions.copy().apply {
       disableStartupDialogs()
       usingStartupFramework()
