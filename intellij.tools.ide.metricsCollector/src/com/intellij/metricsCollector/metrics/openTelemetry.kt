@@ -55,7 +55,7 @@ fun getSpansMetricsMap(file: File,
   val spanToMetricMap = mutableMapOf<String, MutableList<MetricWithAttributes>>()
   for (span in allSpans) {
     val operationName = span.get("operationName").textValue()
-    if (spanFilter.filter(operationName)) {
+    if (spanFilter.filter(operationName) && !isWarmup(span)) {
       val metric = MetricWithAttributes(Metric(Duration(operationName), getDuration(span)))
       populateAttributes(metric, span)
       spanToMetricMap.getOrPut(operationName) { mutableListOf() }.add(metric)
@@ -82,7 +82,9 @@ fun getDurationBetweenSpans(name: String, file: File, parentSpanName: String, fr
   for (span in allSpans) {
     val operationName = span.get("operationName").textValue()
     if (operationName == parentSpanName) {
-      processChildrenSemantic(fromSpans, toSpans, allSpans, fromSpan, toSpan, span.get("spanID").textValue())
+      if (!isWarmup(allSpans)) {
+        processChildrenSemantic(fromSpans, toSpans, allSpans, fromSpan, toSpan, span.get("spanID").textValue())
+       }
     }
   }
   val sortedFromSpans = fromSpans.sortedByDescending { info -> info.timeStamp }
@@ -111,7 +113,7 @@ fun processChildrenSemantic(fromSpans: MutableList<SpanInfo>, toSpans: MutableLi
     span.get("references")?.forEach { reference ->
       if (reference.get("refType")?.textValue() == "CHILD_OF") {
         val spanId = reference.get("spanID").textValue()
-        if (spanId == parentSpanId) {
+        if (spanId == parentSpanId && !isWarmup(span)) {
           val spanName = span.get("operationName").textValue()
           if (spanName == toSpan) {
             val value = getDuration(span)
@@ -129,6 +131,19 @@ fun processChildrenSemantic(fromSpans: MutableList<SpanInfo>, toSpans: MutableLi
     }
   }
 
+}
+
+private fun isWarmup(span: JsonNode) : Boolean {
+  val tagNode = span.get("tags")
+  if (tagNode == null) {
+    return false
+  }
+  val tags = tagNode.mapNotNull {
+    val key = it.get("key")?.textValue()
+    val value = it.get("value")?.textValue()
+    Pair(key, value)
+  }
+  return tags.find { it.first == "warmup" && it.second == "true" } != null
 }
 
 data class SpanInfo(val name: String, val duration: Long, val timeStamp: Long)
@@ -229,7 +244,7 @@ private fun processChildren(spanToMetricMap: MutableMap<String, MutableList<Metr
     span.get("references")?.forEach { reference ->
       if (reference.get("refType")?.textValue() == "CHILD_OF") {
         val spanId = reference.get("spanID").textValue()
-        if (spanId == parentSpanId) {
+        if (spanId == parentSpanId && !isWarmup(span)) {
           val spanName = span.get("operationName").textValue()
           val value = getDuration(span)
           if (value != 0L || !shouldAvoidIfZero(span)) {
