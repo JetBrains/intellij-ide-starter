@@ -40,15 +40,18 @@ class OpentelemetryJsonParser(private val spanFilter: SpanFilter) {
     val result = mutableSetOf<SpanElement>()
     filter.forEach {
       result.add(it)
-      processChild(result, it.spanId, index)
+      processChild(result, it, index)
     }
     return result.asSequence()
   }
 
-  private fun processChild(result: MutableSet<SpanElement>, parentId: String, index: Map<String, Collection<SpanElement>>) {
-    index[parentId]?.forEach {
+  private fun processChild(result: MutableSet<SpanElement>, parent: SpanElement, index: Map<String, Collection<SpanElement>>) {
+    index[parent.spanId]?.forEach {
+      if (parent.isWarmup) {
+        it.isWarmup = true
+      }
       result.add(it)
-      processChild(result, it.spanId, index)
+      processChild(result, it, index)
     }
   }
 

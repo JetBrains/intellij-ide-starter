@@ -261,6 +261,28 @@ class OpenTelemetryTest {
     assert(find == null) {
       "Must be 5 semanticHighlighting"
     }
+  }
+
+  @Test
+  fun findUsageWithWarmUp() {
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_findUsage_with_warmup.json").toFile(),
+                                                SpanFilter.equals("performance_test"))
+    metrics.shouldContainAll(listOf(
+      Metric(Duration("findUsagesParent_1"), 362),
+      Metric(Duration("findUsagesParent_2"), 337),
+      Metric(Duration("findUsagesParent_3"), 336),
+      Metric(Duration("findUsagesParent_4"), 320),
+      Metric(Duration("findUsagesParent_5"), 350),
+      Metric(Duration("findUsagesParent_6"), 342),
+      Metric(Duration("findUsagesParent_7"), 340),
+      Metric(Duration("findUsagesParent_8"), 289),
+      Metric(Duration("findUsagesParent_9"), 326),
+      Metric(Duration("findUsagesParent_10"), 340),
+    ))
+    val find = metrics.find { it.id.name == "findUsagesParent_11" }
+    assert(find == null) {
+      "Must be 10 findUsagesParent"
+    }
 
   }
 }

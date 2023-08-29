@@ -66,14 +66,12 @@ fun getMetricsBasedOnDiffBetweenSpans(name: String, file: File, fromSpanName: St
   val metrics = mutableListOf<MetricWithAttributes>()
   val sortedFromSpans = fromSpanMetrics.sortedByDescending { info -> info.startTimestamp }
   val sortedToSpans = toSpanMetrics.sortedByDescending { info -> info.startTimestamp }
-  val map = mutableMapOf<String, List<MetricWithAttributes>>()
   for(i in fromSpanMetrics.size -1 downTo 0 ) {
     val duration = sortedToSpans[i].startTimestamp - sortedFromSpans[i].startTimestamp + sortedToSpans[i].duration
     val metric = MetricWithAttributes(Metric(Duration(name), duration))
     metrics.add(metric)
   }
-  map[name] = metrics
-  return combineMetrics(map)
+  return combineMetrics(mapOf(name to metrics))
 }
 fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric> {
   val opentelemetryFile = startResult.runContext.logsDir.resolve(OPENTELEMETRY_FILE).toFile()

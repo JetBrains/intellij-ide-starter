@@ -14,7 +14,7 @@ import kotlin.math.roundToLong
  * @property parentSpanId The unique identifier of the parent span element, if any.
  * @property tags The list of key-value pairs representing the tags associated with the span element.
  */
-data class SpanElement(val isWarmup: Boolean,
+data class SpanElement(var isWarmup: Boolean,
                        val name: String,
                        val duration: Long,
                        val startTimestamp: Long,
