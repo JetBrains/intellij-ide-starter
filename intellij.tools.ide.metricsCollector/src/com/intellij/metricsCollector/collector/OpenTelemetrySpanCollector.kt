@@ -2,7 +2,7 @@ package com.intellij.metricsCollector.collector
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.metricsCollector.metrics.SpanFilter
+import com.intellij.metricsCollector.telemetry.SpanFilter
 import com.intellij.metricsCollector.metrics.getMetricsFromSpanAndChildren
 
 /**

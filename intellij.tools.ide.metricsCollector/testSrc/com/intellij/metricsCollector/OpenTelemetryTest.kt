@@ -3,8 +3,9 @@ package com.intellij.metricsCollector
 import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
-import com.intellij.metricsCollector.metrics.SpanFilter
+import com.intellij.metricsCollector.metrics.getMetricsBasedOnDiffBetweenSpans
 import com.intellij.metricsCollector.metrics.getMetricsFromSpanAndChildren
+import com.intellij.metricsCollector.telemetry.SpanFilter
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ class OpenTelemetryTest {
   }
 
   @Test
-  fun testContainsInFilter(){
+  fun testContainsInFilter() {
     val spanNames = listOf("%findUsages", "run activity")
     val file = (openTelemetryReports / "opentelemetry.json").toFile()
     val expected = spanNames.map { spanName ->
@@ -55,7 +56,8 @@ class OpenTelemetryTest {
 
   @Test
   fun metricsWithSingleSpan() {
-    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_main_timer.json").toFile(), SpanFilter.equals("performance_test"))
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_main_timer.json").toFile(),
+                                                SpanFilter.equals("performance_test"))
     metrics.shouldContainExactlyInAnyOrder(listOf(
       Metric(Duration("performance_test"), 13497),
       Metric(Duration("delayType"), 3739),
@@ -217,5 +219,48 @@ class OpenTelemetryTest {
       Metric(Duration("typing#latency#max"), 51),
       Metric(Duration("typing#latency#mean_value"), 3),
     ))
+  }
+
+  @Test
+  fun opentelemetryWithWarmupSpans() {
+    val metrics = getMetricsFromSpanAndChildren((openTelemetryReports / "opentelemetry_with_warmup_spans.json").toFile(),
+                                                SpanFilter.equals("performance_test"))
+    metrics.shouldContainAll(listOf(
+      Metric(Duration("localInspections#mean_value"), 369),
+      Metric(Duration("localInspections_1"), 375),
+      Metric(Duration("localInspections_2"), 373),
+      Metric(Duration("localInspections_3"), 367),
+      Metric(Duration("localInspections_4"), 361),
+      Metric(Duration("localInspections_5"), 370),
+      Metric(Duration("localInspections"), 1846),
+      Metric(Duration("localInspections#Warnings#mean_value"), 4),
+      Metric(Counter("localInspections_1#Warnings"), 4),
+    ))
+    val find = metrics.find { it.id.name == "localInspections_6" }
+    assert(find == null) {
+      "Must be 5 localInspections"
+    }
+
+  }
+
+  @Test
+  fun diffBetweenMetrics() {
+    val metrics = getMetricsBasedOnDiffBetweenSpans("semanticHighlighting",
+                                                    (openTelemetryReports / "opentelemetry_with_warmup_spans.json").toFile(),
+                                                    "localInspections", "GeneralHighlightingPass")
+    metrics.shouldContainAll(listOf(
+      Metric(Duration("semanticHighlighting_1"), 351),
+      Metric(Duration("semanticHighlighting_2"), 350),
+      Metric(Duration("semanticHighlighting_3"), 341),
+      Metric(Duration("semanticHighlighting_4"), 339),
+      Metric(Duration("semanticHighlighting_5"), 349),
+      Metric(Duration("semanticHighlighting"), 1730),
+      Metric(Duration("semanticHighlighting#mean_value"), 346),
+    ))
+    val find = metrics.find { it.id.name == "semanticHighlighting_6" }
+    assert(find == null) {
+      "Must be 5 semanticHighlighting"
+    }
+
   }
 }
