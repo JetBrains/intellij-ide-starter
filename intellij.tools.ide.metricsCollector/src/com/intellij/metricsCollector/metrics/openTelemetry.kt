@@ -9,6 +9,7 @@ import com.intellij.metricsCollector.telemetry.SpanInfoProcessor
 import com.intellij.metricsCollector.telemetry.MetricSpanProcessor
 import com.intellij.metricsCollector.telemetry.OpentelemetryJsonParser
 import com.intellij.metricsCollector.telemetry.SpanFilter
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.util.alsoIfNull
 import java.io.File
 import kotlin.math.pow
@@ -20,7 +21,7 @@ const val DEFAULT_SPAN_NAME: String = "performance_test"
 data class MetricWithAttributes(val metric: Metric,
                                 val attributes: MutableList<Metric> = mutableListOf())
 
-
+private val logger = logger<OpentelemetryJsonParser>()
 /**
  * Reports duration of `nameSpan` and all its children spans.
  * Besides, all attributes are reported as counters.
@@ -65,9 +66,16 @@ fun getMetricsBasedOnDiffBetweenSpans(name: String, file: File, fromSpanName: St
   }
   val metrics = mutableListOf<MetricWithAttributes>()
   val sortedFromSpans = fromSpanMetrics.sortedByDescending { info -> info.startTimestamp }
-  val sortedToSpans = toSpanMetrics.sortedByDescending { info -> info.startTimestamp }
-  for(i in fromSpanMetrics.size -1 downTo 0 ) {
-    val duration = sortedToSpans[i].startTimestamp - sortedFromSpans[i].startTimestamp + sortedToSpans[i].duration
+  val spanIds = sortedFromSpans.map { it.spanId }.toSet()
+  val sortedToSpans = toSpanMetrics.sortedByDescending { info -> info.startTimestamp }.filter { spanIds.contains(it.parentSpanId)  }
+  for(i in fromSpanMetrics.indices) {
+    val currentToSpan = sortedToSpans[i]
+    val currentFromSpan = sortedFromSpans[i]
+    if (currentFromSpan.spanId != currentToSpan.parentSpanId) {
+      logger.warn(
+        "Current span $fromSpanName with spanId ${currentToSpan.spanId} have ${currentToSpan.parentSpanId}, but expected ${currentFromSpan.spanId}")
+    }
+    val duration = currentToSpan.startTimestamp - currentFromSpan.startTimestamp + currentToSpan.duration
     val metric = MetricWithAttributes(Metric(Duration(name), duration))
     metrics.add(metric)
   }

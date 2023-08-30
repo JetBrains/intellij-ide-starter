@@ -249,11 +249,11 @@ class OpenTelemetryTest {
                                                     (openTelemetryReports / "opentelemetry_with_warmup_spans.json").toFile(),
                                                     "localInspections", "GeneralHighlightingPass")
     metrics.shouldContainAll(listOf(
-      Metric(Duration("semanticHighlighting_1"), 351),
-      Metric(Duration("semanticHighlighting_2"), 350),
+      Metric(Duration("semanticHighlighting_1"), 349),
+      Metric(Duration("semanticHighlighting_2"), 339),
       Metric(Duration("semanticHighlighting_3"), 341),
-      Metric(Duration("semanticHighlighting_4"), 339),
-      Metric(Duration("semanticHighlighting_5"), 349),
+      Metric(Duration("semanticHighlighting_4"), 350),
+      Metric(Duration("semanticHighlighting_5"), 351),
       Metric(Duration("semanticHighlighting"), 1730),
       Metric(Duration("semanticHighlighting#mean_value"), 346),
     ))
