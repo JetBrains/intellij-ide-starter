@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.process
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -8,8 +7,6 @@ import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.withRetry
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
@@ -229,6 +226,11 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
         "/perf-startup/cache/") || line.contains("/opt/teamcity-agent/work/") || line.contains("/mnt/agent/work/"))) {
       candidates.add(pid)
     }
+  }
+
+  if (originalProcess.info().command().get().contains("java")){
+    logOutput("The test was run without wrapper, add original pid")
+    candidatesFromProcessHandle.add(originalProcess.pid())
   }
 
   originalProcess.toHandle().descendants().forEach { processHandle ->
