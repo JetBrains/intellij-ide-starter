@@ -7,7 +7,10 @@ import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.*
+import com.intellij.ide.starter.ide.CodeInjector
+import com.intellij.ide.starter.ide.IDEHost
+import com.intellij.ide.starter.ide.IDEStartConfig
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.models.VMOptionsDiff
@@ -240,8 +243,6 @@ data class IDERunContext(
       }
       finally {
         StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
-        // https://youtrack.jetbrains.com/issue/AT-190/Full-DI-reset-after-IDE-run
-        di.direct.instance<IdeInfoConfigurable>().resetDIToDefaultDownloading()
       }
     }
   }

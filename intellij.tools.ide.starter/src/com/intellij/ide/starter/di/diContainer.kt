@@ -7,7 +7,10 @@ import com.intellij.ide.starter.community.PublicIdeDownloader
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.frameworks.Framework
-import com.intellij.ide.starter.ide.*
+import com.intellij.ide.starter.ide.CodeInjector
+import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.IdeDownloader
+import com.intellij.ide.starter.ide.IdeInstallator
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.IdeProduct
@@ -59,11 +62,6 @@ var di = DI {
   bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
-  bindSingleton<IdeInfoConfigurable> {
-    object : IdeInfoConfigurable {
-      override fun resetDIToDefaultDownloading() = usePublicIdeDownloader()
-    }
-  }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
   bindSingleton(tag = "teamcity.uri") { URI("https://buildserver.labs.intellij.net").normalize() }
 }.apply {

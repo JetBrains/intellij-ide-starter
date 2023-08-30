@@ -1,8 +1,14 @@
 package com.intellij.ide.starter.models
 
 import com.intellij.ide.starter.community.model.BuildType
+import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.IdeDownloader
+import com.intellij.ide.starter.ide.installer.IdeInstaller
 import com.intellij.ide.starter.system.SystemInfo
+import org.kodein.di.direct
+import org.kodein.di.instance
 import java.net.URI
+import java.nio.file.Path
 
 data class IdeInfo(
   /**
@@ -29,8 +35,15 @@ data class IdeInfo(
 
   val downloadURI: URI? = null,
 
-  val fullName: String
+  val fullName: String,
+
+  private val downloader: IdeDownloader = di.direct.instance<IdeDownloader>()
 ) {
+
+  fun download(installerDirectory: Path): IdeInstaller {
+    return downloader.downloadIdeInstaller(this, installerDirectory)
+  }
+
   companion object
 
   val installerFilePrefix
