@@ -45,10 +45,10 @@ data class TestCase<T : ProjectInfoSpec>(
     version: String? = null
   ): TestCase<T> {
     return copy(ideInfo = ideInfo.copy(
-      buildType = buildType?.type ?: ideInfo.buildType,
+      buildType = buildType?.type ?: "",
       downloader = PublicIdeDownloader,
-      buildNumber = buildNumber ?: ideInfo.buildNumber,
-      version = version ?: ideInfo.version
+      buildNumber = buildNumber ?: "",
+      version = version ?: ""
     ))
   }
 
