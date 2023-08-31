@@ -1,14 +1,11 @@
 package com.intellij.ide.starter.path
 
-import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize
 import com.intellij.ide.starter.utils.createInMemoryDirectory
 import com.intellij.ide.starter.utils.logOutput
 import java.io.Closeable
-import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
-import kotlin.io.path.exists
 
 class IDEDataPaths(
   val testHome: Path,
@@ -33,12 +30,6 @@ class IDEDataPaths(
 
   val tempDir = (testHome / "temp").createDirectories()
 
-  /**
-   * Directory used to store TeamCity artifacts. To make sure the TeamCity publishes all artifacts
-   * files added to this directory must not be removed until the end of the tests execution .
-   */
-  private val teamCityArtifacts = (testHome / "team-city-artifacts").createDirectories()
-
   val configDir = ((inMemoryRoot ?: testHome) / "config").createDirectories()
   val systemDir = ((inMemoryRoot ?: testHome) / "system").createDirectories()
   val pluginsDir = (testHome / "plugins").createDirectories()
@@ -54,31 +45,6 @@ class IDEDataPaths(
         e.stackTraceToString().lines().forEach { logOutput("    $it") }
       }
     }
-
-    // [deleteDirectories] is disabled, because sometimes we need to collect some artifacts from those directories
-    // anyway, they will be cleaned up by CI
-  }
-
-  private fun deleteDirectories() {
-    val toDelete = getDirectoriesToDeleteAfterTest().filter { it.exists() }
-
-    if (toDelete.isNotEmpty()) {
-      logOutput(buildString {
-        appendLine("Removing directories of $testHome")
-        toDelete.forEach { path ->
-          appendLine("  $path: ${path.getFileOrDirectoryPresentableSize()}")
-        }
-      })
-    }
-
-    toDelete.forEach { runCatching { it.toFile().deleteRecursively() } }
-  }
-
-  private fun getDirectoriesToDeleteAfterTest() = if (testHome.exists()) {
-    Files.list(testHome).use { it.toList() } - setOf(teamCityArtifacts)
-  }
-  else {
-    emptyList()
   }
 
   override fun toString(): String = "IDE Test Paths at $testHome"
