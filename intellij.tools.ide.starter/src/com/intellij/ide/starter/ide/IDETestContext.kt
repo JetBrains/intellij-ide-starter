@@ -104,7 +104,7 @@ class IDETestContext(
 
   fun skipGitLogIndexing(value: Boolean = true): IDETestContext =
     applyVMOptionsPatch {
-      addSystemProperty("vcs.log.index.git", !value)
+      addSystemProperty("vcs.log.index.enable", !value)
     }
 
   fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = applyVMOptionsPatch {
