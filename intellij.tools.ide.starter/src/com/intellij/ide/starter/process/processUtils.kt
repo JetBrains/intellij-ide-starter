@@ -228,7 +228,8 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
     }
   }
 
-  if (originalProcess.info().command().get().contains("java")){
+  val originalCommand = originalProcess.info().command()
+  if (originalCommand.isPresent && originalCommand.get().contains("java")){
     logOutput("The test was run without wrapper, add original pid")
     candidatesFromProcessHandle.add(originalProcess.pid())
   }
