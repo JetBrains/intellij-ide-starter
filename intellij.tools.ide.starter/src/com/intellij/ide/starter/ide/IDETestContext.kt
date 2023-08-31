@@ -38,7 +38,7 @@ import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-data class IDETestContext(
+class IDETestContext(
   val paths: IDEDataPaths,
   val ide: InstalledIde,
   val testCase: TestCase<*>,
@@ -51,6 +51,11 @@ data class IDETestContext(
 ) {
   companion object {
     const val OPENTELEMETRY_FILE = "opentelemetry.json"
+  }
+
+  fun copy(ide: InstalledIde? = null, _resolvedProjectHome: Path? = null): IDETestContext {
+    return IDETestContext(paths, ide ?: this.ide, testCase, testName, _resolvedProjectHome ?: this._resolvedProjectHome, profilerType,
+                          publishers, isReportPublishingEnabled, preserveSystemDir)
   }
 
   val resolvedProjectHome: Path
