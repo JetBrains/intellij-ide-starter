@@ -8,6 +8,7 @@ import com.intellij.ide.starter.utils.writeJvmArgsFile
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import java.io.File
+import java.lang.management.ManagementFactory
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.readLines
@@ -270,4 +271,6 @@ data class VMOptions(
   fun hasOption(option: String): Boolean {
     return data.any { it.contains(option) }
   }
+
+  fun isUnderDebug(): Boolean = ManagementFactory.getRuntimeMXBean().inputArguments.any { it.startsWith("-agentlib:jdwp") }
 }

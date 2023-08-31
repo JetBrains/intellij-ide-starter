@@ -30,25 +30,19 @@ di = DI {
 
 ### Debugging the test
 
+TIP: If you enable `debugger.auto.attach.from.console` Registry, you can just click debug on the test in IntelliJ IDEA and everything will
+happen automatically.
+
 Since tests are executed inside the IDE as an external process for test, you cannot directly debug them. 
 To debug a test, you need to connect remotely to the IDE instance.
 
 General debugging workflow:
 
-1. Add the following call on `context` object
-```
-...
-
-context
-.addVMOptionsPatch { debug() }
-
-...
-```
-2. Create run configuration for Remote JVM Debug:
+1. Create run configuration for Remote JVM Debug:
 Debugger mode: **Attach to Remote JVM**   
 Host: **localhost** Port: **5005**  
 Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005```  
-3. Run your test. 
+2. Run your test. The required option will be added automatically. 
 
 After seeing the console prompt to connect remotely to port 5005, run the created run configuration.
 

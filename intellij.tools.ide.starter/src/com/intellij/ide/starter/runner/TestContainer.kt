@@ -20,7 +20,6 @@ import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logOutput
 import org.kodein.di.direct
 import org.kodein.di.factory
-import org.kodein.di.instance
 import java.io.Closeable
 import kotlin.io.path.div
 
@@ -122,6 +121,9 @@ interface TestContainer<T> : Closeable {
         .enableAsyncProfiler()
         .applyVMOptionsPatch {
           overrideDirectories(context.paths)
+          if(isUnderDebug()){
+            debug()
+          }
         }
         .disableMinimap()
         .addProjectToTrustedLocations()
