@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.report
 
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer.Companion.processStringForTC
 import com.intellij.ide.starter.utils.*
 import io.qameta.allure.Allure
 import io.qameta.allure.model.Label
@@ -20,9 +21,13 @@ object AllureReport {
       var labels: List<Label> = mutableListOf()
 
       var testName = ""
+      var fullName = ""
+      var testCaseName = ""
       Allure.getLifecycle().updateTestCase {
         labels = it?.labels.orEmpty()
         testName = it?.name.orEmpty()
+        fullName = it?.fullName.orEmpty()
+        testCaseName = it?.testCaseName.orEmpty()
       }
       Allure.getLifecycle().scheduleTestCase(result)
       Allure.getLifecycle().startTestCase(uuid)
@@ -36,6 +41,9 @@ object AllureReport {
         it.status = Status.FAILED
         it.name = "Exception in $testName"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
+        it.fullName = fullName
+        it.testCaseName = testCaseName
+        it.historyId = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
       }
       Allure.getLifecycle().stopTestCase(uuid)
       Allure.getLifecycle().writeTestCase(uuid)
