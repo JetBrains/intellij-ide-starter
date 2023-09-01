@@ -558,24 +558,27 @@ class IDETestContext(
    */
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
     if (sdkObjects == null) return this
-
-    runIDE(
-      commands = CommandChain()
-        // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
-        // It looks like actual shortcut from test code, so a proper solution for this should be implemented
-        .addCommand("%setupSDK \"${sdkObjects.sdkName}\" \"${sdkObjects.sdkType}\" \"${sdkObjects.sdkPath}\"")
-        .addCommand("%exitApp true"),
-      launchName = "setupSdk",
-      runTimeout = 3.minutes,
-      configure = {
-        addVMOptionsPatch {
-          addSystemProperty("DO_NOT_REPORT_ERRORS", true)
-          disableAutoImport(true)
-          executeRightAfterIdeOpened(true)
-          skipIndicesInitialization(true)
+    try {
+      System.setProperty("DO_NOT_REPORT_ERRORS", "true")
+      runIDE(
+        commands = CommandChain()
+          // TODO: hack to remove direct dependency on [intellij.tools.ide.performanceTesting.commands] module
+          // It looks like actual shortcut from test code, so a proper solution for this should be implemented
+          .addCommand("%setupSDK \"${sdkObjects.sdkName}\" \"${sdkObjects.sdkType}\" \"${sdkObjects.sdkPath}\"")
+          .addCommand("%exitApp true"),
+        launchName = "setupSdk",
+        runTimeout = 3.minutes,
+        configure = {
+          addVMOptionsPatch {
+            disableAutoImport(true)
+            executeRightAfterIdeOpened(true)
+            skipIndicesInitialization(true)
+          }
         }
-      }
-    )
+      )
+    } finally {
+      System.clearProperty("DO_NOT_REPORT_ERRORS")
+    }
     if (cleanDirs)
       this
         //some caches from IDE warmup may stay
