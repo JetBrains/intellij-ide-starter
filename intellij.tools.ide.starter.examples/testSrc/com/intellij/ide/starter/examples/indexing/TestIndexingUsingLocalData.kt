@@ -36,7 +36,7 @@ class TestIndexing {
   class IdeLocalInstaller(private val installer: Path) : IdeInstallator {
     override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
       val ideInstaller = IdeInstaller(installer, "locally-installed-ide")
-      val installDir = GlobalPaths.instance
+      val installDir = di.direct.instance<GlobalPaths>()
                          .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
       FileUtils.deleteDirectory(installDir.toFile())
       FileUtils.copyDirectory(installer.toFile(), installDir.toFile())
