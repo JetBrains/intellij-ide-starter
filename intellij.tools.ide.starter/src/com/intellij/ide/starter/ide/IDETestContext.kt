@@ -549,13 +549,6 @@ class IDETestContext(
     return this
   }
 
-  /*
-    This method returns the context with the changed following parameters
-    "external.system.auto.import.disabled" to false
-    "performance.execute.script.right.after.ide.opened" to false
-    "DO_NOT_REPORT_ERRORS" to false
-    "idea.skip.indices.initialization" to false
-   */
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
     if (sdkObjects == null) return this
     try {
