@@ -25,6 +25,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.ui.NewUiValue
+import com.intellij.util.io.readText
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.apache.commons.io.FileUtils
@@ -577,6 +578,19 @@ class IDETestContext(
         //some caches from IDE warmup may stay
         .wipeSystemDir()
 
+    return this
+  }
+
+  fun updateKotlinVersionInGradleProperties(kotlinVersion: String): IDETestContext {
+    val gradlePropertiesFile = resolvedProjectHome.resolve("gradle.properties")
+    val textLines = gradlePropertiesFile.readLines()
+    var text = gradlePropertiesFile.readText()
+    textLines.forEach { line ->
+      if (line.contains("kotlinVersion=")) {
+        text = text.replace(line, "kotlinVersion=$kotlinVersion")
+      }
+    }
+    gradlePropertiesFile.writeText(text)
     return this
   }
 }
