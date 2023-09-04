@@ -60,8 +60,7 @@ data class VMOptions(
     it will be replaced by the new one
    */
   fun addSystemProperty(key: String, value: String) {
-    logOutput("Setting system property: [$key=$value]")
-    System.setProperty(key, value) // to synchronize behaviour in IDEA and on test runner side
+    logOutput("Setting IDE system property: [$key=$value]")
     addLine(line = "-D$key=$value", filterPrefix = "-D$key=")
   }
 
