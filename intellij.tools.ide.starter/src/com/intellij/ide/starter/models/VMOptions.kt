@@ -271,5 +271,14 @@ data class VMOptions(
     return data.any { it.contains(option) }
   }
 
+  fun getOption(option: String): String {
+   data.forEach { line ->
+      if (line.contains(option)) {
+        return line.replace("-D$option=", "")
+      }
+    }
+    error("There is no such option")
+  }
+
   fun isUnderDebug(): Boolean = ManagementFactory.getRuntimeMXBean().inputArguments.any { it.startsWith("-agentlib:jdwp") }
 }
