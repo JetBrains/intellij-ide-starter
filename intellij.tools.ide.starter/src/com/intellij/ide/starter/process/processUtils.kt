@@ -309,7 +309,7 @@ fun collectMemoryDump(
   ).start()
 }
 
-private fun getAllJavaProcesses(): List<String> {
+fun getAllJavaProcesses(): List<String> {
   val stdout = ExecOutputRedirect.ToString()
   ProcessExecutor(
     "get jps process",
@@ -326,7 +326,10 @@ private fun getAllJavaProcesses(): List<String> {
 private fun destroyProcessById(processId: Long) {
   ProcessHandle.allProcesses()
     .filter { ph -> ph.isAlive && ph.pid() == processId }
-    .forEach { ph -> ph.destroy() }
+    .forEach { ph ->
+      logOutput("Destroy process by pid ${ph.pid()}")
+      ph.destroy()
+    }
 }
 
 fun destroyProcessIfExists(processName: String) {
@@ -339,9 +342,6 @@ fun destroyProcessIfExists(processName: String) {
 
         // get up-to date process list on every iteration
         destroyProcessById(processId)
-
-        // Print processes after kill
-        getAllJavaProcesses()
       }
     }
   }

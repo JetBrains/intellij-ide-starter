@@ -258,6 +258,8 @@ data class IDERunContext(
       "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
     }
 
+    // Print all java processes for debug
+    getAllJavaProcesses()
     require(FileSystem.countFiles(paths.systemDir) > 1) {
       "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
     }
