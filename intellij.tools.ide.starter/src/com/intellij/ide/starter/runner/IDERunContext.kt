@@ -253,6 +253,7 @@ data class IDERunContext(
     if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
 
   private fun validateVMOptionsWereSet(paths: IDEDataPaths) {
+    logOutput("Run VM options validation")
     require(FileSystem.countFiles(paths.configDir) > 3) {
       "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
     }
@@ -260,6 +261,7 @@ data class IDERunContext(
     require(FileSystem.countFiles(paths.systemDir) > 1) {
       "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
     }
+    logOutput("Finished VM options validation")
   }
 
   private fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
