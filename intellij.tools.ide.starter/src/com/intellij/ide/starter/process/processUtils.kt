@@ -339,6 +339,9 @@ fun destroyProcessIfExists(processName: String) {
 
         // get up-to date process list on every iteration
         destroyProcessById(processId)
+
+        // Print processes after kill
+        getAllJavaProcesses()
       }
     }
   }
