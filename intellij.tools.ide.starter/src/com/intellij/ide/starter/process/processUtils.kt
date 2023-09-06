@@ -229,7 +229,7 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
   }
 
   val originalCommand = originalProcess.info().command()
-  if (originalCommand.isPresent && originalCommand.get().contains("java")){
+  if (originalCommand.isPresent && originalCommand.get().contains("java")) {
     logOutput("The test was run without wrapper, add original pid")
     candidatesFromProcessHandle.add(originalProcess.pid())
   }
@@ -309,7 +309,7 @@ fun collectMemoryDump(
   ).start()
 }
 
-fun destroyGradleDaemonProcessIfExists() {
+private fun getAllJavaProcesses(): List<String> {
   val stdout = ExecOutputRedirect.ToString()
   ProcessExecutor(
     "get jps process",
@@ -320,19 +320,36 @@ fun destroyGradleDaemonProcessIfExists() {
   ).start()
 
   logOutput("List of java processes: " + stdout.read())
+  return stdout.read().split("\n")
+}
 
-  if (stdout.read().contains("GradleDaemon")) {
-    val readLines = stdout.read().split('\n')
-    readLines.forEach {
-      if (it.contains("GradleDaemon")) {
-        logOutput("Killing GradleDaemon process")
+private fun destroyProcessById(processId: Long) {
+  ProcessHandle.allProcesses()
+    .filter { ph -> ph.isAlive && ph.pid() == processId }
+    .forEach { ph -> ph.destroy() }
+}
+
+fun destroyProcessIfExists(processName: String) {
+  val javaProcesses = getAllJavaProcesses()
+  if (javaProcesses.any { it.contains(processName) }) {
+    javaProcesses.forEach {
+      if (it.contains(processName)) {
+        logOutput("Killing $it process")
         val processId = it.split(" ").first().toLong()
 
         // get up-to date process list on every iteration
-        ProcessHandle.allProcesses()
-          .filter { ph -> ph.isAlive && ph.pid() == processId }
-          .forEach { ph -> ph.destroy() }
+        destroyProcessById(processId)
       }
     }
   }
+}
+
+fun destroyGradleDaemonProcessIfExists() {
+  val gradleDaemonName = "gradleDaemon"
+  destroyProcessIfExists(gradleDaemonName)
+}
+
+fun destroyMavenIndexerProcessIfExists() {
+  val mavenDaemonName = "MavenServerIndexerMain"
+  destroyProcessIfExists(mavenDaemonName)
 }
