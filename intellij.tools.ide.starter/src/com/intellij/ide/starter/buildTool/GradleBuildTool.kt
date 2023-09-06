@@ -8,7 +8,6 @@ import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
-import com.intellij.util.io.readText
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -239,4 +238,3 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 }
-

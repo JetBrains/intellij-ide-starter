@@ -23,7 +23,6 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.ui.NewUiValue
-import com.intellij.util.io.readText
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import org.apache.commons.io.FileUtils
@@ -595,4 +594,3 @@ class IDETestContext(
     return this
   }
 }
-
