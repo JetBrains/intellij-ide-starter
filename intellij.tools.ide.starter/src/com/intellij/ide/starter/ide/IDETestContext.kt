@@ -1,8 +1,6 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.buildTool.BuildTool
-import com.intellij.ide.starter.bus.StarterListener
-import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.di.di
@@ -210,6 +208,7 @@ class IDETestContext(
   fun collectImportProjectPerfMetrics() = applyVMOptionsPatch {
     addSystemProperty("idea.collect.project.import.performance", true)
   }
+
   fun enableVerboseOpenTelemetry() = applyVMOptionsPatch {
     addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
   }
@@ -251,6 +250,7 @@ class IDETestContext(
    * Setup profiler injection
    */
   fun setProfiler(profilerType: ProfilerType): IDETestContext {
+    logOutput("Setting profiler: ${profilerType}")
     this.profilerType = profilerType
     return this
   }
@@ -570,7 +570,8 @@ class IDETestContext(
           }
         }
       )
-    } finally {
+    }
+    finally {
       System.clearProperty("DO_NOT_REPORT_ERRORS")
     }
     if (cleanDirs)
