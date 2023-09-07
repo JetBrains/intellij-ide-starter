@@ -7,6 +7,9 @@ import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.withRetry
+import com.intellij.openapi.progress.runBlockingCancellable
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.withTimeout
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
@@ -329,6 +332,13 @@ private fun destroyProcessById(processId: Long) {
     .forEach { ph ->
       logOutput("Destroy process by pid ${ph.pid()}")
       ph.destroy()
+      catchAll {
+        runBlockingCancellable {
+          // Usually daemons wait 2 requests for 10 seconds after ide shutdown
+          withTimeout(20.seconds) { ph.onExit().await() }
+        }
+      }
+      ph.destroyForcibly()
     }
 }
 
