@@ -8,7 +8,6 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
@@ -30,8 +29,6 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -211,7 +208,7 @@ class InstallPluginTest {
       val paramsWithAppropriateIde = params.onIDE(ideInfo)
       val numericProductVersion = paramsWithAppropriateIde.event.getNumericProductVersion()
 
-      return listOf(paramsWithAppropriateIde.copy(testCase = paramsWithAppropriateIde.testCase.withBuildNumber(numericProductVersion)))
+      return listOf(paramsWithAppropriateIde.copy(testCase = paramsWithAppropriateIde.testCase.copy(ideInfo = ideInfo.copy(buildNumber = numericProductVersion))))
     }
   }
 
