@@ -39,7 +39,7 @@ data class TestCase<T : ProjectInfoSpec>(
     }
   }
 
-  private fun copyWithUpdatedIdeInfo(
+  private fun copyWithPublicIdeDownloaderAndUpdatedInfo(
     buildType: BuildType? = null,
     buildNumber: String? = null,
     version: String? = null
@@ -52,27 +52,27 @@ data class TestCase<T : ProjectInfoSpec>(
     ))
   }
 
-  fun useRC(): TestCase<T> = copyWithUpdatedIdeInfo(buildType = BuildType.RC)
+  fun useRC(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.RC)
 
-  fun useEAP(): TestCase<T> = copyWithUpdatedIdeInfo(buildType = BuildType.EAP)
+  fun useEAP(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.EAP)
 
   /** E.g: "222.3244.1" */
-  private fun useEAP(buildNumber: String = ""): TestCase<T> = copyWithUpdatedIdeInfo(BuildType.EAP, buildNumber = buildNumber)
+  private fun useEAP(buildNumber: String = ""): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(BuildType.EAP, buildNumber = buildNumber)
 
-  fun useRelease(): TestCase<T> = copyWithUpdatedIdeInfo(buildType = BuildType.RELEASE)
+  fun useRelease(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.RELEASE)
 
   /** E.g: "2022.1.2" */
-  fun useRelease(version: String = ""): TestCase<T> = copyWithUpdatedIdeInfo(BuildType.RELEASE, version = version)
+  fun useRelease(version: String = ""): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(BuildType.RELEASE, version = version)
 
   /** If you are unsure about the need to use this method,
    *  it is recommended to first familiarize yourself with the functionality of
    *  [useEAP] and make sure it does not meet your requirements.
    *  E.g: "222.3244.1" */
-  fun withBuildNumber(buildNumber: String): TestCase<T> = copyWithUpdatedIdeInfo(buildNumber = buildNumber)
+  fun withBuildNumber(buildNumber: String): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildNumber = buildNumber)
 
   /** If you are unsure about the need to use this method,
    *  it is recommended to first familiarize yourself with the functionality of
    *  [useRelease] and make sure it does not meet your requirements
    *  E.g: "2022.1.2" */
-  fun withVersion(version: String): TestCase<T> = copyWithUpdatedIdeInfo(version = version)
+  fun withVersion(version: String): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(version = version)
 }
