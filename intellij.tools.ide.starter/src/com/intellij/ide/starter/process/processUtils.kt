@@ -327,32 +327,29 @@ fun getAllJavaProcesses(): List<String> {
 }
 
 private fun destroyProcessById(processId: Long) {
-  ProcessHandle.allProcesses()
-    .filter { ph -> ph.isAlive && ph.pid() == processId }
-    .forEach { ph ->
-      logOutput("Destroy process by pid ${ph.pid()}")
-      ph.destroy()
+  ProcessHandle.of(processId)
+    .ifPresent {
+      logOutput("Destroy process by pid ${it.pid()}")
+      it.destroy()
       catchAll {
         runBlockingCancellable {
           // Usually daemons wait 2 requests for 10 seconds after ide shutdown
-          withTimeout(20.seconds) { ph.onExit().await() }
+          withTimeout(20.seconds) { it.onExit().await() }
         }
       }
-      ph.destroyForcibly()
+      it.destroyForcibly()
     }
 }
 
 fun destroyProcessIfExists(processName: String) {
   val javaProcesses = getAllJavaProcesses()
-  if (javaProcesses.any { it.contains(processName) }) {
-    javaProcesses.forEach {
-      if (it.contains(processName)) {
-        logOutput("Killing $it process")
-        val processId = it.split(" ").first().toLong()
+  javaProcesses.forEach {
+    if (!it.contains(processName)) {
+      logOutput("Killing $it process")
+      val processId = it.split(" ").first().toLong()
 
-        // get up-to date process list on every iteration
-        destroyProcessById(processId)
-      }
+      // get up-to date process list on every iteration
+      destroyProcessById(processId)
     }
   }
 }
