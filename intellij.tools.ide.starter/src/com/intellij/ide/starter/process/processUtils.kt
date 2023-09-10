@@ -344,7 +344,7 @@ private fun destroyProcessById(processId: Long) {
 fun destroyProcessIfExists(processName: String) {
   val javaProcesses = getAllJavaProcesses()
   javaProcesses.forEach {
-    if (!it.contains(processName)) {
+    if (it.contains(processName)) {
       logOutput("Killing $it process")
       val processId = it.split(" ").first().toLong()
 
