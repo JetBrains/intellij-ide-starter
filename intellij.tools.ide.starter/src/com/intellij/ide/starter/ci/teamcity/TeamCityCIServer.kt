@@ -209,5 +209,46 @@ open class TeamCityCIServer(
     fun reportTeamCityMessage(text: String) {
       logOutput(" ##teamcity[message text='$text']")
     }
+
+    fun testSuiteStarted(suiteName: String) {
+      println("##teamcity[testSuiteStarted name='${suiteName.processStringForTC()}']")
+    }
+
+    fun testSuiteFinished(suiteName: String) {
+      println("##teamcity[testSuiteFinished name='${suiteName.processStringForTC()}']")
+    }
+
+    fun testStarted(testName: String) {
+      println("##teamcity[testStarted name='${testName.processStringForTC()}']")
+    }
+
+    fun testFinished(testName: String) {
+      println("##teamcity[testFinished name='${testName.processStringForTC()}']")
+    }
+
+    fun testIgnored(testName: String, message: String) {
+      println("##teamcity[testIgnored name='${testName.processStringForTC()}' message='${message.processStringForTC()}']")
+    }
+
+    fun testFailed(testName: String, message: String) {
+      println("##teamcity[testFailed name='${testName.processStringForTC()}' message='${message.processStringForTC()}']")
+    }
+
+    fun addTextMetadata(testName: String, value: String) {
+      addTestMetadata(testName, TeamCityMetadataType.TEXT, null, value)
+    }
+
+    fun addTestMetadata(testName: String, type: TeamCityMetadataType, name: String?, value: String) {
+      val nameAttr = if(name != null) { "name='${name.processStringForTC()}'" } else ""
+      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}']")
+    }
+  }
+
+  enum class TeamCityMetadataType {
+    NUMBER,
+    TEXT,
+    LINK,
+    ARTIFACT,
+    IMAGE
   }
 }
