@@ -176,7 +176,6 @@ class IDETestContext(
       addSystemProperty("ide.plugins.per.project", true)
     }
 
-  // seems, doesn't work for Maven
   fun disableAutoImport(disabled: Boolean = true) = applyVMOptionsPatch {
     disableAutoImport(disabled)
   }
