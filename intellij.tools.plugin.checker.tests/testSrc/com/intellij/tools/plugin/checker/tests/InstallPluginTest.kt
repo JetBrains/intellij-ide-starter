@@ -51,7 +51,10 @@ class InstallPluginTest {
       val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
 
       Properties().apply {
-        buildProperties.forEach { this.setProperty(it.first, it.second) }
+        buildProperties.forEach {
+          check(it.second.isNotEmpty()) { "Property ${it.first} has empty value" }
+          this.setProperty(it.first, it.second)
+        }
         store(tempPropertiesFile.outputStream(), "")
       }
 
@@ -63,9 +66,8 @@ class InstallPluginTest {
         // use this to simplify local debug
         val systemPropertiesFilePath = setDebugBuildParamsForLocalDebug(
           Pair("teamcity.build.id", "55604"),
-          Pair("teamcity.auth.userId", "maxim.kolmakov"),
-          Pair("teamcity.auth.password",
-               "eyJ0eXAiOiAiVENWMiJ9.VXlZYmFodW1vS18xRUdBOEY4WEJUem8wZEpZ.YzRiYzY5NWItM2IzOC00MWM4LWEzOTItNDAzM2YxZmM4YTZm")
+          Pair("teamcity.auth.userId", ""),
+          Pair("teamcity.auth.password", "")
         )
         initPluginCheckerDI(systemPropertiesFilePath)
       }
@@ -143,7 +145,8 @@ class InstallPluginTest {
 
     private fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
       if (!IdeProductProvider.isProductSupported(params.event.productCode)) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
+        logOutput(
+          RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
         return emptyList()
       }
 
@@ -186,7 +189,7 @@ class InstallPluginTest {
         return emptyList()
       }
 
-      if (pluginsWithUI.contains(params.event.pluginId)){
+      if (pluginsWithUI.contains(params.event.pluginId)) {
         logOutput(RuntimeException("Plugins with UI on startup are not supported yet. Plugin id: ${params.event.pluginId}"))
         return emptyList()
       }
@@ -208,7 +211,8 @@ class InstallPluginTest {
       val paramsWithAppropriateIde = params.onIDE(ideInfo)
       val numericProductVersion = paramsWithAppropriateIde.event.getNumericProductVersion()
 
-      return listOf(paramsWithAppropriateIde.copy(testCase = paramsWithAppropriateIde.testCase.copy(ideInfo = ideInfo.copy(buildNumber = numericProductVersion))))
+      return listOf(paramsWithAppropriateIde.copy(
+        testCase = paramsWithAppropriateIde.testCase.copy(ideInfo = ideInfo.copy(buildNumber = numericProductVersion))))
     }
   }
 
@@ -221,13 +225,15 @@ class InstallPluginTest {
         .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
         .applyVMOptionsPatch {
           addSystemProperty("idea.local.statistics.without.report", true)
+          addSystemProperty("idea.updates.url", "http://127.0.0.1")
         }
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {
           try {
             pluginConfigurator.installPluginFromURL(params.event.file)
-          } catch (e: IOException){
+          }
+          catch (e: IOException) {
             //plugin is in removal state and not available
             return
           }
