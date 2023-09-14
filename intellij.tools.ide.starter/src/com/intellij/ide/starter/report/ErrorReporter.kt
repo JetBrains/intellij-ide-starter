@@ -1,13 +1,10 @@
 package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
@@ -49,17 +46,17 @@ object ErrorReporter {
       }
 
       val failureDetailsProvider = FailureDetailsOnCI.instance
-      val failureDetailsMessage =failureDetailsProvider.getFailureDetails(runContext)
+      val failureDetailsMessage = failureDetailsProvider.getFailureDetails(runContext)
 
       if (CIServer.instance.isTestFailureShouldBeIgnored(messageText)) {
         CIServer.instance.ignoreTestFailure(testName = generifyErrorMessage(testName),
-                                                         message = failureDetailsMessage,
-                                                         details = stackTraceContent)
+                                            message = failureDetailsMessage,
+                                            details = stackTraceContent)
       }
       else {
         CIServer.instance.reportTestFailure(testName = generifyErrorMessage(testName),
-                                                         message = failureDetailsMessage,
-                                                         details = stackTraceContent)
+                                            message = failureDetailsMessage,
+                                            details = stackTraceContent)
         AllureReport.reportFailure(messageText,
                                    stackTraceContent,
                                    failureDetailsProvider.getLinkToCIArtifacts(runContext))
