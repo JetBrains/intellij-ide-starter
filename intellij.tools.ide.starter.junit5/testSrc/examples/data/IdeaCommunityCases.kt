@@ -4,7 +4,6 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 import com.intellij.ide.starter.project.TestCaseTemplate
-import kotlin.io.path.div
 
 object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
 
@@ -18,7 +17,6 @@ object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
   val MavenSimpleApp = withProject(
     RemoteArchiveProjectInfo(
       projectURL = "https://github.com/jenkins-docs/simple-java-maven-app/archive/refs/heads/master.zip",
-      projectHomeRelativePath = { it / "simple-java-maven-app-master" }
     )
   )
 }

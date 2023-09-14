@@ -38,7 +38,7 @@ data class GitProjectInfo(
   /**
    * Relative path inside Image file, where project home is located
    */
-  override val projectHomeRelativePath: (Path) -> Path = { it },
+  val projectHomeRelativePath: (Path) -> Path = { it },
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""
 ) : ProjectInfoSpec {

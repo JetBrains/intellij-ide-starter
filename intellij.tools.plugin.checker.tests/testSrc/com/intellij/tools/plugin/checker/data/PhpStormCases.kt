@@ -9,7 +9,6 @@ object PhpStormCases : TestCaseTemplate(IdeProductProvider.PS) {
   val LaravelFramework = withProject(
     RemoteArchiveProjectInfo(
       projectURL = "https://github.com/laravel/framework/archive/refs/heads/master.zip",
-      projectHomeRelativePath = { it / "framework-master" }
     )
   )
 }

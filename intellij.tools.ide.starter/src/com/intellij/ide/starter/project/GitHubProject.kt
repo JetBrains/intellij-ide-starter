@@ -2,7 +2,6 @@ package com.intellij.ide.starter.project
 
 import com.intellij.ide.starter.config.Const
 import java.net.URI
-import java.nio.file.Path
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -15,7 +14,6 @@ object GitHubProject {
     branchName: String = "main",
     commitHash: String = "",
     repoRelativeUrl: String,
-    projectDirRelativePath: (Path) -> Path = { it },
     downloadTimeout: Duration = 10.minutes,
     description: String = "",
     isReusable: Boolean = true
@@ -27,7 +25,6 @@ object GitHubProject {
       branchName = branchName,
       commitHash = commitHash,
       repositoryUrl = URI(Const.GITHUB_HTTP_BASE_URL).resolve(repoRelativeUrlWithGitSuffix).toString(),
-      projectHomeRelativePath = projectDirRelativePath,
       downloadTimeout = downloadTimeout,
       description = description,
       isReusable = isReusable

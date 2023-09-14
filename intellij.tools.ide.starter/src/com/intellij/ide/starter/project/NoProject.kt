@@ -11,7 +11,6 @@ import kotlin.time.Duration.Companion.seconds
 object NoProject : ProjectInfoSpec {
   override val isReusable: Boolean = true
   override val downloadTimeout: Duration = 0.seconds
-  override val projectHomeRelativePath: (Path) -> Path = { it }
 
   override fun downloadAndUnpackProject(): Path? = null
 

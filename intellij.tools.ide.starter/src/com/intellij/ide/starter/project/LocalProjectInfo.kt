@@ -14,7 +14,6 @@ data class LocalProjectInfo(
   val projectDir: Path,
   override val isReusable: Boolean = true,
   override val downloadTimeout: Duration = 1.minutes,
-  override val projectHomeRelativePath: (Path) -> Path = { it },
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""
 ) : ProjectInfoSpec {
