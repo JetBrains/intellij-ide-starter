@@ -207,8 +207,6 @@ data class VMOptions(
       addSystemProperty("testscript.filename", scriptFile)
       // Use non-success status code 1 when running IDE as command line tool.
       addSystemProperty("testscript.must.exist.process.with.non.success.code.on.ide.error", "true")
-      // No need to report TeamCity test failure from within test script.
-      addSystemProperty("testscript.must.report.teamcity.test.failure.on.error", "false")
     }
   }
 
