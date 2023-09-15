@@ -31,11 +31,7 @@ data class RemoteArchiveProjectInfo(
 
   private var subFolder: String = ""
 
-  private fun getTopMostFolderFromZip(zipFile: File): String {
-    val zipFileReal = ZipFile(zipFile)
-    val entry = zipFileReal.entries().nextElement()
-    return entry.name.split("/").first()
-  }
+  private fun getTopMostFolderFromZip(zipFile: File): String = ZipFile(zipFile).entries().nextElement().name.split("/").first()
 
   fun withSubfolder(subFolder: String): RemoteArchiveProjectInfo {
     this.subFolder = subFolder
