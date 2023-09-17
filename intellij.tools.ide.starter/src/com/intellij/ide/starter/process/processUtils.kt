@@ -10,6 +10,7 @@ import com.intellij.ide.starter.utils.withRetry
 import com.intellij.openapi.progress.runBlockingCancellable
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withTimeout
+import java.lang.IllegalStateException
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
@@ -277,14 +278,26 @@ fun collectJavaThreadDump(
 
   val command = listOf(jstackPath.toAbsolutePath().toString(), "-l", javaProcessId.toString())
 
-  ProcessExecutor(
-    "jstack",
-    workDir,
-    timeout = 1.minutes,
-    args = command,
-    stdoutRedirect = ExecOutputRedirect.ToFile(dumpFile.toFile()),
-    stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]")
-  ).start()
+  try {
+    ProcessExecutor(
+      "jstack",
+      workDir,
+      timeout = 1.minutes,
+      args = command,
+      stdoutRedirect = ExecOutputRedirect.ToFile(dumpFile.toFile()),
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]")
+    ).start()
+  }
+  catch (ise: IllegalStateException) {
+    val message = ise.message ?: ""
+    if (message.startsWith("External process `jstack` failed with code ")
+        || message.startsWith("Shutdown in progress")) {
+      logOutput("... " + ise.message)
+    }
+    else {
+      throw ise
+    }
+  }
 }
 
 fun collectMemoryDump(

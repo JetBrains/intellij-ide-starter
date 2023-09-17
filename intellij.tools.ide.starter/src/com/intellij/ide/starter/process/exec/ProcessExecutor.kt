@@ -2,6 +2,7 @@ package com.intellij.ide.starter.process.exec
 
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
+import com.intellij.ide.starter.utils.getThrowableText
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import kotlinx.coroutines.*
@@ -213,7 +214,26 @@ class ProcessExecutor(val presentableName: String,
     }
     finally {
       process.destroyForcibly()
-      catchAll { Runtime.getRuntime().removeShutdownHook(stopperThread) }
+
+      try {
+        Runtime.getRuntime().removeShutdownHook(stopperThread)
+      }
+      catch (ise: java.lang.IllegalStateException) {
+        // generate less noisy stacktraces on IDE shutdown
+        val message = ise.message ?: ""
+        if (message.startsWith("External process `jstack` failed with code ")
+            || message.startsWith("Shutdown in progress")) {
+          logOutput("... " + ise.message)
+        }
+        else {
+          logError("CatchAll swallowed error: ${ise.message}")
+          logError(getThrowableText(ise))
+        }
+      }
+      catch (t: Throwable) {
+        logError("CatchAll swallowed error: ${t.message}")
+        logError(getThrowableText(t))
+      }
     }
 
     ioThreads.forEach { catchAll { it.join() } }
