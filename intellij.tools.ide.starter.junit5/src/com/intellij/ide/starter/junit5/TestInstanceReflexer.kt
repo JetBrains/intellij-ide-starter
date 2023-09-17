@@ -23,4 +23,12 @@ object TestInstanceReflexer {
 
     return null
   }
+
+  fun getPropertyIfPresent(testInstance: Any, propertyType: KClass<*>): KProperty1<out Any, *>? {
+    val properties = testInstance::class.memberProperties
+
+    return properties.firstOrNull { property ->
+      property.javaField?.type?.equals(propertyType.javaObjectType) == true
+    }
+  }
 }
