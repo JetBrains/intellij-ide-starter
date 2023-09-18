@@ -418,6 +418,11 @@ data class IDERunContext(
       artifactPath = contextName,
       artifactName = formatArtifactName("reports", testContext.testName)
     )
+    testContext.publishArtifact(
+      source = testContext.paths.testHome / "allure",
+      contextName,
+      artifactName = formatArtifactName("allure", testContext.testName)
+    )
   }
 
   private fun deleteSavedAppStateOnMac() {
