@@ -592,4 +592,11 @@ class IDETestContext(
     gradlePropertiesFile.writeText(text)
     return this
   }
+
+  fun setKotestMaxCollectionEnumerateSize(): IDETestContext =
+    // Need to generate the correct matcher when compared array is big.
+    // kotest-assertions-core-jvm/5.5.4/kotest-assertions-core-jvm-5.5.4-sources.jar!/commonMain/io/kotest/matchers/collections/containExactly.kt:99
+    applyVMOptionsPatch {
+      addSystemProperty("kotest.assertions.collection.enumerate.size", Int.MAX_VALUE)
+    }
 }

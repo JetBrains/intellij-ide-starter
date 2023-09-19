@@ -130,6 +130,7 @@ interface TestContainer<T> : Closeable {
         .useNewUIInTests()
         .disableReportingStatisticsToProduction()
         .disableMigrationNotification()
+        .setKotestMaxCollectionEnumerateSize()
     }
   }
 }
