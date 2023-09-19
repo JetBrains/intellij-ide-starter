@@ -1,7 +1,7 @@
 package com.intellij.metricsCollector
 
-import com.intellij.ide.starter.utils.intersect
-import com.intellij.ide.starter.utils.symmetricDiff
+import com.intellij.ide.starter.utils.intersectKeys
+import com.intellij.ide.starter.utils.symmetricDiffOfKeys
 import com.intellij.metricsCollector.collector.PerformanceMetrics
 import kotlin.math.abs
 
@@ -20,7 +20,7 @@ object MetricsDiffCalculator {
     val firstMap: Map<String, PerformanceMetrics.Metric> = first.associateBy { it.id.name }
     val secondMap: Map<String, PerformanceMetrics.Metric> = second.associateBy { it.id.name }
 
-    val intersectedKeys = firstMap.intersect(secondMap).sorted()
+    val intersectedKeys = firstMap.intersectKeys(secondMap).sorted()
 
     val diff: MutableList<PerformanceMetrics.Metric> = intersectedKeys.map { metricName ->
       val valueWithSign = secondMap.getValue(metricName).value - firstMap.getValue(metricName).value
@@ -29,17 +29,10 @@ object MetricsDiffCalculator {
       secondMap.getValue(metricName).copy(value = value)
     }.toMutableList()
 
-    val symmetricNamesDiff: Set<String> = firstMap.symmetricDiff(secondMap)
+    val symmetricNamesDiff: Set<String> = firstMap.symmetricDiffOfKeys(secondMap)
     symmetricNamesDiff.forEach { metricName ->
-      val firstValue = firstMap[metricName]
-      if (firstValue != null) {
-        diff.add(firstValue)
-      }
-
-      val secondValue = secondMap[metricName]
-      if (secondValue != null) {
-        diff.add(secondValue)
-      }
+      firstMap[metricName]?.apply { diff.add(this) }
+      secondMap[metricName]?.apply { diff.add(this) }
     }
 
     return diff

@@ -12,11 +12,11 @@ fun <T> Iterable<T>.symmetricDiff(other: Iterable<T>): Set<T> {
 /**
  * [a, b, c] | [a, c, d] => [b, d]
  */
-fun <K, V> Map<K, V>.symmetricDiff(other: Map<K, V>): Set<K> {
+fun <K, V> Map<K, V>.symmetricDiffOfKeys(other: Map<K, V>): Set<K> {
   val firstKeys = this.keys
   val otherKeys = other.keys
   return firstKeys.symmetricDiff(otherKeys).toSet()
 }
 
 /** @return Set of intersected keys */
-fun <K, V> Map<K, V>.intersect(other: Map<K, V>): Set<K> = this.keys.intersect(other.keys)
+fun <K, V> Map<K, V>.intersectKeys(other: Map<K, V>): Set<K> = this.keys.intersect(other.keys)
