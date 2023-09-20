@@ -1,15 +1,12 @@
 package com.intellij.ide.starter.sdk
 
 import com.intellij.execution.wsl.WslDistributionManager
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.withRetry
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import org.apache.commons.io.FileUtils
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.io.File
 import java.net.URL
 import java.nio.file.Files
@@ -23,6 +20,8 @@ object JdkDownloaderFacade {
   val jdk11 get() = jdkDownloader(JdkVersion.JDK_11.toString())
   val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
   val jbrJcef17 get() = jdkDownloader(JdkVersion.JDK_17.toString(), jbr = true)
+  val jdk21 get() = jdkDownloader(JdkVersion.JDK_21.toString())
+  val jbr21 get() = jdkDownloader(JdkVersion.JDK_21.toString(), jbr = true)
 
   const val MINIMUM_JDK_FILES_COUNT = 42
 
