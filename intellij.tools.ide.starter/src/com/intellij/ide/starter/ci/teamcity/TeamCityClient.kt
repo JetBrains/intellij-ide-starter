@@ -73,8 +73,15 @@ object TeamCityClient {
     return Pair(buildId, buildNumber)
   }
 
-  fun downloadArtifact(buildNumber: String, artifactName: String, outFile: File) {
-    val artifactUrl = guestAuthUri.resolve("builds/id:$buildNumber/artifacts/content/$artifactName")
+  fun getLastSuccessfulBuild(buildType: String): String {
+    val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${buildType},status:SUCCESS,state:(finished:true),count:1")
+    val build = get(fullUrl).fields().asSequence().first { it.key == "build" }.value
+    val buildId = build.findValue("id").asText()
+    return buildId
+  }
+
+  fun downloadArtifact(buildId: String, artifactName: String, outFile: File) {
+    val artifactUrl = guestAuthUri.resolve("builds/id:$buildId/artifacts/content/$artifactName")
     HttpClient.download(artifactUrl.toString(), outFile)
   }
 
