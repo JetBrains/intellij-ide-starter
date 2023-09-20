@@ -47,6 +47,10 @@ catch (t: Throwable) {
 fun String.withIndent(indent: String = "  "): String = lineSequence().map { "$indent$it" }.joinToString(System.lineSeparator())
 
 fun takeScreenshot(logsDir: Path) {
+  takeScreenshot(logsDir, "screenshot_beforeKill.jpg")
+}
+
+fun takeScreenshot(logsDir: Path, screenshotName: String) {
   val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName / "$toolName.jar"
@@ -55,7 +59,7 @@ fun takeScreenshot(logsDir: Path) {
     val screenshotJar = File(IDERunContext::class.java.classLoader.getResource("tools/$toolName.jar")!!.toURI())
     screenshotJar.copyTo(screenshotTool.toFile(), true)
   }
-  val screenshotFile = logsDir.resolve("screenshot_beforeKill.jpg")
+  val screenshotFile = logsDir.resolve(screenshotName)
 
   val javaPath = ProcessHandle.current().info().command().orElseThrow().toString()
   ProcessExecutor(
