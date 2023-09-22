@@ -15,10 +15,12 @@ sealed class IDECommandLine(open val args: List<String>) {
 
   object StartIdeWithoutProject : IDECommandLine(listOf())
 
-  data class OpenTestCaseProject(val testContext: IDETestContext) : IDECommandLine(
-    listOf(testContext.resolvedProjectHome.toAbsolutePath().toString())
+  data class OpenTestCaseProject(val testContext: IDETestContext,
+                                 val additionalArgs: List<String> = emptyList()) : IDECommandLine(
+    additionalArgs + listOf(testContext.resolvedProjectHome.toAbsolutePath().toString())
   )
 }
+
 fun openTestCaseProject(runContext: IDERunContext): IDECommandLine {
   return IDECommandLine.OpenTestCaseProject(runContext.testContext)
 }
