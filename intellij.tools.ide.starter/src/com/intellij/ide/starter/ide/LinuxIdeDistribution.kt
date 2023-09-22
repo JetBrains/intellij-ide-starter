@@ -4,7 +4,7 @@ import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.system.SystemInfo
-import com.intellij.ide.starter.utils.callJavaVersion
+import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
 import java.nio.file.Files
 import java.nio.file.Path
@@ -66,7 +66,7 @@ class LinuxIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = appHome.resolve("plugins")
 
-      private val vmOptionsFinal: VMOptions =VMOptions(
+      private val vmOptionsFinal: VMOptions = VMOptions(
         ide = this,
         data = emptyList(),
         env = emptyMap()
@@ -125,7 +125,7 @@ class LinuxIdeDistribution : IdeDistribution() {
           "JbrHome is not found under $jbrHome"
         }
 
-        val jbrFullVersion = callJavaVersion(jbrHome).substringAfter("build ").substringBefore(")")
+        val jbrFullVersion = JvmUtils.callJavaVersion(jbrHome).substringAfter("build ").substringBefore(")")
         logOutput("Found following $jbrFullVersion in the product: $productCode $build")
         // in Android Studio bundled only JRE
         if (productCode == IdeProductProvider.AI.productCode) return jbrHome

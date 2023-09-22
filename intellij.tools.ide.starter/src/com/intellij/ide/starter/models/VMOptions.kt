@@ -3,8 +3,8 @@ package com.intellij.ide.starter.models
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
+import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
-import com.intellij.ide.starter.utils.writeJvmArgsFile
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import java.io.File
@@ -131,7 +131,7 @@ data class VMOptions(
     return VMOptionsDiff(originalLines = this.data, actualLines = loadedOptions)
   }
 
-  fun writeJavaArgsFile(theFile: Path) = writeJvmArgsFile(theFile, this.data)
+  fun writeJavaArgsFile(theFile: Path) = JvmUtils.writeJvmArgsFile(theFile, this.data)
 
   fun overrideDirectories(paths: IDEDataPaths) = run {
     addSystemProperty("idea.config.path", paths.configDir)

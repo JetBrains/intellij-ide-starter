@@ -1,8 +1,8 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
-import com.intellij.ide.starter.utils.callJavaVersion
 import com.intellij.ide.starter.utils.logOutput
 import org.w3c.dom.Node
 import java.io.File
@@ -96,7 +96,7 @@ class MacOsIdeDistribution : IdeDistribution() {
           "JavaHome is not found under $javaHome"
         }
 
-        val jbrFullVersion = callJavaVersion(javaHome).substringAfter("build ").substringBefore(")")
+        val jbrFullVersion = JvmUtils.callJavaVersion(javaHome).substringAfter("build ").substringBefore(")")
         logOutput("Found following $jbrFullVersion in the product: $productCode $build")
 
         // in Android Studio bundled only JRE

@@ -164,7 +164,7 @@ data class IDERunContext(
     val stderr = getStderr()
     var ideProcessId = 0L
     var isRunSuccessful = true
-    val ciFailureDetails = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)?.let { "Link on TC artifacts ${it}" }
+    val ciFailureDetails = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)?.let { "Link on CI artifacts ${it}" }
 
     val ideHost = IDEHost(codeBuilder, testContext).also { it.setup() }
     try {
@@ -373,7 +373,7 @@ data class IDERunContext(
     logError("Failed to download the same JDK as in ${testContext.ide.build}")
     logError(e.stackTraceToString())
 
-    val defaultJavaHome = resolveInstalledJdk11()
+    val defaultJavaHome = JvmUtils.resolveInstalledJdk()
     logOutput("JDK is not found in ${testContext.ide.build}. Fallback to default java: $defaultJavaHome")
     defaultJavaHome
   }

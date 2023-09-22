@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.utils.callJavaVersion
+import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -52,7 +52,7 @@ class WindowsIdeDistribution : IdeDistribution() {
           "JbrHome is not found under $jbrHome"
         }
 
-        val jbrFullVersion = callJavaVersion(jbrHome).substringAfter("build ").substringBefore(")")
+        val jbrFullVersion = JvmUtils.callJavaVersion(jbrHome).substringAfter("build ").substringBefore(")")
         logOutput("Found following $jbrFullVersion in the product: $productCode $build")
 
         // in Android Studio bundled only JRE
