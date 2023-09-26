@@ -353,7 +353,7 @@ object Git {
     ProcessExecutor(
       "git config",
       workDir = dir, timeout = 1.minutes,
-      args = listOf("git", "config", "--local", "--$propertyName", value),
+      args = listOf("git", "config", "--local", propertyName, "\"$value\""),
       stdoutRedirect = stdout
     ).start()
   }
