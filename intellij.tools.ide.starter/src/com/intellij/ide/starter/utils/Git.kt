@@ -348,11 +348,11 @@ object Git {
    * Sets local git config properties
    * Example git config --local user.email gitgod@git.git
    */
-  fun setConfigProperty(propertyName: String, value: String) {
+  fun setConfigProperty(dir: Path, propertyName: String, value: String) {
     val stdout = ExecOutputRedirect.ToString()
     ProcessExecutor(
       "git config",
-      workDir = Path.of("."), timeout = 1.minutes,
+      workDir = dir, timeout = 1.minutes,
       args = listOf("git", "config", "--local", "--$propertyName", value),
       stdoutRedirect = stdout
     ).start()
