@@ -129,7 +129,7 @@ class LinuxIdeDistribution : IdeDistribution() {
         logOutput("Found following $jbrFullVersion in the product: $productCode $build")
         // in Android Studio bundled only JRE
         if (productCode == IdeProductProvider.AI.productCode) return jbrHome
-        return downloadAndUnpackJbrIfNeeded(jbrFullVersion)
+        return JBRDownloader.downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion)
       }
     }
   }

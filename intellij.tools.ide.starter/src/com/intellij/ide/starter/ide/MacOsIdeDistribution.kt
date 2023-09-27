@@ -101,7 +101,7 @@ class MacOsIdeDistribution : IdeDistribution() {
 
         // in Android Studio bundled only JRE
         if (productCode == IdeProductProvider.AI.productCode) return jbrHome
-        return downloadAndUnpackJbrIfNeeded(jbrFullVersion)
+        return JBRDownloader.downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion)
       }
     }
   }
