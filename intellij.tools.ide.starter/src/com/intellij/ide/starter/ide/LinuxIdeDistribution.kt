@@ -3,6 +3,7 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
@@ -51,7 +52,7 @@ class LinuxIdeDistribution : IdeDistribution() {
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
     require(SystemInfo.isLinux) { "Can only run on Linux, docker is possible, please PR" }
 
-    val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir)
+    val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir).toAbsolutePath()
 
     val buildTxtPath = appHome.resolve("build.txt")
     require(buildTxtPath.isRegularFile()) { "Cannot find build.txt file in $appHome" }
@@ -115,9 +116,10 @@ class LinuxIdeDistribution : IdeDistribution() {
         }
 
       override val build = build
-      override val os = "linux"
+      override val os = OsType.Linux
       override val productCode = productCode
       override val isFromSources = false
+      override val installationPath: Path = appHome
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$unpackDir}"
       override fun resolveAndDownloadTheSameJDK(): Path {

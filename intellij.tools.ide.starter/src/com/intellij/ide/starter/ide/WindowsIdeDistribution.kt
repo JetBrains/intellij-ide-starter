@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
 import java.nio.file.Path
@@ -42,9 +43,10 @@ class WindowsIdeDistribution : IdeDistribution() {
       }
 
       override val build = build
-      override val os = "windows"
+      override val os = OsType.Windows
       override val productCode = productCode
       override val isFromSources = false
+      override val installationPath: Path = unpackDir.toAbsolutePath()
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$unpackDir}"
       override fun resolveAndDownloadTheSameJDK(): Path {

@@ -1,15 +1,19 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.system.OsType
 import java.nio.file.Path
 
 interface InstalledIde {
   val vmOptions: VMOptions
 
   val build: String
-  val os: String
+  val os: OsType
   val productCode: String
   val isFromSources: Boolean
+
+  /** Eg: /opt/REPO/intellij/out/perf-startup/cache/builds/GO-233.6745.304/GoLand-233.6745.304/ */
+  val installationPath: Path
 
   /** Bundled plugins directory, if supported **/
   val bundledPluginsDir: Path?

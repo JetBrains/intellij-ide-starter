@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logOutput
@@ -40,12 +41,12 @@ class MacOsIdeDistribution : IdeDistribution() {
   }
 
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
-    val appDir = unpackDir.toFile().listFiles()?.singleOrNull { it.name.endsWith(".app") }?.toPath()
+    val appDir = unpackDir.toFile().listFiles()?.singleOrNull { it.name.endsWith(".app") }?.toPath()?.toAbsolutePath()
                  ?: error("Invalid macOS application directory: $unpackDir")
 
     val executableName = getExecutableNameFromInfoPlist(appDir.toFile(), "CFBundleExecutable")
 
-    val appHome = appDir.resolve("Contents")
+    val appHome = appDir.resolve("Contents").toAbsolutePath()
     val executablePath = appHome / "MacOS" / executableName
     require(executablePath.isRegularFile()) { "Cannot find macOS IDE executable file in $executablePath" }
 
@@ -76,9 +77,10 @@ class MacOsIdeDistribution : IdeDistribution() {
       }
 
       override val build = build
-      override val os = "mac"
+      override val os = OsType.MacOS
       override val productCode = productCode
       override val isFromSources = false
+      override val installationPath: Path = appHome
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$appDir}"
 

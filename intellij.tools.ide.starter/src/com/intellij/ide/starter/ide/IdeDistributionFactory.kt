@@ -9,7 +9,7 @@ object IdeDistributionFactory {
       SystemInfo.isMac -> MacOsIdeDistribution()
       SystemInfo.isWindows -> WindowsIdeDistribution()
       SystemInfo.isLinux -> LinuxIdeDistribution()
-      else -> error("Not supported app: $unpackDir")
+      else -> error("Not supported ide distribution: $unpackDir")
     }
 
     return distribution.installIde(unpackDir.toPath(), executableFileName)
