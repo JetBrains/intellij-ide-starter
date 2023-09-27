@@ -247,7 +247,7 @@ class IDETestContext(
   /**
    * Setup profiler injection
    */
-  fun setProfiler(profilerType: ProfilerType): IDETestContext {
+  fun setProfiler(profilerType: ProfilerType = ProfilerType.ASYNC): IDETestContext {
     logOutput("Setting profiler: ${profilerType}")
     this.profilerType = profilerType
     return this
