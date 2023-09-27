@@ -7,10 +7,7 @@ import com.intellij.ide.starter.utils.logOutput
 import org.w3c.dom.Node
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.div
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.readText
+import kotlin.io.path.*
 
 class MacOsIdeDistribution : IdeDistribution() {
 
@@ -60,9 +57,10 @@ class MacOsIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = appHome / "plugins"
 
-      private val vmOptionsFinal: VMOptions =VMOptions(
+      private val vmOptionsFinal: VMOptions = VMOptions(
         ide = this,
-        data = emptyList(),
+        // init VMOptions with default values from installer bin directory
+        data = appHome.resolve("bin").listDirectoryEntries(glob = "*.vmoptions").single().readLines(),
         env = emptyMap()
       )
 

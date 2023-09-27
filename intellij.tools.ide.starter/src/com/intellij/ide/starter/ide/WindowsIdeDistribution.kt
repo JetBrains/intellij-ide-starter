@@ -25,7 +25,8 @@ class WindowsIdeDistribution : IdeDistribution() {
 
       private val vmOptionsFinal: VMOptions =VMOptions(
         ide = this,
-        data = emptyList(),
+        // init VMOptions with default values from installer bin directory
+        data = allBinFiles.single { it.fileName.toString().endsWith(".vmoptions") }.readLines(),
         env = emptyMap()
       )
 
