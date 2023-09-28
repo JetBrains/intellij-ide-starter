@@ -8,7 +8,10 @@ import com.intellij.ide.starter.utils.logOutput
 import org.w3c.dom.Node
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.readText
 
 class MacOsIdeDistribution : IdeDistribution() {
 
@@ -60,8 +63,7 @@ class MacOsIdeDistribution : IdeDistribution() {
 
       private val vmOptionsFinal: VMOptions = VMOptions(
         ide = this,
-        // init VMOptions with default values from installer bin directory
-        data = appHome.resolve("bin").listDirectoryEntries(glob = "*.vmoptions").single().readLines(),
+        data = emptyList(),
         env = emptyMap()
       )
 

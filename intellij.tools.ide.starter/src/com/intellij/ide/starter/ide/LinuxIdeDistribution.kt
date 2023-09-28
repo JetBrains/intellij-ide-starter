@@ -69,8 +69,7 @@ class LinuxIdeDistribution : IdeDistribution() {
 
       private val vmOptionsFinal: VMOptions = VMOptions(
         ide = this,
-        // init VMOptions with default values from installer bin directory
-        data = allBinFiles.single { it.fileName.toString().endsWith(".vmoptions") }.readLines(),
+        data = emptyList(),
         env = emptyMap()
       )
 
