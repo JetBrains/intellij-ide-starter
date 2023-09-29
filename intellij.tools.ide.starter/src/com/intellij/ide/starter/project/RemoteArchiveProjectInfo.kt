@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.minutes
  */
 data class RemoteArchiveProjectInfo(
   val projectURL: String,
-  override val isReusable: Boolean = true,
+  override val isReusable: Boolean = false,
   override val downloadTimeout: Duration = 10.minutes,
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""

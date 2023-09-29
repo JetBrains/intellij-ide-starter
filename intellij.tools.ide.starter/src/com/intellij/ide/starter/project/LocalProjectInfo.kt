@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.minutes
  */
 data class LocalProjectInfo(
   val projectDir: Path,
-  override val isReusable: Boolean = true,
+  override val isReusable: Boolean = false,
   override val downloadTimeout: Duration = 1.minutes,
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
   private val description: String = ""

@@ -26,10 +26,9 @@ data class TestCase<T : ProjectInfoSpec>(
   fun onIDE(ideInfo: IdeInfo): TestCase<T> = copy(ideInfo = ideInfo)
 
   /**
-   * On each test run the project will be unpacked again.
+   * reusable = false - On each test run the project will be unpacked again.
    * This guarantees that there is not side effects from previous test runs
    **/
-  fun markNotReusable(): TestCase<T> = markReusable(false)
   fun markReusable(reusable: Boolean = true): TestCase<T> = when (projectInfo) {
     is RemoteArchiveProjectInfo -> copy(projectInfo = projectInfo.copy(isReusable = reusable) as T)
     is GitProjectInfo -> copy(projectInfo = projectInfo.copy(isReusable = reusable) as T)

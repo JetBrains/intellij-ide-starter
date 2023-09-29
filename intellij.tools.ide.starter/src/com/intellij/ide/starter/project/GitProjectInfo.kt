@@ -32,7 +32,7 @@ data class GitProjectInfo(
    */
   val branchName: String,
 
-  override val isReusable: Boolean = true,
+  override val isReusable: Boolean = false,
   override val downloadTimeout: Duration = 10.minutes,
 
   /**

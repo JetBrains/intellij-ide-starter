@@ -395,7 +395,7 @@ class IDETestContext(
   }
 
   fun removeAndUnpackProject(): IDETestContext {
-    testCase.markNotReusable().projectInfo.downloadAndUnpackProject()
+    testCase.projectInfo.downloadAndUnpackProject()
     return this
   }
 
