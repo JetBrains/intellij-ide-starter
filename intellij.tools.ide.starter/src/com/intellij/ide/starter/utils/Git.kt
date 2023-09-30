@@ -12,8 +12,9 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 object Git {
-  val branch by lazy { getShortBranchName(Paths.get(PathManager.getHomePath())) }
-  val localBranch by lazy { getLocalGitBranch(Paths.get(PathManager.getHomePath())) }
+  private val homeDir: Path by lazy { Paths.get(PathManager.getHomePath()) }
+  val branch by lazy { getShortBranchName(homeDir) }
+  val localBranch by lazy { getLocalGitBranch(homeDir) }
   val getDefaultBranch by lazy {
     when (val majorBranch = localBranch.substringBefore(".")) {
       "HEAD", "master" -> "master"
@@ -356,6 +357,19 @@ object Git {
       args = listOf("git", "config", "--local", propertyName, "\"$value\""),
       stdoutRedirect = stdout
     ).start()
+  }
+
+  fun verifyBranch(branch: String): Boolean {
+    val stdout = ExecOutputRedirect.ToString()
+    runCatching {
+      ProcessExecutor(
+        "git verify branch",
+        workDir = homeDir, timeout = 1.minutes,
+        args = listOf("git", "show-ref", "refs/heads/$branch"),
+        stdoutRedirect = stdout
+      ).start()
+    }
+    return stdout.read().isNotEmpty()
   }
 }
 
