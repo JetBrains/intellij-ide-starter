@@ -53,10 +53,7 @@ class LinuxIdeDistribution : IdeDistribution() {
     require(SystemInfo.isLinux) { "Can only run on Linux, docker is possible, please PR" }
 
     val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir).toAbsolutePath()
-
-    val buildTxtPath = appHome.resolve("build.txt")
-    require(buildTxtPath.isRegularFile()) { "Cannot find build.txt file in $appHome" }
-    val (productCode, build) = buildTxtPath.readText().trim().split("-", limit = 2)
+    val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(appHome.resolve("build.txt"))
 
     val binDir = appHome / "bin"
     val allBinFiles = binDir.listDirectoryEntries()

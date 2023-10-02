@@ -6,9 +6,7 @@ import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.IdeInstallator
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
@@ -18,8 +16,6 @@ import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.logOutput
-import org.kodein.di.direct
-import org.kodein.di.factory
 import java.io.Closeable
 import kotlin.io.path.div
 
@@ -58,7 +54,7 @@ interface TestContainer<T> : Closeable {
    * @return <Build Number, InstalledIde>
    */
   fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
-    return di.direct.factory<IdeInfo, IdeInstallator>().invoke(ideInfo).install(ideInfo)
+    return ideInfo.getInstaller(ideInfo).install(ideInfo)
   }
 
   fun installPerformanceTestingPluginIfMissing(context: IDETestContext) {
@@ -121,7 +117,7 @@ interface TestContainer<T> : Closeable {
         .enableAsyncProfiler()
         .applyVMOptionsPatch {
           overrideDirectories(context.paths)
-          if(isUnderDebug()){
+          if (isUnderDebug()) {
             debug(suspend = false)
           }
         }

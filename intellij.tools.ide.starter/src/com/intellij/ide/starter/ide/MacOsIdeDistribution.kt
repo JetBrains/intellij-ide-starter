@@ -11,7 +11,6 @@ import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.readText
 
 class MacOsIdeDistribution : IdeDistribution() {
 
@@ -53,10 +52,7 @@ class MacOsIdeDistribution : IdeDistribution() {
     val executablePath = appHome / "MacOS" / executableName
     require(executablePath.isRegularFile()) { "Cannot find macOS IDE executable file in $executablePath" }
 
-    val buildTxtPath = appHome / "Resources" / "build.txt"
-    require(buildTxtPath.isRegularFile()) { "Cannot find macOS IDE vmoptions file in $executablePath" }
-
-    val (productCode, build) = buildTxtPath.readText().trim().split("-", limit = 2)
+    val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(appHome / "Resources" / "build.txt")
 
     return object : InstalledIde {
       override val bundledPluginsDir = appHome / "plugins"

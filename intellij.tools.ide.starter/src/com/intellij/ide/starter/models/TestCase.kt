@@ -3,6 +3,7 @@ package com.intellij.ide.starter.models
 import com.intellij.ide.starter.community.PublicIdeDownloader
 import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.ide.installer.StandardInstaller
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -43,12 +44,13 @@ data class TestCase<T : ProjectInfoSpec>(
     buildNumber: String? = null,
     version: String? = null
   ): TestCase<T> {
-    return copy(ideInfo = ideInfo.copy(
-      buildType = buildType?.type ?: "",
-      downloader = PublicIdeDownloader,
-      buildNumber = buildNumber ?: "",
-      version = version ?: ""
-    ))
+    return copy(
+      ideInfo = ideInfo.copy(
+        buildType = buildType?.type ?: "",
+        buildNumber = buildNumber ?: "",
+        version = version ?: ""
+      ).run { this.copy(getInstaller = { StandardInstaller(PublicIdeDownloader) }) }
+    )
   }
 
   fun useRC(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.RC)
@@ -56,7 +58,8 @@ data class TestCase<T : ProjectInfoSpec>(
   fun useEAP(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.EAP)
 
   /** E.g: "222.3244.1" */
-  private fun useEAP(buildNumber: String = ""): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(BuildType.EAP, buildNumber = buildNumber)
+  private fun useEAP(buildNumber: String = ""): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(BuildType.EAP,
+                                                                                                        buildNumber = buildNumber)
 
   fun useRelease(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.RELEASE)
 

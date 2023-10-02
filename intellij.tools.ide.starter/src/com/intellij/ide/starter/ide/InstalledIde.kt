@@ -26,5 +26,8 @@ interface InstalledIde {
 
   fun resolveAndDownloadTheSameJDK(): Path
 
-  fun isMajorVersionAtLeast(v: Int) = build.substringBefore(".").toIntOrNull()?.let { it >= v } ?: true
+  /** Check the major version of the build number.
+   * Eg: 232.9921.47 => 232
+   **/
+  fun isMajorBuildVersionAtLeast(v: Int) = build.substringBefore(".").toIntOrNull()?.let { it >= v } ?: true
 }

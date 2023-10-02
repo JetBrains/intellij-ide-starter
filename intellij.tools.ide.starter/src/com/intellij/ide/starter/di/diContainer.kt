@@ -10,9 +10,7 @@ import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.ide.CodeInjector
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeDownloader
-import com.intellij.ide.starter.ide.IdeInstallator
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
-import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
 import com.intellij.ide.starter.path.GlobalPaths
@@ -49,7 +47,7 @@ var di = DI {
   bindSingleton<CodeInjector> { CodeBuilderHost() }
   bindFactory { testContext: IDETestContext -> PluginConfigurator(testContext) }
   bindSingleton<IdeDownloader> { PublicIdeDownloader }
-  bindFactory<IdeInfo, IdeInstallator> { ideInfo -> IdeInstallerFactory().createInstaller(ideInfo) }
+  bindSingleton<IdeInstallerFactory> { IdeInstallerFactory() }
 
   // you can extend DI with frameworks, specific to IDE language stack
   bindArgSet<IDETestContext, Framework>()

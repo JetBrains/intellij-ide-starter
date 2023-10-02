@@ -2,7 +2,7 @@ package com.intellij.ide.starter.community
 
 import com.intellij.ide.starter.community.model.ReleaseInfo
 import com.intellij.ide.starter.ide.IdeDownloader
-import com.intellij.ide.starter.ide.installer.IdeInstaller
+import com.intellij.ide.starter.ide.installer.IdeInstallerFile
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.system.SystemInfo
@@ -36,7 +36,7 @@ object PublicIdeDownloader : IdeDownloader {
     throw NoSuchElementException("Couldn't find specified release by parameters $filteringParams")
   }
 
-  override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstaller {
+  override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstallerFile {
     val params = ProductInfoRequestParameters(type = ideInfo.productCode,
                                               snapshot = ideInfo.buildType,
                                               buildNumber = ideInfo.buildNumber,
@@ -64,6 +64,6 @@ object PublicIdeDownloader : IdeDownloader {
     }
     else logOutput("Installer file $installerFile already exists. Skipping download.")
 
-    return IdeInstaller(installerFile, possibleBuild.build)
+    return IdeInstallerFile(installerFile, possibleBuild.build)
   }
 }

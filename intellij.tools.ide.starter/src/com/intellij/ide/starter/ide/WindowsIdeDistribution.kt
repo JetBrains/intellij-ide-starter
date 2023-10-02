@@ -5,13 +5,13 @@ import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 
 class WindowsIdeDistribution : IdeDistribution() {
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
-    val buildTxtPath = unpackDir.resolve("build.txt")
-    require(buildTxtPath.isRegularFile()) { "Cannot find WindowsOS IDE vmoptions file in $unpackDir" }
-    val (productCode, build) = buildTxtPath.readText().trim().split("-", limit = 2)
+    val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(unpackDir.resolve("build.txt"))
 
     val binDir = unpackDir / "bin"
 
@@ -24,7 +24,7 @@ class WindowsIdeDistribution : IdeDistribution() {
     return object : InstalledIde {
       override val bundledPluginsDir = unpackDir.resolve("plugins")
 
-      private val vmOptionsFinal: VMOptions =VMOptions(
+      private val vmOptionsFinal: VMOptions = VMOptions(
         ide = this,
         data = emptyList(),
         env = emptyMap()
