@@ -7,7 +7,9 @@ import java.io.File
 class OpentelemetryJsonParser(private val spanFilter: SpanFilter) {
 
   private fun getSpans(file: File): JsonNode {
-    val root = jacksonObjectMapper().readTree(file)
+    val json = file.readText()
+    //TODO workaround for non valid intermediate json
+    val root = jacksonObjectMapper().readTree(if (json.endsWith(",")) json else "$json]}]}")
     val data = root.get("data")
     if (data == null || data.isEmpty) {
       throw IllegalArgumentException("Not 'data' node in json")
