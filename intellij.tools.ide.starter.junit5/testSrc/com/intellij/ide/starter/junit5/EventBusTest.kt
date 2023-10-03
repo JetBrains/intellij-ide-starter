@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.tests.unit
+package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.bus.Signal
 import com.intellij.ide.starter.bus.StarterBus
