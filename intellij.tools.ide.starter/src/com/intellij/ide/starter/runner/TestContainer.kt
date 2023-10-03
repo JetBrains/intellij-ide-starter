@@ -118,7 +118,7 @@ interface TestContainer<T> : Closeable {
         .applyVMOptionsPatch {
           overrideDirectories(context.paths)
           if (isUnderDebug()) {
-            debug(suspend = false)
+            debug(5010, suspend = false)
           }
         }
         .disableMinimap()
