@@ -378,12 +378,12 @@ object Git {
     ProcessExecutor(
       "git-revlist-all",
       workDir = dir.toAbsolutePath(),
-      timeout = 1.minutes,
+      timeout = 2.minutes,
       args = listOf("git", "rev-list", "--count", "--all"),
       stdoutRedirect = stdout
     ).start()
 
-    return stdout.read().toLong()
+    return stdout.read().trim().toLong()
   }
 
 }
