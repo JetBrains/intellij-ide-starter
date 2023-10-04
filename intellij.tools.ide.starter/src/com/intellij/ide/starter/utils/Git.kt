@@ -371,5 +371,20 @@ object Git {
     }
     return stdout.read().isNotEmpty()
   }
+
+  fun countTotalNumberOfCommits(dir: Path): Long {
+    val stdout = ExecOutputRedirect.ToString()
+
+    ProcessExecutor(
+      "git-revlist-all",
+      workDir = dir.toAbsolutePath(),
+      timeout = 1.minutes,
+      args = listOf("git", "rev-list", "--count", "--all"),
+      stdoutRedirect = stdout
+    ).start()
+
+    return stdout.read().toLong()
+  }
+
 }
 
