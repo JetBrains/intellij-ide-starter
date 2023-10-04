@@ -8,17 +8,16 @@ import kotlin.io.path.div
 
 object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
 
-  val GradleJitPackSimple = getTemplate().withProject(
+  val GradleJitPackSimple = withProject(
     GitHubProject.fromGithub(
       branchName = "master",
       repoRelativeUrl = "/jitpack/gradle-simple.git"
     )
   )
 
-  val MavenSimpleApp = getTemplate().withProject(
+  val MavenSimpleApp = withProject(
     RemoteArchiveProjectInfo(
       projectURL = "https://github.com/jenkins-docs/simple-java-maven-app/archive/refs/heads/master.zip",
-      projectHomeRelativePath = { it / "simple-java-maven-app-master" }
     )
   )
 }

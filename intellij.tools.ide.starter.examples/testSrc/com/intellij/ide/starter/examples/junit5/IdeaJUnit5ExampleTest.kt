@@ -1,16 +1,16 @@
 package com.intellij.ide.starter.examples.junit5
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.examples.data.TestCases
-import com.intellij.metricsCollector.metrics.getOpenTelemetry
-import com.jetbrains.performancePlugin.commands.chain.exitApp
-import com.jetbrains.performancePlugin.commands.chain.inspectCode
+import com.intellij.metricsCollector.metrics.getMetricsFromSpanAndChildren
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.inspectCode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -62,14 +62,12 @@ class IdeaJUnit5ExampleTest {
   fun inspectMavenProject() {
     val testContext = context
       .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
-      .collectOpenTelemetry()
       .setSharedIndexesDownload(enable = true)
 
-    testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
-
-    getOpenTelemetry(testContext, "globalInspections").metrics.forEach {
-      println("Name: " + it.n)
-      println("Value: " + it.v + "ms")
+    val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
+    getMetricsFromSpanAndChildren(result, com.intellij.metricsCollector.telemetry.SpanFilter.Companion.equals("globalInspections")).forEach {
+      println("Name: " + it.id.name)
+      println("Value: " + it.value + "ms")
     }
   }
 }

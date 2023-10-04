@@ -3,7 +3,6 @@ package com.intellij.ide.starter.examples.indexing
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
@@ -12,8 +11,9 @@ import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.metricsCollector.metrics.extractIndexingMetrics
-import com.jetbrains.performancePlugin.commands.chain.exitApp
-import com.jetbrains.performancePlugin.commands.chain.waitForSmartMode
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -54,7 +54,7 @@ class ScalabilityTest {
 
       val result = context.runIDE(commands = commands)
       val indexingMetrics = extractIndexingMetrics(result) //todo change to extractOldIndexingMetrics for 2023.2
-      results[processorCount] = listOf(indexingMetrics.totalIndexingTime, indexingMetrics.totalScanFilesTime)
+      results[processorCount] = listOf(indexingMetrics.totalIndexingTimeWithoutPauses, indexingMetrics.totalScanFilesTimeWithoutPauses)
     }
     println("\n###RESULTS###")
     println("Number of processors, Total Indexing Time, Total Scanning Time")

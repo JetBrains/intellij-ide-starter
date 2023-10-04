@@ -5,7 +5,6 @@ import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeInstallator
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.ide.starter.ide.command.CommandChain
 import com.intellij.ide.starter.ide.installer.IdeInstaller
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IdeInfo
@@ -15,10 +14,7 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.jetbrains.performancePlugin.commands.chain.exitApp
-import com.jetbrains.performancePlugin.commands.chain.startProfile
-import com.jetbrains.performancePlugin.commands.chain.stopProfile
-import com.jetbrains.performancePlugin.commands.chain.waitForSmartMode
+import com.intellij.tools.ide.performanceTesting.commands.*
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -79,7 +75,6 @@ class TestIndexing {
       .copyExistingPlugins(plugins)
       .enableVerboseOpenTelemetry()
       .enableAsyncProfiler()
-      .setPathForSnapshots()
       .executeDuringIndexing()
 
     //TEST COMMANDS
