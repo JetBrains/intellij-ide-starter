@@ -56,7 +56,10 @@ data class RemoteArchiveProjectInfo(
 
 
     if (!isReusable) {
-      projectHome.toFile().deleteRecursively()
+      val isDeleted = projectHome.toFile().deleteRecursively()
+      if (!isDeleted) {
+        logOutput("Failed to delete $projectHome")
+      }
     }
 
     if (projectHome.isDirUpToDate()) {
