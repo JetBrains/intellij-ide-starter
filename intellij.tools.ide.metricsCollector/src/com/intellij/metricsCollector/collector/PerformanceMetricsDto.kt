@@ -1,9 +1,9 @@
 package com.intellij.metricsCollector.collector
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.metricsCollector.publishing.ApplicationMetricDto
 import com.intellij.openapi.util.BuildNumber
+import com.intellij.openapi.util.SystemInfo
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -20,7 +20,6 @@ data class PerformanceMetricsDto(
   val metrics: List<ApplicationMetricDto>
 ) {
   companion object {
-
     fun create(
       projectName: String,
       buildNumber: BuildNumber,
@@ -29,7 +28,7 @@ data class PerformanceMetricsDto(
       generated = ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME),
       project = projectName,
       os = SystemInfo.getOsNameAndVersion(),
-      osFamily = SystemInfo.getOsType().toString(),
+      osFamily = SystemInfo.getOsFamily().toString(),
       runtime = SystemInfo.JAVA_VENDOR + " " + SystemInfo.JAVA_VERSION + " " + SystemInfo.JAVA_RUNTIME_VERSION,
       build = buildNumber.asStringWithoutProductCode(),
       buildDate = ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME),

@@ -1,14 +1,12 @@
 package com.intellij.metricsCollector.metrics
 
-import com.intellij.ide.starter.ide.IDETestContext.Companion.OPENTELEMETRY_FILE
-import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.metricsCollector.collector.PerformanceMetrics.Metric
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Counter
 import com.intellij.metricsCollector.collector.PerformanceMetrics.MetricId.Duration
-import com.intellij.metricsCollector.telemetry.SpanInfoProcessor
 import com.intellij.metricsCollector.telemetry.MetricSpanProcessor
 import com.intellij.metricsCollector.telemetry.OpentelemetryJsonParser
 import com.intellij.metricsCollector.telemetry.SpanFilter
+import com.intellij.metricsCollector.telemetry.SpanInfoProcessor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.util.alsoIfNull
 import java.io.File
@@ -81,11 +79,6 @@ fun getMetricsBasedOnDiffBetweenSpans(name: String, file: File, fromSpanName: St
   }
   return combineMetrics(mapOf(name to metrics))
 }
-fun getMetricsFromSpanAndChildren(startResult: IDEStartResult, filter: SpanFilter): List<Metric> {
-  val opentelemetryFile = startResult.runContext.logsDir.resolve(OPENTELEMETRY_FILE).toFile()
-  return getMetricsFromSpanAndChildren(opentelemetryFile, filter)
-}
-
 
 fun getSpansMetricsMap(file: File,
                        spanFilter: SpanFilter = SpanFilter { true }): Map<String, List<MetricWithAttributes>> {

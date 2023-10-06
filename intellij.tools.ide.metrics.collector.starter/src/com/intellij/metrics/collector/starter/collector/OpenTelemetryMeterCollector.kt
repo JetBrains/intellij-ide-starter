@@ -1,6 +1,8 @@
-package com.intellij.metricsCollector.collector
+package com.intellij.metrics.collector.starter.collector
 
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.metricsCollector.collector.MetricsSelectionStrategy
+import com.intellij.metricsCollector.collector.PerformanceMetrics
 import com.intellij.platform.diagnostic.telemetry.MetricsImporterUtils
 import io.opentelemetry.sdk.metrics.data.LongPointData
 import io.opentelemetry.sdk.metrics.data.PointData

@@ -14,4 +14,4 @@ and pass the span name you're interested in. Default span name for all commands 
 
 To find out which spans were collected you can open `opentelemetry.json` file in log folder. The recommended viewer is [Jaeger](https://www.jaegertracing.io/).
 
-To get inspection metrics invoke `com.intellij.metricsCollector.metrics.IndexingMetricsKt.extractIndexingMetrics`.
+To get inspection metrics invoke `com.intellij.metrics.collector.starter.metrics.IndexingMetricsKt.extractIndexingMetrics`.

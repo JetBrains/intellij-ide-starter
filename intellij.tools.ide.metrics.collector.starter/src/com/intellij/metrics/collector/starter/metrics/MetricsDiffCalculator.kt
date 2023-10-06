@@ -1,4 +1,4 @@
-package com.intellij.metricsCollector
+package com.intellij.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.utils.intersectKeys
 import com.intellij.ide.starter.utils.symmetricDiffOfKeys

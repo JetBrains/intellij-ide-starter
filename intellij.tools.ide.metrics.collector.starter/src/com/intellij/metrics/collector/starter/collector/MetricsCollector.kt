@@ -1,7 +1,8 @@
-package com.intellij.metricsCollector.collector
+package com.intellij.metrics.collector.starter.collector
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.metricsCollector.collector.PerformanceMetrics
 
 interface MetricsCollector {
   /**

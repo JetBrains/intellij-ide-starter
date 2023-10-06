@@ -1,12 +1,13 @@
-package com.intellij.metricsCollector
+package com.intellij.tools.ide.metrics.collector.starter
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.metricsCollector.collector.MetricsSelectionStrategy
-import com.intellij.metricsCollector.collector.OpenTelemetryMeterCollector
-import com.intellij.metricsCollector.collector.PerformanceMetrics
-import com.intellij.metricsCollector.publishing.MetricsPublisher
+import com.intellij.tools.ide.metrics.collector.collector.MetricsSelectionStrategy
+import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.starter.collector.OpenTelemetryMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.metrics.MetricsDiffCalculator
+import com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.withClue
 import io.kotest.inspectors.shouldForAll

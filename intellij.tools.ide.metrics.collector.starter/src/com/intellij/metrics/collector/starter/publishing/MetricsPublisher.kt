@@ -1,10 +1,10 @@
-package com.intellij.metricsCollector.publishing
+package com.intellij.metrics.collector.starter.publishing
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.withRetry
+import com.intellij.metrics.collector.starter.collector.MetricsCollector
 import com.intellij.metricsCollector.collector.CompareSetting
-import com.intellij.metricsCollector.collector.MetricsCollector
 import com.intellij.metricsCollector.collector.PerformanceMetrics
 
 /**
