@@ -1,11 +1,11 @@
-package com.intellij.metrics.collector.starter.publishing
+package com.intellij.tools.ide.metrics.collector.starter.publishing
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.withRetry
-import com.intellij.metrics.collector.starter.collector.MetricsCollector
-import com.intellij.metricsCollector.collector.CompareSetting
-import com.intellij.metricsCollector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.starter.collector.MetricsCollector
+import com.intellij.tools.ide.metrics.collector.collector.CompareSetting
+import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
 
 /**
  * Aggregate metrics from different collectors [MetricsCollector]

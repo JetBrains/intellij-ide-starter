@@ -1,4 +1,4 @@
-package com.intellij.tools.ide.metrics.collector.starter
+package com.intellij.metrics.collector.starter
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.report.publisher.ReportPublisher

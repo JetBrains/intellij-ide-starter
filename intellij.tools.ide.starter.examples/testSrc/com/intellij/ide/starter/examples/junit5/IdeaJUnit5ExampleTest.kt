@@ -7,7 +7,7 @@ import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.examples.data.TestCases
-import com.intellij.metricsCollector.metrics.getMetricsFromSpanAndChildren
+import com.intellij.tools.ide.metrics.collector.metrics.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.inspectCode
@@ -65,7 +65,7 @@ class IdeaJUnit5ExampleTest {
       .setSharedIndexesDownload(enable = true)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
-    getMetricsFromSpanAndChildren(result, com.intellij.metricsCollector.telemetry.SpanFilter.Companion.equals("globalInspections")).forEach {
+    getMetricsFromSpanAndChildren(result, com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter.Companion.equals("globalInspections")).forEach {
       println("Name: " + it.id.name)
       println("Value: " + it.value + "ms")
     }

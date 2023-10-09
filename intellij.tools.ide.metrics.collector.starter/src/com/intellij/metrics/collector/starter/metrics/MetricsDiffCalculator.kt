@@ -1,8 +1,8 @@
-package com.intellij.metrics.collector.starter.metrics
+package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.utils.intersectKeys
 import com.intellij.ide.starter.utils.symmetricDiffOfKeys
-import com.intellij.metricsCollector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
 import kotlin.math.abs
 
 /**

@@ -1,8 +1,8 @@
-package com.intellij.metrics.collector.starter.collector
+package com.intellij.tools.ide.metrics.collector.starter.collector
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.metricsCollector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
 
 interface MetricsCollector {
   /**
@@ -13,7 +13,7 @@ interface MetricsCollector {
    * - First collection
    * - Test does something
    * - Second collection
-   * - Calculation of diff between first and second collection via [com.intellij.metricsCollector.MetricsDiffCalculator]
+   * - Calculation of diff between first and second collection via [com.intellij.tools.ide.metrics.collector.MetricsDiffCalculator]
    */
   fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric>
 }

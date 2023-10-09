@@ -77,4 +77,4 @@ Examples of included commands:
 
 Metrics are values collected during test execution, including operation durations, command results (e.g., the number of elements in completion lists), and more. To use them, add the `com.jetbrains.intellij.tools:ide-metrics-collector` dependency.
 
-For more information, see the [README](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.metricsCollector/README.md) for more information.
+For more information, see the [README](https://github.com/JetBrains/intellij-community/blob/master/tools/intellij.tools.ide.metrics.collector/README.md) for more information.

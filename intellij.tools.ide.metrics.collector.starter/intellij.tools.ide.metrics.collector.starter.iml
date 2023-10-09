@@ -13,7 +13,7 @@
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter" />
     <orderEntry type="module" module-name="intellij.driver.model" />
-    <orderEntry type="module" module-name="intellij.tools.ide.metricsCollector" />
+    <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" />
     <orderEntry type="module" module-name="intellij.platform.diagnostic.telemetry" />
     <orderEntry type="library" name="opentelemetry" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
