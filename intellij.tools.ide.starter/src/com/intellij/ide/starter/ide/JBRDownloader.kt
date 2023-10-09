@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.logOutput

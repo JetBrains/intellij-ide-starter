@@ -2,7 +2,7 @@ package com.intellij.ide.starter.sdk
 
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.withRetry
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*

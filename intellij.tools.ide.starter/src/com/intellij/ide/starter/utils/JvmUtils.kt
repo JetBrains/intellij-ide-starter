@@ -2,7 +2,7 @@ package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path

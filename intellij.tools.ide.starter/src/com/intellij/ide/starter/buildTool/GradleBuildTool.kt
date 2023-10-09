@@ -3,7 +3,7 @@ package com.intellij.ide.starter.buildTool
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput

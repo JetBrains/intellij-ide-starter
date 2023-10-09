@@ -25,7 +25,7 @@ import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.*
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.util.io.createDirectories

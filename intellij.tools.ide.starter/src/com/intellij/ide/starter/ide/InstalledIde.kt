@@ -1,14 +1,14 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.system.OsType
+import com.intellij.openapi.util.OsFamily
 import java.nio.file.Path
 
 interface InstalledIde {
   val vmOptions: VMOptions
 
   val build: String
-  val os: OsType
+  val os: OsFamily
   val productCode: String
   val isFromSources: Boolean
 

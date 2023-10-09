@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import java.io.File
 
 object IdeDistributionFactory {

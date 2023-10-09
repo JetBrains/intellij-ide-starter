@@ -4,7 +4,7 @@ import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.net.URI

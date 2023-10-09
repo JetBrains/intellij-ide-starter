@@ -1,9 +1,9 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.util.OsFamily
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
@@ -42,7 +42,7 @@ class WindowsIdeDistribution : IdeDistribution() {
       }
 
       override val build = build
-      override val os = OsType.Windows
+      override val os = OsFamily.Windows
       override val productCode = productCode
       override val isFromSources = false
       override val installationPath: Path = unpackDir.toAbsolutePath()

@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.wsl
 
 import com.intellij.execution.wsl.WslDistributionManager
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkPredicate
 

@@ -3,10 +3,10 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.system.OsType
-import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.util.OsFamily
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -112,7 +112,7 @@ class LinuxIdeDistribution : IdeDistribution() {
         }
 
       override val build = build
-      override val os = OsType.Linux
+      override val os = OsFamily.Linux
       override val productCode = productCode
       override val isFromSources = false
       override val installationPath: Path = appHome

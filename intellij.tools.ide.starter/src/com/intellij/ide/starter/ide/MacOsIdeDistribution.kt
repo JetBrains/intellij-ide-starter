@@ -1,10 +1,10 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.system.OsType
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.util.OsFamily
 import org.w3c.dom.Node
 import java.io.File
 import java.nio.file.Path
@@ -75,7 +75,7 @@ class MacOsIdeDistribution : IdeDistribution() {
       }
 
       override val build = build
-      override val os = OsType.MacOS
+      override val os = OsFamily.MacOS
       override val productCode = productCode
       override val isFromSources = false
       override val installationPath: Path = appHome

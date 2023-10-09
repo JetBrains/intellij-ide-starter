@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.models
 
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
 import java.nio.file.Path
 

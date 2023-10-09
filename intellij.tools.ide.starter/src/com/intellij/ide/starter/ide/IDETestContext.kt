@@ -14,7 +14,7 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.logError
 import com.intellij.ide.starter.utils.logOutput
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens

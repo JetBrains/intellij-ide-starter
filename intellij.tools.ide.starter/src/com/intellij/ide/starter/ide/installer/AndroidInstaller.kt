@@ -7,7 +7,7 @@ import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.HttpClient
 import org.kodein.di.instance
 import java.io.File

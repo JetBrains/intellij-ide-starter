@@ -13,9 +13,9 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.ide.starter.system.OsType
-import com.intellij.ide.starter.system.SystemInfo
 import com.intellij.ide.starter.utils.logOutput
+import com.intellij.openapi.util.OsFamily
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.plugin.checker.data.TestCases
@@ -196,13 +196,13 @@ class InstallPluginTest {
       }
 
       val link = params.event.productLink.substring(0, params.event.productLink.indexOf(".tar.gz"))
-      val downloadLink: String = link + when (SystemInfo.getOsType()) {
-        OsType.Linux -> ".tar.gz"
-        OsType.MacOS -> {
+      val downloadLink: String = link + when (SystemInfo.getOsFamily()) {
+        OsFamily.Linux -> ".tar.gz"
+        OsFamily.MacOS -> {
           if (SystemInfo.OS_ARCH == "aarch64") "-aarch64.dmg"
           else ".dmg"
         }
-        OsType.Windows -> ".exe"
+        OsFamily.Windows -> ".exe"
         else -> throw RuntimeException("OS is not supported")
       }
 

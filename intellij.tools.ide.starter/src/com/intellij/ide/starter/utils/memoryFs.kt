@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.system.SystemInfo
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.div
