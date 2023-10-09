@@ -224,10 +224,6 @@ class InstallPluginTest {
     try {
       val testContext = container
         .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
-        .applyVMOptionsPatch {
-          addSystemProperty("idea.local.statistics.without.report", true)
-          addSystemProperty("idea.updates.url", "http://127.0.0.1")
-        }
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {

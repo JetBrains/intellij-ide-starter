@@ -125,6 +125,7 @@ interface TestContainer<T> : Closeable {
         .addProjectToTrustedLocations()
         .useNewUIInTests()
         .disableReportingStatisticsToProduction()
+        .disableReportingStatisticToJetStat()
         .disableMigrationNotification()
         .setKotestMaxCollectionEnumerateSize()
     }

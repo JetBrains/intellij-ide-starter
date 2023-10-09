@@ -155,6 +155,10 @@ class IDETestContext(
     addSystemProperty("idea.local.statistics.without.report", disabled)
   }
 
+  fun disableReportingStatisticToJetStat() = applyVMOptionsPatch {
+    addSystemProperty("idea.updates.url", "http://127.0.0.1")
+  }
+
   fun withVerboseIndexingDiagnostics(dumpPaths: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("intellij.indexes.diagnostics.should.dump.for.interrupted.index.updaters", true)
