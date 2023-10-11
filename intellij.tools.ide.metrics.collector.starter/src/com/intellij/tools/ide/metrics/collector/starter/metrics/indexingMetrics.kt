@@ -2,7 +2,7 @@ package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.metrics.createPerformanceMetricCounter
+import com.intellij.tools.ide.metrics.collector.metrics.toCounterMetricId
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.*
@@ -234,14 +234,14 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
 private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> {
   val list = mutableListOf<PerformanceMetrics.Metric>()
   mapFileTypeToSpeed.forEach {
-    list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".createPerformanceMetricCounter(), value = it.value.toLong()))
+    list.add(PerformanceMetrics.Metric("processingSpeed#${it.key}".toCounterMetricId(), value = it.value.toLong()))
   }
   return list
 }
 
 private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> =
   mapBaseLanguageToSpeed.map {
-    PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".createPerformanceMetricCounter(), value = it.value.toLong())
+    PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".toCounterMetricId(), value = it.value.toLong())
   }
 
 data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val totalSumOfThreadTimesWithPauses: Long = 0) {
