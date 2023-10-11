@@ -7,7 +7,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.catchAll
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File

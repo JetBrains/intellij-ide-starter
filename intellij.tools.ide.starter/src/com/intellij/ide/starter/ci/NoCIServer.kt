@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.ci
 
-import com.intellij.ide.starter.utils.logError
+import com.intellij.tools.ide.common.logError
 import java.nio.file.Path
 
 /** Dummy for CI server */

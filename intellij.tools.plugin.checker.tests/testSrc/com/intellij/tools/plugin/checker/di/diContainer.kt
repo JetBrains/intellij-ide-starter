@@ -8,7 +8,7 @@ import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.net.URI

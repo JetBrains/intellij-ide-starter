@@ -5,9 +5,8 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.catchAll
-import com.intellij.ide.starter.utils.logOutput
-import com.intellij.ide.starter.utils.withRetry
-import com.intellij.openapi.progress.runBlockingCancellable
+import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.common.withRetry
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout

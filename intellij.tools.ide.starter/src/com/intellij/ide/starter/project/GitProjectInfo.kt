@@ -4,7 +4,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.Git
-import com.intellij.ide.starter.utils.logError
+import com.intellij.tools.ide.common.logError
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.createDirectories

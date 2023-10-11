@@ -15,8 +15,8 @@ import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.ide.starter.utils.logError
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logError
+import com.intellij.tools.ide.common.logOutput
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain

@@ -4,7 +4,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes

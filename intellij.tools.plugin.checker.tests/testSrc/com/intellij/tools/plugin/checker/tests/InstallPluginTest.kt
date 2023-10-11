@@ -13,7 +13,7 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import com.intellij.openapi.util.OsFamily
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain

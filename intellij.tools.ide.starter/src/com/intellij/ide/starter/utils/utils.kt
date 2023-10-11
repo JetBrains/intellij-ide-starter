@@ -5,6 +5,8 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.tools.ide.common.logError
+import com.intellij.tools.ide.common.logOutput
 import com.intellij.util.io.createParentDirectories
 import java.io.File
 import java.io.PrintWriter

@@ -4,7 +4,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
 import kotlin.io.path.createDirectories

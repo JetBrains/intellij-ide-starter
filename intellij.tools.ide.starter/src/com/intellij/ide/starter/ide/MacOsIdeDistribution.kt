@@ -3,7 +3,7 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import com.intellij.openapi.util.OsFamily
 import org.w3c.dom.Node
 import java.io.File

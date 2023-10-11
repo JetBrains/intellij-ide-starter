@@ -5,8 +5,8 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.XmlBuilder
-import com.intellij.ide.starter.utils.logError
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logError
+import com.intellij.tools.ide.common.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
 import org.w3c.dom.Document
 import org.w3c.dom.Element

@@ -3,8 +3,8 @@ package com.intellij.ide.starter.sdk
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.ide.starter.utils.logOutput
-import com.intellij.ide.starter.utils.withRetry
+import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.common.withRetry
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import org.apache.commons.io.FileUtils
 import java.io.File

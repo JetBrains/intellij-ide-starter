@@ -4,7 +4,7 @@ import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.installer.IdeInstallerFile
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import java.nio.file.Path
 import kotlin.io.path.exists
 

@@ -3,6 +3,7 @@ package com.intellij.ide.starter.utils
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.application.PathManager
+import com.intellij.tools.ide.common.logError
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths

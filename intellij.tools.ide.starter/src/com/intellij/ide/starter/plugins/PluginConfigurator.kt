@@ -6,7 +6,7 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logOutput
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.instance

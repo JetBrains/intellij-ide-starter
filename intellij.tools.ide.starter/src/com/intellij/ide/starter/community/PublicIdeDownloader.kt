@@ -5,8 +5,8 @@ import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.installer.IdeInstallerFile
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.logError
-import com.intellij.ide.starter.utils.logOutput
+import com.intellij.tools.ide.common.logError
+import com.intellij.tools.ide.common.logOutput
 import com.intellij.openapi.util.OsFamily
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path

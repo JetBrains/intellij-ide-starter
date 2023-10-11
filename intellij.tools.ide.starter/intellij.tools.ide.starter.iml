@@ -74,5 +74,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="io.qameta.allure.java.commons" level="project" />
+    <orderEntry type="module" module-name="intellij.tools.ide.common" />
   </component>
 </module>
