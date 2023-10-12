@@ -2,24 +2,25 @@ package com.intellij.ide.starter.examples.indexing
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeDistributionFactory
-import com.intellij.ide.starter.ide.IdeInstallator
+import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.InstalledIde
-import com.intellij.ide.starter.ide.installer.IdeInstaller
+import com.intellij.ide.starter.ide.installer.IdeInstallerFile
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
-import com.intellij.ide.starter.report.publisher.ReportPublisher
-import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.ide.performanceTesting.commands.*
 import org.apache.commons.io.FileUtils
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.kodein.di.*
+import org.kodein.di.DI
+import org.kodein.di.bindFactory
+import org.kodein.di.direct
+import org.kodein.di.instance
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.div
@@ -29,9 +30,9 @@ import kotlin.io.path.div
 class TestIndexing {
   private lateinit var container: TestContainerImpl
 
-  class IdeLocalInstaller(private val installer: Path) : IdeInstallator {
+  class IdeLocalInstaller(private val installer: Path) : IdeInstaller {
     override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
-      val ideInstaller = IdeInstaller(installer, "locally-installed-ide")
+      val ideInstaller = IdeInstallerFile(installer, "locally-installed-ide")
       val installDir = di.direct.instance<GlobalPaths>()
                          .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
       FileUtils.deleteDirectory(installDir.toFile())
@@ -50,7 +51,7 @@ class TestIndexing {
       val pathToInstalledIDE =
         "/Users/maxim.kolmakov/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-2/223.8617.56"
       //CONFIGURATION: comment line below if you don't want to use locally installed IDE and want to download one
-      bindFactory<IdeInfo, IdeInstallator>(overrides = true) { _ -> IdeLocalInstaller(Paths.get(pathToInstalledIDE)) }
+      bindFactory<IdeInfo, IdeInstaller>(overrides = true) { _ -> IdeLocalInstaller(Paths.get(pathToInstalledIDE)) }
     }
   }
 

@@ -1,16 +1,12 @@
 package com.intellij.ide.starter.examples.indexing
 
-import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
-import com.intellij.ide.starter.report.publisher.ReportPublisher
-import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
+import com.intellij.metricsCollector.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
@@ -18,8 +14,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
-import org.kodein.di.DI
-import org.kodein.di.bindSingleton
 import java.nio.file.Paths
 
 @ExtendWith(JUnit5StarterAssistant::class)
