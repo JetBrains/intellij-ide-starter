@@ -49,7 +49,7 @@ object TeamCityClient {
 
     logOutput("Request to TeamCity: $fullUrl")
 
-    val result = withRetry {
+    val result = withRetry(messageOnFailure = "Failure during request to TeamCity") {
       HttpClient.sendRequest(request) {
         if (it.statusLine.statusCode != 200) {
           logError(InputStreamReader(it.entity.content).readText())

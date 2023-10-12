@@ -44,7 +44,7 @@ object HttpClient {
     @Suppress("RAW_RUN_BLOCKING")
     runBlocking {
       withTimeout(timeout = timeout) {
-        withRetry(retries = retries) {
+        withRetry(messageOnFailure = "Failure during downloading $url to $outPath", retries = retries) {
           sendRequest(HttpGet(url)) { response ->
             if (response.statusLine.statusCode == 404) {
               throw HttpNotFound("Server returned 404 Not Found: $url")

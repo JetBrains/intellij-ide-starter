@@ -2,10 +2,10 @@ package com.intellij.ide.starter.sdk
 
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.common.logOutput
 import com.intellij.tools.ide.common.withRetry
-import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.net.URL
@@ -92,7 +92,7 @@ object JdkDownloaderFacade {
     !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), null, true).size < MINIMUM_JDK_FILES_COUNT
 
   private fun downloadAndInstallJdk(jdk: JdkItem, targetJdkHome: Path, targetHomeMarker: Path) {
-    withRetry(retries = 5) {
+    withRetry(messageOnFailure = "Failure on downloading/installing JDK", retries = 5) {
       logOutput("Downloading JDK at $targetJdkHome")
       FileUtils.deleteQuietly(targetJdkHome.toFile())
 

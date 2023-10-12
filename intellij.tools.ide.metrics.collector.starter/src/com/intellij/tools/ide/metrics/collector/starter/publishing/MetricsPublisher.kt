@@ -3,9 +3,9 @@ package com.intellij.tools.ide.metrics.collector.starter.publishing
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.common.withRetry
-import com.intellij.tools.ide.metrics.collector.starter.collector.MetricsCollector
 import com.intellij.tools.ide.metrics.collector.collector.CompareSetting
 import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.starter.collector.MetricsCollector
 
 /**
  * Aggregate metrics from different collectors [MetricsCollector]
@@ -40,7 +40,7 @@ abstract class MetricsPublisher<T> {
   }
 
   fun getCollectedMetrics(runContext: IDERunContext): List<PerformanceMetrics.Metric> = metricsCollectors.flatMap {
-    withRetry { it.collect(runContext) }
+    withRetry(messageOnFailure = "Failure on metrics collection") { it.collect(runContext) }
     ?: throw RuntimeException("Couldn't collect metrics from collector ${it::class.simpleName}")
   }
 
