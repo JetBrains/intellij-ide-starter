@@ -2,7 +2,7 @@ package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.utils.JvmUtils
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.openapi.util.OsFamily
 import java.nio.file.Path
 import kotlin.io.path.div

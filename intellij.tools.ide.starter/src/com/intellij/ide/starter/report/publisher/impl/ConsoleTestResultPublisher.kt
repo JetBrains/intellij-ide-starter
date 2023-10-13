@@ -3,7 +3,7 @@ package com.intellij.ide.starter.report.publisher.impl
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 
 object ConsoleTestResultPublisher : ReportPublisher {
 

@@ -27,7 +27,7 @@
     <orderEntry type="library" name="kotlin-reflect" level="project" />
     <orderEntry type="library" name="kodein-di-jvm" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="JUnit4" level="project" />
-    <orderEntry type="module" module-name="intellij.tools.ide.common" />
+    <orderEntry type="module" module-name="intellij.tools.ide.util.common" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter" />
   </component>
 </module>

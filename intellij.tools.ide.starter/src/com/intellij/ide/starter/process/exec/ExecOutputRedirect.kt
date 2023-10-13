@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.process.exec
 
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect.*
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import java.io.File
 import java.io.PrintWriter
 import kotlin.io.path.createDirectories

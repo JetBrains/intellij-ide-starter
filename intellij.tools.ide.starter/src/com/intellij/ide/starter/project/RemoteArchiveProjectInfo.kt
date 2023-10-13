@@ -6,7 +6,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.FileSystem.isDirUpToDate
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Path

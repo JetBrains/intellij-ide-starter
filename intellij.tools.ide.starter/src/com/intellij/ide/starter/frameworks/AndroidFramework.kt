@@ -8,7 +8,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import org.gradle.internal.hash.Hashing
 import org.kodein.di.direct
 import org.kodein.di.instance

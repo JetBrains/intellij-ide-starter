@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.process.exec
 
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
 

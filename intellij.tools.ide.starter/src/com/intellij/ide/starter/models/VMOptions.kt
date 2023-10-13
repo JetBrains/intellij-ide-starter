@@ -4,7 +4,7 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.JvmUtils
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import java.io.File

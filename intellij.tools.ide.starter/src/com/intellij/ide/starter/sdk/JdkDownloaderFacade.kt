@@ -4,8 +4,8 @@ import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.tools.ide.common.logOutput
-import com.intellij.tools.ide.common.withRetry
+import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.tools.ide.util.common.withRetry
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.net.URL

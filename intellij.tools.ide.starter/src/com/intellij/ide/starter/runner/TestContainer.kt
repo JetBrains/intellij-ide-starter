@@ -15,7 +15,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.utils.catchAll
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import java.io.Closeable
 import kotlin.io.path.div
 

@@ -8,9 +8,9 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
-import com.intellij.tools.ide.common.logError
-import com.intellij.tools.ide.common.logOutput
-import com.intellij.tools.ide.common.withRetry
+import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.tools.ide.util.common.withRetry
 import org.apache.http.HttpRequest
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.methods.HttpGet

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.ide.starter.community.model.ReleaseInfo
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import org.apache.http.client.methods.HttpGet
 
 

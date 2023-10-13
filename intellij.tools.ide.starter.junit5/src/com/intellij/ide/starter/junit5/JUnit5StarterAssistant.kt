@@ -9,8 +9,8 @@ import com.intellij.ide.starter.process.killOutdatedProcesses
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.tools.ide.common.logError
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ide.starter.utils.withIndent
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.AfterEachCallback

@@ -2,7 +2,7 @@ package com.intellij.ide.starter.wsl
 
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.JdkPredicate
 
 class WslDistributionNotFoundException(private val jdkPredicate: JdkPredicate? = null) : Exception() {

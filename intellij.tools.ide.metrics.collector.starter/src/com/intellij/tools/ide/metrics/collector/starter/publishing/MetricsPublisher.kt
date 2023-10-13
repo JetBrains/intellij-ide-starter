@@ -2,7 +2,7 @@ package com.intellij.tools.ide.metrics.collector.starter.publishing
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.tools.ide.common.withRetry
+import com.intellij.tools.ide.util.common.withRetry
 import com.intellij.tools.ide.metrics.collector.collector.CompareSetting
 import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.MetricsCollector

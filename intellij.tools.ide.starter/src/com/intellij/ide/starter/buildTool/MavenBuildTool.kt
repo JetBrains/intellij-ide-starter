@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
 import java.nio.file.Path
 import kotlin.io.path.Path

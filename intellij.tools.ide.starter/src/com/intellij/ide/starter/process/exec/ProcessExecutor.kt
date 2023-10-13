@@ -3,8 +3,8 @@ package com.intellij.ide.starter.process.exec
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.getThrowableText
-import com.intellij.tools.ide.common.logError
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import java.io.IOException

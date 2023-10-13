@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.path
 
 import com.intellij.ide.starter.utils.createInMemoryDirectory
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import java.io.Closeable
 import java.nio.file.Path
 import kotlin.io.path.createDirectories

@@ -3,7 +3,7 @@ package com.intellij.ide.starter.report
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer.Companion.processStringForTC
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
-import com.intellij.tools.ide.common.logError
+import com.intellij.tools.ide.util.common.logError
 import io.qameta.allure.Allure
 import io.qameta.allure.model.Label
 import io.qameta.allure.model.Status

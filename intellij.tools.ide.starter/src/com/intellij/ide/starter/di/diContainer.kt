@@ -21,7 +21,7 @@ import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.CodeBuilderHost
 import com.intellij.ide.starter.runner.CurrentTestMethod
-import com.intellij.tools.ide.common.logOutput
+import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.DI
 import org.kodein.di.bindArgSet
 import org.kodein.di.bindFactory
