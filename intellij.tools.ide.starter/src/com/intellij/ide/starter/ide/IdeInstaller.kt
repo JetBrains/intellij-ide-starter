@@ -10,7 +10,9 @@ interface IdeInstaller {
     get() = di.direct.instance<IdeDownloader>()
 
   /**
+   * @param includeRuntimeModuleRepository if `true`, installed IDE will include [runtime module repository](psi_element://com.intellij.platform.runtime.repository);
+   * note that production builds always include it, so this parameter is taken into account only when IDE is built from sources.
    * @return <Build Number, InstalledIde>
    */
-  fun install(ideInfo: IdeInfo): Pair<String, InstalledIde>
+  fun install(ideInfo: IdeInfo, includeRuntimeModuleRepository: Boolean = false): Pair<String, InstalledIde>
 }

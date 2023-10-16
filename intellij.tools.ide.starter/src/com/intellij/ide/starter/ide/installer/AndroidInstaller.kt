@@ -43,7 +43,7 @@ class AndroidInstaller : IdeInstaller {
     return Pair(installDir, installerFile)
   }
 
-  override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
+  override fun install(ideInfo: IdeInfo, includeRuntimeModuleRepository: Boolean): Pair<String, InstalledIde> {
 
     val installDir: Path
     val installerFile: File
