@@ -53,8 +53,8 @@ For JUnit5, there are several extensions with the Tweak prefix, which provide a 
 
 Example:
 ```
-@ExtendWith(TweakEnableClassFileVerification::class)
-@ExtendWith(TweakUseLatestDownloadedIdeBuild::class)
+@ExtendWith(EnableClassFileVerification::class)
+@ExtendWith(UseLatestDownloadedIdeBuild::class)
 class ClassWithTest {
 ...
 }
