@@ -34,7 +34,10 @@ dependencies {
 
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
   implementation 'com.jetbrains.intellij.driver:driver-model:LATEST-TRUNK-SNAPSHOT'
+  implementation 'com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT'
   implementation "com.jetbrains.intellij.tools:ide-starter:LATEST-TRUNK-SNAPSHOT"
+
+  testImplementation "com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT"
 
   implementation 'org.junit.jupiter:junit-jupiter:5.9.1'
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'
