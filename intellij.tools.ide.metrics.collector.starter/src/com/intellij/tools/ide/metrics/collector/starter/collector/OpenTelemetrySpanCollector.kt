@@ -2,8 +2,8 @@ package com.intellij.tools.ide.metrics.collector.starter.collector
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.metrics.getMetricsFromSpanAndChildren
+import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.telemetry.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 
 /**

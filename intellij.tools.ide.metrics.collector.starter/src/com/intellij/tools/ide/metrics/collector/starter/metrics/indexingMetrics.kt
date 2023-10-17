@@ -1,7 +1,7 @@
 package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.metrics.toCounterMetricId
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper

@@ -2,7 +2,7 @@ package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.tools.ide.util.common.intersectKeys
 import com.intellij.tools.ide.util.common.symmetricDiffOfKeys
-import com.intellij.tools.ide.metrics.collector.collector.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import kotlin.math.abs
 
 /**
