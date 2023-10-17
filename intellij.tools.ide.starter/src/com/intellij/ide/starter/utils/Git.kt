@@ -4,6 +4,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.application.PathManager
 import com.intellij.tools.ide.util.common.logError
+import java.io.File
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -244,6 +245,26 @@ object Git {
     ).start()
   }
 
+  fun init(workDir: Path) {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git-init",
+      workDir = workDir, timeout = 1.minutes,
+      args = listOf("git", "init"),
+      stdoutRedirect = stdout
+    ).start()
+  }
+
+  fun addAll(workDir: Path) {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git-add-all",
+      workDir = workDir, timeout = 1.minutes,
+      args = listOf("git", "add", "*"),
+      stdoutRedirect = stdout
+    ).start()
+  }
+
   fun pruneWorktree(pathToDir: Path) {
     val stdout = ExecOutputRedirect.ToString()
     ProcessExecutor(
@@ -357,6 +378,26 @@ object Git {
       workDir = dir, timeout = 1.minutes,
       args = listOf("git", "config", "--local", propertyName, "\"$value\""),
       stdoutRedirect = stdout
+    ).start()
+  }
+
+  fun setConfigProperty(dir: Path, propertyName: String, value: Boolean) {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git config",
+      workDir = dir, timeout = 1.minutes,
+      args = listOf("git", "config", "--local", propertyName, "$value"),
+      stdoutRedirect = stdout
+    ).start()
+  }
+
+  fun buildDiff(dir: Path, file: File, outputFile: Path) {
+    ProcessExecutor(
+      "git-build-diff",
+      workDir = dir, timeout = 1.minutes,
+      args = listOf("git", "diff", file.absolutePath),
+      stdoutRedirect = ExecOutputRedirect.ToFile(outputFile.toFile()),
+      stderrRedirect = ExecOutputRedirect.ToFile(outputFile.toFile()),
     ).start()
   }
 

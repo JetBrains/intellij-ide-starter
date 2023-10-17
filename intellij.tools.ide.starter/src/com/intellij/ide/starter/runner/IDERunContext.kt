@@ -27,9 +27,9 @@ import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.util.io.createDirectories
 import kotlinx.coroutines.delay
 import org.kodein.di.direct
