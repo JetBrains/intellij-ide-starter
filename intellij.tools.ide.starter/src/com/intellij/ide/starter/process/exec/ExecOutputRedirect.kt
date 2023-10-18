@@ -43,23 +43,22 @@ sealed class ExecOutputRedirect {
 
   data class ToFile(val outputFile: File) : ExecOutputRedirect() {
 
-    private lateinit var writer: PrintWriter
-
-    override fun open() {
-      outputFile.apply {
-        toPath().parent.createDirectories()
-        createNewFile()
-      }
-      writer = outputFile.printWriter()
-    }
+    private var writer: PrintWriter? = null
 
     override fun close() {
-      writer.close()
+      writer?.close()
     }
 
     override fun redirectLine(line: String) {
       reportOnStdoutIfNecessary(line)
-      writer.println(line)
+      if(writer == null) {
+        outputFile.apply {
+          toPath().parent.createDirectories()
+          createNewFile()
+        }
+        writer = outputFile.printWriter()
+      }
+      writer?.println(line)
     }
 
     override fun read(): String {
