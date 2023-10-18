@@ -13,15 +13,15 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.openapi.util.OsFamily
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
+import com.intellij.util.system.OS
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInfo
@@ -196,13 +196,13 @@ class InstallPluginTest {
       }
 
       val link = params.event.productLink.substring(0, params.event.productLink.indexOf(".tar.gz"))
-      val downloadLink: String = link + when (SystemInfo.getOsFamily()) {
-        OsFamily.Linux -> ".tar.gz"
-        OsFamily.MacOS -> {
+      val downloadLink: String = link + when (OS.CURRENT) {
+        OS.Linux -> ".tar.gz"
+        OS.macOS -> {
           if (SystemInfo.OS_ARCH == "aarch64") "-aarch64.dmg"
           else ".dmg"
         }
-        OsFamily.Windows -> ".exe"
+        OS.Windows -> ".exe"
         else -> throw RuntimeException("OS is not supported")
       }
 

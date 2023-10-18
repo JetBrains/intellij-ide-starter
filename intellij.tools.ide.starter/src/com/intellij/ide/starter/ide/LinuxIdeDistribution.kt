@@ -5,7 +5,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.openapi.util.OsFamily
+import com.intellij.util.system.OS
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
 import java.nio.file.Path
@@ -112,7 +112,7 @@ class LinuxIdeDistribution : IdeDistribution() {
         }
 
       override val build = build
-      override val os = OsFamily.Linux
+      override val os = OS.Linux
       override val productCode = productCode
       override val isFromSources = false
       override val installationPath: Path = appHome

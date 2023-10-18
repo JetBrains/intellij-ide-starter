@@ -7,7 +7,7 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.openapi.util.OsFamily
+import com.intellij.util.system.OS
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -46,14 +46,14 @@ object PublicIdeDownloader : IdeDownloader {
     if (releaseInfoMap.size != 1) throw RuntimeException("Only one product can be downloaded at once. Found ${releaseInfoMap.keys}")
     val possibleBuild: ReleaseInfo = findSpecificRelease(releaseInfoMap, params)
 
-    val downloadLink: String = when (SystemInfo.getOsFamily()) {
-      OsFamily.Linux -> possibleBuild.downloads.linux!!.link
-      OsFamily.MacOS -> {
+    val downloadLink: String = when (OS.CURRENT) {
+      OS.Linux -> possibleBuild.downloads.linux!!.link
+      OS.macOS -> {
         if (SystemInfo.OS_ARCH == "aarch64") possibleBuild.downloads.macM1!!.link // macM1
         else possibleBuild.downloads.mac!!.link
       }
-      OsFamily.Windows -> possibleBuild.downloads.windowsZip!!.link
-      else -> throw RuntimeException("Unsupported OS ${SystemInfo.getOsFamily()}")
+      OS.Windows -> possibleBuild.downloads.windowsZip!!.link
+      else -> throw RuntimeException("Unsupported OS ${OS.CURRENT}")
     }
 
     val installerFile = installerDirectory.resolve("${ideInfo.installerFilePrefix}-${possibleBuild.build}${ideInfo.installerFileExt}")
