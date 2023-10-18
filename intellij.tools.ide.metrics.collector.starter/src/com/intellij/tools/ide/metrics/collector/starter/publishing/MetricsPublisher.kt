@@ -41,7 +41,7 @@ abstract class MetricsPublisher<T> {
   }
 
   fun getCollectedMetrics(runContext: IDERunContext): List<PerformanceMetrics.Metric> = metricsCollectors.flatMap {
-    withRetry(messageOnFailure = "Failure on metrics collection", printFailuresMode = PrintFailuresMode.LAST) { it.collect(runContext) }
+    withRetry(messageOnFailure = "Failure on metrics collection", printFailuresMode = PrintFailuresMode.ONLY_LAST_FAILURE) { it.collect(runContext) }
     ?: throw RuntimeException("Couldn't collect metrics from collector ${it::class.simpleName}")
   }
 
