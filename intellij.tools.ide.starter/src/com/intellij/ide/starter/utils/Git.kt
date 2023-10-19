@@ -395,9 +395,7 @@ object Git {
     ProcessExecutor(
       "git-build-diff",
       workDir = dir, timeout = 1.minutes,
-      args = listOf("git", "diff", file.absolutePath),
-      stdoutRedirect = ExecOutputRedirect.ToFile(outputFile.toFile()),
-      stderrRedirect = ExecOutputRedirect.ToFile(outputFile.toFile()),
+      args = listOf("git", "diff","--output=${outputFile.toFile().absolutePath}", file.absolutePath),
     ).start()
   }
 
