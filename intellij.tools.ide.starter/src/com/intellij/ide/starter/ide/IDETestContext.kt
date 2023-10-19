@@ -122,6 +122,11 @@ class IDETestContext(
       }
     }
 
+  fun trustAllProjects(): IDETestContext =
+    applyVMOptionsPatch {
+      addSystemProperty("idea.trust.all.projects", true)
+    }
+
   fun disableInstantIdeShutdown(): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("ide.instant.shutdown", false)
@@ -584,7 +589,7 @@ class IDETestContext(
   }
 
   fun setKotestMaxCollectionEnumerateSize(): IDETestContext =
-    // Need to generate the correct matcher when compared array is big.
+  // Need to generate the correct matcher when compared array is big.
     // kotest-assertions-core-jvm/5.5.4/kotest-assertions-core-jvm-5.5.4-sources.jar!/commonMain/io/kotest/matchers/collections/containExactly.kt:99
     applyVMOptionsPatch {
       addSystemProperty("kotest.assertions.collection.enumerate.size", Int.MAX_VALUE)
