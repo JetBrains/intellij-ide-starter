@@ -210,37 +210,37 @@ open class TeamCityCIServer(
       logOutput(" ##teamcity[message text='$text']")
     }
 
-    fun testSuiteStarted(suiteName: String) {
-      println("##teamcity[testSuiteStarted name='${suiteName.processStringForTC()}']")
+    fun testSuiteStarted(suiteName: String, flowId: String) {
+      println("##teamcity[testSuiteStarted name='${suiteName.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun testSuiteFinished(suiteName: String) {
-      println("##teamcity[testSuiteFinished name='${suiteName.processStringForTC()}']")
+    fun testSuiteFinished(suiteName: String, flowId: String) {
+      println("##teamcity[testSuiteFinished name='${suiteName.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun testStarted(testName: String) {
-      println("##teamcity[testStarted name='${testName.processStringForTC()}']")
+    fun testStarted(testName: String, flowId: String) {
+      println("##teamcity[testStarted name='${testName.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun testFinished(testName: String) {
-      println("##teamcity[testFinished name='${testName.processStringForTC()}']")
+    fun testFinished(testName: String, flowId: String) {
+      println("##teamcity[testFinished name='${testName.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun testIgnored(testName: String, message: String) {
-      println("##teamcity[testIgnored name='${testName.processStringForTC()}' message='${message.processStringForTC()}']")
+    fun testIgnored(testName: String, message: String, flowId: String) {
+      println("##teamcity[testIgnored name='${testName.processStringForTC()}' message='${message.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun testFailed(testName: String, message: String) {
-      println("##teamcity[testFailed name='${testName.processStringForTC()}' message='${message.processStringForTC()}']")
+    fun testFailed(testName: String, message: String, flowId: String) {
+      println("##teamcity[testFailed name='${testName.processStringForTC()}' message='${message.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun addTextMetadata(testName: String, value: String) {
-      addTestMetadata(testName, TeamCityMetadataType.TEXT, null, value)
+    fun addTextMetadata(testName: String, value: String, flowId: String) {
+      addTestMetadata(testName, TeamCityMetadataType.TEXT, flowId, null, value)
     }
 
-    fun addTestMetadata(testName: String, type: TeamCityMetadataType, name: String?, value: String) {
+    fun addTestMetadata(testName: String, type: TeamCityMetadataType, flowId: String, name: String?, value: String) {
       val nameAttr = if(name != null) { "name='${name.processStringForTC()}'" } else ""
-      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}']")
+      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' flowId='$flowId']")
     }
   }
 
