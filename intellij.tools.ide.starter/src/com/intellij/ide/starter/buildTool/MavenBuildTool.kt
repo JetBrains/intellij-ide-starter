@@ -1,8 +1,13 @@
 package com.intellij.ide.starter.buildTool
 
+import com.intellij.ide.starter.bus.EventState
+import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.ide.starter.process.destroyProcessIfExists
+import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -19,6 +24,19 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
 
         return path.toAbsolutePath()
       }
+
+    private fun destroyMavenIndexerProcessIfExists() {
+      val mavenDaemonName = "MavenServerIndexerMain"
+      destroyProcessIfExists(mavenDaemonName)
+    }
+
+    init {
+      StarterListener.subscribe { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
+          destroyMavenIndexerProcessIfExists()
+        }
+      }
+    }
   }
 
   private val temporaryMavenM3CachePath: Path
@@ -29,7 +47,6 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
 
   val temporaryMavenM3RepoPath: Path
     get() = temporaryMavenM3CachePath.resolve("repository")
-
 
 
   fun useNewMavenLocalRepository(): MavenBuildTool {

@@ -15,10 +15,13 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.models.VMOptionsDiff
 import com.intellij.ide.starter.path.IDEDataPaths
-import com.intellij.ide.starter.process.*
+import com.intellij.ide.starter.process.collectJavaThreadDump
+import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.process.getAllJavaProcesses
+import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
@@ -210,8 +213,6 @@ data class IDERunContext(
       }
       logOutput("IDE run $contextName completed in $executionTime")
 
-      //Can continue to work and modify files in the /system/Maven/Indices directory. IDEA-331768
-      destroyMavenIndexerProcessIfExists()
       validateVMOptionsWereSet(paths)
       logVmOptionDiff(startConfig.vmOptionsDiff())
 
@@ -234,9 +235,6 @@ data class IDERunContext(
     finally {
       testContext.collectJBRDiagnosticFiles(ideProcessId)
       try {
-        if (SystemInfo.isWindows) {
-          destroyGradleDaemonProcessIfExists()
-        }
         deleteJVMCrashes()
         ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, isRunSuccessful)
         publishArtifacts()

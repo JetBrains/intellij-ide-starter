@@ -3,14 +3,13 @@ package com.intellij.ide.starter.process
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.catchAll
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import java.lang.IllegalStateException
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
@@ -365,14 +364,4 @@ fun destroyProcessIfExists(processName: String) {
       destroyProcessById(processId)
     }
   }
-}
-
-fun destroyGradleDaemonProcessIfExists() {
-  val gradleDaemonName = "gradleDaemon"
-  destroyProcessIfExists(gradleDaemonName)
-}
-
-fun destroyMavenIndexerProcessIfExists() {
-  val mavenDaemonName = "MavenServerIndexerMain"
-  destroyProcessIfExists(mavenDaemonName)
 }

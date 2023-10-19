@@ -1,13 +1,18 @@
 package com.intellij.ide.starter.buildTool
 
+import com.intellij.ide.starter.bus.EventState
+import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.openapi.util.SystemInfo
+import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.utils.XmlBuilder
+import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.openapi.diagnostic.LogLevel
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -20,6 +25,22 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.GRADLE, testContext) {
+
+  companion object {
+    private fun destroyGradleDaemonProcessIfExists() {
+      val mavenDaemonName = "gradleDaemon"
+      destroyProcessIfExists(mavenDaemonName)
+    }
+
+    init {
+      StarterListener.subscribe { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
+          destroyGradleDaemonProcessIfExists()
+        }
+      }
+    }
+  }
+
   private val localGradleRepoPath: Path
     get() = testContext.paths.tempDir.resolve("gradle")
 
