@@ -20,7 +20,6 @@ import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.process.getAllJavaProcesses
 import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
@@ -172,6 +171,7 @@ data class IDERunContext(
     val ciFailureDetails = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)?.let { "Link on CI artifacts ${it}" }
 
     val ideHost = IDEHost(codeBuilder, testContext).also { it.setup() }
+    var sentAfterEvent = false
     try {
       testContext.setProviderMemoryOnlyOnLinux()
       val jdkHome: Path = resolveAndDownloadSameJDK()
@@ -212,7 +212,8 @@ data class IDERunContext(
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")
-
+      StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
+      sentAfterEvent = true
       validateVMOptionsWereSet(paths)
       logVmOptionDiff(startConfig.vmOptionsDiff())
 
@@ -242,7 +243,9 @@ data class IDERunContext(
         runCloseHandlers(isRunSuccessful)
       }
       finally {
-        StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
+        if (!sentAfterEvent) {
+          StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
+        }
       }
     }
   }
@@ -258,8 +261,6 @@ data class IDERunContext(
       "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
     }
 
-    // Print all java processes for debug
-    getAllJavaProcesses()
     require(FileSystem.countFiles(paths.systemDir) > 1) {
       "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
     }
