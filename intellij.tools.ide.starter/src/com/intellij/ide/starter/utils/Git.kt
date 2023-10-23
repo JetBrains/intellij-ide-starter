@@ -141,6 +141,19 @@ object Git {
     ).start()
 
     println("Git version: ${execOutVersion.read()}")
+
+    val execOutConfig = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      presentableName = "git-config",
+      workDir = projectDir,
+      timeout = 1.minutes,
+      args = listOf("git", "config", "-l", "--show-scope"),
+      stdoutRedirect = execOutConfig,
+      stderrRedirect = ExecOutputRedirect.ToString(),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+
+    println("Git config: ${execOutConfig.read()}")
     return duration
   }
 
