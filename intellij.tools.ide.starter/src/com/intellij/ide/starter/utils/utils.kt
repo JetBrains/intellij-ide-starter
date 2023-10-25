@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
@@ -11,12 +10,13 @@ import com.intellij.util.io.createParentDirectories
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.nio.file.FileStore
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.*
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.createFile
+import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 
 fun formatArtifactName(artifactType: String, testName: String): String {
@@ -42,13 +42,6 @@ catch (t: Throwable) {
   logError("CatchAll swallowed error: ${t.message}")
   logError(getThrowableText(t))
   null
-}
-
-fun FileStore.getDiskInfo(): String = buildString {
-  appendLine("Disk info of ${name()}")
-  appendLine("  Total space: " + totalSpace.formatSize())
-  appendLine("  Unallocated space: " + unallocatedSpace.formatSize())
-  appendLine("  Usable space: " + usableSpace.formatSize())
 }
 
 fun String.withIndent(indent: String = "  "): String = lineSequence().map { "$indent$it" }.joinToString(System.lineSeparator())
@@ -82,22 +75,6 @@ fun takeScreenshot(logsDir: Path) {
   }
 }
 
-fun IDETestContext.collectJBRDiagnosticFiles(javaProcessId: Long) {
-  if (javaProcessId == 0L) return
-  val userHome = System.getProperty("user.home")
-  val pathUserHome = Paths.get(userHome)
-  val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
-  val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
-  if (javaErrorInIdeaFile.exists()) {
-    javaErrorInIdeaFile.toFile().copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
-  }
-  if (jbrErrFile.exists()) {
-    jbrErrFile.toFile().copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
-  }
-  if (paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
-    publishArtifact(paths.jbrDiagnostic)
-  }
-}
 
 fun startProfileNativeThreads(pid: String) {
   if (!SystemInfo.isWindows) {
@@ -169,7 +146,3 @@ fun pathInsideJarFile(
   jarFile: Path,
   pathInsideJar: String
 ): String = jarFile.toAbsolutePath().toString().trimEnd('/') + "!/" + pathInsideJar
-
-data class FindUsagesCallParameters(val pathToFile: String, val element: String) {
-  override fun toString() = "$pathToFile $element)"
-}

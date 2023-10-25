@@ -31,6 +31,7 @@ import org.kodein.di.factory
 import org.kodein.di.instance
 import org.kodein.di.newInstance
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 import kotlin.io.path.*
 import kotlin.time.Duration
@@ -582,23 +583,27 @@ class IDETestContext(
     return this
   }
 
-  fun updateKotlinVersionInGradleProperties(kotlinVersion: String): IDETestContext {
-    val gradlePropertiesFile = resolvedProjectHome.resolve("gradle.properties")
-    val textLines = gradlePropertiesFile.readLines()
-    var text = gradlePropertiesFile.readText()
-    textLines.forEach { line ->
-      if (line.contains("kotlinVersion=")) {
-        text = text.replace(line, "kotlinVersion=$kotlinVersion")
-      }
-    }
-    gradlePropertiesFile.writeText(text)
-    return this
-  }
-
   fun setKotestMaxCollectionEnumerateSize(): IDETestContext =
     // Need to generate the correct matcher when compared array is big.
     // kotest-assertions-core-jvm/5.5.4/kotest-assertions-core-jvm-5.5.4-sources.jar!/commonMain/io/kotest/matchers/collections/containExactly.kt:99
     applyVMOptionsPatch {
       addSystemProperty("kotest.assertions.collection.enumerate.size", Int.MAX_VALUE)
     }
+
+  fun collectJBRDiagnosticFiles(javaProcessId: Long) {
+    if (javaProcessId == 0L) return
+    val userHome = System.getProperty("user.home")
+    val pathUserHome = Paths.get(userHome)
+    val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
+    val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
+    if (javaErrorInIdeaFile.exists()) {
+      javaErrorInIdeaFile.toFile().copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
+    }
+    if (jbrErrFile.exists()) {
+      jbrErrFile.toFile().copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
+    }
+    if (paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
+      publishArtifact(paths.jbrDiagnostic)
+    }
+  }
 }

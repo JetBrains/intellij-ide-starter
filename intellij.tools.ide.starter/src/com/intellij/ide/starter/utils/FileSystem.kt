@@ -13,6 +13,7 @@ import org.rauschig.jarchivelib.CompressionType
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.nio.file.FileStore
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
@@ -252,4 +253,11 @@ object FileSystem {
     }
     return upToDate
   }
+}
+
+fun FileStore.getDiskInfo(): String = buildString {
+  appendLine("Disk info of ${name()}")
+  appendLine("  Total space: " + totalSpace.formatSize())
+  appendLine("  Unallocated space: " + unallocatedSpace.formatSize())
+  appendLine("  Usable space: " + usableSpace.formatSize())
 }

@@ -176,12 +176,12 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
-  /*
-    This method enables/disables Gradle Build Cache and
-    returns the previous state of org.gradle.caching variable
-    By default, the build cache is not enabled.
-    So if gradle.properties does not contain org.gradle.caching
-    the method returns false
+  /**
+  This method enables/disables Gradle Build Cache and
+  returns the previous state of org.gradle.caching variable
+  By default, the build cache is not enabled.
+  So if gradle.properties does not contain org.gradle.caching
+  the method returns false
    */
   fun toggleGradleBuildCaching(value: Boolean): Boolean {
     val userHome = System.getProperty("user.home", null)
@@ -256,6 +256,19 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       val newLine = lineToReplace.replace("\\d\\.\\d".toRegex(), newVersion)
       propFile.writeText(propFile.readText().replace(lineToReplace, newLine))
     }
+    return this
+  }
+
+  fun updateKotlinVersionInGradleProperties(kotlinVersion: String): GradleBuildTool {
+    val gradlePropertiesFile = testContext.resolvedProjectHome.resolve("gradle.properties")
+    val textLines = gradlePropertiesFile.readLines()
+    var text = gradlePropertiesFile.readText()
+    textLines.forEach { line ->
+      if (line.contains("kotlinVersion=")) {
+        text = text.replace(line, "kotlinVersion=$kotlinVersion")
+      }
+    }
+    gradlePropertiesFile.writeText(text)
     return this
   }
 }
