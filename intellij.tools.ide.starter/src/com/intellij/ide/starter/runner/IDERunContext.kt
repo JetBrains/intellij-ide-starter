@@ -7,8 +7,6 @@ import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.CodeInjector
-import com.intellij.ide.starter.ide.IDEHost
 import com.intellij.ide.starter.ide.IDEStartConfig
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
@@ -55,7 +53,6 @@ data class IDERunContext(
   val testContext: IDETestContext,
   val commandLine: (IDERunContext) -> IDECommandLine = ::openTestCaseProject,
   val commands: Iterable<MarshallableCommand> = listOf(),
-  val codeBuilder: (CodeInjector.() -> Unit)? = null,
   val runTimeout: Duration = 10.minutes,
   val useStartupScript: Boolean = true,
   val closeHandlers: List<IDERunCloseContext.() -> Unit> = listOf(),
@@ -170,7 +167,6 @@ data class IDERunContext(
     var isRunSuccessful = true
     val ciFailureDetails = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)?.let { "Link on CI artifacts ${it}" }
 
-    val ideHost = IDEHost(codeBuilder, testContext).also { it.setup() }
     var sentAfterEvent = false
     try {
       testContext.setProviderMemoryOnlyOnLinux()
@@ -239,7 +235,6 @@ data class IDERunContext(
         deleteJVMCrashes()
         ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, isRunSuccessful)
         publishArtifacts()
-        ideHost.tearDown()
         runCloseHandlers(isRunSuccessful)
       }
       finally {

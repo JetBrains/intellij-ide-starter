@@ -14,14 +14,14 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
-import com.intellij.openapi.util.SystemInfo
-import com.intellij.tools.ide.util.common.logError
-import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
+import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ui.NewUiValue
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -331,7 +331,6 @@ class IDETestContext(
   fun runIDE(
     commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
     commands: Iterable<MarshallableCommand> = CommandChain(),
-    codeBuilder: (CodeInjector.() -> Unit)? = null,
     runTimeout: Duration = 10.minutes,
     useStartupScript: Boolean = true,
     launchName: String = "",
@@ -342,7 +341,6 @@ class IDETestContext(
     val runContext = IDERunContext(testContext = this,
                                    commandLine = commandLine,
                                    commands = commands,
-                                   codeBuilder = codeBuilder,
                                    runTimeout = runTimeout,
                                    useStartupScript = useStartupScript,
                                    launchName = launchName,
@@ -371,7 +369,6 @@ class IDETestContext(
    */
   fun runIdeInBackground(commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
                          commands: Iterable<MarshallableCommand> = CommandChain(),
-                         codeBuilder: (CodeInjector.() -> Unit)? = null,
                          runTimeout: Duration = 10.minutes,
                          useStartupScript: Boolean = true,
                          launchName: String = "",
@@ -383,7 +380,6 @@ class IDETestContext(
       try {
         runIDE(commandLine,
                commands,
-               codeBuilder,
                runTimeout,
                useStartupScript,
                launchName,

@@ -7,7 +7,6 @@ import com.intellij.ide.starter.community.PublicIdeDownloader
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.frameworks.Framework
-import com.intellij.ide.starter.ide.CodeInjector
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
@@ -19,7 +18,6 @@ import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
-import com.intellij.ide.starter.runner.CodeBuilderHost
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.DI
@@ -44,7 +42,6 @@ var di = DI {
   bindSingleton<GlobalPaths> { InstallerGlobalPaths() }
   bindSingleton<CIServer> { NoCIServer }
   bindSingleton<FailureDetailsOnCI> { object : FailureDetailsOnCI {} }
-  bindSingleton<CodeInjector> { CodeBuilderHost() }
   bindFactory { testContext: IDETestContext -> PluginConfigurator(testContext) }
   bindSingleton<IdeDownloader> { PublicIdeDownloader }
   bindSingleton<IdeInstallerFactory> { IdeInstallerFactory() }
