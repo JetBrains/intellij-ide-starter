@@ -54,7 +54,7 @@ class TestRunnerInitEventsTest {
     StarterListener.unsubscribe()
   }
 
-  @Disabled("Is not stable")
+  @Disabled("It's not stable. https://youtrack.jetbrains.com/issue/AT-17")
   @RepeatedTest(value = 200)
   fun `events for test runner init should be fired`(testInfo: TestInfo) {
     val firedEvents = Collections.synchronizedList(mutableListOf<TestContextInitializedEvent>())

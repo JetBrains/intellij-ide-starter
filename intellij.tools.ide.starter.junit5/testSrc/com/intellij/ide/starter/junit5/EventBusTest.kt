@@ -41,7 +41,7 @@ class EventBusTest {
     StarterListener.unsubscribe()
   }
 
-  @Disabled("Is not stable")
+  @Disabled("It's not stable. https://youtrack.jetbrains.com/issue/AT-17")
   @RepeatedTest(value = 50)
   fun `filtering events by type is working`() {
     StarterListener.subscribe { _: Signal ->

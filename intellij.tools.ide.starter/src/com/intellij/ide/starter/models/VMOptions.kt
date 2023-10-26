@@ -4,16 +4,13 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.JvmUtils
-import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
+import com.intellij.tools.ide.util.common.logOutput
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.readLines
-import kotlin.io.path.writeLines
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
 
 data class VMOptions(
@@ -265,6 +262,15 @@ data class VMOptions(
   fun skipIndicesInitialization(value: Boolean = true) = addSystemProperty("idea.skip.indices.initialization", value)
 
   fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
+
+  /**
+   * Include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE.
+   * Works only when IDE is built from sources.
+   */
+  fun setRuntimeModuleRepository(installationDirectory: Path) = addSystemProperty(
+    "intellij.platform.runtime.repository.path", installationDirectory.resolve("modules/module-descriptors.jar").pathString
+  )
+
   fun hasOption(option: String): Boolean {
     return data.any { it.contains(option) }
   }

@@ -135,8 +135,14 @@ data class IDERunContext(
       withGCLogs(reportsDir / "gcLog.log")
       setOpenTelemetryMaxFilesNumber()
 
-      if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION))
+      if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION)) {
         withClassFileVerification()
+      }
+
+      if (StarterConfigurationStorage.shouldIncludeRuntimeModuleRepositoryInIde()) {
+        setRuntimeModuleRepository(testContext.ide.installationPath)
+      }
+
       installProfiler()
       setSnapshotPath(snapshotsDir)
       setPathForMemorySnapshot()

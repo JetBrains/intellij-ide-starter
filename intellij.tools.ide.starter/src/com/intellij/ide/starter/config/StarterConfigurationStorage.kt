@@ -16,11 +16,24 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
      * Starts locally build IDE instead of a downloaded installer
      */
     fun useLocalBuild() = instance().put(ENV_JUNIT_RUNNER_USE_INSTALLER, false)
+
+    /**
+     * Set to `true` if it's needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository)
+     * in the installed IDE. This is currently required to run JetBrains Client from an IDE installation.
+     * Works only when IDE is built from sources.
+     */
+    const val INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY = "INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY"
+
+    /**
+     *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
+     */
+    fun shouldIncludeRuntimeModuleRepositoryInIde(): Boolean = instance().getBoolean(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY)
   }
 
   override fun resetToDefault() {
     put(ENV_ENABLE_CLASS_FILE_VERIFICATION, System.getenv(ENV_ENABLE_CLASS_FILE_VERIFICATION))
     put(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, System.getenv(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD))
     put(ENV_JUNIT_RUNNER_USE_INSTALLER, System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER))
+    put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, false)
   }
 }

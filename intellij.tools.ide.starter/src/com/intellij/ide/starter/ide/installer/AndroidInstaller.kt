@@ -7,8 +7,8 @@ import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.openapi.util.SystemInfo
 import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Path
@@ -43,7 +43,7 @@ class AndroidInstaller : IdeInstaller {
     return Pair(installDir, installerFile)
   }
 
-  override fun install(ideInfo: IdeInfo, includeRuntimeModuleRepository: Boolean): Pair<String, InstalledIde> {
+  override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
 
     val installDir: Path
     val installerFile: File

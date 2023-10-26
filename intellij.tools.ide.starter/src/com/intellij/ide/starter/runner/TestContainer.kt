@@ -54,15 +54,8 @@ interface TestContainer<T> : Closeable {
    * @return <Build Number, InstalledIde>
    */
   fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
-    return ideInfo.getInstaller(ideInfo).install(ideInfo, includeRuntimeModuleRepositoryInIde)
+    return ideInfo.getInstaller(ideInfo).install(ideInfo)
   }
-
-  /**
-   * Override and return `true` if it's needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository)
-   * in the installed IDE. This is currently required to run JetBrains Client from an IDE installation. 
-   */
-  val includeRuntimeModuleRepositoryInIde: Boolean
-    get() = false
 
   fun installPerformanceTestingPluginIfMissing(context: IDETestContext) {
     val performancePluginId = "com.jetbrains.performancePlugin"

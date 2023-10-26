@@ -21,7 +21,7 @@ import kotlin.io.path.div
  * }`
  */
 class ExistingIdeInstaller(private val installedIdePath: Path) : IdeInstaller {
-  override fun install(ideInfo: IdeInfo, includeRuntimeModuleRepository: Boolean): Pair<String, InstalledIde> {
+  override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val ideInstaller = IdeInstallerFile(installedIdePath, "locally-installed-ide")
     val installDir = GlobalPaths.instance
                        .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
