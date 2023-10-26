@@ -10,6 +10,8 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
+import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
@@ -100,6 +102,24 @@ class IDETestContext(
       withActiveProcessorCount(count)
     }
 
+  fun executeScriptFromProjectPath(scriptFilePath: String, vararg args: String): IDETestContext {
+    val stdOut = ExecOutputRedirect.ToString()
+    val stdErr = ExecOutputRedirect.ToString()
+    try {
+      ProcessExecutor(
+        presentableName = "execute-process-$scriptFilePath",
+        workDir = this._resolvedProjectHome,
+        args = listOf(scriptFilePath, *args),
+        stdoutRedirect = stdOut,
+        stderrRedirect = stdErr
+      ).start()
+    }
+    catch (t: Throwable) {
+      throw IllegalStateException("${t.message}\n StdErr: ${stdErr}\n StdOut: ${stdOut}")
+    }
+    return this
+  }
+
   fun skipGitLogIndexing(value: Boolean = true): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("vcs.log.index.enable", !value)
@@ -120,11 +140,6 @@ class IDETestContext(
       if (SystemInfo.isLinux) {
         addSystemProperty("jdk.gtk.version", 2)
       }
-    }
-
-  fun trustAllProjects(): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty("idea.trust.all.projects", true)
     }
 
   fun disableInstantIdeShutdown(): IDETestContext =
@@ -524,10 +539,10 @@ class IDETestContext(
     return this
   }
 
-  fun addProjectToTrustedLocations(addParentDir: Boolean = false): IDETestContext {
+  fun addProjectToTrustedLocations(projectPath: Path = this.resolvedProjectHome.normalize(),
+                                   addParentDir: Boolean = false): IDETestContext {
     if (this.testCase.projectInfo == NoProject) return this
 
-    val projectPath = this.resolvedProjectHome.normalize()
     val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
     trustedXml.parent.createDirectories()
