@@ -19,7 +19,7 @@ class IdeaJUnit4ExampleTests {
   @Test
   fun `open gradle project on the latest EAP IJ Community`() {
     val context = testContextFactory
-      .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple)
+      .newContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -29,7 +29,7 @@ class IdeaJUnit4ExampleTests {
   @Test
   fun `open gradle project on the latest Release IJ Community`() {
     val context = testContextFactory
-      .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple.useRelease())
+      .newContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple.useRelease())
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 

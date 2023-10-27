@@ -3,8 +3,6 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
-import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
@@ -41,8 +39,6 @@ class TestRunnerInitEventsTest {
   private lateinit var installedIde: InstalledIde
 
   private val container = object : TestContainer<Any> {
-    override val ciServer: CIServer = NoCIServer
-    override lateinit var testContext: IDETestContext
     override val setupHooks: MutableList<IDETestContext.() -> IDETestContext> = mutableListOf()
 
     override fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> = Pair("1000.200.30", installedIde)
@@ -62,7 +58,7 @@ class TestRunnerInitEventsTest {
 
     val testName = testInfo.displayName.hyphenateTestName()
 
-    container.initializeTestContext(testName = testName, testCase = testCase)
+    container.newContext(testName = testName, testCase = testCase)
 
     runBlocking {
       eventually(duration = 2.seconds, poll = 200.milliseconds) {

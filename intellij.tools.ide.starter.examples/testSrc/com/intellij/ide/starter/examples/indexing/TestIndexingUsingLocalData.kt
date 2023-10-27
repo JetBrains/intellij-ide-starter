@@ -71,7 +71,7 @@ class TestIndexing {
 
     //SETUP
     val testContext = container
-      .initializeTestContext(testName = "openProject", testCase = testCase)
+      .newContext(testName = "openProject", testCase = testCase)
       .copyExistingConfig(config)
       .copyExistingPlugins(plugins)
       .enableVerboseOpenTelemetry()

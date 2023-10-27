@@ -4,7 +4,6 @@ import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.bus.subscribe
-import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -14,17 +13,13 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
-import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logOutput
-import java.io.Closeable
 import kotlin.io.path.div
+import kotlin.reflect.jvm.isAccessible
 
-/**
- * [ciServer] - use [com.intellij.ide.starter.ci.NoCIServer] for local run. Otherwise - pass implementation of CIServer
- */
-interface TestContainer<T> : Closeable {
-  val ciServer: CIServer
-  var testContext: IDETestContext
+interface TestContainer<T> {
+  // TODO: Port setup hooks on using events
+  // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
   val setupHooks: MutableList<IDETestContext.() -> IDETestContext>
 
   companion object {
@@ -35,12 +30,10 @@ interface TestContainer<T> : Closeable {
         }
       }
     }
-  }
 
-  override fun close() {
-    catchAll { testContext.paths.close() }
-
-    logOutput("TestContainer $this disposed")
+    inline fun <reified T : TestContainer<T>> newInstance(): T {
+      return T::class.constructors.single().apply { isAccessible = true }.call()
+    }
   }
 
   /**
@@ -68,10 +61,10 @@ interface TestContainer<T> : Closeable {
   }
 
   /**
-   * Starting point to run your test
+   * Starting point to run your test.
    * @param preserveSystemDir Only for local runs when you know that having "dirty" system folder is ok and want to speed up test execution.
    */
-  fun initializeTestContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext {
+  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext {
     logOutput("Resolving IDE build for $testName...")
     val (buildNumber, ide) = resolveIDE(testCase.ideInfo)
 
@@ -84,10 +77,10 @@ interface TestContainer<T> : Closeable {
     logOutput("IDE to run for '$testName': $ide")
 
     val projectHome = testCase.projectInfo.downloadAndUnpackProject()
-    testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
+    var testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 
-    testContext = updateVMOptions(testContext)
+    testContext = applyDefaultVMOptions(testContext)
 
     val contextWithAppliedHooks = setupHooks
       .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
@@ -100,7 +93,7 @@ interface TestContainer<T> : Closeable {
     return contextWithAppliedHooks
   }
 
-  fun updateVMOptions(context: IDETestContext): IDETestContext {
+  fun applyDefaultVMOptions(context: IDETestContext): IDETestContext {
     return when (context.testCase.ideInfo == IdeProductProvider.AI) {
       true -> context
         .applyVMOptionsPatch {

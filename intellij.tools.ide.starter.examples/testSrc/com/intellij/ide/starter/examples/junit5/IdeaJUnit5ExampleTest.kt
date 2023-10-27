@@ -25,7 +25,7 @@ class IdeaJUnit5ExampleTest {
   fun openGradleJitPack() {
 
     val testContext = context
-      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
+      .newContext(testInfo.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -46,7 +46,7 @@ class IdeaJUnit5ExampleTest {
   fun openMavenProject() {
 
     val testContext = context
-      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+      .newContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -57,7 +57,7 @@ class IdeaJUnit5ExampleTest {
   @Disabled("Long running test (> 10 min)")
   fun inspectMavenProject() {
     val testContext = context
-      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+      .newContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
       .setSharedIndexesDownload(enable = true)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())

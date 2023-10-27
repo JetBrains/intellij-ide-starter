@@ -7,11 +7,9 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.killOutdatedProcesses
 import com.intellij.ide.starter.runner.CurrentTestMethod
-import com.intellij.ide.starter.runner.TestContainer
-import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.ide.starter.utils.withIndent
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
@@ -23,27 +21,6 @@ import java.util.*
 import kotlin.reflect.jvm.javaField
 
 open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
-  open fun injectTestContainerProperty(testInstance: Any) {
-    val containerProp = TestInstanceReflexer.getProperty(testInstance, TestContainerImpl::class)
-
-    if (containerProp == null) return
-    val containerInstance = TestContainerImpl()
-
-    try {
-      containerProp.javaField!!.trySetAccessible()
-
-      if (containerProp.javaField!!.get(testInstance) != null) {
-        logOutput("Property `${containerProp.name}` already manually initialized in the code")
-        return
-      }
-
-      containerProp.javaField!!.set(testInstance, containerInstance)
-    }
-    catch (e: Throwable) {
-      logError("Unable to inject value for property `${containerProp.name}`")
-    }
-  }
-
   private fun injectTestInfoProperty(context: ExtensionContext) {
     val testInstance = context.testInstance.get()
 
@@ -88,32 +65,13 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
     }
 
     killOutdatedProcesses()
-
-    val testInstance = context.testInstance.get()
-
-    injectTestContainerProperty(testInstance)
     injectTestInfoProperty(context)
   }
 
-  protected inline fun <reified T : TestContainer<T>> closeResourcesOfTestContainer(context: ExtensionContext) {
-    val testInstance = context.testInstance.get()
-    val containerProp = TestInstanceReflexer.getProperty(testInstance, T::class)
-
-    if (containerProp != null) {
-      try {
-        (containerProp.javaField!!.apply { trySetAccessible() }.get(testInstance) as T).close()
-      }
-      catch (e: Throwable) {
-        logError("Unable close resources of ${containerProp.name}")
-      }
-    }
-  }
-
   override fun afterEach(context: ExtensionContext) {
+    // TODO: Find a way to wait till all subscribers finished their work
+    // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
     StarterListener.unsubscribe()
-
-    closeResourcesOfTestContainer<TestContainerImpl>(context)
-
     ConfigurationStorage.instance().resetToDefault()
   }
 }

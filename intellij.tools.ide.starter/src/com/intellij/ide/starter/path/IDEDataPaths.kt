@@ -2,7 +2,6 @@ package com.intellij.ide.starter.path
 
 import com.intellij.ide.starter.utils.createInMemoryDirectory
 import com.intellij.tools.ide.util.common.logOutput
-import java.io.Closeable
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
@@ -10,7 +9,7 @@ import kotlin.io.path.div
 class IDEDataPaths(
   val testHome: Path,
   private val inMemoryRoot: Path?
-) : Closeable {
+) {
 
   companion object {
     fun createPaths(testName: String, testHome: Path, useInMemoryFs: Boolean): IDEDataPaths {
@@ -35,7 +34,8 @@ class IDEDataPaths(
   val pluginsDir = (testHome / "plugins").createDirectories()
   val jbrDiagnostic = (testHome / "jbrDiagnostic").createDirectories()
 
-  override fun close() {
+
+  protected fun finalize() {
     if (inMemoryRoot != null) {
       try {
         inMemoryRoot.toFile().deleteRecursively()

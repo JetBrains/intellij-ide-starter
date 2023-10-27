@@ -223,7 +223,7 @@ class InstallPluginTest {
   fun installPluginTest(params: EventToTestCaseParams) {
     try {
       val testContext = container
-        .initializeTestContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
+        .newContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {

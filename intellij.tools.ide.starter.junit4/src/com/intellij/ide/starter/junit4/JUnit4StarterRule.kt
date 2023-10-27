@@ -10,10 +10,9 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.killOutdatedProcesses
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.TestContainer
-import com.intellij.ide.starter.utils.catchAll
+import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.ide.starter.utils.withIndent
 import org.junit.rules.ExternalResource
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -30,10 +29,7 @@ fun <T : JUnit4StarterRule> T.useInstaller(): T {
 
 open class JUnit4StarterRule(
   override val setupHooks: MutableList<IDETestContext.() -> IDETestContext> = mutableListOf(),
-  override val ciServer: CIServer = di.direct.instance()
 ) : ExternalResource(), TestContainer<JUnit4StarterRule> {
-
-  override lateinit var testContext: IDETestContext
 
   private lateinit var testDescription: Description
 
@@ -55,7 +51,7 @@ open class JUnit4StarterRule(
    * Before each
    */
   override fun before() {
-    if (ciServer.isBuildRunningOnCI) {
+    if (CIServer.instance.isBuildRunningOnCI) {
       logOutput(buildString {
         appendLine("Disk usage diagnostics before test ${testDescription.displayName}")
         appendLine(GlobalPaths.instance.getDiskUsageDiagnostics().withIndent("  "))
@@ -67,16 +63,13 @@ open class JUnit4StarterRule(
     super.before()
   }
 
-  override fun close() {
-    catchAll { testContext.paths.close() }
-  }
-
   /**
    * After each
    */
   override fun after() {
+    // TODO: Find a way to wait till all subscribers finished their work
+    // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
     StarterListener.unsubscribe()
-    close()
     ConfigurationStorage.instance().resetToDefault()
     super.after()
   }
@@ -86,6 +79,6 @@ open class JUnit4StarterRule(
  * Makes the test use the latest available locally IDE build for testing.
  */
 fun <T : JUnit4StarterRule> T.useLatestDownloadedIdeBuild(): T = apply {
-  assert(!ciServer.isBuildRunningOnCI)
+  assert(!CIServer.instance.isBuildRunningOnCI)
   ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, true)
 }

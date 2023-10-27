@@ -39,7 +39,7 @@ class ScalabilityTest {
     val results = mutableMapOf<Int, List<Long>>()
     for (processorCount in processorCounts) {
       val context = context
-        .initializeTestContext("${testInfo.hyphenateWithClass()}_$processorCount", testCase)
+        .newContext("${testInfo.hyphenateWithClass()}_$processorCount", testCase)
         .copyExistingConfig(config)
         .copyExistingPlugins(plugins)
         .setActiveProcessorCount(processorCount)

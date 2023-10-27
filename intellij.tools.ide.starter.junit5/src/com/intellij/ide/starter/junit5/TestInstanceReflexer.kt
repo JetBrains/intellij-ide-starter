@@ -2,13 +2,14 @@ package com.intellij.ide.starter.junit5
 
 import com.intellij.tools.ide.util.common.logOutput
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
+import kotlin.reflect.KProperty
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.staticProperties
 import kotlin.reflect.jvm.javaField
 
 object TestInstanceReflexer {
-  fun getProperty(testInstance: Any, propertyType: KClass<*>): KProperty1<out Any, *>? {
-    val properties = testInstance::class.memberProperties
+  fun getProperty(testInstance: Any, propertyType: KClass<*>): KProperty<*>? {
+    val properties: List<KProperty<*>> = testInstance::class.memberProperties.plus(testInstance::class.staticProperties)
 
     try {
       val contextField = properties.single { property ->
@@ -24,8 +25,8 @@ object TestInstanceReflexer {
     return null
   }
 
-  fun getPropertyIfPresent(testInstance: Any, propertyType: KClass<*>): KProperty1<out Any, *>? {
-    val properties = testInstance::class.memberProperties
+  fun getPropertyIfPresent(testInstance: Any, propertyType: KClass<*>): KProperty<*>? {
+    val properties = testInstance::class.memberProperties.plus(testInstance::class.staticProperties)
 
     return properties.firstOrNull { property ->
       property.javaField?.type?.equals(propertyType.javaObjectType) == true

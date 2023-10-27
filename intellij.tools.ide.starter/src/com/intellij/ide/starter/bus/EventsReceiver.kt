@@ -64,8 +64,11 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus = S
   /**
    * Unsubscribe from all events
    */
+  @Suppress("RAW_RUN_BLOCKING")
   fun unsubscribe() {
-    runBlocking {
+    // TODO: Find a way to wait till all subscribers finished their work
+    // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
+    runBlocking(Dispatchers.IO) {
       for (jobList in jobs.values) {
         for (job in jobList) {
           job.cancelAndJoin()

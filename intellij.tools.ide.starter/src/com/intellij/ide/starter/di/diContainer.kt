@@ -19,11 +19,10 @@ import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.TestContainer
+import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.ide.util.common.logOutput
-import org.kodein.di.DI
-import org.kodein.di.bindArgSet
-import org.kodein.di.bindFactory
-import org.kodein.di.bindSingleton
+import org.kodein.di.*
 import java.net.URI
 
 /**
@@ -42,7 +41,7 @@ var di = DI {
   bindSingleton<GlobalPaths> { InstallerGlobalPaths() }
   bindSingleton<CIServer> { NoCIServer }
   bindSingleton<FailureDetailsOnCI> { object : FailureDetailsOnCI {} }
-  bindFactory { testContext: IDETestContext -> PluginConfigurator(testContext) }
+  bindFactory<IDETestContext, PluginConfigurator> { testContext: IDETestContext -> PluginConfigurator(testContext) }
   bindSingleton<IdeDownloader> { PublicIdeDownloader }
   bindSingleton<IdeInstallerFactory> { IdeInstallerFactory() }
 
@@ -59,6 +58,8 @@ var di = DI {
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
   bindSingleton(tag = "teamcity.uri") { URI("https://buildserver.labs.intellij.net").normalize() }
+
+  bindProvider<TestContainer<*>> { TestContainer.newInstance<TestContainerImpl>() }
 }.apply {
   logOutput("Starter DI was initialized")
 }
