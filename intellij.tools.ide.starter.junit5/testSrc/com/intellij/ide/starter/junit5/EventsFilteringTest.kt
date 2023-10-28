@@ -3,20 +3,17 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.bus.Signal
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.bus.StarterListener
-import com.intellij.ide.starter.bus.subscribe
 import io.kotest.assertions.timing.eventually
 import io.kotest.assertions.withClue
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.RepeatedTest
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-class EventBusTest {
+class EventsFilteringTest {
   private var isEventHappened: AtomicBoolean = AtomicBoolean(false)
 
   private fun checkIsEventFired(shouldEventBeFired: Boolean, isEventFiredGetter: () -> Boolean) {
@@ -41,17 +38,13 @@ class EventBusTest {
     StarterListener.unsubscribe()
   }
 
-  @Disabled("It's not stable. https://youtrack.jetbrains.com/issue/AT-17")
-  @RepeatedTest(value = 50)
+  @RepeatedTest(value = 200)
   fun `filtering events by type is working`() {
     StarterListener.subscribe { _: Signal ->
       isEventHappened.set(true)
     }
 
     StarterBus.post(2)
-    // make sure there is no side effects
-    runBlocking { delay(1.seconds) }
-
     checkIsEventFired(false) { isEventHappened.get() }
 
     StarterBus.post(Signal())

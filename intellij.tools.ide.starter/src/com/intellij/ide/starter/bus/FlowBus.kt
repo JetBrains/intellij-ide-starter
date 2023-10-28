@@ -42,6 +42,11 @@ open class FlowBus {
   }
 
   /**
+   * @see FlowBus.getFlow
+   */
+  inline fun <reified T : Any> getFlow() = getFlow(T::class.java)
+
+  /**
    * Posts new event to SharedFlow of the [event] type.
    * @param retain If the [event] should be retained in the flow for future subscribers. This is true by default.
    */
@@ -70,6 +75,11 @@ open class FlowBus {
     val channel = flows[clazz] as MutableSharedFlow<T?>
     channel.tryEmit(null)
   }
+
+  /**
+   * @see FlowBus.dropEvent
+   */
+  inline fun <reified T : Any> dropEvent() = dropEvent(T::class.java)
 
   /**
    *  Removes all retained events

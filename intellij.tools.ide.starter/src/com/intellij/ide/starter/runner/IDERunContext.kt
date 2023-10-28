@@ -3,7 +3,6 @@ package com.intellij.ide.starter.runner
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.bus.StarterListener
-import com.intellij.ide.starter.bus.subscribe
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di

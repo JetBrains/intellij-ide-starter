@@ -3,10 +3,9 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.project.NoProject
-import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.runner.Starter
-import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.ide.starter.runner.TestContextInitializedEvent
+import com.intellij.ide.starter.utils.hyphenateTestName
 import examples.data.TestCases
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.timing.eventually
@@ -24,39 +23,31 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @ExtendWith(JUnit5StarterAssistant::class)
-class RunIdeEventsTest {
-
+class TestContextInitializationEventsTest {
   @AfterEach
   fun afterEach() {
     StarterListener.unsubscribe()
   }
 
-  @RepeatedTest(value = 5)
-  fun `events for ide launch should be fired`(testInfo: TestInfo) {
-    val firedEvents = mutableListOf<IdeLaunchEvent>()
-    StarterListener.subscribe { event: IdeLaunchEvent -> firedEvents.add(event) }
+  @RepeatedTest(value = 200)
+  fun `events for test runner init should be fired`(testInfo: TestInfo) {
+    val firedEvents = mutableListOf<TestContextInitializedEvent>()
+    StarterListener.subscribe { event: TestContextInitializedEvent -> firedEvents.add(event) }
 
-    val context = Starter.newContext(testInfo.hyphenateWithClass(), TestCases.IU.withProject(NoProject).useRelease())
+    val testName = testInfo.displayName.hyphenateTestName()
 
-    context.runIDE(
-      commands = CommandChain().exitApp(),
-      runTimeout = 5.seconds,
-      expectedKill = true
-    )
+    Starter.newContext(testName = testName, testCase = TestCases.IU.withProject(NoProject).useRelease())
 
     runBlocking(Dispatchers.IO) {
       eventually(duration = 2.seconds, poll = 100.milliseconds) {
-        withClue("There should be 2 events fired. Events: ${firedEvents.map { it.state }}") {
-          firedEvents.shouldHaveSize(3)
+        withClue("There should be 1 events fired. Events: ${firedEvents.map { it.state }}") {
+          firedEvents.shouldHaveSize(1)
         }
       }
     }
 
     assertSoftly {
-      withClue("During IDE run 2 events should be fired: before IDE start and after IDE finished. " +
-               "Events: ${firedEvents.map { it.state }}") {
-        firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.BEFORE) }
-        firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.IN_TIME) }
+      withClue("Event should be fired at the end of test context initialization: Events: ${firedEvents.map { it.state }}") {
         firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.AFTER) }
       }
     }
