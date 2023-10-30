@@ -228,7 +228,7 @@ data class IDERunContext(
       }
       else {
         isRunSuccessful = false
-        error((ciFailureDetails?.let { "$it\n" } ?: "") + "Timeout of IDE run $contextName for $runTimeout")
+        throw ExecTimeoutException("Timeout of IDE run '$contextName' for $runTimeout" + System.lineSeparator() + (ciFailureDetails ?: ""))
       }
     }
     catch (exception: Throwable) {
