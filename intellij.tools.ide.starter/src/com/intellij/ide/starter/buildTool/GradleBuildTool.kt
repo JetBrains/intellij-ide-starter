@@ -83,7 +83,12 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
-  fun addPropertyToGradleProperties(property: String, value: String): GradleBuildTool {
+  fun enableParallelImport(enable: Boolean): GradleBuildTool {
+    addPropertyToGradleProperties("org.gradle.parallel", enable.toString(), true)
+    return this
+  }
+
+  fun addPropertyToGradleProperties(property: String, value: String, replacePrevValue: Boolean = false): GradleBuildTool {
     val projectDir = testContext.resolvedProjectHome
     val gradleProperties = projectDir.resolve("gradle.properties")
     val lineWithTheSameProperty = gradleProperties.readLines().singleOrNull { it.contains(property) }
@@ -93,11 +98,12 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
         return this
       }
 
-      val newValue = lineWithTheSameProperty.substringAfter("$property=") + " $value"
+      val prevValue = lineWithTheSameProperty.substringAfter("$property=")
+      val newValue = (if (!replacePrevValue) prevValue else "") + " $value"
       val tempFile = File.createTempFile("newContent", ".txt").toPath()
       gradleProperties.forEachLine { line ->
         tempFile.appendText(when {
-                              line.contains(property) -> "$property=$newValue" + System.getProperty("line.separator")
+                              line.contains(property) -> "$property=${newValue.trim()}" + System.getProperty("line.separator")
                               else -> line + System.getProperty("line.separator")
                             })
       }
