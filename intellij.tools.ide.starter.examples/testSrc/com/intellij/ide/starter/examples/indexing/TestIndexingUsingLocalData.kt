@@ -31,7 +31,7 @@ class TestIndexing {
   private lateinit var container: TestContainerImpl
 
   class IdeLocalInstaller(private val installer: Path) : IdeInstaller {
-    override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
+    override fun install(ideInfo: IdeInfo, includeRuntimeModuleRepository: Boolean): Pair<String, InstalledIde> {
       val ideInstaller = IdeInstallerFile(installer, "locally-installed-ide")
       val installDir = di.direct.instance<GlobalPaths>()
                          .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
@@ -71,7 +71,7 @@ class TestIndexing {
 
     //SETUP
     val testContext = container
-      .newContext(testName = "openProject", testCase = testCase)
+      .initializeTestContext(testName = "openProject", testCase = testCase)
       .copyExistingConfig(config)
       .copyExistingPlugins(plugins)
       .enableVerboseOpenTelemetry()

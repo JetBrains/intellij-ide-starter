@@ -4,8 +4,8 @@ import com.intellij.ide.starter.examples.data.TestCases
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.TestContainerImpl
-import com.intellij.metricsCollector.metrics.getMetricsFromSpanAndChildren
-import com.intellij.metricsCollector.telemetry.SpanFilter
+import com.intellij.tools.ide.metrics.collector.starter.collector.getMetricsFromSpanAndChildren
+import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.inspectCode
@@ -25,7 +25,7 @@ class IdeaJUnit5ExampleTest {
   fun openGradleJitPack() {
 
     val testContext = context
-      .newContext(testInfo.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
+      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -46,7 +46,7 @@ class IdeaJUnit5ExampleTest {
   fun openMavenProject() {
 
     val testContext = context
-      .newContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -57,7 +57,7 @@ class IdeaJUnit5ExampleTest {
   @Disabled("Long running test (> 10 min)")
   fun inspectMavenProject() {
     val testContext = context
-      .newContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
       .setSharedIndexesDownload(enable = true)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
