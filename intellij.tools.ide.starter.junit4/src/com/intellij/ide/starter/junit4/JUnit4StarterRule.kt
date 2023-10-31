@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit4
 
-import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
@@ -69,7 +69,7 @@ open class JUnit4StarterRule(
   override fun after() {
     // TODO: Find a way to wait till all subscribers finished their work
     // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
-    StarterListener.unsubscribe()
+    StarterBus.LISTENER.unsubscribe()
     ConfigurationStorage.instance().resetToDefault()
     super.after()
   }

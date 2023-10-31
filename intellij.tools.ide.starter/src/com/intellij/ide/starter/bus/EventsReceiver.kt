@@ -12,38 +12,39 @@ import kotlinx.coroutines.flow.filterNotNull
  *
  * @param bus [FlowBus] instance to subscribe to. If not set, [StarterBus] will be used
  */
-open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus = StarterBus) {
+open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
   private val jobs = mutableMapOf<Class<*>, List<Job>>()
 
-  private var returnDispatcher: CoroutineDispatcher = Dispatchers.IO
+  private var returnDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
 
   /**
-   * Subscribe to events that are type of [clazz] with the given [callback] function.
-   * The [callback] can be called immediately if event of type [clazz] is present in the flow.
+   * Subscribe to events that are type of [eventType] with the given [callback] function.
+   * The [callback] can be called immediately if event of type [eventType] is present in the flow.
    *
-   * @param clazz Type of event to subscribe to
+   * @param eventType Type of event to subscribe to
    * @param skipRetained Skips event already present in the flow. This is `false` by default
    * @param callback The callback function
    * @return This instance of [EventsReceiver] for chaining
    */
   @JvmOverloads
-  fun <T : Any> subscribeTo(clazz: Class<T>, skipRetained: Boolean = false, callback: suspend (event: T) -> Unit): EventsReceiver {
+  fun <T : Any> subscribeTo(eventType: Class<T>, skipRetained: Boolean = false, callback: suspend (event: T) -> Unit): EventsReceiver {
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
       throw throwable
     }
 
-    val job = CoroutineScope(Job() + Dispatchers.IO + exceptionHandler).launch {
-      bus.forEvent(clazz)
+    val job = CoroutineScope(Job() + returnDispatcher + exceptionHandler).launch {
+      bus.forEvent(eventType)
         .drop(if (skipRetained) 1 else 0)
         .filterNotNull()
         .collect {
-          catchAll {
-            withContext(returnDispatcher) { callback(it) }
+          withContext(returnDispatcher) {
+            catchAll { callback(it) }
+            bus.getSynchronizer(it)?.countDown()
           }
         }
     }
 
-    jobs.putIfAbsent(clazz, listOf(job))?.let { jobs[clazz] = it + job }
+    jobs.putIfAbsent(eventType, listOf(job))?.let { jobs[eventType] = it + job }
     return this
   }
 
@@ -77,15 +78,15 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus = S
   /**
    * A variant of [subscribeTo] that uses an instance of [EventCallback] as callback.
    *
-   * @param clazz Type of event to subscribe to
+   * @param eventType Type of event to subscribe to
    * @param skipRetained Skips event already present in the flow. This is `false` by default
    * @param callback Interface with implemented callback function
    * @return This instance of [EventsReceiver] for chaining
    * @see [subscribeTo]
    */
   @JvmOverloads
-  fun <T : Any> subscribeTo(clazz: Class<T>, callback: EventCallback<T>, skipRetained: Boolean = false): EventsReceiver {
-    return subscribeTo(clazz, skipRetained) { callback.onEvent(it) }
+  fun <T : Any> subscribeTo(eventType: Class<T>, callback: EventCallback<T>, skipRetained: Boolean = false): EventsReceiver {
+    return subscribeTo(eventType, skipRetained) { callback.onEvent(it) }
   }
 
   /**
@@ -93,9 +94,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus = S
    */
   @Suppress("RAW_RUN_BLOCKING")
   fun unsubscribe() {
-    // TODO: Find a way to wait till all subscribers finished their work
-    // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
-    runBlocking(Dispatchers.IO) {
+    runBlocking(returnDispatcher) {
       for (jobList in jobs.values) {
         for (job in jobList) {
           job.cancelAndJoin()
@@ -104,5 +103,9 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus = S
     }
 
     jobs.clear()
+  }
+
+  internal fun <T : Any> getSubscribersCount(eventType: Class<T>): Int {
+    return jobs.getOrDefault(eventType, listOf()).size
   }
 }

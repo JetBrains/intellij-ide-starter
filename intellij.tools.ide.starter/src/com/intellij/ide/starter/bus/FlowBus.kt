@@ -1,10 +1,16 @@
 package com.intellij.ide.starter.bus
 
+import com.intellij.tools.ide.util.common.logError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * @author https://github.com/Kosert/FlowBus
@@ -14,8 +20,8 @@ import kotlinx.coroutines.launch
  * You can use [StarterBus] that is just plain instance of this class or create your own implementation.
  */
 open class FlowBus {
-
-  private val flows = mutableMapOf<Class<*>, MutableSharedFlow<*>>()
+  private val flows = ConcurrentHashMap<Class<*>, MutableSharedFlow<*>>()
+  private val synchronizers = ConcurrentHashMap<Any, CountDownLatch>()
 
   /**
    * Gets a MutableSharedFlow for events of the given type. Creates new if one doesn't exist.
@@ -51,7 +57,7 @@ open class FlowBus {
    * @param retain If the [event] should be retained in the flow for future subscribers. This is true by default.
    */
   @JvmOverloads
-  fun <T : Any> post(event: T, retain: Boolean = true) {
+  fun <T : Any> postAsync(event: T, retain: Boolean = true) {
     val flow = forEvent(event.javaClass)
 
     flow.tryEmit(event).also {
@@ -61,10 +67,36 @@ open class FlowBus {
     if (!retain) {
       // without starting a coroutine here, the event is dropped immediately
       // and not delivered to subscribers
-      CoroutineScope(Job() + Dispatchers.IO).launch {
+      CoroutineScope(Job() + Dispatchers.Unconfined).launch {
         dropEvent(event.javaClass)
       }
     }
+  }
+
+  /**
+   * Post event and waits until all subscribers will finish their work.
+   * @return True - if subscribers processed the event, false - otherwise
+   */
+  fun <T : Any> postAndWaitProcessing(event: T,
+                                      eventsReceiver: EventsReceiver,
+                                      retain: Boolean = true,
+                                      timeout: Duration = 1.minutes): Boolean {
+    val latch = CountDownLatch(eventsReceiver.getSubscribersCount(event::class.java))
+    synchronizers[event] = latch
+    postAsync(event, retain)
+
+    val isSuccessful = latch.await(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+    if (!isSuccessful) {
+      logError("${this::class.java.name}: ${latch.count} subscribers haven't finished their work in $timeout")
+    }
+
+    synchronizers.remove(event)
+
+    return isSuccessful
+  }
+
+  fun <T : Any> getSynchronizer(event: T): CountDownLatch? {
+    return synchronizers[event]
   }
 
   /**

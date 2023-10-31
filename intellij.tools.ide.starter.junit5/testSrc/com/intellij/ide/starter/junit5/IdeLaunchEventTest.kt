@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.bus.EventState
-import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.runner.Starter
@@ -24,17 +24,17 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @ExtendWith(JUnit5StarterAssistant::class)
-class RunIdeEventsTest {
+class IdeLaunchEventTest {
 
   @AfterEach
   fun afterEach() {
-    StarterListener.unsubscribe()
+    StarterBus.LISTENER.unsubscribe()
   }
 
   @RepeatedTest(value = 5)
   fun `events for ide launch should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<IdeLaunchEvent>()
-    StarterListener.subscribe { event: IdeLaunchEvent -> firedEvents.add(event) }
+    StarterBus.subscribe { event: IdeLaunchEvent -> firedEvents.add(event) }
 
     val context = Starter.newContext(testInfo.hyphenateWithClass(), TestCases.IU.withProject(NoProject).useRelease())
 

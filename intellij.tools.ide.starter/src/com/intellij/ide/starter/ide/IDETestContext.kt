@@ -371,7 +371,7 @@ class IDETestContext(
 
   /**
    * Run IDE in background.
-   * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterListener.subscribe]
+   * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterBus.subscribe]
    */
   fun runIdeInBackground(commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
                          commands: Iterable<MarshallableCommand> = CommandChain(),

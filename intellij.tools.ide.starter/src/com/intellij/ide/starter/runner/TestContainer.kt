@@ -2,7 +2,6 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
-import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -23,7 +22,7 @@ interface TestContainer<T> {
 
   companion object {
     init {
-      StarterListener.subscribe { event: TestContextInitializedEvent ->
+      StarterBus.subscribe { event: TestContextInitializedEvent ->
         if (event.state == EventState.AFTER) {
           logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
         }
@@ -87,7 +86,7 @@ interface TestContainer<T> {
 
     testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
 
-    StarterBus.post(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
+    StarterBus.postAsync(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
 
     return contextWithAppliedHooks
   }

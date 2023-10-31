@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.bus.EventState
-import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.runner.IdeLaunchEvent
@@ -30,7 +30,7 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
     }
 
     init {
-      StarterListener.subscribe { event: IdeLaunchEvent ->
+      StarterBus.subscribe { event: IdeLaunchEvent ->
         if (event.state == EventState.AFTER) {
           destroyMavenIndexerProcessIfExists()
         }

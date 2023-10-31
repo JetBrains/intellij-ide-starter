@@ -2,7 +2,6 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
-import com.intellij.ide.starter.bus.StarterListener
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -161,7 +160,7 @@ data class IDERunContext(
   // TODO: refactor this https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext
   @OptIn(kotlin.time.ExperimentalTime::class)
   fun runIDE(): IDEStartResult {
-    StarterBus.post(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
+    StarterBus.postAsync(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
@@ -203,7 +202,7 @@ data class IDERunContext(
           stdoutRedirect = stdout,
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
-            StarterBus.post(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
+            StarterBus.postAsync(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig, ideProcessId)
           },
@@ -213,7 +212,7 @@ data class IDERunContext(
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")
-      StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
+      StarterBus.postAsync(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
       sentAfterEvent = true
       validateVMOptionsWereSet(paths)
       logVmOptionDiff(startConfig.vmOptionsDiff())
@@ -244,7 +243,7 @@ data class IDERunContext(
       }
       finally {
         if (!sentAfterEvent) {
-          StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
+          StarterBus.postAsync(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
         }
       }
     }
@@ -460,7 +459,7 @@ data class IDERunContext(
    */
   fun withScreenRecording() {
     val screenRecorder = IDEScreenRecorder(this)
-    StarterListener.subscribe { event: IdeLaunchEvent ->
+    StarterBus.subscribe { event: IdeLaunchEvent ->
       if (event.state == EventState.BEFORE) {
         screenRecorder.start()
       }

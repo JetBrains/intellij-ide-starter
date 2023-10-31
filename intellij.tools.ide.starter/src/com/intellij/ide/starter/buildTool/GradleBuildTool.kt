@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.buildTool
 
 import com.intellij.ide.starter.bus.EventState
-import com.intellij.ide.starter.bus.StarterListener
+import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
@@ -32,7 +32,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     }
 
     init {
-      StarterListener.subscribe { event: IdeLaunchEvent ->
+      StarterBus.subscribe { event: IdeLaunchEvent ->
         if (event.state == EventState.AFTER) {
           destroyGradleDaemonProcessIfExists()
         }
