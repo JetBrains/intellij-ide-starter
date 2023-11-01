@@ -240,9 +240,9 @@ data class IDERunContext(
     }
     finally {
       StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this,
-                                                                               ideProcess = null,
-                                                                               ideProcessId = ideProcessId,
-                                                                               isRunSuccessful = isRunSuccessful)))
+                                                                                           ideProcess = null,
+                                                                                           ideProcessId = ideProcessId,
+                                                                                           isRunSuccessful = isRunSuccessful)))
     }
   }
 
@@ -280,7 +280,8 @@ data class IDERunContext(
 
   private fun deleteJVMCrashes() {
     listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
-      dir.listDirectoryEntries().isEmpty()
+      if (!dir.exists()) false
+      else dir.listDirectoryEntries().isEmpty()
     }.forEach { it.toFile().deleteRecursively() }
   }
 
