@@ -86,7 +86,7 @@ interface TestContainer<T> {
 
     testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
 
-    StarterBus.postAsync(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
+    StarterBus.postAndWaitProcessing(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
 
     return contextWithAppliedHooks
   }

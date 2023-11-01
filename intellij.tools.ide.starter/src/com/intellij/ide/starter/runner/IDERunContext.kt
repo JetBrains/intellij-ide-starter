@@ -9,7 +9,6 @@ import com.intellij.ide.starter.ide.IDEStartConfig
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
-import com.intellij.ide.starter.models.VMOptionsDiff
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.process.collectJavaThreadDump
 import com.intellij.ide.starter.process.collectMemoryDump
@@ -43,9 +42,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
-interface IDERunCloseContext {
-  val wasRunSuccessful: Boolean
-}
 
 data class IDERunContext(
   val testContext: IDETestContext,
@@ -53,7 +49,6 @@ data class IDERunContext(
   val commands: Iterable<MarshallableCommand> = listOf(),
   val runTimeout: Duration = 10.minutes,
   val useStartupScript: Boolean = true,
-  val closeHandlers: List<IDERunCloseContext.() -> Unit> = listOf(),
   val verboseOutput: Boolean = false,
   val launchName: String = "",
   val expectedKill: Boolean = false,
@@ -84,6 +79,27 @@ data class IDERunContext(
     return createDirectories()
   }
 
+  init {
+    StarterBus
+      .subscribe { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
+          validateVMOptionsWereSet(event.data.runContext.testContext.paths)
+        }
+      }
+      .subscribe { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
+          testContext.collectJBRDiagnosticFiles(event.data.ideProcessId!!)
+        }
+      }
+      .subscribe { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
+          deleteJVMCrashes()
+          ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, event.data.isRunSuccessful!!)
+          publishArtifacts()
+        }
+      }
+  }
+
 
   fun verbose() = copy(verboseOutput = true)
 
@@ -97,14 +113,6 @@ data class IDERunContext(
     patchesForVMOptions.add(patchVMOptions)
     return this
   }
-
-
-  fun addCompletionHandler(handler: IDERunCloseContext.() -> Unit) = this.copy(closeHandlers = closeHandlers + handler)
-
-  fun uploadProfilerResultsToCIServer(profilerSnapshotsDir: Path, artifactName: String) =
-    this.addCompletionHandler {
-      testContext.publishArtifact(source = profilerSnapshotsDir, artifactName = artifactName)
-    }
 
   private fun installProfiler(): IDERunContext {
     return when (val profilerType = testContext.profilerType) {
@@ -157,8 +165,6 @@ data class IDERunContext(
     }
   }
 
-  // TODO: refactor this https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext
-  @OptIn(kotlin.time.ExperimentalTime::class)
   fun runIDE(): IDEStartResult {
     StarterBus.postAsync(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
@@ -171,7 +177,6 @@ data class IDERunContext(
     var isRunSuccessful = true
     val ciFailureDetails = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)?.let { "Link on CI artifacts ${it}" }
 
-    var sentAfterEvent = false
     try {
       testContext.setProviderMemoryOnlyOnLinux()
       val jdkHome: Path = resolveAndDownloadSameJDK()
@@ -179,7 +184,11 @@ data class IDERunContext(
       val vmOptions: VMOptions = calculateVmOptions()
       val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
       if (startConfig is Closeable) {
-        addCompletionHandler { startConfig.close() }
+        StarterBus.subscribe<IdeLaunchEvent> { event ->
+          if (event.state == EventState.AFTER) {
+            startConfig.close()
+          }
+        }
       }
 
       val mergedEnvVariables = (startConfig.environmentVariables + vmOptions.environmentVariables).toMutableMap().apply {
@@ -212,10 +221,6 @@ data class IDERunContext(
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")
-      StarterBus.postAsync(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
-      sentAfterEvent = true
-      validateVMOptionsWereSet(paths)
-      logVmOptionDiff(startConfig.vmOptionsDiff())
 
       return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = startConfig.vmOptionsDiff())
     }
@@ -234,18 +239,10 @@ data class IDERunContext(
       throw Exception(getErrorMessage(exception, ciFailureDetails), exception)
     }
     finally {
-      testContext.collectJBRDiagnosticFiles(ideProcessId)
-      try {
-        deleteJVMCrashes()
-        ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, isRunSuccessful)
-        publishArtifacts()
-        runCloseHandlers(isRunSuccessful)
-      }
-      finally {
-        if (!sentAfterEvent) {
-          StarterBus.postAsync(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
-        }
-      }
+      StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this,
+                                                                               ideProcess = null,
+                                                                               ideProcessId = ideProcessId,
+                                                                               isRunSuccessful = isRunSuccessful)))
     }
   }
 
@@ -285,22 +282,6 @@ data class IDERunContext(
     listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
       dir.listDirectoryEntries().isEmpty()
     }.forEach { it.toFile().deleteRecursively() }
-  }
-
-  private fun runCloseHandlers(isRunSuccessful: Boolean) {
-    val closeContext = object : IDERunCloseContext {
-      override val wasRunSuccessful: Boolean = isRunSuccessful
-    }
-
-    closeHandlers.forEach {
-      try {
-        it.invoke(closeContext)
-      }
-      catch (t: Throwable) {
-        logOutput("Failed to complete close step. ${t.message}.\n" + t)
-        t.printStackTrace(System.err)
-      }
-    }
   }
 
   private fun logDisabledPlugins(paths: IDEDataPaths) {
@@ -376,17 +357,6 @@ data class IDERunContext(
     val defaultJavaHome = JvmUtils.resolveInstalledJdk()
     logOutput("JDK is not found in ${testContext.ide.build}. Fallback to default java: $defaultJavaHome")
     defaultJavaHome
-  }
-
-  private fun logVmOptionDiff(vmOptionsDiff: VMOptionsDiff?) {
-    if (vmOptionsDiff != null && !vmOptionsDiff.isEmpty) {
-      logOutput("VMOptions were changed:")
-      logOutput("new lines:")
-      vmOptionsDiff.newLines.forEach { logOutput("  $it") }
-      logOutput("removed lines:")
-      vmOptionsDiff.missingLines.forEach { logOutput("  $it") }
-      logOutput()
-    }
   }
 
   private fun logStartupInfo(finalOptions: VMOptions) {
