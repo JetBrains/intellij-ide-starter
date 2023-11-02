@@ -132,6 +132,7 @@ data class IDERunContext(
   fun calculateVmOptions(): VMOptions {
     return testContext.ide.vmOptions.copy().apply {
       disableStartupDialogs()
+      disableFreezeReportingProfiling()
       usingStartupFramework()
       setFatalErrorNotificationEnabled()
       setFlagIntegrationTests()

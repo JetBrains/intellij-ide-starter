@@ -185,6 +185,10 @@ data class VMOptions(
     addSystemProperty("writerside.eula.reviewed.and.accepted", true)
   }
 
+  fun disableFreezeReportingProfiling() = run {
+    addSystemProperty("freeze.reporter.profiling", false)
+  }
+
 
   fun takeScreenshotsPeriodically() =
     addSystemProperty("ide.performance.screenshot", "heartbeat")
