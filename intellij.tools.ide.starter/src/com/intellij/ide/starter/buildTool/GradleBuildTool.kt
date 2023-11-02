@@ -18,7 +18,6 @@ import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -179,48 +178,6 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       configureLoggers(logLevel, "org.jetbrains.plugins.gradle")
     }
     return this
-  }
-
-  /**
-  This method enables/disables Gradle Build Cache and
-  returns the previous state of org.gradle.caching variable
-  By default, the build cache is not enabled.
-  So if gradle.properties does not contain org.gradle.caching
-  the method returns false
-   */
-  fun toggleGradleBuildCaching(value: Boolean): Boolean {
-    val userHome = System.getProperty("user.home", null)
-    if (userHome == null) return false
-
-    val gradleProperties = Paths.get(userHome).resolve(".gradle").resolve("gradle.properties")
-    if (gradleProperties.notExists()) return false
-
-    val text = gradleProperties.readText()
-    if (!text.contains("org.gradle.caching") && value) {
-      gradleProperties.toFile().appendText("\norg.gradle.caching=true")
-      return false
-    }
-    else if (!text.contains("org.gradle.caching") && !value) {
-      return false
-    }
-    else if (text.contains("org.gradle.caching=true") && !value) {
-      val newText = text.replace("org.gradle.caching=true", "")
-      gradleProperties.toFile().writeText(newText)
-      return true
-    }
-    else if (text.contains("org.gradle.caching=true") && value) {
-      return true
-    }
-    else if (text.contains("org.gradle.caching=false") && !value) {
-      return false
-    }
-    else if (text.contains("org.gradle.caching=false") && value) {
-      val newText = text.replace("org.gradle.caching=false", "org.gradle.caching=true")
-      gradleProperties.toFile().writeText(newText)
-      return false
-    }
-
-    return false
   }
 
   fun execGradlew(args: List<String>, timeout: Duration = 1.minutes): GradleBuildTool {
