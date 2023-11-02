@@ -4,8 +4,8 @@ apply plugin: 'kotlin'
 group = "com.jetbrains.intellij.tools"
 
 buildscript {
-  ext.kotlin_version = '1.8.20'
-  ext.jackson_version = '2.14.1'
+  ext.kotlin_version = '1.9.10'
+  ext.jackson_version = '2.15.2'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -29,7 +29,7 @@ repositories {
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.1"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3"
   implementation "org.kodein.di:kodein-di-jvm:7.20.1"
 
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
@@ -47,6 +47,11 @@ dependencies {
 
 kotlin {
   jvmToolchain(17)
+  compileKotlin {
+    kotlinOptions {
+      freeCompilerArgs += "-opt-in=kotlin.time.ExperimentalTime"
+    }
+  }
 }
 
 sourceSets {

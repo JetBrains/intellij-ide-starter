@@ -2,8 +2,8 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 buildscript {
-  ext.kotlin_version = '1.8.20'
-  ext.jackson_version = '2.14.1'
+  ext.kotlin_version = '1.9.10'
+  ext.jackson_version = '2.15.2'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -48,6 +48,11 @@ dependencies {
 
 kotlin {
   jvmToolchain(17)
+  compileKotlin {
+    kotlinOptions {
+      freeCompilerArgs += "-opt-in=kotlin.time.ExperimentalTime"
+    }
+  }
 }
 
 tasks.test {
