@@ -22,7 +22,7 @@ interface TestContainer<T> {
 
   companion object {
     init {
-      StarterBus.subscribe { event: TestContextInitializedEvent ->
+      StarterBus.subscribe(this) { event: TestContextInitializedEvent ->
         if (event.state == EventState.AFTER) {
           logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
         }

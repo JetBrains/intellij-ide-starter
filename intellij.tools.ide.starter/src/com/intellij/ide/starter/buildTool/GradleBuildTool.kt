@@ -29,12 +29,12 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       val mavenDaemonName = "gradleDaemon"
       destroyProcessIfExists(mavenDaemonName)
     }
+  }
 
-    init {
-      StarterBus.subscribe { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
-          destroyGradleDaemonProcessIfExists()
-        }
+  init {
+    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass) { event: IdeLaunchEvent ->
+      if (event.data.runContext.testContext === testContext && event.state == EventState.AFTER) {
+        destroyGradleDaemonProcessIfExists()
       }
     }
   }

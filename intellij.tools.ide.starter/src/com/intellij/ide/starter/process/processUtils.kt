@@ -7,6 +7,7 @@ import com.intellij.ide.starter.utils.catchAll
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -341,10 +342,10 @@ fun getAllJavaProcesses(): List<String> {
 private fun destroyProcessById(processId: Long) {
   ProcessHandle.of(processId)
     .ifPresent {
-      logOutput("Destroy process by pid ${it.pid()}")
+      logOutput("Destroy process by pid '${it.pid()}'")
       it.destroy()
       catchAll {
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
           // Usually daemons wait 2 requests for 10 seconds after ide shutdown
           withTimeout(20.seconds) { it.onExit().await() }
         }
@@ -354,14 +355,18 @@ private fun destroyProcessById(processId: Long) {
 }
 
 fun destroyProcessIfExists(processName: String) {
+  logOutput("Killing '$processName' process ...")
+
   val javaProcesses = getAllJavaProcesses()
   javaProcesses.forEach {
     if (it.contains(processName)) {
-      logOutput("Killing $it process")
+      logOutput("Killing '$it' process")
       val processId = it.split(" ").first().toLong()
 
       // get up-to date process list on every iteration
       destroyProcessById(processId)
     }
   }
+
+  logOutput("Process '$processName' should be killed")
 }

@@ -51,7 +51,7 @@ class TestContextInitializationEventsTest {
   @RepeatedTest(value = 200)
   fun `events for test runner init should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<TestContextInitializedEvent>()
-    StarterBus.subscribe { event: TestContextInitializedEvent -> firedEvents.add(event) }
+    StarterBus.subscribe(this) { event: TestContextInitializedEvent -> firedEvents.add(event) }
 
     val testName = testInfo.displayName.hyphenateTestName()
 

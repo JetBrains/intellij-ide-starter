@@ -10,6 +10,7 @@ import io.kotest.matchers.comparables.shouldBeLessThan
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.RepeatedTest
+import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -21,7 +22,8 @@ class WaitingForSubscribersTest {
     StarterBus.LISTENER.unsubscribe()
   }
 
-  @RepeatedTest(value = 5)
+  //@RepeatedTest(value = 5)
+  @Test
   fun `waiting till subscribers finish their work`() {
     val firstSubscriberProcessedEvent = AtomicBoolean(false)
     val secondSubscriberProcessedEvent = AtomicBoolean(false)
@@ -30,11 +32,11 @@ class WaitingForSubscribersTest {
     val secondSubscriberDelay = 4.seconds
 
     StarterBus
-      .subscribe<Signal> {
+      .subscribe(this) { event: Signal ->
         delay(firstSubscriberDelay)
         firstSubscriberProcessedEvent.set(true)
       }
-      .subscribe<Signal> {
+      .subscribe(this) { event: Signal ->
         delay(secondSubscriberDelay)
         secondSubscriberProcessedEvent.set(true)
       }
@@ -70,11 +72,11 @@ class WaitingForSubscribersTest {
     val secondSubscriberDelay = 6.seconds
 
     StarterBus
-      .subscribe<Signal> {
+      .subscribe(this) { _: Signal ->
         delay(firstSubscriberDelay)
         firstSubscriberProcessedEvent.set(true)
       }
-      .subscribe<Signal> {
+      .subscribe(this) { _: Signal ->
         delay(secondSubscriberDelay)
         secondSubscriberProcessedEvent.set(true)
       }

@@ -1,8 +1,9 @@
 package com.intellij.ide.starter.bus
 
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
+/** Event bus */
 object StarterBus {
   val BUS = FlowBus()
   val LISTENER = EventsReceiver(BUS)
@@ -13,13 +14,27 @@ object StarterBus {
   }
 
   /** @see [com.intellij.ide.starter.bus.FlowBus.postAndWaitProcessing] */
-  fun <T : Any> postAndWaitProcessing(event: T, retain: Boolean = true, timeout: Duration = 1.minutes): Boolean {
+  fun <T : Any> postAndWaitProcessing(event: T, retain: Boolean = true, timeout: Duration = 30.seconds): Boolean {
     return BUS.postAndWaitProcessing(event, LISTENER, retain, timeout = timeout)
   }
 
-  inline fun <reified T : Any> subscribe(skipRetained: Boolean = false,
-                                         noinline callback: suspend (event: T) -> Unit): StarterBus {
-    LISTENER.subscribe<T>(skipRetained, callback)
+  /** @see [com.intellij.ide.starter.bus.EventsReceiver.subscribe] */
+  inline fun <reified EventType : Any, reified SubscriberType : Any> subscribe(
+    subscriber: SubscriberType,
+    skipRetained: Boolean = false,
+    noinline callback: suspend (event: EventType) -> Unit
+  ): StarterBus {
+    LISTENER.subscribe<EventType, SubscriberType>(subscriber, skipRetained, callback)
+    return this
+  }
+
+  /** @see [com.intellij.ide.starter.bus.EventsReceiver.subscribeOnlyOnce] */
+  inline fun <reified EventType : Any, reified SubscriberType : Any> subscribeOnlyOnce(
+    subscriber: SubscriberType,
+    skipRetained: Boolean = false,
+    noinline callback: suspend (event: EventType) -> Unit
+  ): StarterBus {
+    LISTENER.subscribeOnlyOnce<EventType, SubscriberType>(subscriber, skipRetained, callback)
     return this
   }
 }

@@ -1,10 +1,9 @@
 package com.intellij.ide.starter.buildTool
 
-import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
-import com.intellij.ide.starter.runner.IdeLaunchEvent
+import com.intellij.ide.starter.runner.ValidateVMOptionsWereSetEvent
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
@@ -28,13 +27,11 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
       val mavenDaemonName = "MavenServerIndexerMain"
       destroyProcessIfExists(mavenDaemonName)
     }
+  }
 
-    init {
-      StarterBus.subscribe { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
-          destroyMavenIndexerProcessIfExists()
-        }
-      }
+  init {
+    StarterBus.subscribeOnlyOnce(MavenBuildTool::javaClass) { event: ValidateVMOptionsWereSetEvent ->
+      if (event.data.testContext === testContext) destroyMavenIndexerProcessIfExists()
     }
   }
 

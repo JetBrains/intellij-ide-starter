@@ -42,7 +42,7 @@ class EventsFilteringTest {
 
   @RepeatedTest(value = 200)
   fun `filtering events by type is working`() {
-    StarterBus.subscribe<Signal> {
+    StarterBus.subscribe<Signal, EventsFilteringTest>(this) {
       isEventProcessed.set(true)
     }
 
@@ -55,7 +55,7 @@ class EventsFilteringTest {
 
   @RepeatedTest(value = 100)
   fun `single event is published`() {
-    StarterBus.subscribe<Signal> {
+    StarterBus.subscribe<Signal, EventsFilteringTest>(this) {
       isEventProcessed.set(true)
     }
 
@@ -69,8 +69,8 @@ class EventsFilteringTest {
     val secondSubscriberInvocationsData = mutableSetOf<Any>()
 
     StarterBus
-      .subscribe<Signal> { firstSubscriberInvocationsData.add(it) }
-      .subscribe<Signal> { secondSubscriberInvocationsData.add(it) }
+      .subscribe<Signal, EventsFilteringTest>(this) { firstSubscriberInvocationsData.add(it) }
+      .subscribe<Signal, EventsFilteringTest>(this) { secondSubscriberInvocationsData.add(it) }
 
     val firstSignal = Signal(EventState.BEFORE)
     StarterBus.postAsync(firstSignal)

@@ -34,7 +34,7 @@ class IdeLaunchEventTest {
   @RepeatedTest(value = 5)
   fun `events for ide launch should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<IdeLaunchEvent>()
-    StarterBus.subscribe { event: IdeLaunchEvent -> firedEvents.add(event) }
+    StarterBus.subscribe(this) { event: IdeLaunchEvent -> firedEvents.add(event) }
 
     val context = Starter.newContext(testInfo.hyphenateWithClass(), TestCases.IU.withProject(NoProject).useRelease())
 

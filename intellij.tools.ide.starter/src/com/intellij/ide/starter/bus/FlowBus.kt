@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * @author https://github.com/Kosert/FlowBus
@@ -29,7 +29,7 @@ open class FlowBus {
    */
   internal fun <T : Any> forEvent(clazz: Class<T>): MutableSharedFlow<T?> {
     return flows.getOrPut(clazz) {
-      MutableSharedFlow<T?>(extraBufferCapacity = 5000)
+      MutableSharedFlow<T?>(extraBufferCapacity = 500)
     } as MutableSharedFlow<T?>
   }
 
@@ -80,14 +80,20 @@ open class FlowBus {
   fun <T : Any> postAndWaitProcessing(event: T,
                                       eventsReceiver: EventsReceiver,
                                       retain: Boolean = true,
-                                      timeout: Duration = 1.minutes): Boolean {
-    val latch = CountDownLatch(eventsReceiver.getSubscribersCount(event::class.java))
+                                      timeout: Duration = 30.seconds): Boolean {
+    val subscriptions = eventsReceiver.getSubscriptions(event.javaClass)
+    val subscriptionJobsSize = subscriptions.items.flatMap { it.value }.size
+    val latch = CountDownLatch(subscriptionJobsSize)
     synchronizers[event] = latch
     postAsync(event, retain)
 
     val isSuccessful = latch.await(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
     if (!isSuccessful) {
-      logError("${this::class.java.name}: ${latch.count} subscribers haven't finished their work in $timeout")
+      logError(
+        """${this.javaClass.name}: ${latch.count} subscribers for event ${event.javaClass.name} haven't finished their work in $timeout.
+           Complete list of subscribers: ${subscriptions.items.map { it.key.javaClass }} 
+        """.trimMargin()
+      )
     }
 
     synchronizers.remove(event)

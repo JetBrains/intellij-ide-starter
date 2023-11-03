@@ -79,20 +79,55 @@ data class IDERunContext(
     return createDirectories()
   }
 
+  private fun deleteJVMCrashes() {
+    listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
+      if (!dir.exists()) false
+      else dir.listDirectoryEntries().isEmpty()
+    }.forEach { it.toFile().deleteRecursively() }
+  }
+
+  private fun publishArtifacts() {
+    testContext.publishArtifact(
+      source = logsDir,
+      artifactPath = contextName,
+      artifactName = formatArtifactName("logs", testContext.testName)
+    )
+    testContext.publishArtifact(
+      source = testContext.paths.systemDir.resolve("event-log-data/logs/FUS"),
+      artifactPath = contextName,
+      artifactName = formatArtifactName("event-log-data", testContext.testName)
+    )
+    testContext.publishArtifact(
+      source = snapshotsDir,
+      artifactPath = contextName,
+      artifactName = formatArtifactName("snapshots", testContext.testName)
+    )
+    testContext.publishArtifact(
+      source = reportsDir,
+      artifactPath = contextName,
+      artifactName = formatArtifactName("reports", testContext.testName)
+    )
+    testContext.publishArtifact(
+      source = testContext.paths.testHome / "allure",
+      contextName,
+      artifactName = formatArtifactName("allure", testContext.testName)
+    )
+  }
+
   init {
     StarterBus
-      .subscribe { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
-          validateVMOptionsWereSet(event.data.runContext.testContext.paths)
+      .subscribe(this) { event: IdeLaunchEvent ->
+        if (event.data.runContext === this && event.state == EventState.AFTER && event.data.isRunSuccessful!!) {
+          validateVMOptionsWereSet(event.data.runContext)
         }
       }
-      .subscribe { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
+      .subscribe(this) { event: IdeLaunchEvent ->
+        if (event.data.runContext === this && event.state == EventState.AFTER) {
           testContext.collectJBRDiagnosticFiles(event.data.ideProcessId!!)
         }
       }
-      .subscribe { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
+      .subscribe(this) { event: IdeLaunchEvent ->
+        if (event.data.runContext === this && event.state == EventState.AFTER) {
           deleteJVMCrashes()
           ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, event.data.isRunSuccessful!!)
           publishArtifacts()
@@ -185,8 +220,8 @@ data class IDERunContext(
       val vmOptions: VMOptions = calculateVmOptions()
       val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
       if (startConfig is Closeable) {
-        StarterBus.subscribe<IdeLaunchEvent> { event ->
-          if (event.state == EventState.AFTER) {
+        StarterBus.subscribe<IdeLaunchEvent, IDERunContext>(this) { event ->
+          if (event.data.runContext === this && event.state == EventState.AFTER) {
             startConfig.close()
           }
         }
@@ -252,18 +287,6 @@ data class IDERunContext(
   private fun getStdout() =
     if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
 
-  private fun validateVMOptionsWereSet(paths: IDEDataPaths) {
-    logOutput("Run VM options validation")
-    require(FileSystem.countFiles(paths.configDir) > 3) {
-      "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
-    }
-
-    require(FileSystem.countFiles(paths.systemDir) > 1) {
-      "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
-    }
-    logOutput("Finished VM options validation")
-  }
-
   private fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
     val failureCauseFile = logsDir.resolve("failure_cause.txt")
     val errorMessage = if (Files.exists(failureCauseFile)) {
@@ -277,13 +300,6 @@ data class IDERunContext(
       errorMessage == null -> ciFailureDetails
       else -> "$ciFailureDetails\n$errorMessage"
     }
-  }
-
-  private fun deleteJVMCrashes() {
-    listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
-      if (!dir.exists()) false
-      else dir.listDirectoryEntries().isEmpty()
-    }.forEach { it.toFile().deleteRecursively() }
   }
 
   private fun logDisabledPlugins(paths: IDEDataPaths) {
@@ -369,34 +385,6 @@ data class IDERunContext(
     })
   }
 
-  private fun publishArtifacts() {
-    testContext.publishArtifact(
-      source = logsDir,
-      artifactPath = contextName,
-      artifactName = formatArtifactName("logs", testContext.testName)
-    )
-    testContext.publishArtifact(
-      source = testContext.paths.systemDir.resolve("event-log-data/logs/FUS"),
-      artifactPath = contextName,
-      artifactName = formatArtifactName("event-log-data", testContext.testName)
-    )
-    testContext.publishArtifact(
-      source = snapshotsDir,
-      artifactPath = contextName,
-      artifactName = formatArtifactName("snapshots", testContext.testName)
-    )
-    testContext.publishArtifact(
-      source = reportsDir,
-      artifactPath = contextName,
-      artifactName = formatArtifactName("reports", testContext.testName)
-    )
-    testContext.publishArtifact(
-      source = testContext.paths.testHome / "allure",
-      contextName,
-      artifactName = formatArtifactName("allure", testContext.testName)
-    )
-  }
-
   private fun deleteSavedAppStateOnMac() {
     if (SystemInfo.isMac) {
       val filesToBeDeleted = listOf(
@@ -431,14 +419,15 @@ data class IDERunContext(
    */
   fun withScreenRecording() {
     val screenRecorder = IDEScreenRecorder(this)
-    StarterBus.subscribe { event: IdeLaunchEvent ->
-      if (event.state == EventState.BEFORE) {
-        screenRecorder.start()
-      }
-      else if (event.state == EventState.AFTER) {
-        screenRecorder.stop()
+    StarterBus.subscribe(this) { event: IdeLaunchEvent ->
+      if (event.data.runContext === this) {
+        if (event.state == EventState.BEFORE) {
+          screenRecorder.start()
+        }
+        else if (event.state == EventState.AFTER) {
+          screenRecorder.stop()
+        }
       }
     }
   }
-
 }

@@ -6,6 +6,11 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 
 /**
+ * Subscriber type to List of Jobs
+ */
+class Subscriptions(val items: MutableMap<Any, MutableList<Job>> = mutableMapOf())
+
+/**
  * @author https://github.com/Kosert/FlowBus
  * @license Apache 2.0 https://github.com/Kosert/FlowBus/blob/master/LICENSE
  * Class for receiving events posted to [FlowBus]
@@ -13,9 +18,9 @@ import kotlinx.coroutines.flow.filterNotNull
  * @param bus [FlowBus] instance to subscribe to. If not set, [StarterBus] will be used
  */
 open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
-  private val jobs = mutableMapOf<Class<*>, List<Job>>()
-
+  private val jobs = mutableMapOf<Class<*>, Subscriptions>()
   private var returnDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
+  private val lock = Any()
 
   /**
    * Subscribe to events that are type of [eventType] with the given [callback] function.
@@ -27,24 +32,39 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
    * @return This instance of [EventsReceiver] for chaining
    */
   @JvmOverloads
-  fun <T : Any> subscribeTo(eventType: Class<T>, skipRetained: Boolean = false, callback: suspend (event: T) -> Unit): EventsReceiver {
+  fun <EventType : Any, SubscriberType : Any> subscribeTo(eventType: Class<EventType>,
+                                                          subscriber: SubscriberType,
+                                                          skipRetained: Boolean = false,
+                                                          subscribeOnlyOnce: Boolean = false,
+                                                          callback: suspend (event: EventType) -> Unit): EventsReceiver {
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
       throw throwable
     }
 
-    val job = CoroutineScope(Job() + returnDispatcher + exceptionHandler).launch {
-      bus.forEvent(eventType)
-        .drop(if (skipRetained) 1 else 0)
-        .filterNotNull()
-        .collect {
-          withContext(returnDispatcher) {
-            catchAll { callback(it) }
-            bus.getSynchronizer(it)?.countDown()
+    // in case if there are many subscriptions from the same subscriber class
+    synchronized(lock) {
+      val subscriberJobs: Subscriptions = jobs[eventType] ?: Subscriptions()
+
+      // subscribe only once if subscriber type is specified
+      if (subscribeOnlyOnce && subscriberJobs.items[subscriber]?.isNotEmpty() == true) return this
+
+      val job = CoroutineScope(Job() + returnDispatcher + exceptionHandler).launch {
+        bus.forEvent(eventType)
+          .drop(if (skipRetained) 1 else 0)
+          .filterNotNull()
+          .collect {
+            withContext(returnDispatcher) {
+              catchAll { callback(it) }
+              bus.getSynchronizer(it)?.countDown()
+            }
           }
-        }
+      }
+
+      subscriberJobs.items.putIfAbsent(subscriber, mutableListOf())
+      subscriberJobs.items[subscriber]!!.add(job)
+      jobs.putIfAbsent(eventType, subscriberJobs)
     }
 
-    jobs.putIfAbsent(eventType, listOf(job))?.let { jobs[eventType] = it + job }
     return this
   }
 
@@ -58,35 +78,23 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
    * @param callback The callback function
    * @return This instance of [EventsReceiver] for chaining
    */
-  inline fun <reified T : Any> subscribe(skipRetained: Boolean = false,
-                                         noinline callback: suspend (event: T) -> Unit): EventsReceiver {
-    return subscribeTo(T::class.java, skipRetained, callback)
+  inline fun <reified EventType : Any, reified SubscriberType : Any> subscribe(
+    subscriber: SubscriberType,
+    skipRetained: Boolean = false,
+    noinline callback: suspend (event: EventType) -> Unit
+  ): EventsReceiver {
+    return subscribeTo<EventType, SubscriberType>(eventType = EventType::class.java, subscriber = subscriber, skipRetained = skipRetained,
+                                                  subscribeOnlyOnce = false, callback)
   }
 
-  /**
-   * A variant of [subscribe] that uses an instance of [EventCallback] as callback.
-   *
-   * @param skipRetained Skips event already present in the flow. This is `false` by default
-   * @param callback Interface with implemented callback function
-   * @return This instance of [EventsReceiver] for chaining
-   * @see [subscribe]
-   */
-  inline fun <reified T : Any> subscribe(callback: EventCallback<T>, skipRetained: Boolean = false): EventsReceiver {
-    return subscribeTo(T::class.java, callback, skipRetained)
-  }
-
-  /**
-   * A variant of [subscribeTo] that uses an instance of [EventCallback] as callback.
-   *
-   * @param eventType Type of event to subscribe to
-   * @param skipRetained Skips event already present in the flow. This is `false` by default
-   * @param callback Interface with implemented callback function
-   * @return This instance of [EventsReceiver] for chaining
-   * @see [subscribeTo]
-   */
-  @JvmOverloads
-  fun <T : Any> subscribeTo(eventType: Class<T>, callback: EventCallback<T>, skipRetained: Boolean = false): EventsReceiver {
-    return subscribeTo(eventType, skipRetained) { callback.onEvent(it) }
+  /** Guarantees, that subscriber [SubscriberType] will be subscribed to event [EventType] only once */
+  inline fun <reified EventType : Any, reified SubscriberType : Any> subscribeOnlyOnce(
+    subscriber: SubscriberType,
+    skipRetained: Boolean = false,
+    noinline callback: suspend (event: EventType) -> Unit
+  ): EventsReceiver {
+    return subscribeTo<EventType, SubscriberType>(eventType = EventType::class.java, subscriber = subscriber,
+                                                  skipRetained = skipRetained, subscribeOnlyOnce = true, callback)
   }
 
   /**
@@ -95,8 +103,8 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
   @Suppress("RAW_RUN_BLOCKING")
   fun unsubscribe() {
     runBlocking(returnDispatcher) {
-      for (jobList in jobs.values) {
-        for (job in jobList) {
+      for (subscriptions in jobs.values) {
+        for (job in subscriptions.items.flatMap { it.value }) {
           job.cancelAndJoin()
         }
       }
@@ -105,7 +113,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
     jobs.clear()
   }
 
-  internal fun <T : Any> getSubscribersCount(eventType: Class<T>): Int {
-    return jobs.getOrDefault(eventType, listOf()).size
+  internal fun <T : Any> getSubscriptions(eventType: Class<T>): Subscriptions {
+    return jobs[eventType] ?: Subscriptions()
   }
 }
