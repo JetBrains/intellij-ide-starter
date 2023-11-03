@@ -1,9 +1,9 @@
 package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.models.IDEStartResult
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.metrics.toCounterMetricId
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.*
 import com.intellij.util.indexing.diagnostic.dump.paths.PortableFilePath
@@ -166,6 +166,18 @@ data class IndexingMetrics(
       return speedMap
     }
 
+  private val processingTimePerFileType: Map<String, Long>
+    get() {
+      val indexingDurationMap = mutableMapOf<String, Long>()
+      indexingHistories.forEach { indexingHistory ->
+        indexingHistory.totalStatsPerFileType.forEach { totalStatsPerFileType ->
+          val duration = (indexingHistory.times.totalWallTimeWithPauses.nano * totalStatsPerFileType.partOfTotalProcessingTime.partition).toLong()
+          indexingDurationMap[totalStatsPerFileType.fileType] = indexingDurationMap[totalStatsPerFileType.fileType]?.let { it + duration } ?: duration
+        }
+      }
+      return indexingDurationMap
+    }
+
   val slowIndexedFiles: Map<String, List<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>
     get() {
       val indexedFiles = hashMapOf<String, MutableList<JsonFileProviderIndexStatistics.JsonSlowIndexedFile>>()
@@ -214,7 +226,8 @@ data class IndexingMetrics(
                                 value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
       PerformanceMetrics.Metric(metricNumberOfRunsOfScanning, value = totalNumberOfRunsOfScanning.toLong()),
       PerformanceMetrics.Metric(metricNumberOfRunsOfIndexing, value = totalNumberOfRunsOfIndexing.toLong())
-    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage)
+    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage) +
+           getProcessingTimeOfFileType(processingTimePerFileType)
   }
 }
 
@@ -242,6 +255,11 @@ private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>):
 private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> =
   mapBaseLanguageToSpeed.map {
     PerformanceMetrics.Metric("processingSpeedOfBaseLanguage#${it.key}".toCounterMetricId(), value = it.value.toLong())
+  }
+
+private fun getProcessingTimeOfFileType (mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
+  mapFileTypeToDuration.map {
+    PerformanceMetrics.Metric("processingTime#${it.key}".toCounterMetricId(), value = TimeUnit.NANOSECONDS.toMillis(it.value))
   }
 
 data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val totalSumOfThreadTimesWithPauses: Long = 0) {
