@@ -12,7 +12,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
-import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit
 class InstallPluginTest {
 
   private lateinit var testInfo: TestInfo
-  private lateinit var container: TestContainerImpl
 
 
   companion object {
@@ -222,7 +221,7 @@ class InstallPluginTest {
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
     try {
-      val testContext = container
+      val testContext = Starter
         .newContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
