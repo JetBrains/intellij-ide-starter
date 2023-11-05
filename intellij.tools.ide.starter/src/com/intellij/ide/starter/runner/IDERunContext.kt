@@ -116,18 +116,18 @@ data class IDERunContext(
 
   init {
     StarterBus
-      .subscribe(this) { event: IdeLaunchEvent ->
-        if (event.data.runContext === this && event.state == EventState.AFTER && event.data.isRunSuccessful!!) {
+      .subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER && event.data.isRunSuccessful!!) {
           validateVMOptionsWereSet(event.data.runContext)
         }
       }
-      .subscribe(this) { event: IdeLaunchEvent ->
-        if (event.data.runContext === this && event.state == EventState.AFTER) {
+      .subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
           testContext.collectJBRDiagnosticFiles(event.data.ideProcessId!!)
         }
       }
-      .subscribe(this) { event: IdeLaunchEvent ->
-        if (event.data.runContext === this && event.state == EventState.AFTER) {
+      .subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
+        if (event.state == EventState.AFTER) {
           deleteJVMCrashes()
           ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, event.data.isRunSuccessful!!)
           publishArtifacts()
