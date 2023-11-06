@@ -22,10 +22,8 @@ interface TestContainer<T> {
 
   companion object {
     init {
-      StarterBus.subscribeOnlyOnce(TestContainer<*>::javaClass) { event: TestContextInitializedEvent ->
-        if (event.state == EventState.AFTER) {
-          logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
-        }
+      StarterBus.subscribeOnlyOnce(TestContainer<*>::javaClass, eventState = EventState.AFTER) { _: TestContextInitializedEvent ->
+        logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
       }
     }
 

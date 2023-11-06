@@ -32,8 +32,8 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   init {
-    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass) { event: IdeLaunchEvent ->
-      if (event.data.runContext.testContext === testContext && event.state == EventState.AFTER) {
+    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.AFTER) { event: IdeLaunchEvent ->
+      if (event.data.runContext.testContext === testContext) {
         destroyGradleDaemonProcessIfExists()
       }
     }

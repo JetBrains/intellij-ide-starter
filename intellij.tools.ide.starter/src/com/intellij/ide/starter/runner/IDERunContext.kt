@@ -197,8 +197,8 @@ data class IDERunContext(
       val vmOptions: VMOptions = calculateVmOptions()
       val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
       if (startConfig is Closeable) {
-        StarterBus.subscribe<IdeLaunchEvent, IDERunContext>(this) { event ->
-          if (event.data.runContext === this && event.state == EventState.AFTER) {
+        StarterBus.subscribe<IdeLaunchEvent, IDERunContext>(this, eventState = EventState.AFTER) { event ->
+          if (event.data.runContext === this) {
             startConfig.close()
           }
         }
@@ -256,7 +256,7 @@ data class IDERunContext(
                                                                                            ideProcess = null,
                                                                                            ideProcessId = ideProcessId,
                                                                                            isRunSuccessful = isRunSuccessful)))
-      
+
       if (isRunSuccessful) {
         validateVMOptionsWereSet(this)
       }
@@ -405,14 +405,12 @@ data class IDERunContext(
    */
   fun withScreenRecording() {
     val screenRecorder = IDEScreenRecorder(this)
-    StarterBus.subscribe(this) { event: IdeLaunchEvent ->
-      if (event.data.runContext === this) {
-        if (event.state == EventState.BEFORE) {
-          screenRecorder.start()
-        }
-        else if (event.state == EventState.AFTER) {
-          screenRecorder.stop()
-        }
+    StarterBus.subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
+      if (event.state == EventState.BEFORE) {
+        screenRecorder.start()
+      }
+      else if (event.state == EventState.AFTER) {
+        screenRecorder.stop()
       }
     }
   }

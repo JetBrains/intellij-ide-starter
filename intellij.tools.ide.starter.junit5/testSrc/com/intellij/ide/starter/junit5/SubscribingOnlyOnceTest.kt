@@ -62,13 +62,13 @@ class SubscribingOnlyOnceTest {
     val secondProcessedTimes = AtomicInteger()
 
     StarterBus
-      .subscribe(this) { event: Signal ->
+      .subscribe(this) { _: Signal ->
         eventProcessedTimes.incrementAndGet()
       }
-      .subscribe(this) { event: Signal ->
+      .subscribe(this) { _: Signal ->
         eventProcessedTimes.incrementAndGet()
       }
-      .subscribe(this) { event: Signal ->
+      .subscribe(this) { _: Signal ->
         eventProcessedTimes.incrementAndGet()
       }
       .subscribe(obj) { _: Signal ->
