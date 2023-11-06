@@ -15,13 +15,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-internal fun checkIsEventFired(shouldEventBeFired: Boolean, isEventFiredGetter: () -> Boolean) {
-  val shouldNotMessage = if (!shouldEventBeFired) "NOT" else ""
+internal fun checkIsEventProcessed(shouldEventBeProcessed: Boolean, isEventProcessedGetter: () -> Boolean) {
+  val shouldNotMessage = if (!shouldEventBeProcessed) "NOT" else ""
 
   runBlocking {
     eventually(duration = 2.seconds, poll = 50.milliseconds) {
       withClue("Event should $shouldNotMessage be fired in 2 sec") {
-        isEventFiredGetter().shouldBe(shouldEventBeFired)
+        isEventProcessedGetter().shouldBe(shouldEventBeProcessed)
       }
     }
   }
@@ -42,25 +42,25 @@ class EventsFilteringTest {
 
   @RepeatedTest(value = 200)
   fun `filtering events by type is working`() {
-    StarterBus.subscribe<Signal, EventsFilteringTest>(this) {
+    StarterBus.subscribe(this) { _: Signal ->
       isEventProcessed.set(true)
     }
 
     StarterBus.postAsync(2)
-    checkIsEventFired(false) { isEventProcessed.get() }
+    checkIsEventProcessed(false) { isEventProcessed.get() }
 
     StarterBus.postAsync(Signal())
-    checkIsEventFired(true) { isEventProcessed.get() }
+    checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
   @RepeatedTest(value = 100)
   fun `single event is published`() {
-    StarterBus.subscribe<Signal, EventsFilteringTest>(this) {
+    StarterBus.subscribe(this) { _: Signal ->
       isEventProcessed.set(true)
     }
 
     StarterBus.postAsync(Signal())
-    checkIsEventFired(true) { isEventProcessed.get() }
+    checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
   @RepeatedTest(value = 100)
@@ -69,8 +69,8 @@ class EventsFilteringTest {
     val secondSubscriberInvocationsData = mutableSetOf<Any>()
 
     StarterBus
-      .subscribe<Signal, EventsFilteringTest>(this) { firstSubscriberInvocationsData.add(it) }
-      .subscribe<Signal, EventsFilteringTest>(this) { secondSubscriberInvocationsData.add(it) }
+      .subscribe(this) { event: Signal -> firstSubscriberInvocationsData.add(event) }
+      .subscribe(this) { event: Signal -> secondSubscriberInvocationsData.add(event) }
 
     val firstSignal = Signal(EventState.BEFORE)
     StarterBus.postAsync(firstSignal)

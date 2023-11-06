@@ -47,8 +47,8 @@ class WaitingForSubscribersTest {
     val firstEventDuration = measureTime {
       StarterBus.postAndWaitProcessing(Any(), timeout = timeout).shouldBeTrue()
     }
-    checkIsEventFired(false) { firstSubscriberProcessedEvent.get() }
-    checkIsEventFired(false) { secondSubscriberProcessedEvent.get() }
+    checkIsEventProcessed(false) { firstSubscriberProcessedEvent.get() }
+    checkIsEventProcessed(false) { secondSubscriberProcessedEvent.get() }
     withClue("Event without subscribers should be processed immediately") {
       firstEventDuration.shouldBeLessThan(100.milliseconds)
     }
@@ -57,8 +57,8 @@ class WaitingForSubscribersTest {
     val secondEventDuration = measureTime {
       StarterBus.postAndWaitProcessing(Signal(), timeout = timeout).shouldBeTrue()
     }
-    checkIsEventFired(true) { firstSubscriberProcessedEvent.get() }
-    checkIsEventFired(true) { secondSubscriberProcessedEvent.get() }
+    checkIsEventProcessed(true) { firstSubscriberProcessedEvent.get() }
+    checkIsEventProcessed(true) { secondSubscriberProcessedEvent.get() }
     secondEventDuration.shouldBeLessThan(timeout)
     secondEventDuration.shouldBeGreaterThanOrEqualTo(secondSubscriberDelay.coerceAtLeast(firstSubscriberDelay))
   }

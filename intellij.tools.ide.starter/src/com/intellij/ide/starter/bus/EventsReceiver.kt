@@ -35,6 +35,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
                                                           subscriber: SubscriberType,
                                                           skipRetained: Boolean = false,
                                                           subscribeOnlyOnce: Boolean = false,
+                                                          eventStateFilter: (EventState) -> Boolean = { true },
                                                           callback: suspend (event: EventType) -> Unit): EventsReceiver {
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
       throw throwable
@@ -51,10 +52,12 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
         bus.forEvent(eventType)
           .drop(if (skipRetained) 1 else 0)
           .filterNotNull()
-          .collect {
+          .collect { event ->
             withContext(returnDispatcher) {
-              catchAll { callback(it) }
-              bus.getSynchronizer(it)?.countDown()
+              if (eventStateFilter((event as Signal).state)) {
+                catchAll { callback(event) }
+              }
+              bus.getSynchronizer(event)?.countDown()
             }
           }
       }
@@ -80,10 +83,11 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
   inline fun <reified EventType : Any, reified SubscriberType : Any> subscribe(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
+    noinline eventStateFilter: (EventState) -> Boolean = { true },
     noinline callback: suspend (event: EventType) -> Unit
   ): EventsReceiver {
     return subscribeTo<EventType, SubscriberType>(eventType = EventType::class.java, subscriber = subscriber, skipRetained = skipRetained,
-                                                  subscribeOnlyOnce = false, callback)
+                                                  subscribeOnlyOnce = false, eventStateFilter = eventStateFilter, callback)
   }
 
   /** Guarantees, that subscriber [SubscriberType] will be subscribed to event [EventType] only once
@@ -91,10 +95,11 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
   inline fun <reified EventType : Any, reified SubscriberType : Any> subscribeOnlyOnce(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
+    noinline eventStateFilter: (EventState) -> Boolean = { true },
     noinline callback: suspend (event: EventType) -> Unit
   ): EventsReceiver {
-    return subscribeTo<EventType, SubscriberType>(eventType = EventType::class.java, subscriber = subscriber,
-                                                  skipRetained = skipRetained, subscribeOnlyOnce = true, callback)
+    return subscribeTo<EventType, SubscriberType>(eventType = EventType::class.java, subscriber = subscriber, skipRetained = skipRetained,
+                                                  subscribeOnlyOnce = true, eventStateFilter = eventStateFilter, callback)
   }
 
   /**
