@@ -20,7 +20,6 @@ class Subscriptions(val items: MutableMap<Any, MutableList<Job>> = mutableMapOf(
 open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
   private val jobs = mutableMapOf<Class<*>, Subscriptions>()
   private var returnDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
-  private val lock = Any()
 
   /**
    * Subscribe to events that are type of [eventType] with the given [callback] function.
@@ -42,7 +41,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
     }
 
     // in case if there are many subscriptions from the same subscriber class
-    synchronized(lock) {
+    synchronized(subscriber) {
       val subscriberJobs: Subscriptions = jobs[eventType] ?: Subscriptions()
 
       // subscribe only once if subscriber type is specified
