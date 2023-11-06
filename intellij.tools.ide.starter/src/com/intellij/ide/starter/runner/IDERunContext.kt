@@ -19,7 +19,6 @@ import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.ErrorReporter
-import com.intellij.ide.starter.report.ErrorReporter.ERRORS_DIR_NAME
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
@@ -113,28 +112,6 @@ data class IDERunContext(
       artifactName = formatArtifactName("allure", testContext.testName)
     )
   }
-
-  init {
-    StarterBus
-      .subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER && event.data.isRunSuccessful!!) {
-          validateVMOptionsWereSet(event.data.runContext)
-        }
-      }
-      .subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
-          testContext.collectJBRDiagnosticFiles(event.data.ideProcessId!!)
-        }
-      }
-      .subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
-        if (event.state == EventState.AFTER) {
-          deleteJVMCrashes()
-          ErrorReporter.reportErrorsAsFailedTests(logsDir / ERRORS_DIR_NAME, this, event.data.isRunSuccessful!!)
-          publishArtifacts()
-        }
-      }
-  }
-
 
   fun verbose() = copy(verboseOutput = true)
 
@@ -279,6 +256,15 @@ data class IDERunContext(
                                                                                            ideProcess = null,
                                                                                            ideProcessId = ideProcessId,
                                                                                            isRunSuccessful = isRunSuccessful)))
+      
+      if (isRunSuccessful) {
+        validateVMOptionsWereSet(this)
+      }
+      testContext.collectJBRDiagnosticFiles(ideProcessId)
+
+      deleteJVMCrashes()
+      ErrorReporter.reportErrorsAsFailedTests(logsDir / ErrorReporter.ERRORS_DIR_NAME, this, isRunSuccessful)
+      publishArtifacts()
     }
   }
 
