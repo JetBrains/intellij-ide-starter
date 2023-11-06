@@ -18,13 +18,23 @@ val metricScanningTimeWithoutPauses = PerformanceMetrics.MetricId.Duration("scan
 val metricPausedTimeInIndexingOrScanning = PerformanceMetrics.MetricId.Duration("pausedTimeInIndexingOrScanning")
 val metricDumbModeTimeWithPauses = PerformanceMetrics.MetricId.Duration("dumbModeTimeWithPauses")
 val metricNumberOfIndexedFiles = PerformanceMetrics.MetricId.Counter("numberOfIndexedFiles")
+
+/*
+ * metricNumberOfIndexedFilesWritingIndexValue <= metricNumberOfIndexedFiles
+ *
+ * A file sent to indexing is considered indexed;
+ * When a new value of some index of a file is written, or outdated value deleted,
+ * the file adds to the metricNumberOfIndexedFilesWritingIndexValue
+ */
+val metricNumberOfIndexedFilesWritingIndexValue = PerformanceMetrics.MetricId.Counter("numberOfIndexedFilesWritingIndexValue")
 val metricNumberOfFilesIndexedByExtensions = PerformanceMetrics.MetricId.Counter("numberOfFilesIndexedByExtensions")
 val metricNumberOfFilesIndexedWithoutExtensions = PerformanceMetrics.MetricId.Counter("numberOfFilesIndexedWithoutExtensions")
 val metricNumberOfRunsOfScanning = PerformanceMetrics.MetricId.Counter("numberOfRunsOfScannning")
 val metricNumberOfRunsOfIndexing = PerformanceMetrics.MetricId.Counter("numberOfRunsOfIndexing")
 val metricIds = listOf(metricIndexingTimeWithoutPauses, metricScanningTimeWithoutPauses, metricPausedTimeInIndexingOrScanning,
                        metricDumbModeTimeWithPauses,
-                       metricNumberOfIndexedFiles, metricNumberOfFilesIndexedByExtensions, metricNumberOfFilesIndexedWithoutExtensions,
+                       metricNumberOfIndexedFiles, metricNumberOfIndexedFilesWritingIndexValue,
+                       metricNumberOfFilesIndexedByExtensions, metricNumberOfFilesIndexedWithoutExtensions,
                        metricNumberOfRunsOfScanning, metricNumberOfRunsOfIndexing)
 
 data class IndexingMetrics(
@@ -66,6 +76,9 @@ data class IndexingMetrics(
 
   val totalNumberOfIndexedFiles: Int
     get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles } }
+
+  private val totalNumberOfIndexedFilesWritingIndexValues: Int
+    get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles - it.totalNumberOfNothingToWriteFiles } }
 
   val totalNumberOfScannedFiles: Int
     get() = scanningStatistics.sumOf { it.numberOfScannedFiles }
@@ -221,6 +234,7 @@ data class IndexingMetrics(
       PerformanceMetrics.Metric(metricPausedTimeInIndexingOrScanning, value = totalPausedTime),
       PerformanceMetrics.Metric(metricDumbModeTimeWithPauses, value = totalDumbModeTimeWithPauses),
       PerformanceMetrics.Metric(metricNumberOfIndexedFiles, value = numberOfIndexedFiles.toLong()),
+      PerformanceMetrics.Metric(metricNumberOfIndexedFilesWritingIndexValue, value = totalNumberOfIndexedFilesWritingIndexValues.toLong()),
       PerformanceMetrics.Metric(metricNumberOfFilesIndexedByExtensions, value = numberOfFilesFullyIndexedByExtensions.toLong()),
       PerformanceMetrics.Metric(metricNumberOfFilesIndexedWithoutExtensions,
                                 value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
