@@ -1,7 +1,9 @@
-package com.intellij.ide.starter.junit5
+package com.intellij.ide.starter.junit5.events
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
+import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.runner.Starter

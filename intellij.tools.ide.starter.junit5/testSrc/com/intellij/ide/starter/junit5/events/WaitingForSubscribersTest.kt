@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.junit5
+package com.intellij.ide.starter.junit5.events
 
 import com.intellij.ide.starter.bus.Signal
 import com.intellij.ide.starter.bus.StarterBus
@@ -10,7 +10,6 @@ import io.kotest.matchers.comparables.shouldBeLessThan
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.RepeatedTest
-import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -22,8 +21,9 @@ class WaitingForSubscribersTest {
     StarterBus.LISTENER.unsubscribe()
   }
 
-  //@RepeatedTest(value = 5)
-  @Test
+  class CustomSignal : Signal()
+
+  @RepeatedTest(value = 5)
   fun `waiting till subscribers finish their work`() {
     val firstSubscriberProcessedEvent = AtomicBoolean(false)
     val secondSubscriberProcessedEvent = AtomicBoolean(false)
@@ -32,11 +32,11 @@ class WaitingForSubscribersTest {
     val secondSubscriberDelay = 4.seconds
 
     StarterBus
-      .subscribe(this) { event: Signal ->
+      .subscribe(this) { _: Signal ->
         delay(firstSubscriberDelay)
         firstSubscriberProcessedEvent.set(true)
       }
-      .subscribe(this) { event: Signal ->
+      .subscribe(this) { _: Signal ->
         delay(secondSubscriberDelay)
         secondSubscriberProcessedEvent.set(true)
       }
@@ -45,7 +45,7 @@ class WaitingForSubscribersTest {
 
     // First event should not be processed by subscribers. Method should complete without waiting
     val firstEventDuration = measureTime {
-      StarterBus.postAndWaitProcessing(Any(), timeout = timeout).shouldBeTrue()
+      StarterBus.postAndWaitProcessing(CustomSignal(), timeout = timeout).shouldBeTrue()
     }
     checkIsEventProcessed(false) { firstSubscriberProcessedEvent.get() }
     checkIsEventProcessed(false) { secondSubscriberProcessedEvent.get() }

@@ -31,7 +31,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
    * @return This instance of [EventsReceiver] for chaining
    */
   @JvmOverloads
-  fun <EventType : Any, SubscriberType : Any> subscribeTo(eventType: Class<EventType>,
+  fun <EventType : Signal, SubscriberType : Any> subscribeTo(eventType: Class<EventType>,
                                                           subscriber: SubscriberType,
                                                           skipRetained: Boolean = false,
                                                           subscribeOnlyOnce: Boolean = false,
@@ -54,7 +54,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
           .filterNotNull()
           .collect { event ->
             withContext(returnDispatcher) {
-              if (eventStateFilter((event as Signal).state)) {
+              if (eventStateFilter(event.state)) {
                 catchAll { callback(event) }
               }
               bus.getSynchronizer(event)?.countDown()
@@ -80,7 +80,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
    * @param callback The callback function
    * @return This instance of [EventsReceiver] for chaining
    */
-  inline fun <reified EventType : Any, reified SubscriberType : Any> subscribe(
+  inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribe(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
     noinline eventStateFilter: (EventState) -> Boolean = { true },
@@ -92,7 +92,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
 
   /** Guarantees, that subscriber [SubscriberType] will be subscribed to event [EventType] only once
    * no matter how many times subscription method will be invoked */
-  inline fun <reified EventType : Any, reified SubscriberType : Any> subscribeOnlyOnce(
+  inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribeOnlyOnce(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
     noinline eventStateFilter: (EventState) -> Boolean = { true },

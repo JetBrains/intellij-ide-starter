@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.junit5
+package com.intellij.ide.starter.junit5.events
 
 import com.intellij.ide.starter.bus.Signal
 import com.intellij.ide.starter.bus.StarterBus

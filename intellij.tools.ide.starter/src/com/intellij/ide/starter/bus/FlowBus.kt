@@ -27,7 +27,7 @@ open class FlowBus {
    * Gets a MutableSharedFlow for events of the given type. Creates new if one doesn't exist.
    * @return MutableSharedFlow for events that are instances of clazz
    */
-  internal fun <T : Any> forEvent(clazz: Class<T>): MutableSharedFlow<T?> {
+  internal fun <T : Signal> forEvent(clazz: Class<T>): MutableSharedFlow<T?> {
     return flows.getOrPut(clazz) {
       MutableSharedFlow<T?>(extraBufferCapacity = 500)
     } as MutableSharedFlow<T?>
@@ -43,21 +43,21 @@ open class FlowBus {
    * You are entirely responsible to cancel this flow. To cancel this flow, the scope in which the coroutine is running needs to be cancelled.
    * @see [SharedFlow]
    */
-  fun <T : Any> getFlow(clazz: Class<T>): Flow<T> {
+  fun <T : Signal> getFlow(clazz: Class<T>): Flow<T> {
     return forEvent(clazz).filterNotNull()
   }
 
   /**
    * @see FlowBus.getFlow
    */
-  inline fun <reified T : Any> getFlow() = getFlow(T::class.java)
+  inline fun <reified T : Signal> getFlow() = getFlow(T::class.java)
 
   /**
    * Posts new event to SharedFlow of the [event] type.
    * @param retain If the [event] should be retained in the flow for future subscribers. This is true by default.
    */
   @JvmOverloads
-  fun <T : Any> postAsync(event: T, retain: Boolean = true) {
+  fun <T : Signal> postAsync(event: T, retain: Boolean = true) {
     val flow = forEvent(event.javaClass)
 
     flow.tryEmit(event).also {
@@ -77,7 +77,7 @@ open class FlowBus {
    * Post event and waits until all subscribers will finish their work.
    * @return True - if subscribers processed the event, false - otherwise
    */
-  fun <T : Any> postAndWaitProcessing(event: T,
+  fun <T : Signal> postAndWaitProcessing(event: T,
                                       eventsReceiver: EventsReceiver,
                                       retain: Boolean = true,
                                       timeout: Duration = 30.seconds): Boolean {
@@ -101,7 +101,7 @@ open class FlowBus {
     return isSuccessful
   }
 
-  fun <T : Any> getSynchronizer(event: T): CountDownLatch? {
+  fun <T : Signal> getSynchronizer(event: T): CountDownLatch? {
     return synchronizers[event]
   }
 
@@ -117,7 +117,7 @@ open class FlowBus {
   /**
    * @see FlowBus.dropEvent
    */
-  inline fun <reified T : Any> dropEvent() = dropEvent(T::class.java)
+  inline fun <reified T : Signal> dropEvent() = dropEvent(T::class.java)
 
   /**
    *  Removes all retained events

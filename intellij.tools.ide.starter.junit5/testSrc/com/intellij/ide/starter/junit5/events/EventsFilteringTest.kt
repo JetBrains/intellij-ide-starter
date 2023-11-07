@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.junit5
+package com.intellij.ide.starter.junit5.events
 
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.Signal
@@ -40,13 +40,16 @@ class EventsFilteringTest {
     StarterBus.LISTENER.unsubscribe()
   }
 
+  class CustomSignal : Signal()
+  class AnotherCustomSignal : Signal()
+
   @RepeatedTest(value = 200)
   fun `filtering events by type is working`() {
     StarterBus.subscribe(this) { _: Signal ->
       isEventProcessed.set(true)
     }
 
-    StarterBus.postAsync(2)
+    StarterBus.postAsync(CustomSignal())
     checkIsEventProcessed(false) { isEventProcessed.get() }
 
     StarterBus.postAsync(Signal())
@@ -74,10 +77,10 @@ class EventsFilteringTest {
 
     val firstSignal = Signal(EventState.BEFORE)
     StarterBus.postAsync(firstSignal)
-    StarterBus.postAsync(Any())
+    StarterBus.postAsync(CustomSignal())
     val secondSignal = Signal(EventState.AFTER)
     StarterBus.postAsync(secondSignal)
-    StarterBus.postAsync(42)
+    StarterBus.postAsync(AnotherCustomSignal())
 
     firstSubscriberInvocationsData.shouldContainExactly(firstSignal, secondSignal)
     secondSubscriberInvocationsData.shouldContainExactly(firstSignal, secondSignal)
