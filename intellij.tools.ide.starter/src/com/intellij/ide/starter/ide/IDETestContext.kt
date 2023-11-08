@@ -341,6 +341,7 @@ class IDETestContext(
     useStartupScript: Boolean = true,
     launchName: String = "",
     expectedKill: Boolean = false,
+    expectedExitCode: Int = 0,
     collectNativeThreads: Boolean = false,
     configure: IDERunContext.() -> Unit = {}
   ): IDEStartResult {
@@ -351,6 +352,7 @@ class IDETestContext(
                                    useStartupScript = useStartupScript,
                                    launchName = launchName,
                                    expectedKill = expectedKill,
+                                   expectedExitCode = expectedExitCode,
                                    collectNativeThreads = collectNativeThreads
     ).also(configure)
 
@@ -379,6 +381,7 @@ class IDETestContext(
                          useStartupScript: Boolean = true,
                          launchName: String = "",
                          expectedKill: Boolean = false,
+                         expectedExitCode: Int = 0,
                          collectNativeThreads: Boolean = false,
                          configure: IDERunContext.() -> Unit = {}): Deferred<IDEStartResult> {
 
@@ -390,6 +393,7 @@ class IDETestContext(
                useStartupScript,
                launchName,
                expectedKill,
+               expectedExitCode,
                collectNativeThreads,
                configure)
       }

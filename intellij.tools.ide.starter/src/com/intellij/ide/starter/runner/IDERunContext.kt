@@ -51,6 +51,7 @@ data class IDERunContext(
   val verboseOutput: Boolean = false,
   val launchName: String = "",
   val expectedKill: Boolean = false,
+  val expectedExitCode: Int = 0,
   val collectNativeThreads: Boolean = false
 ) {
   val contextName: String
@@ -231,6 +232,7 @@ data class IDERunContext(
           onBeforeKilled = { process, pid ->
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
+          expectedExitCode = expectedExitCode,
         ).start()
       }
       logOutput("IDE run $contextName completed in $executionTime")

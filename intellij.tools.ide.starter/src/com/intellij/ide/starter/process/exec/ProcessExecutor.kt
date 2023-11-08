@@ -30,7 +30,8 @@ class ProcessExecutor(val presentableName: String,
                       val onProcessCreated: suspend (Process, Long) -> Unit = { _, _ -> },
                       val onBeforeKilled: suspend (Process, Long) -> Unit = { _, _ -> },
                       val stdInBytes: ByteArray = byteArrayOf(),
-                      val onlyEnrichExistedEnvVariables: Boolean = false) {
+                      val onlyEnrichExistedEnvVariables: Boolean = false,
+                      val expectedExitCode: Int = 0) {
 
   private fun redirectProcessOutput(
     process: Process,
@@ -97,7 +98,7 @@ class ProcessExecutor(val presentableName: String,
 
   private fun analyzeProcessExit(process: Process) {
     val code = process.exitValue()
-    if (code != 0) {
+    if (code != expectedExitCode) {
       val linesLimit = 100
 
       logOutput("  ... failed external process `$presentableName` with exit code $code")

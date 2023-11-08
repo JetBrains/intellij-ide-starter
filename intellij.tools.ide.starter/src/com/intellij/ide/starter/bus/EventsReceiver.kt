@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.bus
 
-import com.intellij.ide.starter.utils.catchAll
+import com.intellij.ide.starter.utils.getThrowableText
+import com.intellij.tools.ide.util.common.logError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
@@ -55,19 +56,26 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
           .collect { event ->
             withContext(returnDispatcher) {
               if (eventStateFilter(event.state)) {
-                catchAll { callback(event) }
+                try {
+                  callback(event)
+                }
+                catch (e: Exception) {
+                  if (e !is CancellationException) {
+                    logError("Suppressed error: ${e.message}")
+                    logError(getThrowableText(e))
+                  }
+                }
               }
               bus.getSynchronizer(event)?.countDown()
             }
           }
       }
-
       subscriberJobs.items.putIfAbsent(subscriber, mutableListOf())
       subscriberJobs.items[subscriber]!!.add(job)
       jobs.putIfAbsent(eventType, subscriberJobs)
-    }
 
-    return this
+      return this
+    }
   }
 
   /**

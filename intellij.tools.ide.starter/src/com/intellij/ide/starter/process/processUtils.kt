@@ -306,6 +306,16 @@ fun collectMemoryDump(
   javaProcessId: Long,
   dumpFile: Path,
 ) {
+  val command = listOf("GC.heap_dump", "-gz=4", dumpFile.toString())
+  jcmd(javaHome, workDir, javaProcessId, command)
+}
+
+fun jcmd(
+  javaHome: Path,
+  workDir: Path,
+  javaProcessId: Long,
+  command: List<String>
+) {
   val pathToJcmd = "bin/jcmd"
   val ext = if (SystemInfo.isWindows) ".exe" else ""
   val jcmdPath = listOf(
@@ -313,16 +323,16 @@ fun collectMemoryDump(
     javaHome.parent.resolve("$pathToJcmd$ext")
   ).map { it.toAbsolutePath() }.firstOrNull { it.isRegularFile() } ?: error("Failed to locate jcmd under $javaHome")
 
-  val command = listOf(jcmdPath.toAbsolutePath().toString(), javaProcessId.toString(), "GC.heap_dump", "-gz=4", dumpFile.toString())
-
+  val jcmdCommand = listOf(jcmdPath.toAbsolutePath().toString(), javaProcessId.toString()) + command
   ProcessExecutor(
     "jcmd",
     workDir,
     timeout = 5.minutes,
-    args = command,
+    args = jcmdCommand,
     stdoutRedirect = ExecOutputRedirect.ToStdOut("[jcmd-out]"),
     stderrRedirect = ExecOutputRedirect.ToStdOut("[jcmd-err]")
   ).start()
+
 }
 
 fun getAllJavaProcesses(): List<String> {
