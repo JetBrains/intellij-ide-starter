@@ -28,6 +28,10 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
      *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
      */
     fun shouldIncludeRuntimeModuleRepositoryInIde(): Boolean = instance().getBoolean(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY)
+
+    const val LINUX_IGNORE_XVFB_RUN = "LINUX_IGNORE_XVFB_RUN"
+
+    fun shouldIgnoreXvfbRun(): Boolean = instance().getBoolean(LINUX_IGNORE_XVFB_RUN)
   }
 
   override fun resetToDefault() {
@@ -35,5 +39,6 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
     put(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, System.getenv(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD))
     put(ENV_JUNIT_RUNNER_USE_INSTALLER, System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER))
     put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, false)
+    put(LINUX_IGNORE_XVFB_RUN, false)
   }
 }

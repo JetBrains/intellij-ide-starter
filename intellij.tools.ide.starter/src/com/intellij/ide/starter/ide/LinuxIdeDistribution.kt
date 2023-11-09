@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.ide
 
+import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -28,7 +29,7 @@ class LinuxIdeDistribution : IdeDistribution() {
 
     fun linuxCommandLine(xvfbRunLog: Path): List<String> {
       return when {
-        System.getenv("DISPLAY") != null -> listOf()
+        System.getenv("DISPLAY") != null || StarterConfigurationStorage.shouldIgnoreXvfbRun() -> listOf()
         else ->
           //hint https://gist.github.com/tullmann/2d8d38444c5e81a41b6d
           listOf(
