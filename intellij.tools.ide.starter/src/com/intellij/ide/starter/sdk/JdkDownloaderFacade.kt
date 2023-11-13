@@ -20,6 +20,7 @@ object JdkDownloaderFacade {
   val jdk11 get() = jdkDownloader(JdkVersion.JDK_11.toString())
   val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
   val jbrJcef17 get() = jdkDownloader(JdkVersion.JDK_17.toString(), jbr = true)
+  val jdk20 get() = jdkDownloader(JdkVersion.JDK_20.toString())
   val jdk21 get() = jdkDownloader(JdkVersion.JDK_21.toString())
   val jbr21 get() = jdkDownloader(JdkVersion.JDK_21.toString(), jbr = true)
 
