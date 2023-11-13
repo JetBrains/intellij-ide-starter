@@ -2,8 +2,10 @@ package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.metrics.toCounterMetricId
+import com.intellij.tools.ide.metrics.collector.starter.collector.OpenTelemetryMeterCollector
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.*
 import com.intellij.util.indexing.diagnostic.dump.paths.PortableFilePath
@@ -241,9 +243,38 @@ data class IndexingMetrics(
       PerformanceMetrics.Metric(metricNumberOfRunsOfScanning, value = totalNumberOfRunsOfScanning.toLong()),
       PerformanceMetrics.Metric(metricNumberOfRunsOfIndexing, value = totalNumberOfRunsOfIndexing.toLong())
     ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage) +
-           getProcessingTimeOfFileType(processingTimePerFileType)
+           getProcessingTimeOfFileType(processingTimePerFileType) +
+           collectPerformanceMetricsFromCSV(ideStartResult, "lexer", "lexing") +
+           collectPerformanceMetricsFromCSV(ideStartResult, "parser", "parsing")
   }
+
 }
+
+private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
+                                             metricPrefixInCSV: String,
+                                             resultingMetricPrefix: String): List<PerformanceMetrics.Metric> {
+  val time = OpenTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
+    it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".time.ns")
+  }).collect(runResult.runContext).associate {
+    val language = it.id.name.split('.')[1] //lexer.Ini.time.ns
+    Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value))
+  }
+  val size = OpenTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
+    it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".size.bytes")
+  }).collect(runResult.runContext).associate {
+    val language = it.id.name.split('.')[1] //lexer.Ini.size.bytes
+    Pair(language, it.value)
+  }
+  val speed = time.filter { it.value != 0L }.mapValues {
+    size.getValue(it.key) / it.value
+  }
+
+  return time.map { PerformanceMetrics.Metric(PerformanceMetrics.MetricId.Duration("${resultingMetricPrefix}Time#" + it.key), it.value) } +
+         size.map { PerformanceMetrics.Metric(PerformanceMetrics.MetricId.Counter("${resultingMetricPrefix}Size#" + it.key), it.value) } +
+         speed.map { PerformanceMetrics.Metric(PerformanceMetrics.MetricId.Counter("${resultingMetricPrefix}Speed#" + it.key), it.value) }
+}
+
+
 
 fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   val indexDiagnosticDirectory = startResult.runContext.logsDir / "indexing-diagnostic"
