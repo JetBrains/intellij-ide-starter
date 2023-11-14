@@ -1,5 +1,7 @@
 package com.intellij.ide.starter.buildTool
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
@@ -7,11 +9,13 @@ import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IdeLaunchEvent
+import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
+import org.apache.http.client.methods.HttpGet
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -232,5 +236,19 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     }
     gradlePropertiesFile.writeText(text)
     return this
+  }
+
+
+  fun getLastGradleReleaseVersion(): String {
+    return HttpClient.sendRequest(
+      HttpGet("https://services.gradle.org/versions/current").apply {
+        addHeader("Content-Type", "application/json")
+      }) {
+      jacksonObjectMapper()
+        .readValue(it.entity.content, JsonNode::class.java)
+    }
+      .get("version")
+      .toString()
+      .replace("\"", "")
   }
 }
