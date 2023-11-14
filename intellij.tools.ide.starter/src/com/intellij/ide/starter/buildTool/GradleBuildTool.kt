@@ -250,5 +250,6 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       .get("version")
       .toString()
       .replace("\"", "")
+      .also { logOutput("Last gradle release version $it") }
   }
 }
