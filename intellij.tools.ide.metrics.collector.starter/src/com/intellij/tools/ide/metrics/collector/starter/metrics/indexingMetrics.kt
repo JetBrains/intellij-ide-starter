@@ -253,16 +253,18 @@ data class IndexingMetrics(
 private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
                                              metricPrefixInCSV: String,
                                              resultingMetricPrefix: String): List<PerformanceMetrics.Metric> {
+  val timeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.time\\.ns")
   val time = OpenTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
     it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".time.ns")
   }).collect(runResult.runContext).associate {
-    val language = it.id.name.split('.')[1] //lexer.Ini.time.ns
+    val language = timeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value))
   }
+  val sizeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.size\\.bytes")
   val size = OpenTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
     it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".size.bytes")
   }).collect(runResult.runContext).associate {
-    val language = it.id.name.split('.')[1] //lexer.Ini.size.bytes
+    val language = sizeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, it.value)
   }
   val speed = time.filter { it.value != 0L }.mapValues {
