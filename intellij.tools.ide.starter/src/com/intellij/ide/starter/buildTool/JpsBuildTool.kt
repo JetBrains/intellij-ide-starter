@@ -84,7 +84,8 @@ class JpsBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.JPS, t
   fun addBuildVmOption(key: String, value: String): JpsBuildTool {
     if (compilerXmlPath.notExists()) return this
     val content = compilerXmlPath.readText()
-    if (content.contains("-D$key=$value")) return this
+    val newOption = "-D$key=$value"
+    if (content.contains(newOption)) return this
 
     val xmlDoc = XmlBuilder.parse(compilerXmlPath)
     xmlDoc.documentElement.normalize()
@@ -98,9 +99,7 @@ class JpsBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.JPS, t
                                      XPathConstants.NODE) as Element
         val oldValue = optionNode.getAttribute("value")
 
-        if (oldValue.contains(value)) return this
-
-        val newValue = "$oldValue -D$key=$value"
+        val newValue = "$oldValue $newOption"
         optionNode.removeAttribute("value")
         optionNode.setAttribute("value", newValue)
       }
@@ -108,7 +107,7 @@ class JpsBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.JPS, t
         val componentNode = xp.evaluate("//component[@name='CompilerConfiguration']", xmlDoc, XPathConstants.NODE) as Element
         val optionElement = xmlDoc.createElement("option")
         optionElement.setAttribute("name", "BUILD_PROCESS_ADDITIONAL_VM_OPTIONS")
-        optionElement.setAttribute("value", "-D$key=$value")
+        optionElement.setAttribute("value", newOption)
         componentNode.appendChild(optionElement)
       }
     }
@@ -118,7 +117,7 @@ class JpsBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.JPS, t
       componentElement.setAttribute("name", "CompilerConfiguration")
       val optionElement = xmlDoc.createElement("option")
       optionElement.setAttribute("name", "BUILD_PROCESS_ADDITIONAL_VM_OPTIONS")
-      optionElement.setAttribute("value", "-D$key=$value")
+      optionElement.setAttribute("value", newOption)
       firstNode.appendChild(componentElement).appendChild(optionElement)
     }
     XmlBuilder.writeDocument(xmlDoc, compilerXmlPath)
