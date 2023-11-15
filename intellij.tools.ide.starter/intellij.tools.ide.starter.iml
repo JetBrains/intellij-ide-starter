@@ -75,6 +75,5 @@
     </orderEntry>
     <orderEntry type="library" name="io.qameta.allure.java.commons" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.util.common" />
-    <orderEntry type="module" module-name="intellij.idea.ultimate.build.packages.auth" />
   </component>
 </module>

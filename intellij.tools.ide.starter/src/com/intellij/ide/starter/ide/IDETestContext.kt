@@ -15,7 +15,6 @@ import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
-import com.intellij.idea.ultimate.build.packages.auth.IJPrivatePackagesAuthorizer
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -324,25 +323,6 @@ class IDETestContext(
         }
       }
 
-    return this
-  }
-
-  /**
-   * Will bypass `com.intellij.space.java.auth.username` and `com.intellij.space.java.auth.password` system properties to test context.
-   *
-   * User must ensure Space plugin is installed in test IDE.
-   */
-  fun installJetBrainsTeamMavenPackagesCredentials(): IDETestContext {
-    val credentials = IJPrivatePackagesAuthorizer.loadCredentialsStrict(
-      "com.intellij.space.java.auth.username",
-      "com.intellij.space.java.auth.password",
-      resolvedProjectHome
-    ) ?: error("Should not be reached")
-
-    applyVMOptionsPatch {
-      addSystemProperty("com.intellij.space.java.auth.username", credentials.username)
-      addSystemProperty("com.intellij.space.java.auth.password", credentials.password)
-    }
     return this
   }
 
