@@ -9,6 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 object JvmUtils {
   private fun quoteArg(arg: String): String {
@@ -124,6 +125,20 @@ object JvmUtils {
         writer.write(lineSeparator)
       }
     }
+  }
+
+  fun getJavaClassCompileVersion(filePath: Path): String {
+    val stdout = ExecOutputRedirect.ToString()
+    val versionMatcher = "major version: [0-9]{2,3}".toRegex()
+    ProcessExecutor(
+      "get java class compile version",
+      workDir = filePath.parent,
+      timeout = 30.seconds,
+      args = listOf("javap", "-verbose", filePath.fileName.toString()),
+      stdoutRedirect = stdout
+    ).start()
+
+    return (versionMatcher.find(stdout.read())!!.value.split(": ").last().toInt() - 44).toString()
   }
 }
 
