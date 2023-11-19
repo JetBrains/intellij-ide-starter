@@ -541,8 +541,18 @@ class IDETestContext(
 
   fun addProjectToTrustedLocations(projectPath: Path = this.resolvedProjectHome.normalize(),
                                    addParentDir: Boolean = false): IDETestContext {
+    return addProject(projectPath, addParentDir)
+  }
+
+  fun addProjectToTrustedLocations(addParentDir: Boolean = false): IDETestContext {
     if (this.testCase.projectInfo == NoProject) return this
 
+    val projectPath = this.resolvedProjectHome.normalize()
+    return addProject(projectPath, addParentDir)
+  }
+
+  fun addProject(projectPath: Path,
+                 addParentDir: Boolean): IDETestContext {
     val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
     trustedXml.parent.createDirectories()
