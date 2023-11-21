@@ -12,6 +12,6 @@ import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 class OpenTelemetrySpanCollector(val spanNames: List<String>) : MetricsCollector {
   override fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric> {
     return getMetricsFromSpanAndChildren(runContext.logsDir.resolve(IDETestContext.OPENTELEMETRY_FILE).toFile(),
-                                         SpanFilter.containsIn(spanNames))
+                                         SpanFilter.containsNameIn(spanNames))
   }
 }
