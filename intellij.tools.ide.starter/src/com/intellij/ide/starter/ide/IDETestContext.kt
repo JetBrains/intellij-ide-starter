@@ -539,34 +539,25 @@ class IDETestContext(
     return this
   }
 
-  fun addProjectToTrustedLocations(projectPath: Path = this.resolvedProjectHome.normalize(),
-                                   addParentDir: Boolean = false): IDETestContext {
-    return addProject(projectPath, addParentDir)
-  }
-
-  fun addProjectToTrustedLocations(addParentDir: Boolean = false): IDETestContext {
+  fun addProjectToTrustedLocations(projectPath: Path? = null, addParentDir: Boolean = false): IDETestContext {
     if (this.testCase.projectInfo == NoProject) return this
 
-    val projectPath = this.resolvedProjectHome.normalize()
-    return addProject(projectPath, addParentDir)
-  }
+    val path = projectPath ?: this.resolvedProjectHome.normalize()
 
-  fun addProject(projectPath: Path,
-                 addParentDir: Boolean): IDETestContext {
     val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
     trustedXml.parent.createDirectories()
     if (addParentDir) {
       val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
       trustedXml.writeText(
-        text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
-          .replace("""<option value="" />""", "<option value=\"${projectPath.parent}\" />")
+        text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
+          .replace("""<option value="" />""", "<option value=\"${path.parent}\" />")
       )
     }
     else {
       val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
       trustedXml.writeText(
-        text.replace("""<entry key="" value="true" />""", "<entry key=\"$projectPath\" value=\"true\" />")
+        text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
       )
     }
 
