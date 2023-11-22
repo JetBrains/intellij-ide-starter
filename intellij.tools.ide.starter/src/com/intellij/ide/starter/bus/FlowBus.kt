@@ -54,10 +54,12 @@ open class FlowBus {
 
   /**
    * Posts new event to SharedFlow of the [event] type.
+   * Event will be processed by subscribers asynchronously.
+   *
    * @param retain If the [event] should be retained in the flow for future subscribers. This is true by default.
    */
   @JvmOverloads
-  fun <T : Signal> postAsync(event: T, retain: Boolean = true) {
+  fun <T : Signal> fireAndForget(event: T, retain: Boolean = true) {
     val flow = forEvent(event.javaClass)
 
     flow.tryEmit(event).also {
@@ -85,7 +87,7 @@ open class FlowBus {
     val subscriptionJobsSize = subscriptions.items.flatMap { it.value }.size
     val latch = CountDownLatch(subscriptionJobsSize)
     synchronizers[event] = latch
-    postAsync(event, retain)
+    fireAndForget(event, retain)
 
     val isSuccessful = latch.await(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
     if (!isSuccessful) {

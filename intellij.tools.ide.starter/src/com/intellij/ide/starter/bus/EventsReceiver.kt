@@ -98,7 +98,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
                                                   subscribeOnlyOnce = false, eventStateFilter = eventStateFilter, callback)
   }
 
-  /** Guarantees, that subscriber [SubscriberType] will be subscribed to event [EventType] only once
+  /** Guarantees that subscriber [SubscriberType] will be subscribed to event [EventType] only once
    * no matter how many times subscription method will be invoked */
   inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribeOnlyOnce(
     subscriber: SubscriberType,

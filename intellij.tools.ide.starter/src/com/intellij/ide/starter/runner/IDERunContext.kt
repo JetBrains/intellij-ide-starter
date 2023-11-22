@@ -180,7 +180,7 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
-    StarterBus.postAsync(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
+    StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
 
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
@@ -225,7 +225,7 @@ data class IDERunContext(
           stdoutRedirect = stdout,
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
-            StarterBus.postAsync(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
+            StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig, ideProcessId)
           },

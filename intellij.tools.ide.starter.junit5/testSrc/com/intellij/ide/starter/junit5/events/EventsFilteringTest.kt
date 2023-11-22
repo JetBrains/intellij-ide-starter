@@ -49,10 +49,10 @@ class EventsFilteringTest {
       isEventProcessed.set(true)
     }
 
-    StarterBus.postAsync(CustomSignal())
+    StarterBus.BUS.fireAndForget(CustomSignal())
     checkIsEventProcessed(false) { isEventProcessed.get() }
 
-    StarterBus.postAsync(Signal())
+    StarterBus.BUS.fireAndForget(Signal())
     checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
@@ -62,7 +62,7 @@ class EventsFilteringTest {
       isEventProcessed.set(true)
     }
 
-    StarterBus.postAsync(Signal())
+    StarterBus.BUS.fireAndForget(Signal())
     checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
@@ -76,11 +76,11 @@ class EventsFilteringTest {
       .subscribe(this) { event: Signal -> secondSubscriberInvocationsData.add(event) }
 
     val firstSignal = Signal(EventState.BEFORE)
-    StarterBus.postAsync(firstSignal)
-    StarterBus.postAsync(CustomSignal())
+    StarterBus.BUS.fireAndForget(firstSignal)
+    StarterBus.BUS.fireAndForget(CustomSignal())
     val secondSignal = Signal(EventState.AFTER)
-    StarterBus.postAsync(secondSignal)
-    StarterBus.postAsync(AnotherCustomSignal())
+    StarterBus.BUS.fireAndForget(secondSignal)
+    StarterBus.BUS.fireAndForget(AnotherCustomSignal())
 
     firstSubscriberInvocationsData.shouldContainExactly(firstSignal, secondSignal)
     secondSubscriberInvocationsData.shouldContainExactly(firstSignal, secondSignal)

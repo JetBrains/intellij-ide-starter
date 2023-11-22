@@ -31,13 +31,13 @@ class FilteringByEventStateTest {
     }
 
     repeat(5) {
-      StarterBus.postAsync(Signal(EventState.BEFORE))
+      StarterBus.BUS.fireAndForget(Signal(EventState.BEFORE))
       StarterBus.postAndWaitProcessing(Signal(EventState.AFTER))
 
       checkIsEventProcessed(shouldEventBeProcessed = false) { isEventProcessed.get() }
     }
 
-    StarterBus.postAsync(Signal(EventState.IN_TIME))
+    StarterBus.BUS.fireAndForget(Signal(EventState.IN_TIME))
     checkIsEventProcessed(shouldEventBeProcessed = true) { isEventProcessed.get() }
   }
 
@@ -48,12 +48,12 @@ class FilteringByEventStateTest {
     }
 
     repeat(5) {
-      StarterBus.postAsync(CustomEvent(EventState.BEFORE))
+      StarterBus.BUS.fireAndForget(CustomEvent(EventState.BEFORE))
       StarterBus.postAndWaitProcessing(CustomEvent(EventState.AFTER))
       checkIsEventProcessed(shouldEventBeProcessed = false) { isEventProcessed.get() }
     }
 
-    StarterBus.postAsync(CustomEvent(EventState.IN_TIME))
+    StarterBus.BUS.fireAndForget(CustomEvent(EventState.IN_TIME))
     checkIsEventProcessed(shouldEventBeProcessed = true) { isEventProcessed.get() }
   }
 
@@ -64,12 +64,12 @@ class FilteringByEventStateTest {
     }
 
     repeat(5) {
-      StarterBus.postAsync(CustomEvent(EventState.BEFORE))
+      StarterBus.BUS.fireAndForget(CustomEvent(EventState.BEFORE))
       StarterBus.postAndWaitProcessing(CustomEvent(EventState.IN_TIME))
       checkIsEventProcessed(shouldEventBeProcessed = false) { isEventProcessed.get() }
     }
 
-    StarterBus.postAsync(CustomEvent(EventState.AFTER))
+    StarterBus.BUS.fireAndForget(CustomEvent(EventState.AFTER))
     checkIsEventProcessed(shouldEventBeProcessed = true) { isEventProcessed.get() }
   }
 
@@ -80,19 +80,19 @@ class FilteringByEventStateTest {
     }
 
     repeat(5) {
-      StarterBus.postAsync(CustomEvent(EventState.BEFORE))
+      StarterBus.BUS.fireAndForget(CustomEvent(EventState.BEFORE))
       StarterBus.postAndWaitProcessing(CustomEvent(EventState.UNDEFINED))
-      StarterBus.postAsync(CustomEvent(EventState.BEFORE))
+      StarterBus.BUS.fireAndForget(CustomEvent(EventState.BEFORE))
 
       checkIsEventProcessed(shouldEventBeProcessed = false) { isEventProcessed.get() }
     }
 
-    StarterBus.postAsync(CustomEvent(EventState.IN_TIME))
+    StarterBus.BUS.fireAndForget(CustomEvent(EventState.IN_TIME))
     checkIsEventProcessed(shouldEventBeProcessed = true) { isEventProcessed.get() }
 
     isEventProcessed.set(false)
 
-    StarterBus.postAsync(CustomEvent(EventState.AFTER))
+    StarterBus.BUS.fireAndForget(CustomEvent(EventState.AFTER))
     checkIsEventProcessed(shouldEventBeProcessed = true) { isEventProcessed.get() }
   }
 }

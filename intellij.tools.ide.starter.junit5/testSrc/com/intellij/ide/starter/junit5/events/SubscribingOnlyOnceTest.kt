@@ -36,7 +36,7 @@ class SubscribingOnlyOnceTest {
         secondProcessedTimes.incrementAndGet()
       }
 
-    StarterBus.postAsync(Signal())
+    StarterBus.BUS.fireAndForget(Signal())
 
     withClue("Multiple subscription should not work if subscribed only once") {
       eventProcessedTimes.get().shouldBe(1)
@@ -78,7 +78,7 @@ class SubscribingOnlyOnceTest {
         secondProcessedTimes.incrementAndGet()
       }
 
-    StarterBus.postAsync(Signal())
+    StarterBus.BUS.fireAndForget(Signal())
 
     withClue("Multiple subscription should work by default") {
       eventProcessedTimes.get().shouldBe(3)
