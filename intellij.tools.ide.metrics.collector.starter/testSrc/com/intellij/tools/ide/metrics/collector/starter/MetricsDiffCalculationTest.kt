@@ -89,8 +89,8 @@ class MetricsDiffCalculationTest {
 
   @Test
   fun calculatingNegativeDifference() {
-    val metricsBefore = listOf(PerformanceMetrics.Metric(id = PerformanceMetrics.MetricId.Duration("some_metric"), value = 100))
-    val metricsAfter = listOf(PerformanceMetrics.Metric(id = PerformanceMetrics.MetricId.Duration("some_metric"), value = 50))
+    val metricsBefore = listOf(PerformanceMetrics.newDuration("some_metric", durationMillis = 100))
+    val metricsAfter = listOf(PerformanceMetrics.newDuration("some_metric", durationMillis = 50))
     val diff: List<PerformanceMetrics.Metric> = MetricsDiffCalculator.calculateDiff(metricsBefore, metricsAfter, useAbsoluteValue = false)
 
     diff.single().value.shouldBe(-50)
@@ -101,7 +101,7 @@ class MetricsDiffCalculationTest {
 
     return (1..numberOfMetrics)
       .map { index ->
-        PerformanceMetrics.Metric(id = PerformanceMetrics.MetricId.Duration("metric_$index"), value = index.toLong())
+        PerformanceMetrics.newDuration("metric_$index", durationMillis = index.toLong())
       }
   }
 

@@ -1,9 +1,9 @@
 package com.intellij.tools.ide.metrics.collector.starter.collector
 
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.platform.diagnostic.telemetry.MetricsImporterUtils
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.platform.diagnostic.telemetry.MetricsImporterUtils
 import io.opentelemetry.sdk.metrics.data.LongPointData
 import io.opentelemetry.sdk.metrics.data.PointData
 import java.nio.file.Path
@@ -26,7 +26,7 @@ class OpenTelemetryMeterCollector(val metricsSelectionStrategy: MetricsSelection
   }
 
   private fun convertLongPointDataToIJPerfMetric(metricName: String, metricData: LongPointData): PerformanceMetrics.Metric {
-    return PerformanceMetrics.Metric(PerformanceMetrics.MetricId.Duration(metricName), metricData.value)
+    return PerformanceMetrics.newDuration(metricName, metricData.value)
   }
 
   override fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric> {
