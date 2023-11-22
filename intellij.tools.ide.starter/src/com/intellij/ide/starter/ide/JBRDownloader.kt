@@ -1,9 +1,9 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
 import kotlin.io.path.div
@@ -65,12 +65,8 @@ object JBRDownloader {
       else -> error("Unknown OS")
     }
 
-    val arch = when (SystemInfo.isMac) {
-      true -> when (System.getProperty("os.arch")) {
-        "x86_64" -> "x64"
-        "aarch64" -> "aarch64"
-        else -> error("Unsupported architecture of Mac OS")
-      }
+    val arch = when (SystemInfo.isAarch64) {
+      true -> "aarch64"
       false -> "x64"
     }
 
@@ -78,7 +74,7 @@ object JBRDownloader {
     val path = try {
       downloadJbr(jbrFileName)
     }
-    catch (e: HttpClient.HttpNotFound) {
+    catch (_: HttpClient.HttpNotFound) {
       downloadJbr("jbrsdk_nomod-$majorVersion-$os-$arch-b$buildNumber.tar.gz")
     }
 
