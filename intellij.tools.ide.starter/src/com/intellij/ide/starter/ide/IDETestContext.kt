@@ -129,11 +129,6 @@ class IDETestContext(
       addSystemProperty("ide.instant.shutdown", false)
     }
 
-  fun useNewUIInTests(): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty(NewUiValue.KEY, true)
-    }
-
   fun useOldUIInTests(): IDETestContext =
     applyVMOptionsPatch {
       removeSystemProperty(NewUiValue.KEY, true)

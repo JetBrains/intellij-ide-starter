@@ -112,7 +112,6 @@ interface TestContainer<T> {
         }
         .disableMinimap()
         .addProjectToTrustedLocations()
-        .useNewUIInTests()
         .disableReportingStatisticsToProduction()
         .disableReportingStatisticToJetStat()
         .disableMigrationNotification()
