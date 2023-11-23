@@ -102,24 +102,6 @@ class IDETestContext(
       withActiveProcessorCount(count)
     }
 
-  fun executeScriptFromProjectPath(scriptFilePath: String, vararg args: String): IDETestContext {
-    val stdOut = ExecOutputRedirect.ToString()
-    val stdErr = ExecOutputRedirect.ToString()
-    try {
-      ProcessExecutor(
-        presentableName = "execute-process-$scriptFilePath",
-        workDir = this._resolvedProjectHome,
-        args = listOf(scriptFilePath, *args),
-        stdoutRedirect = stdOut,
-        stderrRedirect = stdErr
-      ).start()
-    }
-    catch (t: Throwable) {
-      throw IllegalStateException("${t.message}\n StdErr: ${stdErr}\n StdOut: ${stdOut}")
-    }
-    return this
-  }
-
   fun skipGitLogIndexing(value: Boolean = true): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("vcs.log.index.enable", !value)
