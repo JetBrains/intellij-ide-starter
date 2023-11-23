@@ -19,9 +19,9 @@ abstract class AbstractBuildIdFetcher : BuildIdFetcher {
   }
 }
 
-class LastBuildInBranchId(val branch: String): AbstractBuildIdFetcher(){
+class LastBuildInBranch(val branch: String): AbstractBuildIdFetcher(){
   override fun getBuildId(buildType: String): String? {
-    val fullUrl = TeamCityClient.guestAuthUri.resolve("builds?locator=buildType:${buildType},branch:$branch,status:SUCCESS,state:(finished:true),count:1")
+    val fullUrl = TeamCityClient.guestAuthUri.resolve("builds?locator=buildType:${buildType},branch:$branch,state:(finished:true),count:1")
     return getBuildIdFromUrl(fullUrl)
   }
 }
