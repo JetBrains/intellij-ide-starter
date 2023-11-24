@@ -287,7 +287,7 @@ private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String
 
 private fun getProcessingTimeOfFileType (mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
   mapFileTypeToDuration.map {
-    PerformanceMetrics.newCounter("processingTime#${it.key}", value = TimeUnit.NANOSECONDS.toMillis(it.value))
+    PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value))
   }
 
 data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val totalSumOfThreadTimesWithPauses: Long = 0) {
