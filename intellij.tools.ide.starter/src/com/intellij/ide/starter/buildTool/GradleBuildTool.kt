@@ -54,7 +54,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   private fun getGradleVersionFromWrapperProperties(): String {
     val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
     if (propFile.notExists()) return ""
-    val distributionUrl = propFile.readLines().first() { it.startsWith("distributionUrl") }
+    val distributionUrl = propFile.readLines(Charsets.ISO_8859_1).first { it.startsWith("distributionUrl") }
     val version = "\\d.{1,4}\\d".toRegex().find(distributionUrl)?.value ?: ""
     return version
   }
@@ -218,7 +218,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   fun setGradleVersionInWrapperProperties(newVersion: String): GradleBuildTool {
     val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
     if (propFile.exists()) {
-      val lineToReplace = propFile.readLines().filter { it.startsWith("distributionUrl") }[0]
+      val lineToReplace = propFile.readLines(Charsets.ISO_8859_1).filter { it.startsWith("distributionUrl") }[0]
       val newLine = lineToReplace.replace("\\d\\.\\d".toRegex(), newVersion)
       propFile.writeText(propFile.readText().replace(lineToReplace, newLine))
     }
