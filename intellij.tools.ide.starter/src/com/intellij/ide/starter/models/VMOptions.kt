@@ -158,6 +158,9 @@ data class VMOptions(
 
   fun enableExitMetrics(filePath: Path) = addSystemProperty("idea.log.exit.metrics.file", filePath)
 
+  fun enableVerboseOpenTelemetry() = addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
+
+
   /**
    * [categories] - Could be packages, classes ...
    */

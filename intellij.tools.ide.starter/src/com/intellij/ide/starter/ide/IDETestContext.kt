@@ -209,9 +209,6 @@ class IDETestContext(
     addSystemProperty("idea.collect.project.import.performance", true)
   }
 
-  fun enableVerboseOpenTelemetry() = applyVMOptionsPatch {
-    addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
-  }
 
   fun enableWorkspaceModelVerboseLogs() = applyVMOptionsPatch {
     configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
