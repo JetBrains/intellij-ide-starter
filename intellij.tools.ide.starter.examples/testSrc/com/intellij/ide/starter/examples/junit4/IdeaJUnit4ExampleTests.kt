@@ -11,15 +11,12 @@ import org.junit.rules.TestName
 
 class IdeaJUnit4ExampleTests {
   @get:Rule
-  val testName = TestName()
-
-  @get:Rule
   val testContextFactory = initJUnit4StarterRule()
 
   @Test
   fun `open gradle project on the latest EAP IJ Community`() {
     val context = testContextFactory
-      .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple)
+      .initializeTestContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -29,7 +26,7 @@ class IdeaJUnit4ExampleTests {
   @Test
   fun `open gradle project on the latest Release IJ Community`() {
     val context = testContextFactory
-      .initializeTestContext(testName.hyphenateWithClass(this::class), TestCases.IC.GradleJitPackSimple.useRelease())
+      .initializeTestContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple.useRelease())
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 

@@ -19,9 +19,6 @@ import java.nio.file.Paths
 @ExtendWith(JUnit5StarterAssistant::class)
 @Disabled("Requires local installation of IDE, configs and project")
 class ScalabilityTest {
-  private lateinit var testInfo: TestInfo
-  private lateinit var context: TestContainerImpl
-
   @Test
   fun scalabilityOfIndexingTest() {
     //CONFIGURATION
@@ -38,8 +35,8 @@ class ScalabilityTest {
     val processorCounts = listOf(1, 2, 4, 8, 16, 32, 64)
     val results = mutableMapOf<Int, List<Long>>()
     for (processorCount in processorCounts) {
-      val context = context
-        .initializeTestContext("${testInfo.hyphenateWithClass()}_$processorCount", testCase)
+      val context = Starter
+        .newContext("${CurrentTestMethod.hyphenateWithClass()}_$processorCount", testCase)
         .copyExistingConfig(config)
         .copyExistingPlugins(plugins)
         .setActiveProcessorCount(processorCount)

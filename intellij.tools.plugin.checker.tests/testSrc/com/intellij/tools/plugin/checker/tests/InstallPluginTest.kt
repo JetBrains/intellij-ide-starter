@@ -12,6 +12,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
+import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -24,7 +25,6 @@ import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.intellij.util.system.OS
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -39,10 +39,6 @@ import java.util.concurrent.TimeUnit
 
 @ExtendWith(JUnit5StarterAssistant::class)
 class InstallPluginTest {
-
-  private lateinit var testInfo: TestInfo
-
-
   companion object {
     private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227, 14823, 21709, 14946, 16478, 10253, 20603, 19772, 16353, 21531, 94086, 17153,
                                        1800, 14015, 21624, 20158)
@@ -222,7 +218,7 @@ class InstallPluginTest {
   fun installPluginTest(params: EventToTestCaseParams) {
     try {
       val testContext = Starter
-        .newContext(testName = testInfo.hyphenateWithClass(), testCase = params.testCase)
+        .newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = params.testCase)
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .apply {

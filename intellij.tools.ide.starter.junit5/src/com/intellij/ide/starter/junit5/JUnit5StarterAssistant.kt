@@ -10,45 +10,13 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.kodein.di.direct
 import org.kodein.di.instance
-import java.lang.reflect.Method
-import java.util.*
-import kotlin.reflect.jvm.javaField
 
 open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
-  private fun injectTestInfoProperty(context: ExtensionContext) {
-    val testInstance = context.testInstance.get()
-
-    val testInfoProperty = TestInstanceReflexer.getProperty(testInstance, TestInfo::class)
-    if (testInfoProperty == null) return
-
-    val testInfoInstance = object : TestInfo {
-      override fun getDisplayName(): String = context.displayName
-      override fun getTags(): MutableSet<String> = context.tags
-      override fun getTestClass(): Optional<Class<*>> = context.testClass
-      override fun getTestMethod(): Optional<Method> = context.testMethod
-    }
-
-    try {
-      testInfoProperty.javaField!!.trySetAccessible()
-
-      if (testInfoProperty.javaField!!.get(testInstance) != null) {
-        logOutput("Property `${testInfoProperty.name}` already manually initialized in the code")
-        return
-      }
-
-      testInfoProperty.javaField!!.set(testInstance, testInfoInstance)
-    }
-    catch (e: Throwable) {
-      logError("Unable to inject value for property `${testInfoProperty.name}`")
-    }
-  }
-
   override fun beforeEach(context: ExtensionContext) {
     if (context.testMethod.isPresent) {
       di.direct.instance<CurrentTestMethod>().set(context.testMethod.get())
@@ -65,7 +33,6 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
     }
 
     killOutdatedProcesses()
-    injectTestInfoProperty(context)
   }
 
   override fun afterEach(context: ExtensionContext) {

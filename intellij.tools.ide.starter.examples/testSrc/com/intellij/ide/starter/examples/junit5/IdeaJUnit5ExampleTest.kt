@@ -16,16 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(JUnit5StarterAssistant::class)
 class IdeaJUnit5ExampleTest {
-
-  // these properties will be injected via [JUnit5StarterAssistant]
-  private lateinit var testInfo: TestInfo
-  private lateinit var context: TestContainerImpl
-
   @Test
   fun openGradleJitPack() {
 
-    val testContext = context
-      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
+    val testContext = Starter
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -45,8 +40,8 @@ class IdeaJUnit5ExampleTest {
   @Test
   fun openMavenProject() {
 
-    val testContext = context
-      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+    val testContext = Starter
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
 
@@ -56,8 +51,8 @@ class IdeaJUnit5ExampleTest {
   @Test
   @Disabled("Long running test (> 10 min)")
   fun inspectMavenProject() {
-    val testContext = context
-      .initializeTestContext(testInfo.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+    val testContext = Starter
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
       .setSharedIndexesDownload(enable = true)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())

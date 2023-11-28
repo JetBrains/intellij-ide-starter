@@ -4,7 +4,7 @@ import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * Container, that pass around test method reference
+ * Container that contains current test method reference
  */
 object CurrentTestMethod {
   private lateinit var testMethod: AtomicReference<Method>

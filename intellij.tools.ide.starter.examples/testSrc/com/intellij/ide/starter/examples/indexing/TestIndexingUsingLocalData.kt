@@ -28,8 +28,6 @@ import kotlin.io.path.div
 @ExtendWith(JUnit5StarterAssistant::class)
 @Disabled("Requires local installation of IDE, configs and project")
 class TestIndexing {
-  private lateinit var container: TestContainerImpl
-
   class IdeLocalInstaller(private val installer: Path) : IdeInstaller {
     override fun install(ideInfo: IdeInfo, includeRuntimeModuleRepository: Boolean): Pair<String, InstalledIde> {
       val ideInstaller = IdeInstallerFile(installer, "locally-installed-ide")
@@ -70,7 +68,7 @@ class TestIndexing {
 
 
     //SETUP
-    val testContext = container
+    val testContext = Starter
       .initializeTestContext(testName = "openProject", testCase = testCase)
       .copyExistingConfig(config)
       .copyExistingPlugins(plugins)
