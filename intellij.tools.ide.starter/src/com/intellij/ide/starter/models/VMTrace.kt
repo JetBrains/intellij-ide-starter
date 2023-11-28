@@ -11,12 +11,12 @@ object VMTrace {
   val vmTraceFile: Path
 
   val isSupported: Boolean
-    get() = SystemInfo.isLinux || SystemInfo.isMac || SystemInfo.isWindows
+    get() = (SystemInfo.isLinux && !SystemInfo.isAarch64) || SystemInfo.isMac || SystemInfo.isWindows
 
   init {
     if (isSupported) {
       val resourceName = when {
-        SystemInfo.isLinux -> "/libvmtrace.so"
+        SystemInfo.isLinux && !SystemInfo.isAarch64 -> "/libvmtrace.so"
         SystemInfo.isWindows -> "/libvmtrace.dll"
         SystemInfo.isMac && !SystemInfo.isAarch64 -> "/libvmtrace.dylib"
         SystemInfo.isMac && SystemInfo.isAarch64 -> "/libvmtrace-aarch64.dylib"
