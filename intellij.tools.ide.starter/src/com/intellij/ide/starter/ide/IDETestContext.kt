@@ -151,6 +151,11 @@ class IDETestContext(
       addSystemProperty("feature.usage.event.log.send.on.ide.close", false)
     }
 
+  fun disableAIAssistanceToolwindowOnIdeStart(): IDETestContext =
+    applyVMOptionsPatch {
+      addSystemProperty("llm.ai.assistant.toolwindow.activation.on.start", false)
+    }
+
   fun disableReportingStatisticsToProduction(disabled: Boolean = true) = applyVMOptionsPatch {
     addSystemProperty("idea.local.statistics.without.report", disabled)
   }

@@ -117,6 +117,7 @@ interface TestContainer<T> : Closeable {
       false -> context
         .disableInstantIdeShutdown()
         .disableFusSendingOnIdeClose()
+        .disableAIAssistanceToolwindowOnIdeStart()
         .disableLinuxNativeMenuForce()
         .withGtk2OnLinux()
         .skipGitLogIndexing()
