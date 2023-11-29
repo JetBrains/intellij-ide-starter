@@ -25,27 +25,21 @@ fun TestInfo.testMethodName(): String {
   else CurrentTestMethod.get()?.name ?: ""
 }
 
-
-private fun checkTestMethodIsNotNull(testMethod: Method?) {
-  if (testMethod == null)
-    throw IllegalArgumentException("Cannot find current test method. Most likely you need to provide testName manually in the test context")
+private fun checkTestMethodIsNotNull(testMethod: Method?): Method = requireNotNull(testMethod) {
+  "Cannot find current test method. Most likely you need to provide testName manually in the test context"
 }
+
+fun CurrentTestMethod.getName(): String = checkTestMethodIsNotNull(this.get()).name
 
 /**
  * @return Hyphenated test name from the current test method as testMethodName => test-method-name
  */
-fun CurrentTestMethod.hyphenate(): String {
-  val method: Method? = this.get()
-  checkTestMethodIsNotNull(method)
-  return requireNotNull(method).name.hyphenateTestName()
-}
+fun CurrentTestMethod.hyphenate(): String = checkTestMethodIsNotNull(this.get()).name.hyphenateTestName()
 
 /**
  * @return Hyphenated test class and test method name from the current test method as ClassName/testMethodName => class-name/test-method-name
  */
 fun CurrentTestMethod.hyphenateWithClass(): String {
-  val method: Method? = this.get()
-  checkTestMethodIsNotNull(method)
-
+  val method: Method = checkTestMethodIsNotNull(this.get())
   return "${requireNotNull(method).declaringClass.simpleName}/${method.name}".hyphenateTestName()
 }
