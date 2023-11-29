@@ -136,7 +136,7 @@ data class IndexingMetrics(
       return indexedFiles
     }
 
-  private val processingSpeedPerFileType: Map<String, Int>
+  private val processingSpeedPerFileTypeWorst: Map<String, Int>
     get() {
       val map = mutableMapOf<String, Int>()
       indexingHistories.flatMap { it.totalStatsPerFileType }.forEach { totalStatsPerFileType ->
@@ -151,6 +151,21 @@ data class IndexingMetrics(
         }
       }
       return map
+    }
+
+  private val processingSpeedPerFileTypeAvg: Map<String, Int>
+    get() {
+      val map = mutableMapOf<String, Pair<Int, Int>>()
+      indexingHistories.flatMap { it.totalStatsPerFileType }.forEach { totalStatsPerFileType ->
+        val speed = totalStatsPerFileType.totalProcessingSpeed.toKiloBytesPerSecond()
+        if (map.containsKey(totalStatsPerFileType.fileType)) {
+            map[totalStatsPerFileType.fileType] = speed + map[totalStatsPerFileType.fileType]!!.first to map[totalStatsPerFileType.fileType]!!.second + 1
+        }
+        else {
+          map[totalStatsPerFileType.fileType] = speed to 1
+        }
+      }
+      return map.mapValues { (it.value.first / it.value.second).toInt() }
     }
 
   private val processingSpeedPerBaseLanguage: Map<String, Int>
@@ -224,7 +239,7 @@ data class IndexingMetrics(
                                 value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
       PerformanceMetrics.newCounter("numberOfRunsOfScannning", value = totalNumberOfRunsOfScanning.toLong()),
       PerformanceMetrics.newCounter("numberOfRunsOfIndexing", value = totalNumberOfRunsOfIndexing.toLong())
-    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage) +
+    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeAvg) + getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeWorst, true) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage) +
            getProcessingTimeOfFileType(processingTimePerFileType) +
            collectPerformanceMetricsFromCSV(ideStartResult, "lexer", "lexing") +
            collectPerformanceMetricsFromCSV(ideStartResult, "parser", "parsing")
@@ -272,10 +287,14 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   return IndexingMetrics(startResult, jsonIndexDiagnostics)
 }
 
-private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> {
+private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>, worst: Boolean = false): List<PerformanceMetrics.Metric> {
+  val suffix = when (worst) {
+    true -> "Worst"
+    false -> "Avg"
+  }
   val list = mutableListOf<PerformanceMetrics.Metric>()
   mapFileTypeToSpeed.forEach {
-    list.add(PerformanceMetrics.newCounter("processingSpeed#${it.key}", value = it.value.toLong()))
+    list.add(PerformanceMetrics.newCounter("processingSpeed$suffix#${it.key}", value = it.value.toLong()))
   }
   return list
 }
