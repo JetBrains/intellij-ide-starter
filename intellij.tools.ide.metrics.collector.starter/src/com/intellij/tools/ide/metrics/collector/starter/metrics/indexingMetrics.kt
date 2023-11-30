@@ -12,7 +12,6 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.extension
-import kotlin.math.max
 
 /*
  * metricNumberOfIndexedFilesWritingIndexValue <= metricNumberOfIndexedFiles
@@ -136,31 +135,40 @@ data class IndexingMetrics(
       return indexedFiles
     }
 
-  private val processingSpeedPerFileType: Map<String, Int>
+  private val processingSpeedPerFileTypeWorst: Map<String, Int>
     get() {
-      val map = mutableMapOf<String, Int>()
-      indexingHistories.flatMap { it.totalStatsPerFileType }.forEach { totalStatsPerFileType ->
-        val speed = totalStatsPerFileType.totalProcessingSpeed.toKiloBytesPerSecond()
-        if (map.containsKey(totalStatsPerFileType.fileType)) {
-          if (map[totalStatsPerFileType.fileType]!! < speed) {
-            map[totalStatsPerFileType.fileType] = speed
-          }
-        }
-        else {
-          map[totalStatsPerFileType.fileType] = speed
-        }
+      return indexingHistories.flatMap { it.totalStatsPerFileType }.groupBy { it.fileType }.mapValues {
+        it.value.minOf { jsonStatsPerFileType -> jsonStatsPerFileType.totalProcessingSpeed.toKiloBytesPerSecond() }
       }
-      return map
     }
 
-  private val processingSpeedPerBaseLanguage: Map<String, Int>
+  private val processingSpeedPerFileTypeAvg: Map<String, Int>
     get() {
-      val speedMap = mutableMapOf<String, Int>()
-      indexingHistories.flatMap { it.totalStatsPerBaseLanguage }.forEach { totalStatsPerLanguage ->
-        val speed = totalStatsPerLanguage.totalProcessingSpeed.toKiloBytesPerSecond()
-        speedMap[totalStatsPerLanguage.language] = speedMap[totalStatsPerLanguage.language]?.let { max(speed, it) } ?: speed
+      return indexingHistories.flatMap { history ->
+        history.totalStatsPerFileType.map {
+          Triple(it.fileType, it.partOfTotalProcessingTime.partition * history.times.totalWallTimeWithPauses.nano, it.totalFilesSize)
+        }
+      }.computeAverageSpeed()
+    }
+
+  private fun Collection<Triple<String, Double, JsonFileSize>>.computeAverageSpeed(): Map<String, Int> = groupBy { it.first }.mapValues { entry ->
+    JsonProcessingSpeed(entry.value.sumOf { it.third.bytes }, entry.value.sumOf { it.second.toLong() }).toKiloBytesPerSecond()
+  }
+
+  private val processingSpeedPerBaseLanguageWorst: Map<String, Int>
+    get() {
+      return indexingHistories.flatMap { it.totalStatsPerBaseLanguage }.groupBy { it.language }.mapValues {
+        it.value.minOf { jsonStatsPerParentLanguage -> jsonStatsPerParentLanguage.totalProcessingSpeed.toKiloBytesPerSecond() }
       }
-      return speedMap
+    }
+
+  private val processingSpeedPerBaseLanguageAvg: Map<String, Int>
+    get() {
+      return indexingHistories.flatMap { history ->
+        history.totalStatsPerBaseLanguage.map {
+          Triple(it.language, it.partOfTotalProcessingTime.partition * history.times.totalWallTimeWithPauses.nano, it.totalFilesSize)
+        }
+      }.computeAverageSpeed()
     }
 
   private val processingTimePerFileType: Map<String, Long>
@@ -224,7 +232,10 @@ data class IndexingMetrics(
                                 value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
       PerformanceMetrics.newCounter("numberOfRunsOfScannning", value = totalNumberOfRunsOfScanning.toLong()),
       PerformanceMetrics.newCounter("numberOfRunsOfIndexing", value = totalNumberOfRunsOfIndexing.toLong())
-    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileType) + getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguage) +
+    ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeAvg, "Avg") +
+           getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeWorst, "Worst") +
+           getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguageAvg, "Avg") +
+           getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguageWorst, "Worst") +
            getProcessingTimeOfFileType(processingTimePerFileType) +
            collectPerformanceMetricsFromCSV(ideStartResult, "lexer", "lexing") +
            collectPerformanceMetricsFromCSV(ideStartResult, "parser", "parsing")
@@ -272,17 +283,14 @@ fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
   return IndexingMetrics(startResult, jsonIndexDiagnostics)
 }
 
-private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> {
-  val list = mutableListOf<PerformanceMetrics.Metric>()
-  mapFileTypeToSpeed.forEach {
-    list.add(PerformanceMetrics.newCounter("processingSpeed#${it.key}", value = it.value.toLong()))
+private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>, suffix: String): List<PerformanceMetrics.Metric> =
+  mapFileTypeToSpeed.map {
+    PerformanceMetrics.newCounter("processingSpeed$suffix#${it.key}", value = it.value.toLong())
   }
-  return list
-}
 
-private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>): List<PerformanceMetrics.Metric> =
+private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>, suffix: String): List<PerformanceMetrics.Metric> =
   mapBaseLanguageToSpeed.map {
-    PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage#${it.key}", value = it.value.toLong())
+    PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage$suffix#${it.key}", value = it.value.toLong())
   }
 
 private fun getProcessingTimeOfFileType (mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
