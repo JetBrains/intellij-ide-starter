@@ -34,11 +34,11 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
    */
   @JvmOverloads
   fun <EventType : Signal, SubscriberType : Any> subscribeTo(eventType: Class<EventType>,
-                                                          subscriber: SubscriberType,
-                                                          skipRetained: Boolean = false,
-                                                          subscribeOnlyOnce: Boolean = false,
-                                                          eventStateFilter: (EventState) -> Boolean = { true },
-                                                          callback: suspend (event: EventType) -> Unit): EventsReceiver {
+                                                             subscriber: SubscriberType,
+                                                             skipRetained: Boolean = false,
+                                                             subscribeOnlyOnce: Boolean = false,
+                                                             eventStateFilter: (EventState) -> Boolean = { true },
+                                                             callback: suspend (event: EventType) -> Unit): EventsReceiver {
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
       throw throwable
     }
@@ -55,7 +55,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
           .drop(if (skipRetained) 1 else 0)
           .filterNotNull()
           .collect { event ->
-            withContext(returnDispatcher) {
+            this.launch(returnDispatcher) {
               if (eventStateFilter(event.state)) {
                 try {
                   callback(event)
@@ -115,6 +115,7 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
    * Unsubscribe from all events
    */
   @Suppress("RAW_RUN_BLOCKING")
+  @Synchronized
   fun unsubscribe() {
     runBlocking(returnDispatcher) {
       for (subscriptions in jobs.values) {

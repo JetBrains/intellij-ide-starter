@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -21,7 +23,10 @@ import kotlin.time.Duration.Companion.seconds
  */
 open class FlowBus {
   private val flows = ConcurrentHashMap<Class<*>, MutableSharedFlow<*>>()
-  private val synchronizers = ConcurrentHashMap<Any, CountDownLatch>()
+  private val externalLatchSynchronizers = ConcurrentHashMap<Any, CountDownLatch>()
+  private val postEventLocks = ConcurrentHashMap<Int, ReentrantLock>()
+
+  private fun getLock(hash: Int): ReentrantLock = postEventLocks.getOrPut(hash) { ReentrantLock() }
 
   /**
    * Gets a MutableSharedFlow for events of the given type. Creates new if one doesn't exist.
@@ -80,31 +85,35 @@ open class FlowBus {
    * @return True - if subscribers processed the event, false - otherwise
    */
   fun <T : Signal> postAndWaitProcessing(event: T,
-                                      eventsReceiver: EventsReceiver,
-                                      retain: Boolean = true,
-                                      timeout: Duration = 30.seconds): Boolean {
-    val subscriptions = eventsReceiver.getSubscriptions(event.javaClass)
-    val subscriptionJobsSize = subscriptions.items.flatMap { it.value }.size
-    val latch = CountDownLatch(subscriptionJobsSize)
-    synchronizers[event] = latch
-    fireAndForget(event, retain)
+                                         eventsReceiver: EventsReceiver,
+                                         retain: Boolean = true,
+                                         timeout: Duration = 30.seconds): Boolean {
+    // to guarantee consistency in waiting for subscribers in case if exactly the same event passed from different threads
+    // synchronizing on event hash codes, rather the event themselves
+    return getLock(event.hashCode()).withLock {
+      val subscriptions = eventsReceiver.getSubscriptions(event.javaClass)
+      val subscriptionJobsSize = subscriptions.items.flatMap { it.value }.size
+      val latch = CountDownLatch(subscriptionJobsSize)
+      externalLatchSynchronizers[event] = latch
+      fireAndForget(event, retain)
 
-    val isSuccessful = latch.await(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
-    if (!isSuccessful) {
-      logError(
-        """${this.javaClass.name}: ${latch.count} subscribers for event ${event.javaClass.name} haven't finished their work in $timeout.
+      val isSuccessful = latch.await(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+      if (!isSuccessful) {
+        logError(
+          """${this.javaClass.name}: ${latch.count} subscribers for event ${event.javaClass.name} haven't finished their work in $timeout.
            Complete list of subscribers: ${subscriptions.items.map { it.key.javaClass }} 
         """.trimMargin()
-      )
+        )
+      }
+
+      externalLatchSynchronizers.remove(event)
+      isSuccessful
     }
-
-    synchronizers.remove(event)
-
-    return isSuccessful
+    // TODO: postEventLocks will constantly grow. Need to clean it from the old locks
   }
 
   fun <T : Signal> getSynchronizer(event: T): CountDownLatch? {
-    return synchronizers[event]
+    return externalLatchSynchronizers[event]
   }
 
   /**
