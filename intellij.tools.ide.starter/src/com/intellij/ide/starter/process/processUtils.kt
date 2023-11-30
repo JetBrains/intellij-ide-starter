@@ -172,17 +172,16 @@ private fun killProcessOnUnix(pid: Int) {
 
 fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
   return requireNotNull(
-    withRetry(retries = 10, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId", printFailuresMode = PrintFailuresMode.ONLY_LAST_FAILURE) {
+    withRetry(retries = 100, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId", printFailuresMode = PrintFailuresMode.ONLY_LAST_FAILURE) {
       getJavaProcessId(javaHome, workDir, originalProcessId, originalProcess)
     }
   ) { "Java process id must not be null" }
 }
 
 /**
- * Workaround for IDEA-251643.
- * On Linux we run IDE using `xvfb-run` tool wrapper.
- * Thus we must guess the original java process ID for capturing the thread dumps.
- * TODO: try to use java.lang.ProcessHandle to get the parent process ID.
+ * On Linux we run IDE using `xvfb-run` tool wrapper, so we need to guess the real PID.
+ * Thus, we must guess the original java process ID for capturing the thread dumps.
+ * In case of Dev Server, under xvfb-run the whole build process is happening so the waiting time can be long.
  */
 private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
   if (!SystemInfo.isLinux) {
