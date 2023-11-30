@@ -5,6 +5,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
 import kotlinx.coroutines.Dispatchers
@@ -171,7 +172,7 @@ private fun killProcessOnUnix(pid: Int) {
 
 fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
   return requireNotNull(
-    withRetry(retries = 10, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId") {
+    withRetry(retries = 10, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId", printFailuresMode = PrintFailuresMode.ONLY_LAST_FAILURE) {
       getJavaProcessId(javaHome, workDir, originalProcessId, originalProcess)
     }
   ) { "Java process id must not be null" }
