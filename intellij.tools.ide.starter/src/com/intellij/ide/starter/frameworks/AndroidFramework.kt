@@ -1,17 +1,14 @@
 package com.intellij.ide.starter.frameworks
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import org.gradle.internal.hash.Hashing
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
@@ -107,15 +104,10 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
     }
   }
 
-  fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String): Unit {
+  fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String) {
     val projectHome = testContext.resolvedProjectHome
     if (projectHome.toFile().name.startsWith("intellij-community") && !(projectHome / "android").toFile().exists()) {
-      val scriptName = "getPlugins.sh"
-
-      val script = (projectHome / scriptName).toFile()
-      assert(script.exists()) { "File $script does not exist" }
-      val scriptContent = script.readText().replace("clone", "clone --depth 1")
-      val commandLineArgs = scriptContent.split(" ")
+      val commandLineArgs = listOf("git", "clone", "git://git.jetbrains.org/idea/android.git", "android", "--depth", "1")
       val adjustedCommandLineArgs = when (intellijCommunityVersion) {
         "master" -> commandLineArgs
         else -> {
