@@ -10,8 +10,6 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
-import com.intellij.ide.starter.process.exec.ExecOutputRedirect
-import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
