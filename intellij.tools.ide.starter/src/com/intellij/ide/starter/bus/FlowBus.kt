@@ -112,30 +112,16 @@ open class FlowBus {
     // TODO: postEventLocks will constantly grow. Need to clean it from the old locks
   }
 
-  fun <T : Signal> getSynchronizer(event: T): CountDownLatch? {
+  internal fun <T : Signal> getSynchronizer(event: T): CountDownLatch? {
     return externalLatchSynchronizers[event]
   }
 
   /**
    *  Removes retained event of type [clazz]
    */
-  fun <T> dropEvent(clazz: Class<T>) {
+  private fun <T> dropEvent(clazz: Class<T>) {
     if (!flows.contains(clazz)) return
     val channel = flows[clazz] as MutableSharedFlow<T?>
     channel.tryEmit(null)
-  }
-
-  /**
-   * @see FlowBus.dropEvent
-   */
-  inline fun <reified T : Signal> dropEvent() = dropEvent(T::class.java)
-
-  /**
-   *  Removes all retained events
-   */
-  fun dropAll() {
-    flows.values.forEach {
-      (it as MutableSharedFlow<Any?>).tryEmit(null)
-    }
   }
 }
