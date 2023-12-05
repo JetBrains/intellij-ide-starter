@@ -146,7 +146,6 @@ data class IDERunContext(
     return testContext.ide.vmOptions.copy().apply {
       disableStartupDialogs()
       disableFreezeReportingProfiling()
-      usingStartupFramework()
       setFatalErrorNotificationEnabled()
       setFlagIntegrationTests()
       takeScreenshotsPeriodically()

@@ -214,8 +214,6 @@ data class VMOptions(
     }
   }
 
-  fun usingStartupFramework() = addSystemProperty("startup.performance.framework", true)
-
   fun setFlagIntegrationTests() = addSystemProperty("idea.is.integration.test", true)
 
   fun setFatalErrorNotificationEnabled() = addSystemProperty("idea.fatal.error.notification", true)
