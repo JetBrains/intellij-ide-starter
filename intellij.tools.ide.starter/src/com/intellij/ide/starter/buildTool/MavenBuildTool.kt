@@ -8,6 +8,8 @@ import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.bufferedReader
+import kotlin.io.path.bufferedWriter
 
 open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.MAVEN, testContext) {
   companion object {
@@ -69,5 +71,31 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
     testContext.applyVMOptionsPatch {
       configureLoggers(logLevel, "org.jetbrains.idea.maven")
     }
+  }
+
+  fun setPropertyInPomXml(propertyName: String,
+                          propertyValue: String,
+                          modulePath: Path = testContext.resolvedProjectHome): MavenBuildTool {
+    val pomXml = modulePath.resolve("pom.xml")
+    val propertiesTag = "<properties>"
+    val closePropertiesTag = "</properties>"
+    val newProperty = "<$propertyName>$propertyValue</$propertyName>"
+    val text = pomXml.bufferedReader().use { it.readText() }
+      .run {
+        if (contains(propertiesTag)) {
+          if (contains(propertyName)) {
+            replace("(?<=<$propertyName>)(.*)(?=</$propertyName>)".toRegex(), propertyValue)
+          }
+          else {
+            replace(propertiesTag, "$propertiesTag\n$newProperty")
+          }
+        }
+        else {
+          val closeModelVersionTag = "</modelVersion>"
+          replace(closeModelVersionTag, "$closeModelVersionTag\n$propertiesTag\n$newProperty$closePropertiesTag")
+        }
+      }
+    pomXml.bufferedWriter().use { it.write(text) }
+    return this
   }
 }
