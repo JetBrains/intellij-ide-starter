@@ -70,7 +70,7 @@ object JBRDownloader {
       false -> "x64"
     }
 
-    val jbrFileName = "jbrsdk-$majorVersion-$os-$arch-b$buildNumber.tar.gz"
+    val jbrFileName = "jbrsdk_jcef-$majorVersion-$os-$arch-b$buildNumber.tar.gz"
     val path = try {
       downloadJbr(jbrFileName)
     }
