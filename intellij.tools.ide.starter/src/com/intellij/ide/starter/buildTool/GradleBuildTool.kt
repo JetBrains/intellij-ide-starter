@@ -60,9 +60,13 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   fun getGradleDaemonLog(): Path {
+    return getGradleDaemonLogs().first()
+  }
+
+  fun getGradleDaemonLogs(): List<Path> {
     return localGradleRepoPath.resolve("daemon").resolve(getGradleVersionFromWrapperProperties())
       .listDirectoryEntries()
-      .first { it.last().extension == "log" }
+      .filter { it.last().extension == "log" }
   }
 
   fun useNewGradleLocalCache(): GradleBuildTool {
