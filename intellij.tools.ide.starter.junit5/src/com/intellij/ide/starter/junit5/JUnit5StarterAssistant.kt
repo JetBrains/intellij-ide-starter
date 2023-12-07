@@ -36,10 +36,11 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
   }
 
   override fun afterEach(context: ExtensionContext) {
+    ConfigurationStorage.instance().resetToDefault()
+
     // TODO: Find a way to wait till all subscribers finished their work
     // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
     StarterBus.LISTENER.unsubscribe()
-    ConfigurationStorage.instance().resetToDefault()
   }
 }
 
