@@ -14,6 +14,7 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
+import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
@@ -30,9 +31,13 @@ import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
 import org.kodein.di.newInstance
+import org.w3c.dom.Element
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import javax.xml.xpath.XPath
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -515,24 +520,42 @@ class IDETestContext(
     if (this.testCase.projectInfo == NoProject) return this
 
     val path = projectPath ?: this.resolvedProjectHome.normalize()
-
     val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
-    trustedXml.parent.createDirectories()
-    if (addParentDir) {
-      val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
-      trustedXml.writeText(
-        text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
-          .replace("""<option value="" />""", "<option value=\"${path.parent}\" />")
-      )
+    if (trustedXml.exists()) {
+      try {
+        val xmlDoc = XmlBuilder.parse(trustedXml)
+        val xp: XPath = XPathFactory.newInstance().newXPath()
+
+        val map = xp.evaluate("//component[@name='Trusted.Paths']/option[@name='TRUSTED_PROJECT_PATHS']/map", xmlDoc,
+                              XPathConstants.NODE) as Element
+        val entry = xmlDoc.createElement("entry")
+        entry.setAttribute("key", "$path")
+        entry.setAttribute("value", "true")
+        map.appendChild(entry)
+
+        XmlBuilder.writeDocument(xmlDoc, trustedXml)
+      }
+      catch (e: Exception) {
+        logError(e)
+      }
     }
     else {
-      val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
-      trustedXml.writeText(
-        text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
-      )
+      trustedXml.parent.createDirectories()
+      if (addParentDir) {
+        val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
+        trustedXml.writeText(
+          text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
+            .replace("""<option value="" />""", "<option value=\"${path.parent}\" />")
+        )
+      }
+      else {
+        val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
+        trustedXml.writeText(
+          text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
+        )
+      }
     }
-
     return this
   }
 
