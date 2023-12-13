@@ -356,15 +356,15 @@ object Git {
   fun createWorktree(dir: Path, targetBranch: String, worktree_dir: String, commit: String = ""): String {
     val stdout = ExecOutputRedirect.ToString()
     val stderr = ExecOutputRedirect.ToString()
-    val arguments = mutableListOf("git", "worktree", "add")
+    val arguments = mutableListOf("git", "worktree", "add", "-f")
     val isBranchCreated = getLocalBranches(dir).contains(targetBranch)
+    pruneWorktree(dir)
     when (isBranchCreated) {
       false -> {
         arguments.addAll(listOf("-b", targetBranch, worktree_dir))
         if (commit.isNotEmpty()) arguments.add(commit)
       }
       true -> {
-        pruneWorktree(dir)
         arguments.addAll(listOf(worktree_dir, targetBranch))
       }
     }
