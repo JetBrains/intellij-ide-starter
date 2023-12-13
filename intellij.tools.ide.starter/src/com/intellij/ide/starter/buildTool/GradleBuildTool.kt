@@ -223,7 +223,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     val propFile = testContext.resolvedProjectHome.resolve("gradle").resolve("wrapper").resolve("gradle-wrapper.properties")
     if (propFile.exists()) {
       val lineToReplace = propFile.readLines(Charsets.ISO_8859_1).filter { it.startsWith("distributionUrl") }[0]
-      val newLine = lineToReplace.replace("\\d\\.\\d".toRegex(), newVersion)
+      val newLine = lineToReplace.replace("\\d.*\\d".toRegex(), newVersion)
       propFile.writeText(propFile.readText().replace(lineToReplace, newLine))
     }
     return this
