@@ -4,6 +4,7 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.FileSystem.cleanPathFromSlashes
 import com.intellij.ide.starter.utils.JvmUtils
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.util.common.logOutput
@@ -82,8 +83,18 @@ data class VMOptions(
 
   fun removeSystemProperty(key: String, value: Boolean) {
     logOutput("Removing system property: [$key=$value]")
+
+    // FIXME this is a side effect that is not negated by addSystemProperty
     System.clearProperty(key) // to synchronize behaviour in IDEA and on test runner side
+
     removeLine(line = "-D$key=$value")
+  }
+
+  fun clearSystemProperty(key: String) {
+    data = data.filterNot {
+     it.startsWith("-D$key=")
+        .also { match -> if (match) logOutput("Removing system property: ${it.removePrefix("-D")}") }
+    }
   }
 
   fun addLine(line: String, filterPrefix: String? = null) {
@@ -131,9 +142,9 @@ data class VMOptions(
   fun writeJavaArgsFile(theFile: Path) = JvmUtils.writeJvmArgsFile(theFile, this.data)
 
   fun overrideDirectories(paths: IDEDataPaths) = run {
-    addSystemProperty("idea.config.path", paths.configDir)
-    addSystemProperty("idea.system.path", paths.systemDir)
-    addSystemProperty("idea.plugins.path", paths.pluginsDir)
+    addSystemProperty(PathManager.PROPERTY_CONFIG_PATH, paths.configDir)
+    addSystemProperty(PathManager.PROPERTY_SYSTEM_PATH, paths.systemDir)
+    addSystemProperty(PathManager.PROPERTY_PLUGINS_PATH, paths.pluginsDir)
   }
 
 
