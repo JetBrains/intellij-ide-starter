@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.io.systemIndependentPath
 import org.apache.http.client.methods.HttpGet
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -122,7 +123,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
-  fun setGradleJvmInProject(useJavaHomeAsGradleJvm: Boolean = true): GradleBuildTool {
+  private fun setGradleJvm(value: String?): GradleBuildTool {
     try {
       if (gradleXmlPath.notExists()) return this
       val xmlDoc = parseGradleXmlConfig()
@@ -135,10 +136,10 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       XmlBuilder.findNode(options) { it.getAttribute("name") == "gradleJvm" }
         .ifPresent { node -> gradleSettings.item(0).removeChild(node) }
 
-      if (useJavaHomeAsGradleJvm) {
+      if (value != null) {
         val option = xmlDoc.createElement("option")
         option.setAttribute("name", "gradleJvm")
-        option.setAttribute("value", "#JAVA_HOME")
+        option.setAttribute("value", value)
         gradleSettings.item(0).appendChild(option)
       }
 
@@ -148,6 +149,16 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
       logError(e)
     }
 
+    return this
+  }
+
+  fun setGradleJavaHomePath(jdkHome: Path): GradleBuildTool = apply {
+    setGradleJvm(jdkHome.systemIndependentPath)
+  }
+
+  fun setGradleJvmAsJavaHome(useJavaHomeAsGradleJvm: Boolean = true): GradleBuildTool {
+    val value = if (useJavaHomeAsGradleJvm) "#JAVA_HOME" else null
+    setGradleJvm(value)
     return this
   }
 
