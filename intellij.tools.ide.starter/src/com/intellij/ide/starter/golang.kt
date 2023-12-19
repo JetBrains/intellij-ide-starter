@@ -13,10 +13,12 @@ fun downloadGoSdk(version: String): Path {
     SystemInfo.isMac -> "darwin"
     else -> error("Unknown OS")
   }
+  val arch = if (SystemInfo.isAarch64) "arm64" else "amd64"
   val extension = if (SystemInfo.isWindows) ".zip" else ".tar.gz"
-  val url = "https://cache-redirector.jetbrains.com/dl.google.com/go/go$version.$os-amd64$extension"
+  val sdkFileName = "go$version.$os-$arch$extension"
+  val url = "https://cache-redirector.jetbrains.com/dl.google.com/go/$sdkFileName"
   val dirToDownload = GlobalPaths.instance.getCacheDirectoryFor("go-sdk/$version")
-  val downloadedFile = dirToDownload.resolve("go$version.$os-amd64$extension")
+  val downloadedFile = dirToDownload.resolve(sdkFileName)
   val goRoot = dirToDownload.resolve("go-roots")
   if (goRoot.toFile().exists()) {
     return goRoot.resolve("go")
