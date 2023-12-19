@@ -13,6 +13,7 @@ import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.tools.ide.util.common.log
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.systemIndependentPath
@@ -125,6 +126,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
   private fun setGradleJvm(value: String?): GradleBuildTool {
     try {
+      logOutput("Set gradle JVM value: ${value}")
       if (gradleXmlPath.notExists()) return this
       val xmlDoc = parseGradleXmlConfig()
 
