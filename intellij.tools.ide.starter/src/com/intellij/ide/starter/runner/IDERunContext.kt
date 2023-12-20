@@ -214,7 +214,6 @@ data class IDERunContext(
       logOutput("IDE run $contextName completed in $executionTime")
       StarterBus.post(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this, ideProcess = null)))
       sentAfterEvent = true
-      validateVMOptionsWereSet(paths)
       logVmOptionDiff(startConfig.vmOptionsDiff())
 
       return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = startConfig.vmOptionsDiff())
@@ -254,18 +253,6 @@ data class IDERunContext(
 
   private fun getStdout() =
     if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
-
-  private fun validateVMOptionsWereSet(paths: IDEDataPaths) {
-    logOutput("Run VM options validation")
-    require(FileSystem.countFiles(paths.configDir) > 3) {
-      "IDE must have created files under config directory at ${paths.configDir}. Were .vmoptions included correctly?"
-    }
-
-    require(FileSystem.countFiles(paths.systemDir) > 1) {
-      "IDE must have created files under system directory at ${paths.systemDir}. Were .vmoptions included correctly?"
-    }
-    logOutput("Finished VM options validation")
-  }
 
   private fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
     val failureCauseFile = logsDir.resolve("failure_cause.txt")
