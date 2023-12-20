@@ -408,7 +408,7 @@ object Git {
     ProcessExecutor(
       "git-build-diff",
       workDir = dir, timeout = 1.minutes,
-      args = listOf("git", "diff","--output=${outputFile.toFile().absolutePath}", file.absolutePath),
+      args = listOf("git", "diff", "--output=${outputFile.toFile().absolutePath}", file.absolutePath),
     ).start()
   }
 
@@ -437,6 +437,15 @@ object Git {
     ).start()
 
     return stdout.read().trim().toLong()
+  }
+
+  fun buildCommitGraph(dir: Path) {
+    ProcessExecutor(
+      "git-commit-graph",
+      workDir = dir.toAbsolutePath(),
+      timeout = 15.minutes,
+      args = listOf("git", "commit-graph", "write", "--reachable", "--changed-paths"),
+    ).start()
   }
 
 }
