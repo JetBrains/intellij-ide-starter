@@ -439,13 +439,18 @@ object Git {
     return stdout.read().trim().toLong()
   }
 
-  fun buildCommitGraph(dir: Path) {
+  /**
+   * @return Duration of command call
+   */
+  fun buildCommitGraph(dir: Path): Long {
+    val start = System.currentTimeMillis()
     ProcessExecutor(
       "git-commit-graph",
       workDir = dir.toAbsolutePath(),
       timeout = 15.minutes,
       args = listOf("git", "commit-graph", "write", "--reachable", "--changed-paths"),
     ).start()
+    return System.currentTimeMillis() - start
   }
 
 }
