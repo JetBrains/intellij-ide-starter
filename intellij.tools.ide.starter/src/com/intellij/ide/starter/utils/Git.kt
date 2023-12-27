@@ -440,7 +440,7 @@ object Git {
   }
 
   /**
-   * @return Duration of command call
+   * @return Duration in millis of command call
    */
   fun buildCommitGraph(dir: Path): Long {
     val start = System.currentTimeMillis()
