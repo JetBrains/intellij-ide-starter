@@ -10,13 +10,14 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
+import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.kodein.di.direct
 import org.kodein.di.instance
 
-open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
+open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback, AfterAllCallback {
   override fun beforeEach(context: ExtensionContext) {
     if (context.testMethod.isPresent) {
       di.direct.instance<CurrentTestMethod>().set(context.testMethod.get())
@@ -41,6 +42,10 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback {
     // TODO: Find a way to wait till all subscribers finished their work
     // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
     StarterBus.LISTENER.unsubscribe()
+  }
+
+  override fun afterAll(p: ExtensionContext) {
+    di.direct.instance<CurrentTestMethod>().set(null)
   }
 }
 

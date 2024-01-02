@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference
 object CurrentTestMethod {
   private lateinit var testMethod: AtomicReference<Method>
 
-  fun set(method: Method) {
+  fun set(method: Method?) {
     if (this::testMethod.isInitialized) {
       testMethod.set(method)
     }
