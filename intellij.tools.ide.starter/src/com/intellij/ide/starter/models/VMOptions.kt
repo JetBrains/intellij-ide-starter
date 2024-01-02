@@ -279,4 +279,9 @@ data class VMOptions(
   }
 
   fun isUnderDebug(): Boolean = ManagementFactory.getRuntimeMXBean().inputArguments.any { it.startsWith("-agentlib:jdwp") }
+
+  fun enforceSplash() = addLine("-Dsplash=true")
+
+  @Suppress("SpellCheckingInspection")
+  fun enforceNoSplash() = addLine("-Dnosplash=true")
 }
