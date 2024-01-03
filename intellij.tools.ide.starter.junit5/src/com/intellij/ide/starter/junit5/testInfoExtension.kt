@@ -39,7 +39,13 @@ fun CurrentTestMethod.hyphenate(): String = checkTestMethodIsNotNull(this.get())
 /**
  * @return Hyphenated test class and test method name from the current test method as ClassName/testMethodName => class-name/test-method-name
  */
-fun CurrentTestMethod.hyphenateWithClass(): String {
+fun CurrentTestMethod.hyphenateWithClass(): String = qualifiedName().hyphenateTestName()
+
+
+/**
+ * Returns the qualified name of the current test method. Eg: `com.intellij.xyz.tests.ClassTest.testMethod`
+ */
+fun CurrentTestMethod.qualifiedName(): String {
   val method: Method = checkTestMethodIsNotNull(this.get())
-  return "${requireNotNull(method).declaringClass.simpleName}/${method.name}".hyphenateTestName()
+  return "${method.declaringClass.simpleName}/${method.name}"
 }
