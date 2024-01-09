@@ -70,7 +70,7 @@ data class IdeInfo(
 
   val installerFileExt
     get() = when {
-      SystemInfo.isWindows -> ".win.zip"
+      SystemInfo.isWindows -> ".exe"
       SystemInfo.isLinux -> ".tar.gz"
       SystemInfo.isMac -> when (System.getProperty("os.arch")) {
         "x86_64" -> ".dmg"
