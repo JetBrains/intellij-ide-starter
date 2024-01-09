@@ -9,8 +9,9 @@ import com.intellij.tools.ide.metrics.collector.telemetry.getMetricsFromSpanAndC
 /**
  * Collect spans from opentelemetry.json and convert it to metrics, understandable by IJ Perf dashboard
  */
-class OpenTelemetrySpanCollector(val spanNames: List<String>) : MetricsCollector {
+class OpenTelemetrySpanCollector(val spanNames: List<String>, private val aliases: Map<String, String> = mapOf()) : MetricsCollector {
   override fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric> {
-    return getMetricsFromSpanAndChildren(runContext.logsDir.resolve(IDETestContext.OPENTELEMETRY_FILE), SpanFilter.containsNameIn(spanNames))
+    return getMetricsFromSpanAndChildren(runContext.logsDir.resolve(IDETestContext.OPENTELEMETRY_FILE),
+                                         SpanFilter.containsNameIn(spanNames), aliases = aliases)
   }
 }
