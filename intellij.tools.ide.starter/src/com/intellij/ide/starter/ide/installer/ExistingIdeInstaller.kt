@@ -8,6 +8,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import org.apache.commons.io.FileUtils
 import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.io.path.name
 
 /**
  * Use existing installed IDE instead of downloading one.
@@ -26,7 +27,8 @@ class ExistingIdeInstaller(private val installedIdePath: Path) : IdeInstaller {
     val installDir = GlobalPaths.instance
                        .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
     installDir.toFile().deleteRecursively()
-    FileUtils.copyDirectory(installedIdePath.toFile(), installDir.toFile())
+    val installedIde = installedIdePath.toFile()
+    FileUtils.copyDirectory(installedIde, installDir.resolve(installedIdePath.name).toFile())
     return Pair(
       ideInstaller.buildNumber,
       IdeDistributionFactory.installIDE(installDir.toFile(), ideInfo.executableFileName)
