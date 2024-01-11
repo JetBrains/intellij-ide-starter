@@ -8,20 +8,24 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
+import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.tools.plugin.checker.ErrorsDiffReporter
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
+import com.intellij.util.containers.ContainerUtil.subtract
 import com.intellij.util.system.OS
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
@@ -35,6 +39,7 @@ import java.net.URI
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.div
 
 
 @ExtendWith(JUnit5StarterAssistant::class)
@@ -208,30 +213,41 @@ class InstallPluginTest {
     }
   }
 
+  private fun createTestContext(params: EventToTestCaseParams, configurator: IDETestContext.()->Unit = {}): IDETestContext {
+    val testContext = Starter
+      .newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = params.testCase)
+      .prepareProjectCleanImport()
+      .setSharedIndexesDownload(enable = true)
+      .setLicense(System.getenv("LICENSE_KEY"))
+
+    testContext.configurator()
+
+    return testContext
+  }
+
   @ParameterizedTest
   @MethodSource("data")
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
+    val testContextWithoutPlugin = createTestContext(params)
+    val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(commands = CommandChain().exitApp()).runContext
+    val errorsWithoutPlugin = ErrorsDiffReporter.collectErrors(ideRunContextWithoutPlugin.logsDir / ErrorReporter.ERRORS_DIR_NAME)
+
     try {
-      val testContext = Starter
-        .newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = params.testCase)
-        .prepareProjectCleanImport()
-        .setSharedIndexesDownload(enable = true)
-        .apply {
-          try {
-            pluginConfigurator.installPluginFromURL(params.event.file)
-          }
-          catch (e: IOException) {
-            //plugin is in removal state and not available
-            return
-          }
-        }
-        .setLicense(System.getenv("LICENSE_KEY"))
-      testContext.runIDE(commands = CommandChain().exitApp())
+      val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
+      val ideRunContext = testContext.runIDE(commands = CommandChain().exitApp()).runContext
+      val errors = ErrorsDiffReporter.collectErrors(ideRunContext.logsDir / ErrorReporter.ERRORS_DIR_NAME)
+
+      val diff = subtract(errors, errorsWithoutPlugin).toList()
+
+      ErrorsDiffReporter.reportErrors(ideRunContext, diff)
     }
-    catch (e: PluginNotFoundException) {
-      //don't run the test if plugin was removed by author
-      return
+    catch (ex: Exception) {
+      when (ex) {
+        is IOException, //plugin is in removal state and not available
+        is PluginNotFoundException -> return //don't run the test if plugin was removed by author
+        else -> throw ex
+      }
     }
   }
 }

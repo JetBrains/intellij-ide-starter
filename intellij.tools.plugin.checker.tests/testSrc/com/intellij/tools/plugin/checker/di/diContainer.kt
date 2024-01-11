@@ -8,6 +8,8 @@ import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
+import com.intellij.ide.starter.report.ErrorReporter
+import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -30,6 +32,9 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
 
         bindSingleton<CIServer>(overrides = true) {
           TeamCityCIServer(systemPropertiesFilePath)
+        }
+        bindSingleton<ErrorReporter>(overrides = true) {
+          object: ErrorReporter { override fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext, isRunSuccessful: Boolean) {} }
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }

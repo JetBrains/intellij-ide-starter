@@ -15,6 +15,8 @@ import com.intellij.ide.starter.models.IdeProductImp
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.InstallerGlobalPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
+import com.intellij.ide.starter.report.ErrorReporter
+import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
@@ -40,6 +42,7 @@ import java.net.URI
 var di = DI {
   bindSingleton<GlobalPaths> { InstallerGlobalPaths() }
   bindSingleton<CIServer> { NoCIServer }
+  bindSingleton<ErrorReporter> { ErrorReporterToCI }
   bindSingleton<FailureDetailsOnCI> { object : FailureDetailsOnCI {} }
   bindFactory<IDETestContext, PluginConfigurator> { testContext: IDETestContext -> PluginConfigurator(testContext) }
   bindSingleton<IdeDownloader> { PublicIdeDownloader }
