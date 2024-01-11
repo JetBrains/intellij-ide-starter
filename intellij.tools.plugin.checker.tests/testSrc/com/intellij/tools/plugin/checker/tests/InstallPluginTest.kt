@@ -79,19 +79,6 @@ class InstallPluginTest {
     }
 
     /**
-     * Extract only 'sns_message_body' from text like this:
-     * ##type='sns' triggerId='TRIGGER_1' queueMergingEnabled='false' sns_message_body='{JSON_CONTENT}'
-     */
-    private fun String.extractSnsMessageBody(): String {
-      val matchResult = Regex("sns_message_body='(.)*'").find(this)
-
-      requireNotNull(matchResult) { "Error happened during parsing trigger parameters. Expecting `sns_message_body` param" }
-
-      return matchResult.groups.single { it != null && it.value.startsWith("sns_message_body") }!!
-        .value.removePrefix("sns_message_body='").removeSuffix("'")
-    }
-
-    /**
      * Json we get, isn't valid. So we have to do regexp thing before deserialization
      */
     private fun String.extractMarketplaceDetailPayload(): String {
@@ -114,14 +101,18 @@ class InstallPluginTest {
     }
 
     private fun getMarketplaceEvent(): MarketplaceEvent {
-      val triggeredByJsonNode = TeamCityClient.run {
+      val buildProperties = TeamCityClient.run {
         get(
-          fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}?fields=triggered(displayText)")
+          fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}/resulting-properties")
         ) { it.withAuth() }
       }
-      val displayTextField = requireNotNull(triggeredByJsonNode.first().first().asText())
 
-      return deserializeMessageFromMarketplace(displayTextField.extractSnsMessageBody())
+      val snsMessageBody = buildProperties.path("property")
+        .firstOrNull { it.get("name").asText() == "sns.message.body" }
+        ?.get("value")?.asText()
+      requireNotNull(snsMessageBody) { "Couldn't read the sns.message.body build configuration parameter" }
+
+      return deserializeMessageFromMarketplace(snsMessageBody)
     }
 
     @JvmStatic
