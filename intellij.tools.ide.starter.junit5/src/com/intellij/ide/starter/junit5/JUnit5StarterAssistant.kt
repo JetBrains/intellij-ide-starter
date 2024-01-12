@@ -4,6 +4,7 @@ import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.junit5.config.DoNotKillOutdatedIDEsBetweenTests
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.killOutdatedProcesses
 import com.intellij.ide.starter.runner.CurrentTestMethod
@@ -33,7 +34,8 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback, After
       })
     }
 
-    killOutdatedProcesses()
+    // Impossible to reuse common approach with StarterConfigurationStorage since JUnit5 callbacks order of execution isn't defined.
+    if (DoNotKillOutdatedIDEsBetweenTests.shouldBeKilled) killOutdatedProcesses()
   }
 
   override fun afterEach(context: ExtensionContext) {
