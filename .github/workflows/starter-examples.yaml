@@ -29,3 +29,14 @@ jobs:
         with:
           arguments: clean build test
           build-root-directory: intellij.tools.ide.starter.examples
+      - name: Notify in Slack in case of failure
+        uses: slackapi/slack-github-action@v1.24.0
+        if: ${{ failure() }}
+        with:
+          payload: |
+            {
+              "channel": "ij-starter-github-failures",
+              "text": ":x: The workflow has failed on <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.event.head_commit.message }}>"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
