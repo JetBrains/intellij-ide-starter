@@ -237,7 +237,8 @@ data class VMOptions(
   fun withJvmCrashLogDirectory(jvmCrashLogDirectory: Path) =
     addLine("-XX:ErrorFile=${jvmCrashLogDirectory.toAbsolutePath()}${File.separator}java_error_in_idea_%p.log", "-XX:ErrorFile=")
 
-  fun withHeapDumpOnOutOfMemoryDirectory(directory: Path) = addLine("-XX:HeapDumpPath=${directory.toAbsolutePath()}", "-XX:HeapDumpPath=")
+  fun withHeapDumpOnOutOfMemoryDirectory(directory: Path) =
+    addLine("-XX:HeapDumpPath=${directory.toAbsolutePath()}${File.separator}heap-dump.hprof", "-XX:HeapDumpPath=")
 
   fun withXmx(sizeMb: Int) = addLine("-Xmx" + sizeMb + "m", "-Xmx")
 
