@@ -2,6 +2,7 @@ package com.intellij.ide.starter.sdk
 
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.runner.SetupException
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
@@ -13,6 +14,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+
+class DownloadJDKException() : SetupException("JDK list is empty")
 
 object JdkDownloaderFacade {
 
@@ -32,9 +35,10 @@ object JdkDownloaderFacade {
         true -> "jbr"
         else -> "corretto"
       }
-    return jdks.single {
+
+    return jdks.singleOrNull{
       it.jdk.sharedIndexAliases.contains("$jdkName-$version")
-    }
+    } ?: throw DownloadJDKException()
   }
 
   val allJdks by lazy {
