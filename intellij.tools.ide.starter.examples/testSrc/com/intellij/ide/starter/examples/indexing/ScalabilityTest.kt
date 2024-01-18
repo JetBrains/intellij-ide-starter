@@ -5,6 +5,8 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
+import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain

@@ -3,6 +3,8 @@ package com.intellij.ide.starter.examples.junit5
 import com.intellij.ide.starter.examples.data.TestCases
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.ide.metrics.collector.starter.collector.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
@@ -56,7 +58,7 @@ class IdeaJUnit5ExampleTest {
       .setSharedIndexesDownload(enable = true)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
-    getMetricsFromSpanAndChildren(result, SpanFilter.equals("globalInspections")).forEach {
+    getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("globalInspections")).forEach {
       println("Name: " + it.id.name)
       println("Value: " + it.value + "ms")
     }
