@@ -7,6 +7,8 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 import java.net.URI
 import java.nio.file.Path
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.bufferedReader
@@ -55,6 +57,20 @@ open class TeamCityCIServer(
       }
     }
     return false
+  }
+
+  val buildStartTime: String by lazy {
+    if(buildId == LOCAL_RUN_ID) {
+      ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME)
+    } else {
+      val fullUrl = TeamCityClient.guestAuthUri.resolve("builds/id:${buildId}?fields=startDate")
+      TeamCityClient.get(fullUrl).fields().asSequence().firstOrNull { it.key == "startDate" }?.value?.asText()?.let {
+        runCatching {
+          ZonedDateTime.parse(it, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
+        }.getOrNull()
+      }
+      ?: ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME)
+    }
   }
 
   private val listOfPatternsWhichShouldBeIgnored by lazy {
@@ -146,8 +162,9 @@ open class TeamCityCIServer(
     getBuildParam("build.is.personal").equals("true", ignoreCase = true)
   }
 
+  private val LOCAL_RUN_ID = "LOCAL_RUN_SNAPSHOT"
   val buildId: String by lazy {
-    getBuildParam("teamcity.build.id") ?: "LOCAL_RUN_SNAPSHOT"
+    getBuildParam("teamcity.build.id") ?: LOCAL_RUN_ID
   }
   val teamcityAgentName by lazy { getBuildParam("teamcity.agent.name") }
   val teamcityCloudProfile by lazy { getBuildParam("system.cloud.profile_id") }
