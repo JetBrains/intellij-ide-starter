@@ -162,6 +162,7 @@ open class TeamCityCIServer(
     getBuildParam("build.is.personal").equals("true", ignoreCase = true)
   }
 
+  private val LOCAL_RUN_ID = "LOCAL_RUN_SNAPSHOT"
   val buildId: String by lazy {
     getBuildParam("teamcity.build.id") ?: LOCAL_RUN_ID
   }
