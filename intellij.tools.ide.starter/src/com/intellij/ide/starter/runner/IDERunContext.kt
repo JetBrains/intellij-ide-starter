@@ -204,9 +204,7 @@ data class IDERunContext(
         }
       }
 
-      val mergedEnvVariables = (startConfig.environmentVariables + vmOptions.environmentVariables).toMutableMap().apply {
-        putIfAbsent("JAVA_HOME", jdkHome.absolutePathString())
-      }
+      val mergedEnvVariables = (startConfig.environmentVariables + vmOptions.environmentVariables).toMutableMap()
 
       logDisabledPlugins(paths)
       logStartupInfo(vmOptions)
