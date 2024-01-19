@@ -2,13 +2,102 @@
 
 #### Overview
 
-This repository contains the core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/README.md)
+This repository contains the core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/blob/master/README.md)
+
+##### Basics
+Test starts IDE in a separate process so the test runtime and the IDE runtime are isolated.
+To control IDE you should use commands. 
+There are two ways to make the IDE execute the command
+1) Write a scenario to the file (list of plain text strings in a special format) and pass it to the IDE
+2) trigger single command remotely with a JMX call (Driver implementation).  
+   Currently is not available in a public version of Starter.
+
+In both cases commands will be executed via [performanceTestingPlugin](https://github.com/JetBrains/intellij-community/tree/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting) or it's extension points.
+
+List of basic out-of-the-box commands that goes with performanceTestingPlugin is available [here](https://github.com/JetBrains/intellij-community/blob/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt#L4)
+
 
 ##### Run with JUnit5
+Starter isn't bound to any of test engines, so you can run it via any test engine you like.  
+But there is ready to use JUnit5 integration library and [examples of tests based on JUnit5 can be found here](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit5/IdeaJUnit5ExampleTest.kt)
 
-[Example of test based on JUnit5](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit5/IdeaJUnit5ExampleTest.kt)
 
-#### What behaviour might be extended / modified
+##### Short guide how to write your own command/extension of performanceTestingPlugin
+As earlier was said, the performanceTesting plugin does all the job to execute your commands in IDE.  
+To implement your own commands you need to create a plugin that extends performanceTestingPlugin.
+
+Basic setup should look something like this:
+
+Create a `resources/META-INF/plugin.xml`
+```
+<idea-plugin>
+  <name>Your plugin name</name>
+  <id>com.intellij.performancePlugin.myPlugin</id>
+
+  <description>My integration tests</description>
+  <depends>com.jetbrains.performancePlugin</depends>
+  <depends>com.intellij.modules.lang</depends>
+
+  <extensions defaultExtensionNs="com.jetbrains">
+    <performancePlugin.commandProvider implementation="com.intellij.myPlugin.performanceTesting.MyPluginCommandProvider"/>
+  </extensions>
+</idea-plugin>
+```
+
+Then create a command provider
+```
+package com.intellij.myPlugin.performanceTesting
+
+class MyPluginCommandProvider : CommandProvider {
+  override fun getCommands() = mapOf(
+      Pair(MyCommand.PREFIX, CreateCommand(::MyCommand)),
+    )
+}
+```
+
+And implementation of your own command
+```
+package com.intellij.myPlugin.performanceTesting.command
+
+import com.intellij.openapi.ui.playback.PlaybackContext
+import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
+
+internal class MyCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+  companion object {
+    const val PREFIX = CMD_PREFIX + "myCommandName"
+  }
+
+  override suspend fun doExecute(context: PlaybackContext) {
+    TODO("YOUR CODE HERE")
+  }
+}
+```
+
+Test implementation (that will use Starter and tell the plugin to invoke your command) will like this
+```
+fun <T : CommandChain> T.runMyCommand(): T {
+  addCommand(CMD_PREFIX + "myCommandName")
+  return this
+}
+
+class ExampleOfMyCommandTest {
+
+  @Test
+  fun invokeMyCommand() {
+    val context = Starter.newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = TestCases.IU.JitPackAndroidExample)
+      .skipIndicesInitialization() // skip indicies if indexing isn't necessary for test
+
+    context.runIDE(
+      commands = CommandChain()
+        .runMyCommand()
+        .exitApp()
+    )
+  }
+}
+```
+
+
+#### How to override/modify default starter behavior
 
 You can modify or extend any behavior initialized through the Kodein DI framework according to your needs. To do so, refer to the    
 [DI container initialization](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt)  
@@ -42,9 +131,11 @@ Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,ser
 After seeing the console prompt to connect remotely to port 5005, run the created run configuration.
 
 
-### Using Tweaks to Modify Starter Behavior
+### Using JUnit5 extensions to modify Starter behavior
 
 For JUnit5, there are several extensions with the Tweak prefix, which provide a convenient way to set configuration variables as needed.
+List of extensions [can be found here](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter.junit5/src/com/intellij/ide/starter/junit5/config)
+
 
 Example:
 ```
@@ -55,7 +146,8 @@ class ClassWithTest {
 }
 ```
 
-The configuration storage is `com.intellij.ide.starter.config.StarterConfigurationStorage`
+Also you might find useful environment variables, that can tweak Starter behavior.  
+They are located in configuration storage in `com.intellij.ide.starter.config.StarterConfigurationStorage`
 
 ### Downloading custom releases
 Downloading Custom Releases
@@ -66,3 +158,9 @@ By default, when useEAP or useRelease methods are called, IDE installers will be
 
 There are two ways to modify the VM options. One is on `IDETestContext` and another on `IDERunContext`. The first one is used to modify
 VM options for the whole context that can be reused between runs. The second is used to modify VM options just for the current run.
+
+
+### Performance testing
+
+Out of the box Starter can collect OpenTelemetry metrics.
+Appropriate modules for metrics collection [can be found here](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.metrics.collector.starter)
