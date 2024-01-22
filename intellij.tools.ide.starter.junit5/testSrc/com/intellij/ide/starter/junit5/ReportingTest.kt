@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize
@@ -15,8 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.kodein.di.direct
-import org.kodein.di.instance
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
@@ -39,6 +36,9 @@ class ReportingTest {
         Arguments.of("some-text.db451f59", "some-text.<HASH>"),
         Arguments.of("0x01", "<HEX>"),
         Arguments.of("text1234text", "text<NUM>text"),
+        Arguments.of("repository-f18efc81", "repository-<NUM>"),
+        Arguments.of("repository-cd183e2b", "repository-<NUM>"),
+        Arguments.of("cd183e2b-repository", "<NUM>-repository"),
       )
     }
   }

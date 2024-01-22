@@ -32,6 +32,7 @@ fun generifyErrorMessage(originalMessage: String): String {
   return originalMessage
     .generifyID()
     .generifyHash()
+    .generifyHexadecimal()
     .generifyHexCode()
     .generifyNumber()
 }
@@ -47,6 +48,19 @@ fun String.generifyID(omitDollarSign: Boolean = false): String {
 /** some-text.db451f59 => some-text.<HASH> */
 fun String.generifyHash(): String = this
   .replace("[.]([A-Za-z]+\\d|\\d+[A-Za-z])[A-Za-z\\d]*".toRegex(), ".<HASH>")
+
+fun String.generifyHexadecimal(): String {
+  val hexNumber ="[a-fA-F0-9]{2,}"
+  val specialChars = "[\\W_]"
+  val regex = Regex("($specialChars)($hexNumber)|($hexNumber)($specialChars)")
+  return this.replace(regex) {
+    if (it.groupValues[2].isNotEmpty()) {
+      "${it.groupValues[1]}<NUM>"
+    } else {
+      "<NUM>${it.groupValues[4]}"
+    }
+  }
+}
 
 /** 0x01 => <HEX> */
 fun String.generifyHexCode(): String = this.replace("0x[\\da-fA-F]+".toRegex(), "<HEX>")
