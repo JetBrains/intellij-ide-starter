@@ -1,13 +1,10 @@
 package com.intellij.ide.starter.report
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import io.qameta.allure.AllureResultsWriter
 import io.qameta.allure.FileSystemResultsWriter
 import io.qameta.allure.model.TestResult
 import io.qameta.allure.model.TestResultContainer
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.div
