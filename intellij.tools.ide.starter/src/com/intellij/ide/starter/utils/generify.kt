@@ -52,12 +52,14 @@ fun String.generifyHash(): String = this
 fun String.generifyHexadecimal(): String {
   val hexNumber ="[a-fA-F0-9]{2,}"
   val specialChars = "[\\W_]"
-  val regex = Regex("($specialChars)($hexNumber)|($hexNumber)($specialChars)")
+  val regex = Regex("($specialChars)($hexNumber)$|^($hexNumber)($specialChars)|($specialChars)($hexNumber)($specialChars)")
   return this.replace(regex) {
     if (it.groupValues[2].isNotEmpty()) {
       "${it.groupValues[1]}<NUM>"
-    } else {
+    } else if (it.groupValues[4].isNotEmpty()) {
       "<NUM>${it.groupValues[4]}"
+    } else {
+      "${it.groupValues[5]}<NUM>${it.groupValues[7]}"
     }
   }
 }

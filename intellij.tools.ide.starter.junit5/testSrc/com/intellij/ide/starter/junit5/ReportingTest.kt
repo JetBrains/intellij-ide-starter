@@ -39,6 +39,8 @@ class ReportingTest {
         Arguments.of("repository-f18efc81", "repository-<NUM>"),
         Arguments.of("repository-cd183e2b", "repository-<NUM>"),
         Arguments.of("cd183e2b-repository", "<NUM>-repository"),
+        Arguments.of("repository-cd183e2b-repository", "repository-<NUM>-repository"),
+        Arguments.of("Library 'org.jetbrains.kotlin:kotlin-tooling-core:1.9.20-dev-6566' resolution failed", "Library 'org.jetbrains.kotlin:kotlin-tooling-core:<NUM>.<NUM>.<NUM>-dev-<NUM>' resolution failed"),
       )
     }
   }
