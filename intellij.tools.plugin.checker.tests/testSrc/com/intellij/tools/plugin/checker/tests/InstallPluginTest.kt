@@ -14,13 +14,13 @@ import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.report.ErrorReporter
+import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.tools.plugin.checker.ErrorsDiffReporter
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
@@ -231,16 +231,16 @@ class InstallPluginTest {
   fun installPluginTest(params: EventToTestCaseParams) {
     val testContextWithoutPlugin = createTestContext(params)
     val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(commands = CommandChain().exitApp()).runContext
-    val errorsWithoutPlugin = ErrorsDiffReporter.collectErrors(ideRunContextWithoutPlugin.logsDir / ErrorReporter.ERRORS_DIR_NAME)
+    val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir / ErrorReporter.ERRORS_DIR_NAME)
 
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(commands = CommandChain().exitApp()).runContext
-      val errors = ErrorsDiffReporter.collectErrors(ideRunContext.logsDir / ErrorReporter.ERRORS_DIR_NAME)
+      val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir / ErrorReporter.ERRORS_DIR_NAME)
 
       val diff = subtract(errors, errorsWithoutPlugin).toList()
 
-      ErrorsDiffReporter.reportErrors(ideRunContext, diff)
+      ErrorReporterToCI.reportErrors(ideRunContext, diff)
     }
     catch (ex: Exception) {
       when (ex) {

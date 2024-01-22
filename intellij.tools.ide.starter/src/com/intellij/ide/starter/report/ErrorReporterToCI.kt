@@ -8,6 +8,7 @@ import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
 import java.nio.file.Path
+import java.util.Objects.hash
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 
@@ -18,9 +19,15 @@ object ErrorReporterToCI: ErrorReporter {
    * Take a look at [com.jetbrains.performancePlugin.ProjectLoaded.reportErrorsFromMessagePool]
    */
   override fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext, isRunSuccessful: Boolean) {
-    if (!rootErrorsDir.isDirectory()) return
-    if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return
+    reportErrors(runContext, collectErrors(rootErrorsDir))
+  }
+
+  fun collectErrors(rootErrorsDir: Path): List<Error> {
+    if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
+    if (!rootErrorsDir.isDirectory()) return listOf()
+
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
+    val errors = mutableListOf<Error>()
 
     for (errorDir in errorsDirectories) {
       val messageFile = errorDir.resolve(MESSAGE_FILENAME).toFile()
@@ -30,6 +37,17 @@ object ErrorReporterToCI: ErrorReporter {
 
       val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
       val stackTraceContent = stacktraceFile.readText().trimIndent().trim()
+
+      errors.add(Error(messageText, stackTraceContent))
+    }
+
+    return errors
+  }
+
+  fun reportErrors(runContext: IDERunContext, errors: List<Error>) {
+    for (error in errors) {
+      val messageText = error.messageText
+      val stackTraceContent = error.stackTraceContent
 
       val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
 
@@ -59,5 +77,19 @@ object ErrorReporterToCI: ErrorReporter {
                                    failureDetailsProvider.getLinkToCIArtifacts(runContext))
       }
     }
+  }
+}
+
+data class Error(val messageText: String, val stackTraceContent: String) {
+  private val generifiedStackTraceContent: String = generifyErrorMessage(stackTraceContent)
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Error) return false
+    return messageText == other.messageText && generifiedStackTraceContent == other.generifiedStackTraceContent
+  }
+
+  override fun hashCode(): Int {
+    return hash(messageText, generifiedStackTraceContent)
   }
 }
