@@ -7,6 +7,7 @@ import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
+import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logOutput
 import java.io.File
 import java.lang.management.ManagementFactory
@@ -122,6 +123,10 @@ data class VMOptions(
 
   private fun filterKeys(toRemove: (String) -> Boolean) {
     data = data.filterNot(toRemove)
+  }
+
+  fun setJavaHome(sdkObject: SdkObject) = apply {
+    withEnv("JAVA_HOME", sdkObject.sdkPath.toString())
   }
 
   fun withEnv(key: String, value: String) {
