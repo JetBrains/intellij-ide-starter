@@ -60,7 +60,7 @@ data class IndexingMetrics(
   val totalNumberOfIndexedFiles: Int
     get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles } }
 
-  private val totalNumberOfIndexedFilesWritingIndexValues: Int
+  val totalNumberOfIndexedFilesWritingIndexValues: Int
     get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles - it.totalNumberOfNothingToWriteFiles } }
 
   val totalNumberOfScannedFiles: Int
