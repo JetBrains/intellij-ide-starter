@@ -7,6 +7,7 @@ import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.OpenTelemetryMeterCollector
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.*
+import com.intellij.util.indexing.diagnostic.dto.JsonFileProviderIndexStatistics.JsonIndexedFile
 import com.intellij.util.indexing.diagnostic.dump.paths.PortableFilePath
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
@@ -62,6 +63,9 @@ data class IndexingMetrics(
 
   val totalNumberOfIndexedFilesWritingIndexValues: Int
     get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles - it.totalNumberOfNothingToWriteFiles } }
+
+  val indexedFiles: List<JsonIndexedFile>
+    get() = indexingHistories.flatMap { history -> history.fileProviderStatistics.flatMap { it.indexedFiles ?: emptyList() } }
 
   val totalNumberOfScannedFiles: Int
     get() = scanningStatistics.sumOf { it.numberOfScannedFiles }
