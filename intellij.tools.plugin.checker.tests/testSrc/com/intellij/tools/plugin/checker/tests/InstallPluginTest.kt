@@ -154,11 +154,6 @@ class InstallPluginTest {
         return emptyList()
       }
 
-      if (params.event.productVersion.startsWith("CL-233.")) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is disabled since it produces exceptions on each exit."))
-        return emptyList()
-      }
-
       if (params.event.productVersion.startsWith("PC-231.")) {
         logOutput(RuntimeException("Product ${params.event.productCode} is not supported in 231 branch yet. " +
                                    "Since Performance Plugin is not bundled (yet) and not published."))
