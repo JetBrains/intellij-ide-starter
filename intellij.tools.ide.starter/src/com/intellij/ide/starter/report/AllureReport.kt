@@ -14,7 +14,7 @@ import java.util.*
 
 object AllureReport {
 
-  fun reportFailure(message: String, stackTrace: String, link: String? = null) {
+  fun reportFailure(contextName: String, message: String, stackTrace: String, link: String? = null) {
     try {
       val uuid = UUID.randomUUID().toString()
       val result = TestResult()
@@ -41,7 +41,7 @@ object AllureReport {
       }
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
-        it.name = "Exception in $testName"
+        it.name = "Exception in ${testName.ifBlank { contextName }}"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
         it.fullName = fullName
         it.testCaseName = testCaseName

@@ -72,7 +72,7 @@ object ErrorReporterToCI: ErrorReporter {
         CIServer.instance.reportTestFailure(testName = generifyErrorMessage(testName),
                                             message = failureDetailsMessage,
                                             details = stackTraceContent)
-        AllureReport.reportFailure(messageText,
+        AllureReport.reportFailure(runContext.contextName, messageText,
                                    stackTraceContent,
                                    failureDetailsProvider.getLinkToCIArtifacts(runContext))
       }
