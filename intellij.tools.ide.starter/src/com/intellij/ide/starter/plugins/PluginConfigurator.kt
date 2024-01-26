@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.plugins
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.GlobalPaths
@@ -8,8 +7,6 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logOutput
 import org.apache.commons.io.FileUtils
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Path
 import java.util.jar.JarFile
