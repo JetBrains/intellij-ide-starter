@@ -139,7 +139,7 @@ class ProcessExecutor(val presentableName: String,
       error(message)
     }
 
-    logOutput("  ... successfully finished external process for `$presentableName` with exit code 0")
+    logOutput("  ... successfully finished external process for `$presentableName` with exit code $expectedExitCode")
   }
 
   /**
