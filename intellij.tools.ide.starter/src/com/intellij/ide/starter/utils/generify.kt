@@ -49,6 +49,16 @@ fun String.generifyID(omitDollarSign: Boolean = false): String {
 fun String.generifyHash(): String = this
   .replace("[.]([A-Za-z]+\\d|\\d+[A-Za-z])[A-Za-z\\d]*".toRegex(), ".<HASH>")
 
+/**
+ * Replaces hexadecimal numbers in a string with a generic placeholder <NUM>.
+ * The hexadecimal number should be either at the beginning/end of the string or surrounded by special characters.
+ * Examples:
+ * ```
+ * sometext-aed23 => sometext-<NUM>
+ * abc323#sometext => <NUM>#sometext
+ * sometext$ABCDE2323$sometext => sometext$<NUM>$sometext
+ * ```
+ */
 fun String.generifyHexadecimal(): String {
   val hexNumber ="[a-fA-F0-9]{2,}"
   val specialChars = "[\\W_]"
