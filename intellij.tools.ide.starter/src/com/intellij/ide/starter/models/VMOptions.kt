@@ -196,6 +196,14 @@ data class VMOptions(
     addLine(configLine, filterPrefix = "-agentlib:jdwp")
   }
 
+  // You should also use setProfiler method
+  // Example: context
+  //          .setProfiler()
+  //          .applyVMOptionsPatch { profileBuildToolDaemon() }
+  fun profileBuildToolDaemon() {
+    addSystemProperty("test.build_tool.daemon.profiler", true)
+  }
+
   fun inHeadlessMode() = addSystemProperty("java.awt.headless", true)
 
   fun disableStartupDialogs() = run {
