@@ -23,12 +23,13 @@ class AndroidInstaller : IdeInstaller {
   private fun downloadAndroidStudio(): Pair<Path, File> {
     val ext = when {
       SystemInfo.isWindows -> "-windows.zip"
-      SystemInfo.isMac -> "-mac.zip"
+      SystemInfo.isAarch64 && SystemInfo.isMac -> "-mac_arm.dmg"
+      SystemInfo.isMac -> "-mac.dmg"
       SystemInfo.isLinux -> "-linux.tar.gz"
       else -> error("Not supported OS")
     }
 
-    val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2021.1.1.11/android-studio-2021.1.1.11$ext"
+    val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/install/2023.1.1.28/android-studio-2023.1.1.28$ext"
     val asFileName = downloadUrl.split("/").last()
     val globalPaths by di.instance<GlobalPaths>()
     val zipFile = globalPaths.getCacheDirectoryFor("android-studio").resolve(asFileName)
