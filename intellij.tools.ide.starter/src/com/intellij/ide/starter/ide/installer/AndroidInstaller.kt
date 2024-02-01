@@ -20,7 +20,7 @@ class AndroidInstaller : IdeInstaller {
    * Resolve platform specific android studio installer and return paths
    * @return Pair<InstallDir / InstallerFile>
    */
-  private fun downloadAndroidStudio(): Pair<Path, File> {
+  private fun downloadAndroidStudio(buildNumber: String): Pair<Path, File> {
     val ext = when {
       SystemInfo.isWindows -> "-windows.zip"
       SystemInfo.isAarch64 && SystemInfo.isMac -> "-mac_arm.dmg"
@@ -29,13 +29,13 @@ class AndroidInstaller : IdeInstaller {
       else -> error("Not supported OS")
     }
 
-    val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/install/2023.1.1.28/android-studio-2023.1.1.28$ext"
+    val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/install/$buildNumber/android-studio-$buildNumber$ext"
     val asFileName = downloadUrl.split("/").last()
     val globalPaths by di.instance<GlobalPaths>()
     val zipFile = globalPaths.getCacheDirectoryFor("android-studio").resolve(asFileName)
     HttpClient.downloadIfMissing(downloadUrl, zipFile)
 
-    val installDir = globalPaths.getCacheDirectoryFor("builds") / "AI-211"
+    val installDir = globalPaths.getCacheDirectoryFor("builds") / "AI-$buildNumber"
 
     installDir.toFile().deleteRecursively()
 
@@ -49,7 +49,10 @@ class AndroidInstaller : IdeInstaller {
     val installDir: Path
     val installerFile: File
 
-    downloadAndroidStudio().also {
+    if(ideInfo.buildNumber.isBlank()){
+      throw IllegalArgumentException("Build is not specified, please, provide buildNumber as IdeProductProvider.AI.copy(buildNumber = \"2023.1.1.28\")")
+    }
+    downloadAndroidStudio(ideInfo.buildNumber).also {
       installDir = it.first
       installerFile = it.second
     }
