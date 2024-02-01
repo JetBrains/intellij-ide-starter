@@ -55,6 +55,7 @@ data class IdeInfo(
       "PC" -> "pycharmPC"
       "QA" -> "aqua"
       "RR" -> "RustRover"
+      "AI" -> "AndroidStudio"
       else -> error("Unknown product code: $productCode")
     }
 
