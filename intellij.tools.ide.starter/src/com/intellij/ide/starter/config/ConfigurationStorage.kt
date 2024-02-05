@@ -32,10 +32,12 @@ abstract class ConfigurationStorage {
 
   fun getBoolean(key: String): Boolean = get(key).toBoolean()
 
-  fun getOrDefault(key: String, default: String): String {
+  fun getOrDefault(key: String, default: String): String = getOrNull(key) ?: default
+
+  fun getOrNull(key: String): String? {
     val value = get(key)
-    if (value == null || value.isBlank()) {
-      return default
+    if (value.isNullOrBlank()) {
+      return null
     }
     return value
   }
