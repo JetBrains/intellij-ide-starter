@@ -28,17 +28,27 @@ open class TeamCityCIServer(
     TeamCityClient.publishTeamCityArtifacts(source = source, artifactPath = artifactPath, artifactName = artifactName)
   }
 
-  override fun reportTestFailure(testName: String, message: String, details: String) {
+  fun reportTest(testName: String, message: String, details: String, isFailure: Boolean) {
     val flowId = UUID.randomUUID().toString()
 
     val generifiedTestName = testName.processStringForTC()
 
     logOutput(String.format("##teamcity[testStarted name='%s' flowId='%s' nodeId='%s' parentNodeId='0']", generifiedTestName, flowId, generifiedTestName))
-    logOutput(String.format(
-      "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
-      generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId, generifiedTestName
-    ))
+    if (isFailure) {
+      logOutput(String.format(
+        "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
+        generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId, generifiedTestName
+      ))
+    }
     logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']", generifiedTestName, flowId, generifiedTestName))
+  }
+
+  override fun reportTestFailure(testName: String, message: String, details: String) {
+    reportTest(testName, message, details, isFailure = true)
+  }
+
+  fun reportPassedTest(testName: String, message: String, details: String) {
+    reportTest(testName, message, details, isFailure = false)
   }
 
   override fun ignoreTestFailure(testName: String, message: String, details: String) {
