@@ -1,8 +1,10 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.ide.starter.utils.catchAll
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
@@ -12,6 +14,7 @@ import kotlin.time.Duration.Companion.minutes
 object JBRDownloader {
 
   data class JBRVersion(val majorVersion: String, val buildNumber: String)
+  class JBRDownloadException(jbrFullVersion: String) : SetupException("$jbrFullVersion can't be downloaded/unpacked")
 
   private fun getJBRVersionFromBuild(jbrFullVersion: String): JBRVersion {
     val jbrVersion = jbrFullVersion.split(".")[0].toInt()
@@ -48,11 +51,11 @@ object JBRDownloader {
   }
 
   fun downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion: String): Path {
-    return downloadAndUnpackJbrIfNeeded(getJBRVersionFromBuild(jbrFullVersion))
+    return catchAll { downloadAndUnpackJbrIfNeeded(getJBRVersionFromBuild(jbrFullVersion)) } ?: throw JBRDownloadException(jbrFullVersion)
   }
 
   fun downloadAndUnpackJbrFromSourcesIfNeeded(jbrFullVersion: String): Path {
-    return downloadAndUnpackJbrIfNeeded(getJBRVersionFromSources(jbrFullVersion))
+    return catchAll { downloadAndUnpackJbrIfNeeded(getJBRVersionFromSources(jbrFullVersion))} ?: throw JBRDownloadException(jbrFullVersion)
   }
 
   private fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path {
