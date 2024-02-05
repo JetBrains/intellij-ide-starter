@@ -103,7 +103,7 @@ data class VMOptions(
     data = (if (filterPrefix == null) data else data.filterNot { it.trim().startsWith(filterPrefix) }) + line
   }
 
-  private fun removeLine(line: String) {
+  fun removeLine(line: String) {
     if (!data.contains(line)) return
     data = data - line
   }
