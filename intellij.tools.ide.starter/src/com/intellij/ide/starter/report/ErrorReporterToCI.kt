@@ -7,10 +7,13 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
+import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Objects.hash
+import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.jvm.optionals.getOrNull
 
 object ErrorReporterToCI: ErrorReporter {
   /**
@@ -31,14 +34,21 @@ object ErrorReporterToCI: ErrorReporter {
 
     for (errorDir in errorsDirectories) {
       val messageFile = errorDir.resolve(MESSAGE_FILENAME).toFile()
-      val stacktraceFile = errorDir.resolve(STACKTRACE_FILENAME).toFile()
-
-      if (!(messageFile.exists() && stacktraceFile.exists())) continue
+      if (!messageFile.exists()) continue
 
       val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
-      val stackTraceContent = stacktraceFile.readText().trimIndent().trim()
 
-      errors.add(Error(messageText, stackTraceContent))
+      val errorType = ErrorType.fromMessage(messageText)
+      val stackTraceContent = if (errorType == ErrorType.FREEZE) {
+        val dump = Files.list(errorDir).filter { it.name.contains("dump")}.findFirst().getOrNull()
+        if(dump == null || !dump.exists()) continue
+        dump.toFile().readText()
+      } else {
+        val stacktraceFile = errorDir.resolve(STACKTRACE_FILENAME).toFile()
+        if(!stacktraceFile.exists()) continue
+        stacktraceFile.readText().trimIndent().trim()
+      }
+      errors.add(Error(messageText, stackTraceContent, errorType))
     }
 
     return errors
@@ -80,16 +90,3 @@ object ErrorReporterToCI: ErrorReporter {
   }
 }
 
-data class Error(val messageText: String, val stackTraceContent: String) {
-  private val generifiedStackTraceContent: String = generifyErrorMessage(stackTraceContent)
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Error) return false
-    return messageText == other.messageText && generifiedStackTraceContent == other.generifiedStackTraceContent
-  }
-
-  override fun hashCode(): Int {
-    return hash(messageText, generifiedStackTraceContent)
-  }
-}
