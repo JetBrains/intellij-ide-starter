@@ -60,7 +60,7 @@ fun installNodeModules(projectDir: Path, nodejsRoot: Path, packageManager: Strin
 }
 
 fun IDETestContext.enableNewTSEvaluator() = applyVMOptionsPatch {
-  addSystemProperty("typescript.compiler.evaluation", "[Enabled*|Enabled with fallback|Disabled]")
+  addSystemProperty("typescript.compiler.evaluation", "true")
 }
 
 fun IDETestContext.updatePath(path: Path) = applyVMOptionsPatch {
