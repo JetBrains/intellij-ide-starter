@@ -626,11 +626,4 @@ class IDETestContext(
       publishArtifact(paths.jbrDiagnostic)
     }
   }
-
-  fun updatePath(path: Path): IDETestContext = applyVMOptionsPatch {
-    val pathEnv = if(SystemInfo.isWindows) "Path" else "PATH"
-    val pathSeparator = if(SystemInfo.isWindows) ";" else ":"
-    val currentPath = System.getenv().getOrDefault(pathEnv,"")
-    withEnv(pathEnv, currentPath + pathSeparator + path)
-  }
 }

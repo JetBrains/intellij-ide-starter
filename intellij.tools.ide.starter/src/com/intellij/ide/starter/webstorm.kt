@@ -1,14 +1,18 @@
 package com.intellij.ide.starter
 
+import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
+import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.util.system.CpuArch
 import java.nio.file.Path
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.text.SemVer
 import com.intellij.ide.starter.utils.FileSystem
+import kotlin.time.Duration.Companion.minutes
 
-fun downloadNodejs(version: String): Path {
+fun downloadAndConfigureNodejs(version: String): Path {
   val arch = when {
     SystemInfo.isMac && CpuArch.isIntel64() -> "darwin-x64"
     SystemInfo.isMac && CpuArch.isArm64() -> {
@@ -29,16 +33,62 @@ fun downloadNodejs(version: String): Path {
   val dirToDownload = GlobalPaths.instance.getCacheDirectoryFor("nodejs")
   val downloadedFile = dirToDownload.resolve("$fileNameWithoutExt$extension")
   val nodejsRoot = dirToDownload.resolve(fileNameWithoutExt)
+  val nodePath = buildNodePath(nodejsRoot)
 
   if (nodejsRoot.toFile().exists()) {
-    return buildNodePath(nodejsRoot)
+    return nodePath
   }
 
   HttpClient.download(url, downloadedFile)
   FileSystem.unpack(downloadedFile, dirToDownload)
-  return buildNodePath(nodejsRoot)
+  enableCorepack(nodePath)
+  return nodePath
+}
+
+fun installNodeModules(projectDir: Path, nodejsRoot: Path, packageManager: String) {
+  val stdoutRedirect = ExecOutputRedirect.ToString()
+  val stderrRedirect = ExecOutputRedirect.ToString()
+
+  ProcessExecutor(presentableName = "install node modules",
+                  projectDir,
+                  timeout = 5.minutes,
+                  args = listOf("$nodejsRoot/$packageManager", "install"),
+                  environmentVariables = getUpdatedEnvVars(nodejsRoot),
+                  stdoutRedirect = stdoutRedirect,
+                  stderrRedirect = stderrRedirect
+  ).start()
+}
+
+fun IDETestContext.enableNewTSEvaluator() = applyVMOptionsPatch {
+  addSystemProperty("typescript.compiler.evaluation", "[Enabled*|Enabled with fallback|Disabled]")
+}
+
+fun IDETestContext.updatePath(path: Path) = applyVMOptionsPatch {
+  val pathEnv = if(SystemInfo.isWindows) "Path" else "PATH"
+  val envVars = getUpdatedEnvVars(path)[pathEnv]
+
+  if (envVars != null) {
+    withEnv(pathEnv, envVars)
+  }
 }
 
 private fun buildNodePath(path: Path): Path {
   return if (SystemInfo.isWindows) path else path.resolve("bin")
+}
+
+private fun enableCorepack(nodejsRoot: Path) {
+  ProcessExecutor(presentableName = "corepack enable",
+                  nodejsRoot,
+                  timeout = 1.minutes,
+                  args = listOf("$nodejsRoot/corepack", "enable"),
+                  environmentVariables = getUpdatedEnvVars(nodejsRoot)
+  ).start()
+}
+
+private fun getUpdatedEnvVars(path: Path): Map<String, String> {
+  val pathEnv = if(SystemInfo.isWindows) "Path" else "PATH"
+  val pathSeparator = if(SystemInfo.isWindows) ";" else ":"
+  val currentPath = System.getenv().getOrDefault(pathEnv,"")
+
+  return System.getenv() + mapOf(pathEnv to "$currentPath$pathSeparator$path")
 }
