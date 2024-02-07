@@ -35,7 +35,10 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.*
+import kotlin.io.path.bufferedReader
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -72,10 +75,10 @@ data class IDERunContext(
 
   private fun Path.createDirectoriesIfNotExist(): Path {
     if (exists()) {
-      logOutput("Reports dir is already created")
+      logOutput("Reports dir '${this.fileName}' is already created")
       return this
     }
-    logOutput("Creating reports dir")
+    logOutput("Creating reports dir '${this.fileName}'")
     return createDirectories()
   }
 
