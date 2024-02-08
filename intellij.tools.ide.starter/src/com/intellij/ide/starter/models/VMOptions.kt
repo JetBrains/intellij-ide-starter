@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logOutput
+import org.jetbrains.annotations.ApiStatus.Experimental
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.nio.file.Path
@@ -277,6 +278,44 @@ data class VMOptions(
     addLine("-XX:+UnlockExperimentalVMOptions")
     addLine("-XX:+UseEpsilonGC")
     addLine("-Xmx16g", "-Xmx")
+  }
+
+  // vm specific options
+
+  fun withJitCompilationLog() = run  {
+    addLine("-XX:+UnlockDiagnosticVMOptions")
+    addLine("-XX:+LogCompilation")
+  }
+
+  fun withTieredCompilation() = run  {
+    addLine("-XX:+TieredCompilation")
+  }
+
+  fun withNoTieredCompilation() = run  {
+    addLine("-XX:-TieredCompilation")
+  }
+
+  fun withCICC(CICC: Int) = run {
+    removeLine("-XX:CICompilerCount=2")
+    addLine("-XX:CICompilerCount=${CICC}")
+  }
+
+  fun withTier0ProfilingStartPercentage(percentage: Int) {
+    addLine("-XX:Tier0ProfilingStartPercentage=$percentage")
+  }
+
+  /**
+    * only for specific jdk builds
+    * name is /foo/bar/Baz method
+  */
+  @Experimental
+  fun withC1OnlyBeforeCall(name: String) {
+    addLine("-XX:C1OnlyBeforeCall=$name")
+  }
+
+  fun withCompilationLogs() {
+    addLine("-XX:+UnlockDiagnosticVMOptions")
+    addLine("-XX:+LogCompilation")
   }
 
   /**
