@@ -403,17 +403,13 @@ class IDETestContext(
 
   fun setProviderMemoryOnlyOnLinux(): IDETestContext {
     if (!SystemInfo.isLinux) return this
-
-    val optionsConfig = paths.configDir.resolve("options")
-    optionsConfig.toFile().mkdirs()
-    val securityXml = optionsConfig.resolve("security.xml")
-    securityXml.toFile().createNewFile()
-    securityXml.toFile().writeText("""<application>
-  <component name="PasswordSafe">
-    <option name="PROVIDER" value="MEMORY_ONLY" />
-  </component>
-</application>""")
-
+    writeConfigFile("options/security.xml", """
+      <application>
+        <component name="PasswordSafe">
+          <option name="PROVIDER" value="MEMORY_ONLY" />
+        </component>
+      </application>
+    """)
     return this
   }
 
@@ -433,17 +429,13 @@ class IDETestContext(
   }
 
   fun disableMinimap(): IDETestContext {
-    val miniMapConfig = paths.configDir.toAbsolutePath().resolve("options/Minimap.xml")
-    if (!miniMapConfig.exists()) {
-      miniMapConfig.parent.createDirectories()
-      miniMapConfig.writeText("""
-        <application>
-          <component name="Minimap">
-            <option name="enabled" value="false" />
-          </component>
-        </application>
-      """.trimIndent())
-    }
+    writeConfigFile("options/Minimap.xml", """
+      <application>
+        <component name="Minimap">
+          <option name="enabled" value="false" />
+        </component>
+      </application>
+    """)
     return this
   }
 
@@ -486,13 +478,13 @@ class IDETestContext(
   }
 
   fun setLightTheme(): IDETestContext {
-    val lafXml = paths.configDir.resolve("options").resolve("laf.xml").toFile()
-    lafXml.createNewFile()
-    lafXml.writeText("""<application>
-  <component name="LafManager" autodetect="false">
-    <laf class-name="com.intellij.ide.ui.laf.IntelliJLaf" themeId="JetBrainsLightTheme" />
-  </component>
-</application>""")
+    writeConfigFile("options/laf.xml", """
+      <application>
+          <component name="LafManager" autodetect="false">
+            <laf class-name="com.intellij.ide.ui.laf.IntelliJLaf" themeId="JetBrainsLightTheme" />
+          </component>
+      </application>
+    """)
     return this
   }
 
@@ -628,17 +620,20 @@ class IDETestContext(
   }
 
   fun acceptNonTrustedCertificates(): IDETestContext {
-    val certificatesConfig = paths.configDir.toAbsolutePath().resolve("options/certificates.xml")
-    if (!certificatesConfig.exists()) {
-      certificatesConfig.parent.createDirectories()
-      certificatesConfig.writeText("""
-        <application>
-          <component name="CertificateManager">
-            <option name="ACCEPT_AUTOMATICALLY" value="true" />
-          </component>
-        </application>
-      """.trimIndent())
-    }
+    writeConfigFile("options/certificates.xml", """
+      <application>
+        <component name="CertificateManager">
+          <option name="ACCEPT_AUTOMATICALLY" value="true" />
+        </component>
+      </application>
+    """)
+    return this
+  }
+
+  private fun writeConfigFile(relativePath: String, text: String): IDETestContext {
+    val configFile = paths.configDir.toAbsolutePath().resolve(relativePath)
+    configFile.parent.createDirectories()
+    configFile.writeText(text.trimIndent())
     return this
   }
 }
