@@ -13,7 +13,6 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
-import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
@@ -39,7 +38,6 @@ import java.net.URI
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.div
 
 
 @ExtendWith(JUnit5StarterAssistant::class)
@@ -226,12 +224,12 @@ class InstallPluginTest {
   fun installPluginTest(params: EventToTestCaseParams) {
     val testContextWithoutPlugin = createTestContext(params)
     val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(commands = CommandChain().exitApp()).runContext
-    val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir / ErrorReporter.ERRORS_DIR_NAME)
+    val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
 
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(commands = CommandChain().exitApp()).runContext
-      val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir / ErrorReporter.ERRORS_DIR_NAME)
+      val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
       val diff = subtract(errors, errorsWithoutPlugin).toList()
 

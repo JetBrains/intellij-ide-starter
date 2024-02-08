@@ -34,7 +34,7 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
           TeamCityCIServer(systemPropertiesFilePath)
         }
         bindSingleton<ErrorReporter>(overrides = true) {
-          object: ErrorReporter { override fun reportErrorsAsFailedTests(rootErrorsDir: Path, runContext: IDERunContext, isRunSuccessful: Boolean) {} }
+          object: ErrorReporter { override fun reportErrorsAsFailedTests(runContext: IDERunContext, isRunSuccessful: Boolean) {} }
         }
         bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
