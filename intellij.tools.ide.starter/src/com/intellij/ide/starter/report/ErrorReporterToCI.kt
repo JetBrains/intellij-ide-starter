@@ -95,9 +95,8 @@ object ErrorReporterToCI: ErrorReporter {
       val messageText = error.messageText
 
       var testName = ""
-      var stackTraceContent = ""
+      val stackTraceContent = error.stackTraceContent
       if(error.type == ErrorType.ERROR) {
-        stackTraceContent = error.stackTraceContent
         val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
         testName = if (stackTraceContent.startsWith(messageText)) {
           val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
@@ -110,7 +109,6 @@ object ErrorReporterToCI: ErrorReporter {
       }
       if(error.type == ErrorType.FREEZE) {
         testName = messageText
-        stackTraceContent = ""
       }
 
       val failureDetailsProvider = FailureDetailsOnCI.instance
