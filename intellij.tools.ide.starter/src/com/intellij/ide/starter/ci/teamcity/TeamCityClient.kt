@@ -82,6 +82,11 @@ object TeamCityClient {
     HttpClient.download(artifactUrl.toString(), outFile)
   }
 
+  private fun printTcArtifactsPublishMessage(spec: String) {
+    logOutput(" !!teamcity[publishArtifacts '$spec'] ") //we need this to see in the usual IDEA log
+    logOutput(" ##teamcity[publishArtifacts '$spec'] ")
+  }
+
   /**
    * [source] - source path of artifact
    * [artifactPath] - new path (relative, where artifact will be present)
@@ -101,11 +106,6 @@ object TeamCityClient {
       return
     }
 
-    fun printTcArtifactsPublishMessage(spec: String) {
-      logOutput(" !!teamcity[publishArtifacts '$spec'] ") //we need this to see in the usual IDEA log
-      logOutput(" ##teamcity[publishArtifacts '$spec'] ")
-    }
-
     var suffix: String
     var nextSuffix = 0
     var artifactDir: Path
@@ -116,6 +116,7 @@ object TeamCityClient {
     }
     while (artifactDir.exists())
 
+    logOutput("Creating directories for artifact publishing $artifactDir")
     artifactDir.toFile().deleteRecursively()
     artifactDir.createDirectories()
 
