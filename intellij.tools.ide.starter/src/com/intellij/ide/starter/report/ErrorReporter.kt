@@ -6,7 +6,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 
 interface ErrorReporter {
-  fun reportErrorsAsFailedTests(runContext: IDERunContext, isRunSuccessful: Boolean)
+  fun reportErrorsAsFailedTests(runContext: IDERunContext)
   companion object {
     const val MESSAGE_FILENAME = "message.txt"
     const val STACKTRACE_FILENAME = "stacktrace.txt"

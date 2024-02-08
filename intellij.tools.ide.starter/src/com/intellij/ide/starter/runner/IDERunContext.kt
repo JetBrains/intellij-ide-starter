@@ -260,7 +260,7 @@ data class IDERunContext(
       testContext.collectJBRDiagnosticFiles(ideProcessId)
 
       deleteJVMCrashes()
-      ErrorReporter.instance.reportErrorsAsFailedTests(this, isRunSuccessful)
+      ErrorReporter.instance.reportErrorsAsFailedTests(this)
       publishArtifacts()
     }
   }

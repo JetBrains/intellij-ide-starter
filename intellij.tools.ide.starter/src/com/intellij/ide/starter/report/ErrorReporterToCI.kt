@@ -17,7 +17,7 @@ object ErrorReporterToCI: ErrorReporter {
    * Read threadDumps folders and report them as freezes.
    * Take a look at [com.jetbrains.performancePlugin.ProjectLoaded.reportErrorsFromMessagePool]
    */
-  override fun reportErrorsAsFailedTests(runContext: IDERunContext, isRunSuccessful: Boolean) {
+  override fun reportErrorsAsFailedTests(runContext: IDERunContext) {
     reportErrors(runContext, collectErrors(runContext.logsDir))
   }
 
