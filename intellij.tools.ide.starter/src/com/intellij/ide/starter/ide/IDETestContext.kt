@@ -626,4 +626,19 @@ class IDETestContext(
       publishArtifact(paths.jbrDiagnostic)
     }
   }
+
+  fun acceptNonTrustedCertificates(): IDETestContext {
+    val certificatesConfig = paths.configDir.toAbsolutePath().resolve("options/certificates.xml")
+    if (!certificatesConfig.exists()) {
+      certificatesConfig.parent.createDirectories()
+      certificatesConfig.writeText("""
+        <application>
+          <component name="CertificateManager">
+            <option name="ACCEPT_AUTOMATICALLY" value="true" />
+          </component>
+        </application>
+      """.trimIndent())
+    }
+    return this
+  }
 }

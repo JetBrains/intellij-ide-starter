@@ -116,6 +116,7 @@ interface TestContainer<T> {
         .disableReportingStatisticToJetStat()
         .disableMigrationNotification()
         .setKotestMaxCollectionEnumerateSize()
+        .acceptNonTrustedCertificates()
     }
   }
 }
