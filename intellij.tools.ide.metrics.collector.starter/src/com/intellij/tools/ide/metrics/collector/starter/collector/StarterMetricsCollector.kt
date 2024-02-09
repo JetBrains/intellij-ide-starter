@@ -4,7 +4,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 
-interface MetricsCollector {
+interface StarterMetricsCollector {
   /**
    * Collect IDE metrics.
    * [runContext] [IDERunContext] (and not [IDEStartResult]) is needed since collection can happen multiple times during the test.

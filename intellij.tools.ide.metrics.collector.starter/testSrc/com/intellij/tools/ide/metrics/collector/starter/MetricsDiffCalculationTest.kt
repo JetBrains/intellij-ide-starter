@@ -5,7 +5,7 @@ import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.OpenTelemetryMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.metrics.MetricsDiffCalculator
 import com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher
 import io.kotest.assertions.assertSoftly
@@ -40,8 +40,8 @@ class MetricsDiffCalculationTest {
   @TempDir
   lateinit var testDirectory: Path
 
-  private fun getWorkspaceModelMeterCollector(): OpenTelemetryMeterCollector =
-    OpenTelemetryMeterCollector(MetricsSelectionStrategy.LATEST) {
+  private fun getWorkspaceModelMeterCollector(): StarterTelemetryMeterCollector =
+    StarterTelemetryMeterCollector(MetricsSelectionStrategy.LATEST) {
       it.key.startsWith("jps.") || it.key.startsWith("workspaceModel.")
     }
 

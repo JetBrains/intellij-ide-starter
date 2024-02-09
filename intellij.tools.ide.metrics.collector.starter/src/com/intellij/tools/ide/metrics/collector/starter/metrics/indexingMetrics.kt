@@ -4,7 +4,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.OpenTelemetryMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryMeterCollector
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.*
 import com.intellij.util.indexing.diagnostic.dto.JsonFileProviderIndexStatistics.JsonIndexedFile
@@ -250,14 +250,14 @@ private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
                                              metricPrefixInCSV: String,
                                              resultingMetricPrefix: String): List<PerformanceMetrics.Metric> {
   val timeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.time\\.ns")
-  val time = OpenTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
+  val time = StarterTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
     it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".time.ns")
   }).collect(runResult.runContext).associate {
     val language = timeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value))
   }
   val sizeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.size\\.bytes")
-  val size = OpenTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
+  val size = StarterTelemetryMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
     it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".size.bytes")
   }).collect(runResult.runContext).associate {
     val language = sizeRegex.find(it.id.name)?.groups?.get(1)?.value
