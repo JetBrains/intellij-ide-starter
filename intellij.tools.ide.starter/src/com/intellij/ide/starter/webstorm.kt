@@ -2,6 +2,7 @@ package com.intellij.ide.starter
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.util.system.CpuArch
@@ -45,13 +46,18 @@ fun downloadAndConfigureNodejs(version: String): Path {
   return nodePath
 }
 
-fun installNodeModules(projectDir: Path, nodejsRoot: Path, packageManager: String) {
+fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: String, noFrozenLockFile: Boolean = false) {
+  val stdout = ExecOutputRedirect.ToString()
+  val nodejsRoot = getNodePathByVersion(nodeVersion)
+  val args = mutableListOf("$nodejsRoot/$packageManager", "install")
+  if (noFrozenLockFile) args += "--no-frozen-lockfile"
 
   ProcessExecutor(presentableName = "installing node modules",
                   projectDir,
                   timeout = 5.minutes,
-                  args = listOf("$nodejsRoot/$packageManager", "install"),
+                  args = args,
                   environmentVariables = getUpdatedEnvVars(nodejsRoot),
+                  stdoutRedirect = stdout
   ).start()
 }
 
