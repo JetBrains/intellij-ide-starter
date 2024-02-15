@@ -146,7 +146,7 @@ class ProcessExecutor(val presentableName: String,
    * Creates new process and wait for it's completion
    */
   @Throws(ExecTimeoutException::class)
-  fun start() {
+  fun start(printEnvVariables: Boolean = true) {
     require(args.isNotEmpty()) { "Arguments must be not empty to start external process `$presentableName`" }
 
     val processBuilder = ProcessBuilder()
@@ -164,9 +164,11 @@ class ProcessExecutor(val presentableName: String,
       appendLine(
         "  STDOUT will be redirected to: $stdoutRedirect. STDERR will be redirected to: $stderrRedirect. STDIN is empty: ${stdInBytes.isEmpty()}"
       )
-      appendLine(
-        "  Environment variables: [${processBuilder.environment().entries.joinToString { "${it.key}=${it.value}" }}]"
-      )
+      if (printEnvVariables) {
+        appendLine(
+          "  Environment variables: [${processBuilder.environment().entries.joinToString { "${it.key}=${it.value}" }}]"
+        )
+      }
     })
 
     val process = processBuilder.start()
