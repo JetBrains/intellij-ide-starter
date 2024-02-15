@@ -49,7 +49,8 @@ fun downloadAndConfigureNodejs(version: String): Path {
 fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: String, noFrozenLockFile: Boolean = false) {
   val stdout = ExecOutputRedirect.ToString()
   val nodejsRoot = getNodePathByVersion(nodeVersion)
-  val args = mutableListOf("$nodejsRoot/$packageManager", "install")
+  val packageManagerPath = nodejsRoot.resolve(packageManager)
+  val args = mutableListOf("$packageManagerPath", "install")
   if (noFrozenLockFile) args += "--no-frozen-lockfile"
 
   ProcessExecutor(presentableName = "installing node modules",
@@ -63,11 +64,12 @@ fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: St
 
 fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
   val nodejsRoot = getNodePathByVersion(nodeVersion)
+  val packageManagerPath = nodejsRoot.resolve(packageManager)
 
   ProcessExecutor(presentableName = "running build script",
                   projectDir,
                   timeout = 5.minutes,
-                  args = listOf("$nodejsRoot/$packageManager", "build"),
+                  args = listOf("$packageManagerPath", "build"),
                   environmentVariables = getUpdatedEnvVars(nodejsRoot)
   ).start()
 }
@@ -90,10 +92,12 @@ private fun buildNodePath(path: Path): Path {
 }
 
 private fun enableCorepack(nodejsRoot: Path) {
+  val corePackPath = nodejsRoot.resolve("corepack")
+
   ProcessExecutor(presentableName = "corepack enable",
                   nodejsRoot,
                   timeout = 1.minutes,
-                  args = listOf("$nodejsRoot/corepack", "enable"),
+                  args = listOf("$corePackPath", "enable"),
                   environmentVariables = getUpdatedEnvVars(nodejsRoot)
   ).start()
 }
