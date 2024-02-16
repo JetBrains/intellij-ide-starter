@@ -43,7 +43,7 @@ object AllureReport {
         it.status = Status.FAILED
         it.name = "Exception in ${testName.ifBlank { contextName }}"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
-        it.fullName = fullName
+        it.fullName = fullName.ifBlank { contextName }
         it.testCaseName = testCaseName
         it.historyId = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
       }
