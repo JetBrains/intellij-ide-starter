@@ -49,7 +49,7 @@ fun downloadAndConfigureNodejs(version: String): Path {
 fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: String, noFrozenLockFile: Boolean = false) {
   val stdout = ExecOutputRedirect.ToString()
   val nodejsRoot = getNodePathByVersion(nodeVersion)
-  val packageManagerPath = nodejsRoot.resolve(packageManager)
+  val packageManagerPath = getApplicationExecutablePath(nodejsRoot, packageManager)
   val args = mutableListOf("$packageManagerPath", "install")
   if (noFrozenLockFile) args += "--no-frozen-lockfile"
 
@@ -64,7 +64,7 @@ fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: St
 
 fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
   val nodejsRoot = getNodePathByVersion(nodeVersion)
-  val packageManagerPath = nodejsRoot.resolve(packageManager)
+  val packageManagerPath = getApplicationExecutablePath(nodejsRoot, packageManager)
 
   ProcessExecutor(presentableName = "running build script",
                   projectDir,
@@ -91,8 +91,12 @@ private fun buildNodePath(path: Path): Path {
   return if (SystemInfo.isWindows) path else path.resolve("bin")
 }
 
+private fun getApplicationExecutablePath(nodejsRoot: Path, application: String): Path {
+  return if (SystemInfo.isWindows) nodejsRoot.resolve("$application.cmd") else nodejsRoot.resolve(application)
+}
+
 private fun enableCorepack(nodejsRoot: Path) {
-  val corePackPath = nodejsRoot.resolve("corepack")
+  val corePackPath = getApplicationExecutablePath(nodejsRoot, "corepack")
 
   ProcessExecutor(presentableName = "corepack enable",
                   nodejsRoot,
