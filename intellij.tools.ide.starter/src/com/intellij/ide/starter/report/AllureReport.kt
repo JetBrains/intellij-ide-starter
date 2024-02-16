@@ -37,7 +37,7 @@ object AllureReport {
         Allure.label(it.name, it.value)
       }
       if (link != null) {
-        Allure.link(link)
+        Allure.link("CI server", link)
       }
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
