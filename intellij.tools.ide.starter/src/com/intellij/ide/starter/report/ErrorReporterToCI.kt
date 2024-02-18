@@ -4,8 +4,8 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.report.ErrorReporter.Companion.MESSAGE_FILENAME
 import com.intellij.ide.starter.report.ErrorReporter.Companion.STACKTRACE_FILENAME
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
-import com.intellij.ide.starter.utils.generifyErrorMessage
+import com.intellij.platform.testFramework.teamCity.convertToHashCodeWithOnlyLetters
+import com.intellij.platform.testFramework.teamCity.generifyErrorMessage
 import com.intellij.util.SystemProperties
 import java.nio.file.Files
 import java.nio.file.Path

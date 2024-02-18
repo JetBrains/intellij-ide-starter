@@ -38,5 +38,6 @@
     <orderEntry type="library" scope="TEST" name="JUnit5Params" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.performanceTesting.commands" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.util.common" />
+    <orderEntry type="module" module-name="intellij.platform.testFramework.teamCity" scope="TEST" />
   </component>
 </module>

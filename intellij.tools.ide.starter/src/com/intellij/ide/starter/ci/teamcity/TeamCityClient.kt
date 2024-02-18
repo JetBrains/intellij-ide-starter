@@ -7,7 +7,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
+import com.intellij.platform.testFramework.teamCity.replaceSpecialCharactersWithHyphens
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry

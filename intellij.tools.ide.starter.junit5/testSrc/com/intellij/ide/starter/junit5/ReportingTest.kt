@@ -3,10 +3,10 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize
-import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.formatSize
-import com.intellij.ide.starter.utils.generifyErrorMessage
-import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
+import com.intellij.platform.testFramework.teamCity.convertToHashCodeWithOnlyLetters
+import com.intellij.platform.testFramework.teamCity.generifyErrorMessage
+import com.intellij.platform.testFramework.teamCity.replaceSpecialCharactersWithHyphens
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo

@@ -2,6 +2,7 @@ package com.intellij.ide.starter.ci.teamcity
 
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.platform.testFramework.teamCity.escapeStringForTeamCity
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -12,7 +13,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.bufferedReader
-import kotlin.math.min
 
 fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
 
@@ -213,13 +213,7 @@ open class TeamCityCIServer(
     const val LOCAL_RUN_ID = "LOCAL_RUN_SNAPSHOT"
 
     fun String.processStringForTC(): String {
-      return this.substring(0, min(7000, this.length))
-        .replace("\\|", "||")
-        .replace("\\[", "|[")
-        .replace("]", "|]")
-        .replace("\n", "|n")
-        .replace("'", "|'")
-        .replace("\r", "|r")
+      return escapeStringForTeamCity()
     }
 
     fun setStatusTextPrefix(text: String) {
