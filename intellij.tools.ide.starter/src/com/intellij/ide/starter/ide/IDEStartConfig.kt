@@ -9,7 +9,7 @@ interface IDEStartConfig {
   val environmentVariables: Map<String, String>
     get() = System.getenv().filterKeys {
       // don't inherit these environment variables from parent process
-      it != "IDEA_PROPERTIES" && !it.endsWith("VM_OPTIONS") && it != "JAVA_HOME" && !it.endsWith("_JDK")
+      it != "IDEA_PROPERTIES" && !it.endsWith("VM_OPTIONS") && it != "JAVA_HOME"
     }
 
   val commandLine: List<String>
