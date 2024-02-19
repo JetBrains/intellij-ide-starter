@@ -7,6 +7,7 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -31,7 +32,9 @@ object ErrorReporterToCI: ErrorReporter {
    * Method only collects exceptions from [ErrorReporter.ERRORS_DIR_NAME] and skip freezes
    */
   private fun collectExceptions(rootErrorsDir: Path): List<Error> {
-    if (!rootErrorsDir.isDirectory()) emptyList<Error>()
+    if (!rootErrorsDir.isDirectory()) {
+      return emptyList()
+    }
     val errors = mutableListOf<Error>()
     val errorsDirectories = rootErrorsDir.listDirectoryEntries()
     for (errorDir in errorsDirectories) {
