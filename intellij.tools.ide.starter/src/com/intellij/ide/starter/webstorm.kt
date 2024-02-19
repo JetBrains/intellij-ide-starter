@@ -62,7 +62,7 @@ fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: St
 
   ProcessExecutor(presentableName = "installing node modules",
                   projectDir,
-                  timeout = 5.minutes,
+                  timeout = 10.minutes,
                   args = args,
                   environmentVariables = getUpdatedEnvVars(nodejsRoot),
                   stdoutRedirect = stdout
