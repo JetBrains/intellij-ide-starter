@@ -1,6 +1,8 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.buildTool.BuildTool
+import com.intellij.ide.starter.bus.EventState
+import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.di.di
@@ -376,7 +378,6 @@ class IDETestContext(
                          expectedExitCode: Int = 0,
                          collectNativeThreads: Boolean = false,
                          configure: IDERunContext.() -> Unit = {}): Deferred<IDEStartResult> {
-
     return perTestSupervisorScope.async {
       try {
         runIDE(commandLine,
@@ -391,6 +392,7 @@ class IDETestContext(
       }
       catch (e: Throwable) {
         logError("Error during IDE execution", e)
+        StarterBus.postAndWaitProcessing(IdeLaunchException(EventState.BACKGROUND_EXCEPTION, IdeLaunchExceptionData(e)))
         throw e
       }
     }

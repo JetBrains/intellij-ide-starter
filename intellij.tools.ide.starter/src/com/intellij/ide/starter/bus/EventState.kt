@@ -10,5 +10,8 @@ enum class EventState {
   AFTER,
 
   /** When action started */
-  IN_TIME
+  IN_TIME,
+
+  /** Exception occurred during the background launch of ide */
+  BACKGROUND_EXCEPTION,
 }
