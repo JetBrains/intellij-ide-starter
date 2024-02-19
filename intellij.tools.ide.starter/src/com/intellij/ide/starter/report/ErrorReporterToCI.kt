@@ -23,54 +23,63 @@ object ErrorReporterToCI: ErrorReporter {
 
   fun collectErrors(logsDir: Path): List<Error> {
     val rootErrorsDir = logsDir / ErrorReporter.ERRORS_DIR_NAME
-
     if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
+    return collectExceptions(rootErrorsDir) + collectFreezes(logsDir)
+  }
+
+  /**
+   * Method only collects exceptions from [ErrorReporter.ERRORS_DIR_NAME] and skip freezes
+   */
+  private fun collectExceptions(rootErrorsDir: Path): List<Error> {
+    if (!rootErrorsDir.isDirectory()) emptyList<Error>()
     val errors = mutableListOf<Error>()
+    val errorsDirectories = rootErrorsDir.listDirectoryEntries()
+    for (errorDir in errorsDirectories) {
+      val messageFile = errorDir.resolve(MESSAGE_FILENAME).toFile()
+      if (!messageFile.exists()) continue
 
-    if(rootErrorsDir.isDirectory()) {
-      val errorsDirectories = rootErrorsDir.listDirectoryEntries()
-      for (errorDir in errorsDirectories) {
-        val messageFile = errorDir.resolve(MESSAGE_FILENAME).toFile()
-        if (!messageFile.exists()) continue
+      val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
 
-        val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
-
-        val errorType = ErrorType.fromMessage(messageText)
-        //we process freezes from threadDumps folders
-        if (errorType == ErrorType.ERROR) {
-          val stacktraceFile = errorDir.resolve(STACKTRACE_FILENAME).toFile()
-          if (!stacktraceFile.exists()) continue
-          val stackTrace = stacktraceFile.readText().trimIndent().trim()
-          errors.add(Error(messageText, stackTrace, "", errorType))
-        }
+      val errorType = ErrorType.fromMessage(messageText)
+      if (errorType == ErrorType.ERROR) {
+        val stacktraceFile = errorDir.resolve(STACKTRACE_FILENAME).toFile()
+        if (!stacktraceFile.exists()) continue
+        val stackTrace = stacktraceFile.readText().trimIndent().trim()
+        errors.add(Error(messageText, stackTrace, "", errorType))
       }
     }
-    val freezes = collectFreezes(logsDir)
-    errors.addAll(freezes)
     return errors
   }
 
   private fun collectFreezes(logDir: Path): List<Error> {
     val freezes = mutableListOf<Error>()
-    Files.list(logDir).use { paths ->
-      paths.filter { path ->
-        Files.isDirectory(path) && path.fileName.toString().startsWith("threadDumps-freeze")
-      }.forEach { path ->
-        Files.list(path).use { files ->
-          files.filter { it.name.startsWith("threadDump") }
-            .findFirst()
-            .ifPresent { threadDump ->
-              //threadDumps-freeze-20240206-155640-IU-241.11817 => not matching
-              //threadDumps-freeze-20240206-155640-IU-241.11817-JBIterator.peekNext-5sec => matching, fallbackName = JBIterator.peekNext
-              val nameParts = path.name.split("-")
-              val dumpContent = Files.readString(threadDump)
-              val fallbackName = "Not analyzed freeze: " + if(nameParts.size == 8) nameParts[7] else inferFallbackNameFromThreadDump(dumpContent)
-              freezes.add(Error(fallbackName, "", dumpContent, ErrorType.FREEZE))
-            }
-        }
+    logDir.listDirectoryEntries("threadDumps-freeze*").filter { path ->
+      Files.isDirectory(path)
+    }.forEach { path ->
+      path.listDirectoryEntries("threadDump*").firstOrNull()?.let { threadDump ->
+        val dumpContent = Files.readString(threadDump)
+        val fallbackName = "Not analyzed freeze: " + (inferClassMethodNamesFromFolderName(path)
+                                                      ?: inferFallbackNameFromThreadDump(dumpContent))
+        freezes.add(Error(fallbackName, "", dumpContent, ErrorType.FREEZE))
       }
     }
     return freezes
+  }
+
+  /**
+   * There are two types of names for folders with freezes:
+   * ```
+   *  threadDumps-freeze-20240206-155640-IU-241.11817
+   *  threadDumps-freeze-20240206-155640-IU-241.11817-JBIterator.peekNext-5sec
+   *  ```
+   *
+   *  Return `null` if folder has the first type.
+   *
+   *  Infer the class and method name from the second type taking the part before the latest - `nameparts[7]`.
+   */
+  private fun inferClassMethodNamesFromFolderName(path: Path): String? {
+    val nameParts = path.name.split("-")
+    return if (nameParts.size == 8) nameParts[7] else null
   }
 
   /**
@@ -93,22 +102,14 @@ object ErrorReporterToCI: ErrorReporter {
   fun reportErrors(runContext: IDERunContext, errors: List<Error>) {
     for (error in errors) {
       val messageText = error.messageText
-
-      var testName = ""
       val stackTraceContent = error.stackTraceContent
-      if(error.type == ErrorType.ERROR) {
-        val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
-        testName = if (stackTraceContent.startsWith(messageText)) {
-          val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
-          val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
-          "($onlyLettersHash $extractedTestName)"
+      val testName = when (error.type) {
+        ErrorType.ERROR -> {
+          generateTestNameFromException(stackTraceContent, messageText)
         }
-        else {
-          "($onlyLettersHash ${messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
+        ErrorType.FREEZE -> {
+          messageText
         }
-      }
-      if(error.type == ErrorType.FREEZE) {
-        testName = messageText
       }
 
       val failureDetailsProvider = FailureDetailsOnCI.instance
@@ -127,6 +128,18 @@ object ErrorReporterToCI: ErrorReporter {
                                    stackTraceContent,
                                    failureDetailsProvider.getLinkToCIArtifacts(runContext))
       }
+    }
+  }
+
+  private fun generateTestNameFromException(stackTraceContent: String, messageText: String): String {
+    val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
+    return if (stackTraceContent.startsWith(messageText)) {
+      val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
+      val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
+      "($onlyLettersHash $extractedTestName)"
+    }
+    else {
+      "($onlyLettersHash ${messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
     }
   }
 }
