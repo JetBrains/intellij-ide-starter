@@ -7,7 +7,6 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -55,6 +54,9 @@ object ErrorReporterToCI: ErrorReporter {
   }
 
   private fun collectFreezes(logDir: Path): List<Error> {
+    if (!logDir.isDirectory()) {
+      return emptyList()
+    }
     val freezes = mutableListOf<Error>()
     logDir.listDirectoryEntries("threadDumps-freeze*").filter { path ->
       Files.isDirectory(path)
