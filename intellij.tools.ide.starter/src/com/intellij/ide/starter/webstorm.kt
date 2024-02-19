@@ -10,7 +10,9 @@ import java.nio.file.Path
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.text.SemVer
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Files
+import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 
 fun downloadAndConfigureNodejs(version: String): Path {
@@ -47,6 +49,11 @@ fun downloadAndConfigureNodejs(version: String): Path {
 }
 
 fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: String, noFrozenLockFile: Boolean = false) {
+  if(projectDir.resolve("node_modules").exists()) {
+    logOutput("node_modules folder already exists")
+    return
+  }
+
   val stdout = ExecOutputRedirect.ToString()
   val nodejsRoot = getNodePathByVersion(nodeVersion)
   val packageManagerPath = getApplicationExecutablePath(nodejsRoot, packageManager)
