@@ -5,11 +5,12 @@ import com.intellij.tools.ide.util.common.logError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Subscriber type to List of Jobs
  */
-class Subscriptions(val items: MutableMap<Any, MutableList<Job>> = mutableMapOf())
+class Subscriptions(val items: MutableMap<Any, MutableList<Job>> = ConcurrentHashMap())
 
 /**
  * @author https://github.com/Kosert/FlowBus
@@ -19,7 +20,7 @@ class Subscriptions(val items: MutableMap<Any, MutableList<Job>> = mutableMapOf(
  * @param bus [FlowBus] instance to subscribe to. If not set, [StarterBus] will be used
  */
 open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
-  private val jobs = mutableMapOf<Class<*>, Subscriptions>()
+  private val jobs = ConcurrentHashMap<Class<*>, Subscriptions>()
   private var returnDispatcher: CoroutineDispatcher = Dispatchers.Unconfined
   private val lock = Any()
 
