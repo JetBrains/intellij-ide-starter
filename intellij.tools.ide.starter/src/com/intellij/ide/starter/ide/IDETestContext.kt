@@ -320,7 +320,7 @@ class IDETestContext(
     return this
   }
 
-  private fun determineDefaultCommandLineArguments() =
+  fun determineDefaultCommandLineArguments() =
     if (this.testCase.projectInfo == NoProject) ::startIdeWithoutProject
     else ::openTestCaseProject
 
