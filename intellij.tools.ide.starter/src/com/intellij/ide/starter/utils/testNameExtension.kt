@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.platform.testFramework.teamCity.replaceSpecialCharactersWithHyphens
 import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.name

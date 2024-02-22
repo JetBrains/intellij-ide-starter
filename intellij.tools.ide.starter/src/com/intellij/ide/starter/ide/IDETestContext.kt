@@ -16,9 +16,9 @@ import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.*
 import com.intellij.ide.starter.utils.XmlBuilder
+import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.platform.testFramework.teamCity.replaceSpecialCharactersWithHyphens
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
