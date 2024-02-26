@@ -190,8 +190,12 @@ data class VMOptions(
       })
     }
   }
+  fun dropDebug() {
+    data = data.filterNot { it.matches("-agentlib:jdwp=transport=dt_socket,server=y,suspend=.,address=.*".toRegex()) }
+  }
 
   fun debug(port: Int = 5005, suspend: Boolean = true) {
+    dropDebug()
     val suspendKey = if (suspend) "y" else "n"
     val configLine = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=${suspendKey},address=*:${port}"
     addLine(configLine, filterPrefix = "-agentlib:jdwp")
