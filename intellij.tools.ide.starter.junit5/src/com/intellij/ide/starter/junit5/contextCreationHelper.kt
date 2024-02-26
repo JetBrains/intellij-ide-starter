@@ -15,3 +15,10 @@ fun Starter.newContext(ideInfo: IdeInfo, project: ProjectInfoSpec = NoProject, s
     }
   }
 
+fun Starter.newContext(testCase: TestCase<*>, systemProperties: Map<String, String> = mapOf()): IDETestContext =
+  newTestContainer().newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = testCase).applyVMOptionsPatch {
+    systemProperties.forEach {
+      addSystemProperty(it.key, it.value)
+    }
+  }
+
