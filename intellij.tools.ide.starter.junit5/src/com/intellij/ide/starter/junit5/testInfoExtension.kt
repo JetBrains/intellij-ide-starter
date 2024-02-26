@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.junit5
 
+import com.intellij.ide.starter.runner.CurrentDisplayName
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.utils.hyphenateTestName
 import org.junit.jupiter.api.TestInfo
@@ -43,9 +44,22 @@ fun CurrentTestMethod.hyphenateWithClass(): String = qualifiedName().hyphenateTe
 
 
 /**
+ * @return Hyphenated test class and display method name which can be provided by @DisplayName or @ParameterizedTest(name = ) or default just a method name
+ */
+fun CurrentDisplayName.displayName(): String = (CurrentTestMethod.className() + "/" +  (get() ?: "")).hyphenateTestName()
+
+/**
  * Returns the qualified name of the current test method. Eg: `com.intellij.xyz.tests.ClassTest.testMethod`
  */
 fun CurrentTestMethod.qualifiedName(): String {
   val method: Method = checkTestMethodIsNotNull(this.get())
   return "${method.declaringClass.simpleName}/${method.name}"
+}
+
+/**
+ * Returns the qualified name of the current test method. Eg: `com.intellij.xyz.tests.ClassTest.testMethod`
+ */
+fun CurrentTestMethod.className(): String {
+  val method: Method = checkTestMethodIsNotNull(this.get())
+  return method.declaringClass.simpleName
 }

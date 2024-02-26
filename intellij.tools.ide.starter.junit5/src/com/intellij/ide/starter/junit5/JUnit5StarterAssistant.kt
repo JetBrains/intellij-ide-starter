@@ -7,6 +7,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.junit5.config.DoNotKillOutdatedIDEsBetweenTests
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.killOutdatedProcesses
+import com.intellij.ide.starter.runner.CurrentDisplayName
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logError
@@ -22,6 +23,7 @@ open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback, After
   override fun beforeEach(context: ExtensionContext) {
     if (context.testMethod.isPresent) {
       di.direct.instance<CurrentTestMethod>().set(context.testMethod.get())
+      di.direct.instance<CurrentDisplayName>().set(context.displayName)
     }
     else {
       logError("Couldn't acquire test method")

@@ -35,7 +35,7 @@
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito-junit-jupiter" level="project" />
-    <orderEntry type="library" scope="TEST" name="JUnit5Params" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="JUnit5Params" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.performanceTesting.commands" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.util.common" />
   </component>
