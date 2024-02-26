@@ -66,7 +66,14 @@ interface TestContainer<T> {
 
     require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
 
-    val testDirectory = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
+    val testDirectory = run {
+      val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
+      if (testCase.ideInfo.platformPrefix == "JetBrainsClient") {
+        commonPath / "embedded-client"
+      } else {
+        commonPath
+      }
+    }
 
     val paths = IDEDataPaths.createPaths(testName, testDirectory, testCase.useInMemoryFileSystem)
     logOutput("Using IDE paths for '$testName': $paths")
