@@ -1,9 +1,8 @@
 package com.intellij.tools.ide.metrics.collector.starter
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.ide.starter.runner.CurrentDisplayName
+import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
@@ -18,7 +17,6 @@ import com.intellij.tools.ide.util.common.logOutput
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
@@ -53,7 +51,6 @@ class MetricsPublisherExample : MetricsPublisher<MetricsPublisherExample>() {
   }
 }
 
-@ExtendWith(JUnit5StarterAssistant::class)
 class MetricsCollectionTest {
 
   @Test
@@ -61,7 +58,7 @@ class MetricsCollectionTest {
     val metricPrefixes = listOf("jps.", "workspaceModel.", "FilePageCache.")
     val spanNames = listOf("project.opening")
 
-    val context = Starter.newContext(CurrentDisplayName.get()!!, IdeaCommunityCases.GradleJitPackSimple)
+    val context = Starter.newContext(CurrentTestMethod.get()!!.displayName, IdeaCommunityCases.GradleJitPackSimple)
       .prepareProjectCleanImport()
 
     val exitCommandChain = CommandChain().exitApp()

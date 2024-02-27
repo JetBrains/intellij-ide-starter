@@ -7,8 +7,8 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.junit5.config.DoNotKillOutdatedIDEsBetweenTests
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.killOutdatedProcesses
-import com.intellij.ide.starter.runner.CurrentDisplayName
 import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.TestMethod
 import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
@@ -18,16 +18,13 @@ import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.kodein.di.direct
 import org.kodein.di.instance
+import kotlin.jvm.optionals.getOrNull
 
 open class JUnit5StarterAssistant : BeforeEachCallback, AfterEachCallback, AfterAllCallback {
   override fun beforeEach(context: ExtensionContext) {
-    if (context.testMethod.isPresent) {
-      di.direct.instance<CurrentTestMethod>().set(context.testMethod.get())
-      di.direct.instance<CurrentDisplayName>().set(context.displayName)
-    }
-    else {
-      logError("Couldn't acquire test method")
-    }
+    context.testMethod.getOrNull()?.also { testMethod ->
+      di.direct.instance<CurrentTestMethod>().set(TestMethod(testMethod.name, testMethod.javaClass.simpleName, context.displayName))
+    } ?: logError("Couldn't acquire test method")
 
     if (CIServer.instance.isBuildRunningOnCI) {
       logOutput(buildString {

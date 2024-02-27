@@ -21,7 +21,6 @@ import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
-import com.intellij.ide.starter.runner.CurrentDisplayName
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContainerImpl
@@ -62,7 +61,6 @@ var di = DI {
   bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
-  bindSingleton<CurrentDisplayName> { CurrentDisplayName }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
   bindSingleton(tag = "teamcity.uri") { URI("https://buildserver.labs.intellij.net").normalize() }
   bindSingleton<AllurePath> {

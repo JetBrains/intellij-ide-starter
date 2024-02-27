@@ -1,10 +1,9 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.runner.CurrentDisplayName
 import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.TestMethod
 import com.intellij.ide.starter.utils.hyphenateTestName
 import org.junit.jupiter.api.TestInfo
-import java.lang.reflect.Method
 
 /**
  * Format: ClassName/testMethodName => class-name/test-method-name
@@ -26,7 +25,7 @@ fun TestInfo.testMethodName(): String {
   else CurrentTestMethod.get()?.name ?: ""
 }
 
-private fun checkTestMethodIsNotNull(testMethod: Method?): Method = requireNotNull(testMethod) {
+private fun checkTestMethodIsNotNull(testMethod: TestMethod?): TestMethod = requireNotNull(testMethod) {
   "Cannot find current test method. Most likely you need to provide testName manually in the test context"
 }
 
@@ -46,20 +45,20 @@ fun CurrentTestMethod.hyphenateWithClass(): String = qualifiedName().hyphenateTe
 /**
  * @return Hyphenated test class and display method name which can be provided by @DisplayName or @ParameterizedTest(name = ) or default just a method name
  */
-fun CurrentDisplayName.displayName(): String = (CurrentTestMethod.className() + "/" +  (get() ?: "")).hyphenateTestName()
+fun CurrentTestMethod.displayName(): String = (CurrentTestMethod.className() + "/" +  (get()?.displayName ?: "")).hyphenateTestName()
 
 /**
  * Returns the qualified name of the current test method. Eg: `com.intellij.xyz.tests.ClassTest.testMethod`
  */
 fun CurrentTestMethod.qualifiedName(): String {
-  val method: Method = checkTestMethodIsNotNull(this.get())
-  return "${method.declaringClass.simpleName}/${method.name}"
+  val method: TestMethod = checkTestMethodIsNotNull(this.get())
+  return "${method.declaringClass}/${method.name}"
 }
 
 /**
  * Returns the qualified name of the current test method. Eg: `com.intellij.xyz.tests.ClassTest.testMethod`
  */
 fun CurrentTestMethod.className(): String {
-  val method: Method = checkTestMethodIsNotNull(this.get())
-  return method.declaringClass.simpleName
+  val method: TestMethod = checkTestMethodIsNotNull(this.get())
+  return method.declaringClass
 }
