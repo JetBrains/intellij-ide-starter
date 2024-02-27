@@ -7,6 +7,7 @@ import com.intellij.ide.starter.frameworks.AndroidFramework
 import com.intellij.ide.starter.frameworks.SpringFramework
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.utils.hyphenateTestName

@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.junit5
 
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.utils.HttpClient
 import io.kotest.assertions.withClue
 import org.junit.jupiter.api.Assertions.assertEquals

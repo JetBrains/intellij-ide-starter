@@ -133,7 +133,7 @@ After seeing the console prompt to connect remotely to port 5005, run the create
 
 ### Using JUnit5 extensions to modify Starter behavior
 
-For JUnit5, there are several extensions with the Tweak prefix, which provide a convenient way to set configuration variables as needed.
+For JUnit5, there are several extensions, which provide a convenient way to set configuration variables as needed.
 List of extensions [can be found here](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter.junit5/src/com/intellij/ide/starter/junit5/config)
 
 

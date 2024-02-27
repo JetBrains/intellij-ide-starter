@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.GitProjectInfo
 import io.kotest.matchers.paths.shouldExist

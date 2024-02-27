@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.junit5
+package com.intellij.ide.starter.junit5.config
 
 import com.intellij.ide.starter.process.killOutdatedProcesses
 import org.junit.jupiter.api.extension.BeforeEachCallback
