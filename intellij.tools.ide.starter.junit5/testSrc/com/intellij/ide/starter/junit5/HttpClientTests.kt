@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.fileSize
 import kotlin.io.path.writeText
 
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class HttpClientTests {
   @Test
   @Timeout(value = 1, unit = TimeUnit.MINUTES)

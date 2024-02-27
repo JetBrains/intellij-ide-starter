@@ -16,7 +16,7 @@ import java.nio.file.Path
 
 
 @ExtendWith(MockitoExtension::class)
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class PluginsInjectionTest {
 
   @TempDir

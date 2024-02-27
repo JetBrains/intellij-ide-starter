@@ -21,7 +21,7 @@ import java.nio.file.Path
 
 
 @ExtendWith(MockitoExtension::class)
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class FrameworksInjectionTest {
   @TempDir
   lateinit var testDirectory: Path

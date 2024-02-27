@@ -22,6 +22,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/testSrc" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/testResources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -38,5 +39,6 @@
     <orderEntry type="library" scope="PROVIDED" name="JUnit5Params" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.performanceTesting.commands" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.util.common" />
+    <orderEntry type="library" scope="PROVIDED" name="JUnit5Launcher" level="project" />
   </component>
 </module>

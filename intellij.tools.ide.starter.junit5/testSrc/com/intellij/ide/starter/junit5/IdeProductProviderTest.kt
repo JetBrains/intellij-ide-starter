@@ -5,7 +5,7 @@ import io.kotest.matchers.collections.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class IdeProductProviderTest {
   @Test
   fun listingAllIdeInfoShouldWork() {

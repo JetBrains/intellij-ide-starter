@@ -25,7 +25,7 @@ import kotlin.io.path.div
 import kotlin.random.Random
 
 @ExtendWith(MockitoExtension::class)
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class ReportingTest {
 
   companion object {

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.kodein.di.instance
 import java.util.concurrent.TimeUnit
 
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class GitProjectDownloadingTest {
 
   @Test

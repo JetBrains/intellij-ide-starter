@@ -10,7 +10,7 @@ import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
+import com.intellij.ide.starter.junit5.KillOutdatedProcesses
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.report.ErrorReporterToCI
@@ -40,7 +40,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 
-@ExtendWith(JUnit5StarterAssistant::class)
+@ExtendWith(KillOutdatedProcesses::class)
 class InstallPluginTest {
   companion object {
     private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227, 14823, 21709, 14946, 16478, 10253, 20603, 19772, 16353, 21531, 94086, 17153,
