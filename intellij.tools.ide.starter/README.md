@@ -168,7 +168,8 @@ If you're interested in a more general approach to OpenTelemetry metrics collect
 you can look at [intellij.tools.ide.metrics.collector](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.tools.ide.metrics.collector#readme).
 
 There is also an option to run unit tests as a benchchmark tests via [PlatformTestUtil.newPerformanceTest(...)](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PlatformTestUtil.java#L648C46-L648C64).  
-Examples [of usages in IntelliJ repo](https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20PlatformTestUtil.newPerformanceTest&type=code).   
+Examples [of usages in IntelliJ repo](https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20PlatformTestUtil.newPerformanceTest&type=code).
+Or you can take a look at the tests in [intellij.tools.ide.metrics.benchmark module](https://github.com/JetBrains/intellij-community/tree/20d3f729e88c7f3f66f93e8b647b77b2839e3f36/tools/intellij.tools.ide.metrics.benchmark/testSrc/com/intellij/tools/ide/metrics/benchmark).  
 More details can be found in [PerformanceTestInfo#start()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PerformanceTestInfo.java#L251), 
 [PerformanceTestInfo#startAsSubtest()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PerformanceTestInfo.java#L291),
 [PerformanceTestInfo#withTelemetryMeters()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PerformanceTestInfo.java#L161),

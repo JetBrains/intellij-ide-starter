@@ -6,8 +6,9 @@ import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import io.opentelemetry.sdk.metrics.data.PointData
 
-class StarterTelemetryMeterCollector(metricsSelectionStrategy: MetricsSelectionStrategy,
-                                     metersFilter: (Map.Entry<String, List<PointData>>) -> Boolean) :
-  OpenTelemetryMeterCollector(metricsSelectionStrategy, metersFilter), StarterMetricsCollector {
+class StarterTelemetryMeterCollector(
+  metricsSelectionStrategy: MetricsSelectionStrategy,
+  metersFilter: (Map.Entry<String, List<PointData>>) -> Boolean
+) : OpenTelemetryMeterCollector(metricsSelectionStrategy, metersFilter), StarterMetricsCollector {
   override fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric> = collect(runContext.logsDir)
 }

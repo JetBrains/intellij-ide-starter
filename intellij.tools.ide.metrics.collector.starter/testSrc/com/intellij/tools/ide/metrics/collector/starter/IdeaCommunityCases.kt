@@ -1,4 +1,4 @@
-package examples.data
+package com.intellij.tools.ide.metrics.collector.starter
 
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.project.GitHubProject

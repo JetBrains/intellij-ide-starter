@@ -20,8 +20,9 @@ import com.intellij.tools.ide.util.common.withRetry
  */
 abstract class MetricsPublisher<T> {
   protected val metricsCollectors: MutableList<StarterMetricsCollector> = mutableListOf()
-  protected abstract var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit
   protected var metricsComparisonConfiguration: Map<String, CompareSetting> = mutableMapOf()
+
+  protected abstract var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit
 
   protected fun asTypeT(): T = this as T
 
