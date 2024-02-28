@@ -160,7 +160,15 @@ There are two ways to modify the VM options. One is on `IDETestContext` and anot
 VM options for the whole context that can be reused between runs. The second is used to modify VM options just for the current run.
 
 
-### Performance testing
+### Performance testing/Metrics collection
 
-Out of the box Starter can collect OpenTelemetry metrics.
-Appropriate modules for metrics collection [can be found here](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.metrics.collector.starter)
+Out of the box, Starter can collect OpenTelemetry metrics using [intellij.tools.ide.metrics.collector.starter](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.metrics.collector.starter#readme) module.
+
+If you're interested in a more general approach to OpenTelemetry metrics collection (without Starter involved),
+you can look at [intellij.tools.ide.metrics.collector](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.tools.ide.metrics.collector#readme).
+
+There is also an option to run unit tests as a benchchmark tests via [PlatformTestUtil.newPerformanceTest(...)](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PlatformTestUtil.java#L648C46-L648C64).  
+Examples [of usages in IntelliJ repo](https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20PlatformTestUtil.newPerformanceTest&type=code).   
+More details can be found in [PerformanceTestInfo#start()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PerformanceTestInfo.java#L251), 
+[PerformanceTestInfo#startAsSubtest()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PerformanceTestInfo.java#L291),
+[PerformanceTestInfo#withTelemetryMeters()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/PerformanceTestInfo.java#L161),
