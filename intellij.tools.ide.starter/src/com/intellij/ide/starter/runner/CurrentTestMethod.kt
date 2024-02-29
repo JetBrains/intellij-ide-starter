@@ -2,7 +2,7 @@ package com.intellij.ide.starter.runner
 
 import java.util.concurrent.atomic.AtomicReference
 
-data class TestMethod(val name: String, val declaringClass: String, val displayName: String)
+data class TestMethod(val name: String, val clazz: String, val clazzSimpleName: String, val displayName: String)
 
 /**
  * Container that contains current test method reference

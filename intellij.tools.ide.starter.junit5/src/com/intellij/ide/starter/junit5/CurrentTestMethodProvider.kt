@@ -22,7 +22,8 @@ open class CurrentTestMethodProvider : TestExecutionListener {
     val methodSource = testIdentifier.source.get() as MethodSource
     di.direct.instance<CurrentTestMethod>().set(TestMethod(
       name = methodSource.methodName,
-      declaringClass = methodSource.javaClass.simpleName,
+      clazz = methodSource.javaClass.name,
+      clazzSimpleName = methodSource.javaClass.simpleName,
       displayName = testIdentifier.displayName)
     )
   }

@@ -14,7 +14,7 @@ interface FailureDetailsOnCI {
 
     fun getTestMethodName(): String {
       val method = di.direct.instance<CurrentTestMethod>().get()
-      return if (method == null) "" else "${method.declaringClass}.${method}"
+      return if (method == null) "" else "${method.clazz}.${method.name}"
     }
   }
 

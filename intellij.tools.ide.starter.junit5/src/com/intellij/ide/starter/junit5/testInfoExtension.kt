@@ -52,7 +52,7 @@ fun CurrentTestMethod.displayName(): String = (CurrentTestMethod.className() + "
  */
 fun CurrentTestMethod.qualifiedName(): String {
   val method: TestMethod = checkTestMethodIsNotNull(this.get())
-  return "${method.declaringClass}/${method.name}"
+  return "${method.clazzSimpleName}/${method.name}"
 }
 
 /**
@@ -60,5 +60,5 @@ fun CurrentTestMethod.qualifiedName(): String {
  */
 fun CurrentTestMethod.className(): String {
   val method: TestMethod = checkTestMethodIsNotNull(this.get())
-  return method.declaringClass
+  return method.clazzSimpleName
 }
