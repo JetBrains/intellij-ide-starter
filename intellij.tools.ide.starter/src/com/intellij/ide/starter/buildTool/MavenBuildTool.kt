@@ -5,11 +5,17 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.runner.ValidateVMOptionsWereSetEvent
 import com.intellij.openapi.diagnostic.LogLevel
+import com.intellij.openapi.util.io.findOrCreateDirectory
+import com.intellij.tools.ide.performanceTesting.commands.dto.MavenArchetypeInfo
 import com.intellij.tools.ide.util.common.logOutput
+import java.io.BufferedInputStream
+import java.io.FileOutputStream
+import java.net.URL
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.bufferedWriter
+import kotlin.io.path.createFile
 
 open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.MAVEN, testContext) {
   companion object {
@@ -97,5 +103,24 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
       }
     pomXml.bufferedWriter().use { it.write(text) }
     return this
+  }
+
+  fun downloadArtifactFromMavenCentral(data: MavenArchetypeInfo, repoPath: Path) {
+    try {
+      listOf("pom", "jar").forEach {
+        val fileName = "${data.artefactId}-${data.version}.$it"
+        val filePath = "${data.groupId.replace('.', '/')}/${data.artefactId}/${data.version}"
+        val file = repoPath.resolve(filePath).findOrCreateDirectory().resolve(fileName).createFile()
+        val url = "https://repo1.maven.org/maven2/$filePath/$fileName"
+        BufferedInputStream(URL(url).openStream()).use { inputStream ->
+          FileOutputStream(file.toString()).use { outputStream ->
+            inputStream.copyTo(outputStream)
+          }
+        }
+      }
+    }
+    catch (e: Exception) {
+      throw IllegalStateException("Error downloading artifact: ${e.message}")
+    }
   }
 }
