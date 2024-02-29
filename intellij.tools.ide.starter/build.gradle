@@ -5,7 +5,7 @@ group = "com.jetbrains.intellij.tools"
 
 buildscript {
   ext.kotlin_version = '1.9.10'
-  ext.jackson_version = '2.15.2'
+  ext.jackson_version = '2.16.0'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -40,18 +40,18 @@ sourceSets {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
   implementation "org.apache.httpcomponents:httpmime:4.5.14"
-  implementation "org.jetbrains.intellij.deps:gradle-api:7.5.1"
-  implementation "org.kodein.di:kodein-di-jvm:7.20.1"
+  implementation "org.jetbrains.intellij.deps:gradle-api:8.5"
+  implementation "org.kodein.di:kodein-di-jvm:7.20.2"
   implementation "org.rauschig:jarchivelib:1.2.0"
-  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3"
-  implementation "com.jetbrains.qodana:qodana-sarif:0.1.99"
-  implementation 'commons-io:commons-io:2.11.0'
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
+  implementation "com.jetbrains.qodana:qodana-sarif:0.2.100"
+  implementation 'commons-io:commons-io:2.15.0'
   implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
-  implementation 'io.qameta.allure:allure-java-commons:2.22.2'
+  implementation 'io.qameta.allure:allure-java-commons:2.25.0'
 
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
   implementation("com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT")

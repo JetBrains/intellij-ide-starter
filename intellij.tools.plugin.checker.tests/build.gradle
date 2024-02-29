@@ -3,7 +3,7 @@ apply plugin: 'kotlin'
 
 buildscript {
   ext.kotlin_version = '1.9.10'
-  ext.jackson_version = '2.15.2'
+  ext.jackson_version = '2.16.0'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  testImplementation "org.kodein.di:kodein-di-jvm:7.20.1"
+  testImplementation "org.kodein.di:kodein-di-jvm:7.20.2"
 
   testImplementation "com.jetbrains.intellij.platform:util:LATEST-TRUNK-SNAPSHOT"
   testImplementation "com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT"
@@ -38,7 +38,7 @@ dependencies {
   testImplementation "com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT"
   testImplementation "com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-TRUNK-SNAPSHOT"
 
-  testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 
   testImplementation 'io.kotest:kotest-assertions-core-jvm:5.5.4'
   testImplementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
