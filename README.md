@@ -79,5 +79,5 @@ Examples of included commands:
 ### Performance testing/Metrics collection
 
 Metrics are values collected during test execution, including operation durations, command results (e.g., the number of elements in completion lists), and more.  
-You can find more information about different approach to collect metrics (with or without Starter) in [Starter Readme](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter#readme)
+You can find more information about different approach to collect metrics (with or without Starter) in [Starter Readme](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter#performance-testingmetrics-collection)
 
