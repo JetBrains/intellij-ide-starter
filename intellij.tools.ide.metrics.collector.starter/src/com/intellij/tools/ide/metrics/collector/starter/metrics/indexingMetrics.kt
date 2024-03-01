@@ -13,6 +13,7 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.extension
+import kotlin.io.path.name
 
 /*
  * metricNumberOfIndexedFilesWritingIndexValue <= metricNumberOfIndexedFiles
@@ -274,11 +275,16 @@ private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
 
 
 
-fun extractIndexingMetrics(startResult: IDEStartResult): IndexingMetrics {
+fun extractIndexingMetrics(startResult: IDEStartResult, projectName: String? = null): IndexingMetrics {
   val indexDiagnosticDirectory = startResult.runContext.logsDir / "indexing-diagnostic"
   val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.toFile().isDirectory }.use { it.toList() }
   val projectIndexDiagnosticDirectory = indexDiagnosticDirectoryChildren.let { perProjectDirs ->
-    perProjectDirs.singleOrNull() ?: error("Only one project diagnostic dir is expected: ${perProjectDirs.joinToString()}")
+    if (projectName == null) {
+      perProjectDirs.singleOrNull() ?: error("Only one project diagnostic dir is expected: ${perProjectDirs.joinToString()}")
+    }
+    else {
+      perProjectDirs.find { it.name.startsWith("$projectName.") }
+    }
   }
   val jsonIndexDiagnostics = Files.list(projectIndexDiagnosticDirectory)
     .use { stream -> stream.filter { it.extension == "json" }.toList() }
