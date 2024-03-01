@@ -58,6 +58,14 @@ kotlin {
 sourceSets {
   main.kotlin.srcDirs += 'src'
   test.kotlin.srcDirs += 'testSrc'
+  main.resources {
+    srcDirs "resources"
+    includes = ["**/*.*"]
+  }
+  test.resources {
+    srcDirs "testResources"
+    includes = ["**/*.*"]
+  }
 }
 
 tasks.test {
