@@ -15,4 +15,6 @@ repositories {
 }
 
 testImplementation("com.jetbrains.intellij.tools:ide-metrics-collector-starter:LATEST-EAP-SNAPSHOT")
+testImplementation("com.jetbrains.fus.reporting:ap-validation:76")
+testImplementation("com.jetbrains.fus.reporting:model:76")
 ```
