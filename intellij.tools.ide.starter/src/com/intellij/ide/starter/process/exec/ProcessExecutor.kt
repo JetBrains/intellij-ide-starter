@@ -33,6 +33,15 @@ class ProcessExecutor(val presentableName: String,
                       val onlyEnrichExistedEnvVariables: Boolean = false,
                       val expectedExitCode: Int = 0) {
 
+  companion object {
+    fun killProcessGracefully(process: ProcessHandle) {
+      process.destroy()
+      runBlocking(Dispatchers.IO) { withTimeout(20.seconds) { process.onExit().await() } }
+
+      process.destroyForcibly()
+    }
+  }
+
   private fun redirectProcessOutput(
     process: Process,
     outOrErrStream: Boolean,
@@ -87,13 +96,6 @@ class ProcessExecutor(val presentableName: String,
     }
 
     return this
-  }
-
-  private fun killProcessGracefully(process: ProcessHandle) {
-    process.destroy()
-    runBlocking(Dispatchers.IO) { withTimeout(20.seconds) { process.onExit().await() } }
-
-    process.destroyForcibly()
   }
 
   private fun analyzeProcessExit(process: Process) {
