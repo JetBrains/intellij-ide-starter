@@ -1,9 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.buildTool.BuildTool
-import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.models.IDEStartResult
@@ -14,7 +12,10 @@ import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
-import com.intellij.ide.starter.runner.*
+import com.intellij.ide.starter.runner.IDECommandLine
+import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.ide.starter.runner.openTestCaseProject
+import com.intellij.ide.starter.runner.startIdeWithoutProject
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
@@ -25,8 +26,6 @@ import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ui.NewUiValue
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
@@ -360,38 +359,6 @@ class IDETestContext(
     finally {
       if (isReportPublishingEnabled) publishers.forEach {
         it.publishAnywayAfterRun(runContext)
-      }
-    }
-  }
-
-  /**
-   * Run IDE in background.
-   * If you want to know, when it will be launched/closed you may rely on event [IdeLaunchEvent] and subscribe on it via [StarterBus.subscribe]
-   */
-  fun runIdeInBackground(commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
-                         commands: Iterable<MarshallableCommand> = CommandChain(),
-                         runTimeout: Duration = 10.minutes,
-                         useStartupScript: Boolean = true,
-                         launchName: String = "",
-                         expectedKill: Boolean = false,
-                         expectedExitCode: Int = 0,
-                         collectNativeThreads: Boolean = false,
-                         configure: IDERunContext.() -> Unit = {}): Deferred<IDEStartResult> {
-    return perTestSupervisorScope.async {
-      try {
-        runIDE(commandLine,
-               commands,
-               runTimeout,
-               useStartupScript,
-               launchName,
-               expectedKill,
-               expectedExitCode,
-               collectNativeThreads,
-               configure)
-      }
-      catch (e: Throwable) {
-        logError("Error during IDE execution", e)
-        throw e
       }
     }
   }
