@@ -4,7 +4,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryCsvMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
 import com.intellij.util.indexing.diagnostic.dto.*
 import com.intellij.util.indexing.diagnostic.dto.JsonFileProviderIndexStatistics.JsonIndexedFile
@@ -182,7 +182,8 @@ data class IndexingMetrics(
       indexingHistories.forEach { indexingHistory ->
         indexingHistory.totalStatsPerFileType.forEach { totalStatsPerFileType ->
           val duration = (indexingHistory.times.totalWallTimeWithPauses.nano * totalStatsPerFileType.partOfTotalProcessingTime.partition).toLong()
-          indexingDurationMap[totalStatsPerFileType.fileType] = indexingDurationMap[totalStatsPerFileType.fileType]?.let { it + duration } ?: duration
+          indexingDurationMap[totalStatsPerFileType.fileType] = indexingDurationMap[totalStatsPerFileType.fileType]?.let { it + duration }
+                                                                ?: duration
         }
       }
       return indexingDurationMap
@@ -234,7 +235,7 @@ data class IndexingMetrics(
       PerformanceMetrics.newCounter("numberOfIndexedFilesWritingIndexValue", value = totalNumberOfIndexedFilesWritingIndexValues.toLong()),
       PerformanceMetrics.newCounter("numberOfFilesIndexedByExtensions", value = numberOfFilesFullyIndexedByExtensions.toLong()),
       PerformanceMetrics.newCounter("numberOfFilesIndexedWithoutExtensions",
-                                value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
+                                    value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
       PerformanceMetrics.newCounter("numberOfRunsOfScannning", value = totalNumberOfRunsOfScanning.toLong()),
       PerformanceMetrics.newCounter("numberOfRunsOfIndexing", value = totalNumberOfRunsOfIndexing.toLong())
     ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeAvg, "Avg") +
@@ -251,16 +252,16 @@ private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
                                              metricPrefixInCSV: String,
                                              resultingMetricPrefix: String): List<PerformanceMetrics.Metric> {
   val timeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.time\\.ns")
-  val time = StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
-    it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".time.ns")
-  }).collect(runResult.runContext).associate {
+  val time = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
+    it.name.startsWith("$metricPrefixInCSV.") && it.name.endsWith(".time.ns")
+  }.collect(runResult.runContext).associate {
     val language = timeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value))
   }
   val sizeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.size\\.bytes")
-  val size = StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.SUM, metersFilter = {
-    it.key.startsWith("$metricPrefixInCSV.") && it.key.endsWith(".size.bytes")
-  }).collect(runResult.runContext).associate {
+  val size = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
+    it.name.startsWith("$metricPrefixInCSV.") && it.name.endsWith(".size.bytes")
+  }.collect(runResult.runContext).associate {
     val language = sizeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, it.value)
   }
@@ -272,7 +273,6 @@ private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
          size.map { PerformanceMetrics.newCounter("${resultingMetricPrefix}Size#" + it.key, it.value) } +
          speed.map { PerformanceMetrics.newCounter("${resultingMetricPrefix}Speed#" + it.key, it.value) }
 }
-
 
 
 fun extractIndexingMetrics(startResult: IDEStartResult, projectName: String? = null): IndexingMetrics {
@@ -303,13 +303,13 @@ private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String
     PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage$suffix#${it.key}", value = it.value.toLong())
   }
 
-private fun getProcessingTimeOfFileType (mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
+private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
   mapFileTypeToDuration.map {
     PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value))
   }
 
 data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val totalSumOfThreadTimesWithPauses: Long = 0) {
-  fun merge(scanningStatistics: JsonScanningStatistics) : ScanningStatistics {
+  fun merge(scanningStatistics: JsonScanningStatistics): ScanningStatistics {
     return ScanningStatistics(
       numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
       numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,

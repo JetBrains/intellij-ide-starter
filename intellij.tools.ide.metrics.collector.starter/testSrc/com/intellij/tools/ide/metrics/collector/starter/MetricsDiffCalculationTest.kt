@@ -5,7 +5,7 @@ import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryCsvMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.metrics.MetricsDiffCalculator
 import com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher
 import io.kotest.assertions.assertSoftly
@@ -40,9 +40,9 @@ class MetricsDiffCalculationTest {
   @TempDir
   lateinit var testDirectory: Path
 
-  private fun getWorkspaceModelMeterCollector(): StarterTelemetryCsvMeterCollector =
-    StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.LATEST) {
-      it.key.startsWith("jps.") || it.key.startsWith("workspaceModel.")
+  private fun getWorkspaceModelMeterCollector(): StarterTelemetryJsonMeterCollector =
+    StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
+      it.name.startsWith("jps.") || it.name.startsWith("workspaceModel.")
     }
 
   private fun getMetricsPublisher(): MetricsPublisher<Any> = object : ReportPublisher, MetricsPublisher<Any>() {
