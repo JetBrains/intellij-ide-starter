@@ -3,7 +3,7 @@ package com.intellij.tools.ide.metrics.collector.starter.metrics
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryCsvMeterCollector
 import com.intellij.tools.ide.util.common.logError
 
 object CommonMetrics {
@@ -13,7 +13,7 @@ object CommonMetrics {
 
   fun getAwtMetrics(startResult: IDEStartResult): List<PerformanceMetrics.Metric> {
     try {
-      return StarterTelemetryMeterCollector(MetricsSelectionStrategy.LATEST) {
+      return StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.LATEST) {
         it.key == "AWTEventQueue.dispatchTimeTotalNS"
       }.collect(startResult.runContext).map {
         PerformanceMetrics.Metric.newDuration("AWTEventQueue.dispatchTimeTotal", it.value.convertNsToMs())
@@ -32,7 +32,7 @@ object CommonMetrics {
                                   "writeAction.median.wait.ms" to MetricsSelectionStrategy.LATEST)
     try {
       return metricsToStrategy.flatMap { (metricName, strategy) ->
-        StarterTelemetryMeterCollector(strategy) { it.key.startsWith(metricName) }
+        StarterTelemetryCsvMeterCollector(strategy) { it.key.startsWith(metricName) }
           .collect(startResult.runContext).map {
             PerformanceMetrics.Metric.newCounter(metricName, it.value)
           }
@@ -54,7 +54,7 @@ object CommonMetrics {
   ): List<PerformanceMetrics.Metric> {
     try {
       return metricsStrategies.flatMap { (metricName, strategy) ->
-        StarterTelemetryMeterCollector(strategy) { it.key.startsWith(metricName) }.collect(startResult.runContext).map {
+        StarterTelemetryCsvMeterCollector(strategy) { it.key.startsWith(metricName) }.collect(startResult.runContext).map {
           val value = if (it.id.name.contains("Bytes")) it.value / 1_000_000 else it.value
           val name = if (it.id.name.contains("Bytes")) it.id.name.replace("Bytes", "Megabytes") else it.id.name
           if (it.id.name.contains("Time")) {

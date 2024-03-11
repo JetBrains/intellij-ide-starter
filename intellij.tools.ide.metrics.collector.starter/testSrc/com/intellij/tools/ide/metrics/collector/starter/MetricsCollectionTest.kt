@@ -6,7 +6,7 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryCsvMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.starter.metrics.CommonMetrics
 import com.intellij.tools.ide.metrics.collector.starter.metrics.GCLogAnalyzer
@@ -69,7 +69,7 @@ class MetricsCollectionTest {
       .addMetricsCollector(StarterTelemetrySpanCollector(spanNames = spanNames))
       // add meters collector (from .csv files that is located in log directory)
       .addMetricsCollector(
-        StarterTelemetryMeterCollector(MetricsSelectionStrategy.SUM) {
+        StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.SUM) {
           metricPrefixes.any { prefix -> it.key.startsWith(prefix) }
         })
       .publishMetricsToYourCI(startResult)
