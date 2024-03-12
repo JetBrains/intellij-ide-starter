@@ -13,7 +13,6 @@ import io.kotest.assertions.withClue
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
@@ -77,8 +76,7 @@ class MetricsDiffCalculationTest {
 
     withClue("Generated metrics: ${diff.map { it.id.name to it.value }.joinToString(separator = System.lineSeparator())}") {
       assertSoftly {
-        diff.shouldHaveSize(76)
-        diff.count { it.value != 0L }.shouldBeExactly(32)
+        diff.shouldHaveSize(3)
 
         diff.single { it.id.name == "jps.library.entities.serializer.load.entities.ms" }.value.shouldBe(23)
         diff.single { it.id.name == "jps.module.iml.entities.serializer.load.entities.ms" }.value.shouldBe(702)

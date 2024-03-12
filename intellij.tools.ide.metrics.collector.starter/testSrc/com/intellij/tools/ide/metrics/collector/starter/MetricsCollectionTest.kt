@@ -1,12 +1,13 @@
 package com.intellij.tools.ide.metrics.collector.starter
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryCsvMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.starter.metrics.CommonMetrics
 import com.intellij.tools.ide.metrics.collector.starter.metrics.GCLogAnalyzer
@@ -17,6 +18,7 @@ import com.intellij.tools.ide.util.common.logOutput
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
@@ -51,6 +53,7 @@ class MetricsPublisherExample : MetricsPublisher<MetricsPublisherExample>() {
   }
 }
 
+@ExtendWith(UseLatestDownloadedIdeBuild::class)
 class MetricsCollectionTest {
 
   @Test
@@ -69,8 +72,9 @@ class MetricsCollectionTest {
       .addMetricsCollector(StarterTelemetrySpanCollector(spanNames = spanNames))
       // add meters collector (from .csv files that is located in log directory)
       .addMetricsCollector(
-        StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
-          metricPrefixes.any { prefix -> it.name.startsWith(prefix) }
+        // TODO: in next release com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector should be available
+        StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.SUM) {
+          metricPrefixes.any { prefix -> it.key.startsWith(prefix) }
         })
       .publishMetricsToYourCI(startResult)
       .getCollectedMetrics(startResult)
