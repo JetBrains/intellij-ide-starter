@@ -1,4 +1,3 @@
-
 package com.intellij.ide.starter.examples.junit5
 
 import com.intellij.ide.starter.frameworks.AndroidFramework
@@ -10,8 +9,6 @@ import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
-import com.intellij.tools.ide.performanceTesting.commands.importGradleProject
-import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -19,28 +16,25 @@ import org.junit.jupiter.api.extension.ExtendWith
 class ImportAndroidGradleProject {
 
 
-  //@Test
+  @Test
   fun openGradleJitPack() {
     val testCase = TestCase(IdeProductProvider.AI.copy(buildNumber = "2023.1.1.28"), GitHubProject.fromGithub(
       branchName = "master",
-      repoRelativeUrl = "/jitpack/gradle-simple.git"
-    )
+      repoRelativeUrl = "jitpack/gradle-simple.git")
     )
 
-    val testContext = Starter.newContext(testName = "openProject", testCase = testCase)
+    val testContext = Starter.newContext(testName = "importAndroidProject", testCase = testCase)
       .prepareProjectCleanImport()
-      .setSharedIndexesDownload(enable = true)
       .apply {
         withFramework<AndroidFramework>().setupAndroidSdkToProject(
           AndroidFramework.downloadLatestAndroidSdk(JdkDownloaderFacade.jdk11.home))
       }
-      .addProjectToTrustedLocations()
 
 
     //IDE will wait till import and indexing is finished and exit after that
     testContext.runIDE(
       commands = CommandChain().exitApp(),
-      launchName = "first run"
+      launchName = "firstIdeRun"
     )
   }
 }
