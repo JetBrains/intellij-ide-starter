@@ -32,10 +32,6 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
     const val LINUX_IGNORE_XVFB_RUN = "LINUX_IGNORE_XVFB_RUN"
 
     fun shouldIgnoreXvfbRun(): Boolean = instance().getBoolean(LINUX_IGNORE_XVFB_RUN)
-
-    const val REMOTE_DEV_RUN = "REMOTE_DEV_RUN"
-
-    fun isRemoteDevRun(): Boolean = instance().getBoolean(REMOTE_DEV_RUN)
   }
 
   override fun resetToDefault() {
@@ -44,6 +40,5 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
     put(ENV_JUNIT_RUNNER_USE_INSTALLER, System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER))
     put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, false)
     put(LINUX_IGNORE_XVFB_RUN, false)
-    put(REMOTE_DEV_RUN, System.getenv(REMOTE_DEV_RUN))
   }
 }
