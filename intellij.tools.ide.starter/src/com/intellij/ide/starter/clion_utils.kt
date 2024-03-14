@@ -4,9 +4,6 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.Starter
 
-fun IDETestContext.disableCMakeOpenProjectWizard() =
-  applyVMOptionsPatch { this.addSystemProperty("clion.skip.open.wizard", "true") }
-
 fun IDETestContext.disableCLionTestIndexing() =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
 
