@@ -26,7 +26,7 @@ data class IndexingMetrics(
   val ideStartResult: IDEStartResult,
   val jsonIndexDiagnostics: List<JsonIndexingActivityDiagnostic>
 ) {
-  private val scanningHistories: List<JsonProjectScanningHistory>
+  val scanningHistories: List<JsonProjectScanningHistory>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
   private val indexingHistories: List<JsonProjectDumbIndexingHistory>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectDumbIndexingHistory>()
