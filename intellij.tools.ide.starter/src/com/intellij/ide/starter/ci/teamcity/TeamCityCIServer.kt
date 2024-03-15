@@ -91,8 +91,11 @@ open class TeamCityCIServer(
       "Invalid folding descriptor detected".toRegex()
     )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
-      logOutput("Add $ignoredPattern ignored pattern from env")
-      patterns.add(ignoredPattern.toRegex())
+      val ignoredPatterns = ignoredPattern.split("\n")
+      ignoredPatterns.forEach {
+        logOutput("Add $it ignored pattern from env")
+        patterns.add(it.toRegex())
+      }
     }
     patterns
   }
