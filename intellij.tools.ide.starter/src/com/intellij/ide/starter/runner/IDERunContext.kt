@@ -302,22 +302,34 @@ data class IDERunContext(
       takeScreenshot(logsDir)
     }
     if (expectedKill) return
-    val javaProcessId by lazy { getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process) }
+
+    var javaProcessId: Long? = null
+    suspend fun getOrComputeJavaProcessId(): Long {
+      if (javaProcessId == null) {
+        javaProcessId = getJavaProcessIdWithRetry(
+          javaHome = jdkHome,
+          workDir = startConfig.workDir,
+          originalProcessId = pid,
+          originalProcess = process,
+        )
+      }
+      return javaProcessId!!
+    }
 
     if (collectNativeThreads) {
       val fileToStoreNativeThreads = logsDir.resolve("native-thread-dumps.txt")
-      startProfileNativeThreads(javaProcessId.toString())
+      startProfileNativeThreads(getOrComputeJavaProcessId().toString())
       delay(15.seconds)
-      stopProfileNativeThreads(javaProcessId.toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
+      stopProfileNativeThreads(getOrComputeJavaProcessId().toString(), fileToStoreNativeThreads.toAbsolutePath().toString())
     }
     val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}.txt")
     val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}.hprof.gz")
     catchAll {
-      collectJavaThreadDump(jdkHome, startConfig.workDir, javaProcessId, dumpFile)
+      collectJavaThreadDump(jdkHome, startConfig.workDir, getOrComputeJavaProcessId(), dumpFile)
     }
     catchAll {
       if (isLowMemorySignalPresent(logsDir)) {
-        collectMemoryDump(jdkHome, startConfig.workDir, javaProcessId, memoryDumpFile)
+        collectMemoryDump(jdkHome, startConfig.workDir, getOrComputeJavaProcessId(), memoryDumpFile)
       }
     }
   }

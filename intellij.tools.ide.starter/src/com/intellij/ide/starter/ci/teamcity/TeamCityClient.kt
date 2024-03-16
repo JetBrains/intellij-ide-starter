@@ -10,7 +10,7 @@ import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.tools.ide.util.common.withRetry
+import com.intellij.tools.ide.util.common.withRetryBlocking
 import org.apache.http.HttpRequest
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.client.methods.HttpGet
@@ -49,7 +49,7 @@ object TeamCityClient {
 
     logOutput("Request to TeamCity: $fullUrl")
 
-    val result = withRetry(messageOnFailure = "Failure during request to TeamCity") {
+    val result = withRetryBlocking(messageOnFailure = "Failure during request to TeamCity") {
       HttpClient.sendRequest(request) {
         if (it.statusLine.statusCode != 200) {
           logError(InputStreamReader(it.entity.content).readText())

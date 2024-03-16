@@ -5,8 +5,9 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.runner.SetupException
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.tools.ide.util.common.withRetry
+import com.intellij.tools.ide.util.common.withRetryBlocking
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.net.URL
@@ -89,15 +90,18 @@ object JdkDownloaderFacade {
       GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
     }
 
-  private fun isWSL(predicate: JdkPredicate): Boolean = predicate == JdkPredicate.forWSL(null)
-                                                        && SystemInfo.isWindows
-                                                        && WslDistributionManager.getInstance().installedDistributions.isNotEmpty()
+  private fun isWSL(predicate: JdkPredicate): Boolean {
+    return (predicate == JdkPredicate.forWSL(null) &&
+            SystemInfoRt.isWindows &&
+            WslDistributionManager.getInstance().installedDistributions.isNotEmpty())
+  }
 
-  private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean =
-    !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), null, true).size < MINIMUM_JDK_FILES_COUNT
+  private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean {
+    return !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), null, true).size < MINIMUM_JDK_FILES_COUNT
+  }
 
   private fun downloadAndInstallJdk(jdk: JdkItem, targetJdkHome: Path, targetHomeMarker: Path) {
-    withRetry(messageOnFailure = "Failure on downloading/installing JDK", retries = 5) {
+    withRetryBlocking(messageOnFailure = "Failure on downloading/installing JDK", retries = 5) {
       logOutput("Downloading JDK at $targetJdkHome")
       FileUtils.deleteQuietly(targetJdkHome.toFile())
 
