@@ -17,6 +17,7 @@ class ImportAndroidGradleProject {
 
 
   @Test
+  @Disabled("There is a dialog on start of AndroidStudio which freezes the whole test")
   fun openGradleJitPack() {
     val testCase = TestCase(IdeProductProvider.AI.copy(buildNumber = "2023.1.1.28"), GitHubProject.fromGithub(
       branchName = "master",
