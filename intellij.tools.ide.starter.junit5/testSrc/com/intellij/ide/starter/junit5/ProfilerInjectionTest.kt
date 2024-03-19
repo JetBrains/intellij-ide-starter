@@ -34,7 +34,7 @@ class ProfilerInjectionTest {
   @Disabled("AT-57")
   @Test
   fun `async profiler should be set without exception`(testInfo: TestInfo) {
-    val asyncProfiler: ProfilerInjector = di.direct.instance(tag = ProfilerType.ASYNC)
+    val asyncProfiler: ProfilerInjector = di.direct.instance(tag = ProfilerType.ASYNC_ON_START)
     val profilerSpy = Mockito.spy(asyncProfiler)
     val commandChain = CommandChain()
 

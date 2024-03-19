@@ -127,7 +127,7 @@ data class IDERunContext(
 
   private fun installProfiler(): IDERunContext {
     return when (val profilerType = testContext.profilerType) {
-      ProfilerType.ASYNC, ProfilerType.YOURKIT -> {
+      ProfilerType.ASYNC_ON_START, ProfilerType.YOURKIT, ProfilerType.ASYNC -> {
         val profiler = di.direct.instance<ProfilerInjector>(tag = profilerType)
         logOutput("Injecting profiler ${profiler.type.kind}")
         profiler.injectProfiler(this)
