@@ -9,6 +9,7 @@ import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
