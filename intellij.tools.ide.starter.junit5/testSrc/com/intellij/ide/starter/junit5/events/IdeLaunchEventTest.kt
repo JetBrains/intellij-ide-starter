@@ -48,17 +48,18 @@ class IdeLaunchEventTest {
 
     runBlocking(Dispatchers.IO) {
       eventually(duration = 2.seconds, poll = 100.milliseconds) {
-        withClue("There should be 2 events fired. Events: ${firedEvents.map { it.state }}") {
-          firedEvents.shouldHaveSize(3)
+        withClue("There should be 3 events fired. Events: ${firedEvents.map { it.state }}") {
+          firedEvents.shouldHaveSize(4)
         }
       }
     }
 
     assertSoftly {
-      withClue("During IDE run 2 events should be fired: before IDE start and after IDE finished. " +
+      withClue("During IDE run 3 events should be fired: before IDE start and after IDE finished. " +
                "Events: ${firedEvents.map { it.state }}") {
         firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.BEFORE) }
         firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.IN_TIME) }
+        firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.BEFORE_KILL) }
         firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.AFTER) }
       }
     }
