@@ -6,6 +6,9 @@ enum class EventState {
   /** Right before the action */
   BEFORE,
 
+  /** Right before kill the ide process */
+  BEFORE_KILL,
+
   /** After the action was completed */
   AFTER,
 

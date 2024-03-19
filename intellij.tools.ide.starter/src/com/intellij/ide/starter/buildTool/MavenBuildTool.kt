@@ -1,9 +1,10 @@
 package com.intellij.ide.starter.buildTool
 
+import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
-import com.intellij.ide.starter.runner.ValidateVMOptionsWereSetEvent
+import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.io.findOrCreateDirectory
 import com.intellij.tools.ide.performanceTesting.commands.dto.MavenArchetypeInfo
@@ -31,15 +32,31 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
         return path.toAbsolutePath()
       }
 
+    private const val MAVEN_DAEMON_NAME = "MavenServerIndexerMain"
     private fun destroyMavenIndexerProcessIfExists() {
-      val mavenDaemonName = "MavenServerIndexerMain"
-      destroyProcessIfExists(mavenDaemonName)
+      destroyProcessIfExists(MAVEN_DAEMON_NAME)
     }
   }
 
   init {
-    StarterBus.subscribeOnlyOnce(MavenBuildTool::javaClass) { event: ValidateVMOptionsWereSetEvent ->
-      if (event.data.testContext === testContext) destroyMavenIndexerProcessIfExists()
+    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.AFTER) { event: IdeLaunchEvent ->
+      if (event.data.runContext.testContext === testContext) {
+        collectDumpFile(MAVEN_DAEMON_NAME,
+                        event.data.runContext.logsDir,
+                        testContext.ide.resolveAndDownloadTheSameJDK(),
+                        testContext.ide.installationPath)
+        destroyMavenIndexerProcessIfExists()
+      }
+    }
+
+    StarterBus.subscribeOnlyOnce(MavenBuildTool::javaClass, eventState = EventState.BEFORE_KILL) { event: IdeLaunchEvent ->
+      testContext.ide.resolveAndDownloadTheSameJDK()
+      if (event.data.runContext.testContext === testContext) {
+        collectDumpFile(MAVEN_DAEMON_NAME,
+                        event.data.runContext.logsDir,
+                        testContext.ide.resolveAndDownloadTheSameJDK(),
+                        testContext.ide.installationPath)
+      }
     }
   }
 

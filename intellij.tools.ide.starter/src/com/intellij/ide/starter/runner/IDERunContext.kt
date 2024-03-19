@@ -225,6 +225,7 @@ data class IDERunContext(
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig, ideProcessId)
           },
           onBeforeKilled = { process, pid ->
+            StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.BEFORE_KILL, IdeLaunchEventData(runContext = this, ideProcess = process)))
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
           expectedExitCode = expectedExitCode,
@@ -298,6 +299,7 @@ data class IDERunContext(
                                               pid: Long,
                                               process: Process,
                                               snapshotsDir: Path) {
+
     catchAll {
       takeScreenshot(logsDir)
     }

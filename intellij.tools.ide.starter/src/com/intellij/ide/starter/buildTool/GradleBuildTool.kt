@@ -29,16 +29,30 @@ import kotlin.time.Duration.Companion.minutes
 open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.GRADLE, testContext) {
 
   companion object {
+    private const val GRADLE_DAEMON_NAME = "gradleDaemon"
     private fun destroyGradleDaemonProcessIfExists() {
-      val mavenDaemonName = "gradleDaemon"
-      destroyProcessIfExists(mavenDaemonName)
+      destroyProcessIfExists(GRADLE_DAEMON_NAME)
     }
   }
 
   init {
     StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.AFTER) { event: IdeLaunchEvent ->
       if (event.data.runContext.testContext === testContext) {
+        collectDumpFile(GRADLE_DAEMON_NAME,
+                        event.data.runContext.logsDir,
+                        testContext.ide.resolveAndDownloadTheSameJDK(),
+                        testContext.ide.installationPath)
         destroyGradleDaemonProcessIfExists()
+      }
+    }
+
+    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.BEFORE_KILL) { event: IdeLaunchEvent ->
+      testContext.ide.resolveAndDownloadTheSameJDK()
+      if (event.data.runContext.testContext === testContext) {
+        collectDumpFile(GRADLE_DAEMON_NAME,
+                        event.data.runContext.logsDir,
+                        testContext.ide.resolveAndDownloadTheSameJDK(),
+                        testContext.ide.installationPath)
       }
     }
   }

@@ -364,19 +364,22 @@ private fun destroyProcessById(processId: Long) {
     }
 }
 
+fun getProcessesIdByProcessName(processName: String): Set<Long> {
+  return getAllJavaProcesses().filter {
+    it.contains(processName)
+  }.map {
+    it.split(" ").first().toLong()
+  }.toSet()
+}
+
 fun destroyProcessIfExists(processName: String) {
   logOutput("Killing '$processName' process ...")
-
-  val javaProcesses = getAllJavaProcesses()
-  javaProcesses.forEach {
-    if (it.contains(processName)) {
-      logOutput("Killing '$it' process")
-      val processId = it.split(" ").first().toLong()
-
-      // get up-to date process list on every iteration
-      destroyProcessById(processId)
-    }
+  getProcessesIdByProcessName(processName).forEach {
+    logOutput("Killing '$it' process")
+    // get up-to date process list on every iteration
+    destroyProcessById(it)
   }
+
 
   logOutput("Process '$processName' should be killed")
 }
