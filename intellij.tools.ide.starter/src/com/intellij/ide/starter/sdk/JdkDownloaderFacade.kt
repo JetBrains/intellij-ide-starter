@@ -3,6 +3,7 @@ package com.intellij.ide.starter.sdk
 import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.runner.SetupException
+import com.intellij.openapi.progress.blockingContext
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.SystemInfoRt
@@ -107,7 +108,9 @@ object JdkDownloaderFacade {
 
       val jdkInstaller = JdkInstaller()
       val request = jdkInstaller.prepareJdkInstallationDirect(jdk, targetPath = targetJdkHome)
-      jdkInstaller.installJdk(request, targetHomeMarker)
+      blockingContext {
+        jdkInstaller.installJdk(request, targetHomeMarker)
+      }
     }
   }
 
