@@ -476,7 +476,7 @@ class IDETestContext(
   }
 
   fun addProjectToTrustedLocations(projectPath: Path? = null, addParentDir: Boolean = false): IDETestContext {
-    if (this.testCase.projectInfo == NoProject) return this
+    if (this.testCase.projectInfo == NoProject && projectPath == null) return this
 
     val path = projectPath ?: this.resolvedProjectHome.normalize()
     val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
