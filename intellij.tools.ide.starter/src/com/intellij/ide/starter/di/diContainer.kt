@@ -16,6 +16,7 @@ import com.intellij.ide.starter.models.IdeProductImp
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.InstallerGlobalPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
+import com.intellij.ide.starter.report.AllurePath
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
@@ -27,6 +28,7 @@ import org.kodein.di.bindArgSet
 import org.kodein.di.bindFactory
 import org.kodein.di.bindSingleton
 import java.net.URI
+import java.nio.file.Path
 
 /**
  * Reinitialize / override bindings for this DI container in your module before executing tests
@@ -62,6 +64,13 @@ var di = DI {
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
   bindSingleton(tag = "teamcity.uri") { URI("https://buildserver.labs.intellij.net").normalize() }
+  bindSingleton<AllurePath> {
+    object : AllurePath {
+      override fun reportDir(): Path {
+        return GlobalPaths.instance.testsDirectory.resolve("allure")
+      }
+    }
+  }
 }.apply {
   logOutput("Starter DI was initialized")
 }
