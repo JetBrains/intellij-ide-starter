@@ -15,23 +15,17 @@ import java.lang.management.ManagementFactory
 import java.nio.file.Path
 import kotlin.io.path.*
 
-
 data class VMOptions(
   private val ide: InstalledIde,
   private var data: List<String>,
   private var env: Map<String, String>
 ) {
   companion object {
-    fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions {
-      return VMOptions(
-        ide = ide,
-        data = file
-          .readLines()
-          .map { it.trim() }
-          .filter { it.isNotBlank() },
-        env = emptyMap()
-      )
-    }
+    fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions = VMOptions(
+      ide,
+      data = file.readLines().map { it.trim() }.filter { it.isNotBlank() },
+      env = emptyMap()
+    )
   }
 
   override fun toString() = buildString {
@@ -54,28 +48,24 @@ data class VMOptions(
 
   fun addSystemProperty(key: String, value: Path) = addSystemProperty(key, value.toAbsolutePath().toString())
 
-  /*
-    This method adds a property to IDE's VMOptions
-    If such property already exists in VMOptions
-    it will be replaced by the new one
+  /**
+   * This method adds a property to the IDE VM options. If such property already exists, it will be replaced by a new one.
    */
   fun addSystemProperty(key: String, value: String) {
-    logOutput("Setting IDE system property: [$key=$value]")
-    addLine(line = "-D$key=$value", filterPrefix = "-D$key=")
+    logOutput("Setting IDE system property: [${key}=${value}]")
+    addLine(line = "-D${key}=${value}", filterPrefix = "-D${key}=")
   }
 
-  /*
-    This method updates a property in IDE's VMOptions
-    with a new value (old value + new value separated by a comma)
-    If such property does not exist in VMOptions
-    the property with a given value will be added to VMOptions
- */
+  /**
+   * This method updates a property in the IDE VM options with a new value (old value + new value separated by a comma).
+   * If such property does not exist, the property with a given value will be added.
+   */
   private fun addSystemPropertyValue(key: String, value: String) {
-    if (data.filter { it.contains("-D$key") }.size == 1) {
-      val oldLine = data.filter { it.startsWith("-D$key") }[0]
+    if (data.filter { it.contains("-D${key}") }.size == 1) {
+      val oldLine = data.filter { it.startsWith("-D${key}") }[0]
       val oldValue = oldLine.split("=")[1]
-      val updatedValue = "$oldValue,$value"
-      logOutput("Updating system property: [$key=$updatedValue]")
+      val updatedValue = "${oldValue},${value}"
+      logOutput("Updating system property: [${key}=${updatedValue}]")
       addSystemProperty(key, updatedValue)
     }
     else {
@@ -84,17 +74,17 @@ data class VMOptions(
   }
 
   fun removeSystemProperty(key: String, value: Boolean) {
-    logOutput("Removing system property: [$key=$value]")
+    logOutput("Removing system property: [${key}=${value}]")
 
     // FIXME this is a side effect that is not negated by addSystemProperty
-    System.clearProperty(key) // to synchronize behaviour in IDEA and on test runner side
+    System.clearProperty(key) // to synchronize behavior in IDEA and on the test runner side
 
-    removeLine(line = "-D$key=$value")
+    removeLine(line = "-D${key}=${value}")
   }
 
   fun clearSystemProperty(key: String) {
     data = data.filterNot {
-     it.startsWith("-D$key=")
+     it.startsWith("-D${key}=")
         .also { match -> if (match) logOutput("Removing system property: ${it.removePrefix("-D")}") }
     }
   }
@@ -106,7 +96,7 @@ data class VMOptions(
 
   fun removeLine(line: String) {
     if (!data.contains(line)) return
-    data = data - line
+    data -= line
   }
 
   fun removeProfilerAgents() {
@@ -114,6 +104,7 @@ data class VMOptions(
     removeYourkitAgent()
   }
 
+  @Suppress("SpellCheckingInspection")
   fun removeAsyncAgent() {
     data = data.filterNot { it.contains("-agentpath:") && it.contains("async/libasyncProfiler") }
   }
@@ -131,13 +122,12 @@ data class VMOptions(
   }
 
   fun withEnv(key: String, value: String) {
-    env = env + (key to value)
+    env += key to value
   }
-
 
   fun writeIntelliJVmOptionFile(path: Path) {
     path.writeLines(data)
-    logOutput("Write vmoptions patch to $path")
+    logOutput("Write vmoptions patch to ${path}")
   }
 
   fun diffIntelliJVmOptionFile(theFile: Path): VMOptionsDiff {
@@ -147,49 +137,44 @@ data class VMOptions(
 
   fun writeJavaArgsFile(theFile: Path) = JvmUtils.writeJvmArgsFile(theFile, this.data)
 
-  fun overrideDirectories(paths: IDEDataPaths) = run {
+  fun overrideDirectories(paths: IDEDataPaths) {
     addSystemProperty(PathManager.PROPERTY_CONFIG_PATH, paths.configDir)
     addSystemProperty(PathManager.PROPERTY_SYSTEM_PATH, paths.systemDir)
     addSystemProperty(PathManager.PROPERTY_PLUGINS_PATH, paths.pluginsDir)
   }
 
-
   fun enableStartupPerformanceLog(perf: IDEStartupReports) = addSystemProperty("idea.log.perf.stats.file", perf.statsJSON)
 
-  fun enableClassLoadingReport(filePath: Path) = run {
+  fun enableClassLoadingReport(filePath: Path) {
     addSystemProperty("idea.log.class.list.file", filePath)
     addSystemProperty("idea.record.classpath.info", "true")
   }
 
-
-  fun enableVmtraceClassLoadingReport(filePath: Path) {
+  fun enableVmTraceClassLoadingReport(filePath: Path) {
     if (!VMTrace.isSupported) return
 
     val vmTraceFile = VMTrace.vmTraceFile
-
-    run {
-      addSystemProperty("idea.log.vmtrace.file", filePath)
-      addLine("-agentpath:${vmTraceFile.toAbsolutePath()}=${filePath.toAbsolutePath()}")
-    }
+    @Suppress("SpellCheckingInspection")
+    addSystemProperty("idea.log.vmtrace.file", filePath)
+    addLine("-agentpath:${vmTraceFile.toAbsolutePath()}=${filePath.toAbsolutePath()}")
   }
 
   fun enableExitMetrics(filePath: Path) = addSystemProperty("idea.log.exit.metrics.file", filePath)
 
   fun enableVerboseOpenTelemetry() = addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
 
-
   /**
    * [categories] - Could be packages, classes ...
    */
   fun configureLoggers(logLevel: LogLevel, vararg categories: String) {
-    val logLevelName = logLevel.name.lowercase()
-
     if (categories.isNotEmpty()) {
+      val logLevelName = logLevel.name.lowercase()
       addSystemPropertyValue("idea.log.${logLevelName}.categories", categories.joinToString(separator = ",") {
         "#" + it.removePrefix("#")
       })
     }
   }
+
   fun dropDebug() {
     data = data.filterNot { it.matches("-agentlib:jdwp=transport=dt_socket,server=y,suspend=.,address=.*".toRegex()) }
   }
@@ -201,34 +186,36 @@ data class VMOptions(
     addLine(configLine, filterPrefix = "-agentlib:jdwp")
   }
 
-  // You should also use setProfiler method
-  // Example: context
-  //          .setProfiler()
-  //          .applyVMOptionsPatch { profileBuildToolDaemon() }
+  /**
+   * You should also use [com.intellij.ide.starter.ide.IDETestContext.setProfiler] method.
+   * Example:
+   * ```
+   * context
+   *   .setProfiler()
+   *   .applyVMOptionsPatch { profileBuildToolDaemon() }
+   * ```
+   */
   fun profileBuildToolDaemon() {
     addSystemProperty("test.build_tool.daemon.profiler", true)
   }
 
   fun inHeadlessMode() = addSystemProperty("java.awt.headless", true)
 
-  fun disableStartupDialogs() = run {
+  fun disableStartupDialogs() {
     addSystemProperty("jb.consents.confirmation.enabled", false)
     addSystemProperty("jb.privacy.policy.text", "<!--999.999-->")
     addSystemProperty("jb.privacy.policy.ai.assistant.text", "<!--999.999-->")
     addSystemProperty("writerside.eula.reviewed.and.accepted", true)
   }
 
-  fun disableFreezeReportingProfiling() = run {
+  fun disableFreezeReportingProfiling() {
     addSystemProperty("freeze.reporter.profiling", false)
   }
-
 
   fun takeScreenshotsPeriodically() =
     addSystemProperty("ide.performance.screenshot", "heartbeat")
 
-  fun installTestScript(testName: String,
-                        paths: IDEDataPaths,
-                        commands: Iterable<MarshallableCommand>) {
+  fun installTestScript(testName: String, paths: IDEDataPaths, commands: Iterable<MarshallableCommand>) {
     val scriptText = commands.joinToString(separator = System.lineSeparator()) { it.storeToString() }
 
     val scriptFileName = testName.cleanPathFromSlashes(replaceWith = "_") + ".text"
@@ -237,18 +224,16 @@ data class VMOptions(
     }
     scriptFile.writeText(scriptText)
 
-    run {
-      addSystemProperty("testscript.filename", scriptFile)
-      // Use non-success status code 1 when running IDE as command line tool.
-      addSystemProperty("testscript.must.exist.process.with.non.success.code.on.ide.error", "true")
-    }
+    addSystemProperty("testscript.filename", scriptFile)
+    // Use non-success status code 1 when running IDE as command line tool.
+    addSystemProperty("testscript.must.exist.process.with.non.success.code.on.ide.error", "true")
   }
 
   fun setFlagIntegrationTests() = addSystemProperty("idea.is.integration.test", true)
 
   fun setFatalErrorNotificationEnabled() = addSystemProperty("idea.fatal.error.notification", true)
 
-  fun setSnapshotPath(snapshotsDir: Path){
+  fun setSnapshotPath(snapshotsDir: Path) {
     addSystemProperty("snapshots.path", snapshotsDir)
   }
 
@@ -262,21 +247,22 @@ data class VMOptions(
 
   fun withActiveProcessorCount(count: Int) = addLine("-XX:ActiveProcessorCount=$count", "-XX:ActiveProcessorCount")
 
-  fun withClassFileVerification() = run {
+  fun withClassFileVerification() {
     addLine("-XX:+UnlockDiagnosticVMOptions")
     addLine("-XX:+BytecodeVerificationLocal")
   }
 
-  fun withG1GC() = run {
+  fun withG1GC() {
     filterKeys { it == "-XX:+UseConcMarkSweepGC" }
     filterKeys { it == "-XX:+UseG1GC" }
     addLine("-XX:+UseG1GC")
   }
 
+  @Suppress("SpellCheckingInspection")
   fun withGCLogs(gcLogFile: Path) = addLine("-Xlog:gc*:file=${gcLogFile.toAbsolutePath()}")
 
   /** see [JEP 318](https://openjdk.org/jeps/318) **/
-  fun withEpsilonGC() = run {
+  fun withEpsilonGC() {
     filterKeys { it == "-XX:+UseConcMarkSweepGC" }
     filterKeys { it == "-XX:+UseG1GC" }
     addLine("-XX:+UnlockExperimentalVMOptions")
@@ -284,54 +270,61 @@ data class VMOptions(
     addLine("-Xmx16g", "-Xmx")
   }
 
-  // vm specific options
+  // VM-specific options
 
-  fun withJitCompilationLog() = run  {
+  @Suppress("unused")
+  fun withJitCompilationLog() {
     addLine("-XX:+UnlockDiagnosticVMOptions")
     addLine("-XX:+LogCompilation")
   }
 
-  fun withTieredCompilation() = run  {
+  @Suppress("unused")
+  fun withTieredCompilation() {
     addLine("-XX:+TieredCompilation")
   }
 
-  fun withNoTieredCompilation() = run  {
+  @Suppress("unused")
+  fun withNoTieredCompilation() {
     addLine("-XX:-TieredCompilation")
   }
 
-  fun withCICC(CICC: Int) = run {
+  @Suppress("unused")
+  fun withCICompilerCount(count: Int) {
     removeLine("-XX:CICompilerCount=2")
-    addLine("-XX:CICompilerCount=${CICC}")
+    addLine("-XX:CICompilerCount=${count}")
   }
 
+  @Suppress("unused")
   fun withTier0ProfilingStartPercentage(percentage: Int) {
     addLine("-XX:Tier0ProfilingStartPercentage=$percentage")
   }
 
   /**
-    * only for specific jdk builds
-    * name is /foo/bar/Baz method
-  */
+   * Only for specific JRE builds. Name is "/foo/bar/Baz method".
+   */
   @Experimental
+  @Suppress("unused")
   fun withC1OnlyBeforeCall(name: String) {
-    addLine("-XX:C1OnlyBeforeCall=$name")
+    addLine("-XX:C1OnlyBeforeCall=${name}")
   }
 
+  @Suppress("unused")
   fun withCompilationLogs() {
     addLine("-XX:+UnlockDiagnosticVMOptions")
     addLine("-XX:+LogCompilation")
   }
 
   /**
-   * 1 file will be produced each minute (depends on the configuration in OpenTelemetry)
-   * Thus by default it's better to set it to a high number, so long-running tests will not report invalid metrics
+   * One file will be produced each minute (depends on the configuration in OpenTelemetry).
+   * Thus, by default, it's better to set it to a high number, so long-running tests will not report invalid metrics.
    */
   fun setOpenTelemetryMaxFilesNumber(maxFilesNumber: Int = 120) =
     addSystemProperty("idea.diagnostic.opentelemetry.metrics.max-files-to-keep", maxFilesNumber)
 
   fun disableAutoImport(disabled: Boolean = true) = addSystemProperty("external.system.auto.import.disabled", disabled)
 
-  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
+  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) =
+    addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
 
   fun skipIndicesInitialization(value: Boolean = true) = addSystemProperty("idea.skip.indices.initialization", value)
 
@@ -339,15 +332,12 @@ data class VMOptions(
 
   /**
    * Include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE.
-   * Works only when IDE is built from sources.
+   * Works only when the IDE is built from sources.
    */
-  fun setRuntimeModuleRepository(installationDirectory: Path) = addSystemProperty(
-    "intellij.platform.runtime.repository.path", installationDirectory.resolve("modules/module-descriptors.jar").pathString
-  )
+  fun setRuntimeModuleRepository(installationDirectory: Path) =
+    addSystemProperty("intellij.platform.runtime.repository.path", installationDirectory.resolve("modules/module-descriptors.jar").pathString)
 
-  fun hasOption(option: String): Boolean {
-    return data.any { it.contains(option) }
-  }
+  fun hasOption(option: String): Boolean = data.any { it.contains(option) }
 
   fun getOptionValue(option: String): String {
    data.forEach { line ->
