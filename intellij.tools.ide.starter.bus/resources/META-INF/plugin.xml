@@ -1,0 +1,10 @@
+<idea-plugin>
+  <name>Starter Event Bus Implementation</name>
+  <id>com.intellij.tools.starter.bus</id>
+  <vendor>JetBrains</vendor>
+
+  <description>Provides starter event bus. Can be used for:
+    - Subscribe on starter events
+    - Create custom events
+  </description>
+</idea-plugin>

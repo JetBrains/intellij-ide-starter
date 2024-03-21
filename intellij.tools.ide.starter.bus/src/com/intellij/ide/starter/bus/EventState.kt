@@ -13,5 +13,5 @@ enum class EventState {
   AFTER,
 
   /** When action started */
-  IN_TIME,
+  IN_TIME
 }

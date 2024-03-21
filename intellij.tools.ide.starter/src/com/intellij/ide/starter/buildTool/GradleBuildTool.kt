@@ -2,12 +2,14 @@ package com.intellij.ide.starter.buildTool
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.ide.starter.bus.Event
 import com.intellij.ide.starter.bus.EventState
 import com.intellij.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.process.getProcessesIdByProcessName
 import com.intellij.ide.starter.runner.IdeLaunchEvent
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
@@ -36,6 +38,25 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   init {
+    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.IN_TIME) { event: IdeLaunchEvent ->
+      val existingProcesses = mutableSetOf<Long>()
+      if (event.data.runContext.testContext === testContext) {
+        StarterBus.subscribe(GradleBuildTool::javaClass, eventState = EventState.IN_TIME) { eventData: Event<String> ->
+          if (eventData.data == "GRADLE_DAEMON_STARTED") {
+            getProcessesIdByProcessName(GRADLE_DAEMON_NAME).filter { !existingProcesses.contains(it) }.forEach {
+              existingProcesses.add(it)
+              event.data.runContext.startCollectThreadDumpsLoop(event.data.runContext.logsDir,
+                                                                event.data.ideProcess!!,
+                                                                testContext.ide.resolveAndDownloadTheSameJDK(),
+                                                                testContext.ide.installationPath,
+                                                                it,
+                                                                "$GRADLE_DAEMON_NAME-$it")
+            }
+          }
+        }
+      }
+    }
+
     StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.AFTER) { event: IdeLaunchEvent ->
       if (event.data.runContext.testContext === testContext) {
         collectDumpFile(GRADLE_DAEMON_NAME,

@@ -222,7 +222,7 @@ data class IDERunContext(
           onProcessCreated = { process, pid ->
             StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
-            startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig, ideProcessId)
+            startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig.workDir, ideProcessId, "ide")
           },
           onBeforeKilled = { process, pid ->
             StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.BEFORE_KILL, IdeLaunchEventData(runContext = this, ideProcess = process)))
@@ -344,12 +344,13 @@ data class IDERunContext(
     }
   }
 
-  private suspend fun startCollectThreadDumpsLoop(logsDir: Path,
-                                                  process: Process,
-                                                  jdkHome: Path,
-                                                  startConfig: IDEStartConfig,
-                                                  ideProcessId: Long) {
-    val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps").createDirectories()
+  suspend fun startCollectThreadDumpsLoop(logsDir: Path,
+                                          process: Process,
+                                          jdkHome: Path,
+                                          workDir: Path,
+                                          collectingProcessId: Long,
+                                          processName: String) {
+    val monitoringThreadDumpDir = logsDir.resolve(processName).resolve("monitoring-thread-dumps").createDirectoriesIfNotExist()
 
     var cnt = 0
     while (process.isAlive) {
@@ -358,7 +359,7 @@ data class IDERunContext(
 
       val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}.txt")
       logOutput("Dumping threads to $dumpFile")
-      catchAll { collectJavaThreadDump(jdkHome, startConfig.workDir, ideProcessId, dumpFile) }
+      catchAll { collectJavaThreadDump(jdkHome, workDir, collectingProcessId, dumpFile) }
     }
   }
 

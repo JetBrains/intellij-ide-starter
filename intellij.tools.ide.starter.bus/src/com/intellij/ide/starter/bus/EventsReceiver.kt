@@ -1,10 +1,11 @@
 package com.intellij.ide.starter.bus
 
-import com.intellij.ide.starter.utils.getThrowableText
 import com.intellij.tools.ide.util.common.logError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -64,7 +65,10 @@ open class EventsReceiver @JvmOverloads constructor(private val bus: FlowBus) {
                 catch (e: Exception) {
                   if (e !is CancellationException) {
                     logError("Suppressed error: ${e.message}")
-                    logError(getThrowableText(e))
+                    logError(StringWriter().let {
+                      e.printStackTrace(PrintWriter(it))
+                      it.buffer.toString()
+                    })
                   }
                 }
               }
