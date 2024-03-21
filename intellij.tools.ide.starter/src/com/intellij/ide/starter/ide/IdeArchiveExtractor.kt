@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -8,10 +7,9 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logOutput
-import org.kodein.di.direct
-import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.nameWithoutExtension
@@ -88,23 +86,43 @@ object IdeArchiveExtractor {
     targetDir.deleteRecursively()
 
     //we use 7-Zip to unpack NSIS binaries, same way as in Toolbox App
-    val sevenZipUrl = "https://repo.labs.intellij.net/thirdparty/7z-cmdline-15.06.zip"
-    val sevenZipCacheDir = GlobalPaths.instance.getCacheDirectoryFor("7zip")
-
-    val sevenZipFile = sevenZipCacheDir / sevenZipUrl.split("/").last()
-    val sevenZipTool = sevenZipCacheDir / sevenZipFile.fileName.nameWithoutExtension
-
-    HttpClient.downloadIfMissing(sevenZipUrl, sevenZipFile)
-    FileSystem.unpackIfMissing(sevenZipFile, sevenZipTool)
-
-    val severZipToolExe = sevenZipTool.resolve("7z.exe")
+    val sevenZipToolExe = getSevenZipExe()
 
     targetDir.mkdirs()
     ProcessExecutor(
       presentableName = "unpack-zip",
       workDir = targetDir.toPath(),
       timeout = 10.minutes,
-      args = listOf(severZipToolExe.toAbsolutePath().toString(), "x", "-y", "-o$targetDir", exeFile.path)
+      args = listOf(sevenZipToolExe.toAbsolutePath().toString(), "x", "-y", "-o$targetDir", exeFile.path)
     ).start()
+  }
+
+  private fun getSevenZipExe(): Path {
+    val sevenZipCacheDir = GlobalPaths.instance.getCacheDirectoryFor("7zip")
+
+    // First, download an old 7-Zip distribution that is available as ZIP
+    val sevenZipNineUrl = "https://www.7-zip.org/a/7za920.zip"
+    val sevenZipNineFile = sevenZipCacheDir / sevenZipNineUrl.split("/").last()
+    val sevenZipNineTool = sevenZipCacheDir / sevenZipNineFile.fileName.nameWithoutExtension
+
+    HttpClient.downloadIfMissing(sevenZipNineUrl, sevenZipNineFile)
+    FileSystem.unpackIfMissing(sevenZipNineFile, sevenZipNineTool)
+
+    val sevenZipNineToolExe = sevenZipNineTool.resolve("7za.exe")
+
+    // Then, download the new 7-Zip and unpack it using the old one
+    val sevenZipUrl = "https://www.7-zip.org/a/7z1900-x64.exe"
+    val sevenZipFile = sevenZipCacheDir / sevenZipUrl.split("/").last()
+    val sevenZipTool = sevenZipCacheDir / sevenZipFile.fileName.nameWithoutExtension
+
+    HttpClient.downloadIfMissing(sevenZipUrl, sevenZipFile)
+    ProcessExecutor(
+      presentableName = "unpack-7zip",
+      workDir = sevenZipCacheDir,
+      timeout = 1.minutes,
+      args = listOf(sevenZipNineToolExe.toAbsolutePath().toString(), "x", "-y", "-o$sevenZipTool", sevenZipFile.absolutePathString())
+    ).start()
+
+    return sevenZipTool.resolve("7z.exe")
   }
 }
