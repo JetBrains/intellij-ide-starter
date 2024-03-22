@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.bus
+package com.intellij.tools.ide.starter.bus
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -8,12 +8,12 @@ object StarterBus {
   val BUS = FlowBus()
   val LISTENER = EventsReceiver(BUS)
 
-  /** @see com.intellij.ide.starter.bus.FlowBus.postAndWaitProcessing */
+  /** @see com.intellij.tools.ide.starter.bus.FlowBus.postAndWaitProcessing */
   fun <T : Signal> postAndWaitProcessing(event: T, retain: Boolean = true, timeout: Duration = 30.seconds): Boolean {
     return BUS.postAndWaitProcessing(event, LISTENER, retain, timeout = timeout)
   }
 
-  /** @see com.intellij.ide.starter.bus.EventsReceiver.subscribe */
+  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribe */
   inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribe(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
@@ -25,7 +25,7 @@ object StarterBus {
     return this
   }
 
-  /** @see com.intellij.ide.starter.bus.EventsReceiver.subscribe */
+  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribe */
   inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribe(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
@@ -37,7 +37,7 @@ object StarterBus {
     return this
   }
 
-  /** @see com.intellij.ide.starter.bus.EventsReceiver.subscribeOnlyOnce */
+  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribeOnlyOnce */
   inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribeOnlyOnce(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,
@@ -49,7 +49,7 @@ object StarterBus {
     return this
   }
 
-  /** @see com.intellij.ide.starter.bus.EventsReceiver.subscribeOnlyOnce */
+  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribeOnlyOnce */
   inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribeOnlyOnce(
     subscriber: SubscriberType,
     skipRetained: Boolean = false,

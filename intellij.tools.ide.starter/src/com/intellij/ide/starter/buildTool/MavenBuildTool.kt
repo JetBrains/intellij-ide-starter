@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.buildTool
 
-import com.intellij.ide.starter.bus.EventState
-import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventState
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.runner.IdeLaunchEvent

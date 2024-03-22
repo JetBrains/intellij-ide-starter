@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.junit5.events
 
-import com.intellij.ide.starter.bus.Signal
-import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.Signal
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logOutput
 import io.kotest.assertions.withClue
 import io.kotest.matchers.booleans.shouldBeTrue

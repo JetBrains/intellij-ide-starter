@@ -1,9 +1,9 @@
 package com.intellij.ide.starter.junit5.events
 
-import com.intellij.ide.starter.bus.Event
-import com.intellij.ide.starter.bus.EventState
-import com.intellij.ide.starter.bus.Signal
-import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.Event
+import com.intellij.tools.ide.starter.bus.EventState
+import com.intellij.tools.ide.starter.bus.Signal
+import com.intellij.tools.ide.starter.bus.StarterBus
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

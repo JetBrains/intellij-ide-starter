@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.bus
+package com.intellij.tools.ide.starter.bus
 
 enum class EventState {
   UNDEFINED,

@@ -1,8 +1,8 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.ide.starter.bus.Event
-import com.intellij.ide.starter.bus.EventState
-import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.Event
+import com.intellij.tools.ide.starter.bus.EventState
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.tools.ide.util.common.logOutput

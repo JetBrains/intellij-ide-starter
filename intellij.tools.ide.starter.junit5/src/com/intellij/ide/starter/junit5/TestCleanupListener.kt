@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.coroutine.testSuiteSupervisorScope
