@@ -350,7 +350,10 @@ data class VMOptions(
 
   fun isUnderDebug(): Boolean = ManagementFactory.getRuntimeMXBean().inputArguments.any { it.startsWith("-agentlib:jdwp") }
 
-  fun enforceSplash() = addLine("-Dsplash=true")
+  fun enforceSplash() {
+    addLine("-Dsplash=true")
+    addLine("-Didea.show.splash.longer=true")
+  }
 
   @Suppress("SpellCheckingInspection")
   fun enforceNoSplash() = addLine("-Dnosplash=true")
