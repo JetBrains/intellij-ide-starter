@@ -52,9 +52,9 @@ dependencies {
   implementation 'commons-io:commons-io:2.15.0'
   implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
   implementation 'io.qameta.allure:allure-java-commons:2.25.0'
-
+  api("com.jetbrains.intellij.tools:ide-starter-bus:LATEST-TRUNK-SNAPSHOT")
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP
-  implementation "com.jetbrains.intellij.tools:ide-starter-bus:LATEST-TRUNK-SNAPSHOT"
+
   implementation("com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT")
   implementation("com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT")
   implementation('com.jetbrains.intellij.platform:ide-impl:LATEST-TRUNK-SNAPSHOT')
