@@ -273,6 +273,14 @@ open class TeamCityCIServer(
       val nameAttr = if(name != null) { "name='${name.processStringForTC()}'" } else ""
       println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' flowId='$flowId']")
     }
+
+    fun progressStart(activityName: String) {
+      println("##teamcity[progressStart '${activityName.processStringForTC()}']")
+    }
+
+    fun progressFinish(activityName: String) {
+      println("##teamcity[progressFinish '${activityName.processStringForTC()}']")
+    }
   }
 
   enum class TeamCityMetadataType {
