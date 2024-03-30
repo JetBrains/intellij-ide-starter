@@ -48,7 +48,8 @@ class WindowsIdeDistribution : IdeDistribution() {
       override val installationPath: Path = unpackDir.toAbsolutePath()
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$unpackDir}"
-      override fun resolveAndDownloadTheSameJDK(): Path {
+
+      override suspend fun resolveAndDownloadTheSameJDK(): Path {
         val jbrHome = unpackDir / "jbr"
         require(jbrHome.isDirectory()) {
           "JbrHome is not found under $jbrHome"

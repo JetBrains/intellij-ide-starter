@@ -1,18 +1,19 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.runner.SetupException
-import com.intellij.ide.starter.utils.FileSystem
-import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.catchAll
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.intellij.build.dependencies.BuildDependenciesCommunityRoot
+import org.jetbrains.intellij.build.dependencies.BuildDependenciesDownloader
+import org.jetbrains.intellij.build.dependencies.BuildDependenciesExtractOptions
+import org.jetbrains.intellij.build.downloadFileToCacheLocation
 import java.nio.file.Path
-import kotlin.io.path.div
-import kotlin.time.Duration.Companion.minutes
 
 object JBRDownloader {
-
   data class JBRVersion(val majorVersion: String, val buildNumber: String)
   class JBRDownloadException(jbrFullVersion: String) : SetupException("$jbrFullVersion can't be downloaded/unpacked")
 
@@ -50,15 +51,15 @@ object JBRDownloader {
     return JBRVersion(majorVersion, buildNumber)
   }
 
-  fun downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion: String): Path {
+  suspend fun downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion: String): Path {
     return catchAll { downloadAndUnpackJbrIfNeeded(getJBRVersionFromBuild(jbrFullVersion)) } ?: throw JBRDownloadException(jbrFullVersion)
   }
 
-  fun downloadAndUnpackJbrFromSourcesIfNeeded(jbrFullVersion: String): Path {
+  suspend fun downloadAndUnpackJbrFromSourcesIfNeeded(jbrFullVersion: String): Path {
     return catchAll { downloadAndUnpackJbrIfNeeded(getJBRVersionFromSources(jbrFullVersion))} ?: throw JBRDownloadException(jbrFullVersion)
   }
 
-  private fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path {
+  private suspend fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path {
     val (majorVersion, buildNumber) = listOf(jbrVersion.majorVersion, jbrVersion.buildNumber)
 
     val os = when {
@@ -74,34 +75,32 @@ object JBRDownloader {
     }
 
     val jbrFileName = "jbrsdk_jcef-$majorVersion-$os-$arch-b$buildNumber.tar.gz"
-    val path = try {
-      downloadJbr(jbrFileName)
+    val appHome = try {
+      withContext(Dispatchers.IO) {
+        downloadJbr(jbrFileName)
+      }
     }
-    catch (_: HttpClient.HttpNotFound) {
-      downloadJbr("jbrsdk_nomod-$majorVersion-$os-$arch-b$buildNumber.tar.gz")
+    catch (e: BuildDependenciesDownloader.HttpStatusException) {
+      if (e.statusCode == 404) {
+        downloadJbr("jbrsdk_nomod-$majorVersion-$os-$arch-b$buildNumber.tar.gz")
+      }
+      else {
+        throw e
+      }
     }
-
-    val appHome = (path.toFile().listFiles() ?: arrayOf()).singleOrNull { it.isDirectory }?.toPath()
-    requireNotNull(appHome) {
-      "appHome is null: $appHome"
-    }
-    when {
-      SystemInfo.isMac -> return appHome / "Contents" / "Home"
-    }
-    return appHome
+    return if (SystemInfo.isMac) appHome.resolve("Contents/Home") else appHome
   }
 
-  private fun downloadJbr(jbrFileName: String): Path {
+  private suspend fun downloadJbr(jbrFileName: String): Path {
     val downloadUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/$jbrFileName"
 
-    val jbrCacheDirectory = GlobalPaths.instance.getCacheDirectoryFor("jbr")
-    val localFile = jbrCacheDirectory / jbrFileName
-    val localDir = jbrCacheDirectory / jbrFileName.removeSuffix(".tar.gz")
-
-    HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1, timeout = 5.minutes)
-
-    FileSystem.unpackIfMissing(localFile, localDir)
-
-    return localDir
+    val communityRoot = BuildDependenciesCommunityRoot(Path.of(PathManager.getCommunityHomePath()))
+    val jdkArchive = downloadFileToCacheLocation(downloadUrl, communityRoot)
+    val jdkExtracted = BuildDependenciesDownloader.extractFileToCacheLocation(
+      communityRoot = communityRoot,
+      archiveFile = jdkArchive,
+      BuildDependenciesExtractOptions.STRIP_ROOT,
+    )
+    return jdkExtracted
   }
 }

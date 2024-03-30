@@ -14,7 +14,7 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.div
 
-class AndroidInstaller : IdeInstaller {
+internal class AndroidInstaller : IdeInstaller {
 
   /**
    * Resolve platform specific android studio installer and return paths
@@ -44,12 +44,11 @@ class AndroidInstaller : IdeInstaller {
     return Pair(installDir, installerFile)
   }
 
-  override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
-
+  override suspend fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val installDir: Path
     val installerFile: File
 
-    if(ideInfo.buildNumber.isBlank()){
+    if (ideInfo.buildNumber.isBlank()) {
       throw IllegalArgumentException("Build is not specified, please, provide buildNumber as IdeProductProvider.AI.copy(buildNumber = \"2023.1.1.28\")")
     }
     downloadAndroidStudio(ideInfo.buildNumber).also {

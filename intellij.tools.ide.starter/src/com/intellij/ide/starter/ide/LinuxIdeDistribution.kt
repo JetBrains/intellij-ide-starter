@@ -5,9 +5,9 @@ import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.JvmUtils
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.system.OS
-import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -119,7 +119,8 @@ class LinuxIdeDistribution : IdeDistribution() {
       override val installationPath: Path = appHome
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$unpackDir}"
-      override fun resolveAndDownloadTheSameJDK(): Path {
+
+      override suspend fun resolveAndDownloadTheSameJDK(): Path {
         val jbrHome = appHome.resolve("jbr")
         require(jbrHome.isDirectory()) {
           "JbrHome is not found under $jbrHome"

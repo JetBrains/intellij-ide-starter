@@ -25,7 +25,7 @@ import kotlin.time.Duration.Companion.minutes
  * }`
  */
 class ExistingIdeInstaller(private val installedIdePath: Path) : IdeInstaller {
-  override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
+  override suspend fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val ideInstaller = IdeInstallerFile(installedIdePath, "locally-installed-ide")
     val installDir = GlobalPaths.instance
                        .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"

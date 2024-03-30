@@ -27,6 +27,8 @@ import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ui.NewUiValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
@@ -341,23 +343,28 @@ class IDETestContext(
     collectNativeThreads: Boolean = false,
     configure: IDERunContext.() -> Unit = {}
   ): IDEStartResult {
-    val runContext = IDERunContext(testContext = this,
-                                   commandLine = commandLine,
-                                   commands = commands,
-                                   runTimeout = runTimeout,
-                                   useStartupScript = useStartupScript,
-                                   launchName = launchName,
-                                   expectedKill = expectedKill,
-                                   expectedExitCode = expectedExitCode,
-                                   collectNativeThreads = collectNativeThreads
+    val runContext = IDERunContext(
+      testContext = this,
+      commandLine = commandLine,
+      commands = commands,
+      runTimeout = runTimeout,
+      useStartupScript = useStartupScript,
+      launchName = launchName,
+      expectedKill = expectedKill,
+      expectedExitCode = expectedExitCode,
+      collectNativeThreads = collectNativeThreads,
     ).also(configure)
 
     try {
       val ideRunResult = runContext.runIDE()
-      if (isReportPublishingEnabled) publishers.forEach {
-        it.publishResultOnSuccess(ideRunResult)
+      if (isReportPublishingEnabled) {
+        for (it in publishers) {
+          it.publishResultOnSuccess(ideRunResult)
+        }
       }
-      if (ideRunResult.failureError != null) throw ideRunResult.failureError
+      if (ideRunResult.failureError != null) {
+        throw ideRunResult.failureError
+      }
       return ideRunResult
     }
     finally {
@@ -604,7 +611,7 @@ class IDETestContext(
   fun applyAppCdsIfNecessary(currentRepetition: Int): IDETestContext {
     if (currentRepetition % 2 == 0) {
       // classes.jsa in jbr is not suitable for reuse, regenerate it, remove when it will be fixed
-      JvmUtils.execJavaCmd(ide.resolveAndDownloadTheSameJDK(), listOf("-Xshare:dump"))
+      JvmUtils.execJavaCmd(runBlocking(Dispatchers.Default) { ide.resolveAndDownloadTheSameJDK() }, listOf("-Xshare:dump"))
       applyVMOptionsPatch {
         removeSystemClassLoader()
         addSharedArchiveFile(paths.systemDir / "ide.jsa")

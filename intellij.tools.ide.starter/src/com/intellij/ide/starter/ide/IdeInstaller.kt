@@ -12,5 +12,5 @@ interface IdeInstaller {
   /**
    * @return <Build Number, InstalledIde>
    */
-  fun install(ideInfo: IdeInfo): Pair<String, InstalledIde>
+  suspend fun install(ideInfo: IdeInfo): Pair<String, InstalledIde>
 }

@@ -1,8 +1,5 @@
 package com.intellij.ide.starter.junit5.events
 
-
-import com.intellij.tools.ide.starter.bus.EventState
-import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
@@ -11,6 +8,8 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContextInitializedEvent
 import com.intellij.ide.starter.utils.hyphenateTestName
+import com.intellij.tools.ide.starter.bus.EventState
+import com.intellij.tools.ide.starter.bus.StarterBus
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.timing.eventually
 import io.kotest.assertions.withClue
@@ -40,7 +39,8 @@ class TestContextInitializationEventsTest {
   private val container = object : TestContainer<Any> {
     override val setupHooks: MutableList<IDETestContext.() -> IDETestContext> = mutableListOf()
 
-    override fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> = Pair("1000.200.30", installedIde)
+    override suspend fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> = Pair("1000.200.30", installedIde)
+
     override fun installPerformanceTestingPluginIfMissing(context: IDETestContext) {}
   }
 

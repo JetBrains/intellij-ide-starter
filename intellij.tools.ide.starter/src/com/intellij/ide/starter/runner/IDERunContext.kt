@@ -28,7 +28,9 @@ import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.createDirectories
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.Closeable
@@ -188,7 +190,10 @@ data class IDERunContext(
 
     try {
       testContext.setProviderMemoryOnlyOnLinux()
-      val jdkHome: Path = resolveAndDownloadSameJDK()
+      @Suppress("SSBasedInspection")
+      val jdkHome = runBlocking(Dispatchers.Default) {
+        resolveAndDownloadSameJDK()
+      }
 
       val vmOptions: VMOptions = calculateVmOptions()
       val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
@@ -362,16 +367,18 @@ data class IDERunContext(
     }
   }
 
-  private fun resolveAndDownloadSameJDK() = try {
-    testContext.ide.resolveAndDownloadTheSameJDK()
-  }
-  catch (e: Exception) {
-    logError("Failed to download the same JDK as in ${testContext.ide.build}")
-    logError(e.stackTraceToString())
+  private suspend fun resolveAndDownloadSameJDK(): Path {
+    try {
+      return testContext.ide.resolveAndDownloadTheSameJDK()
+    }
+    catch (e: Exception) {
+      logError("Failed to download the same JDK as in ${testContext.ide.build}")
+      logError(e.stackTraceToString())
 
-    val defaultJavaHome = JvmUtils.resolveInstalledJdk()
-    logOutput("JDK is not found in ${testContext.ide.build}. Fallback to default java: $defaultJavaHome")
-    defaultJavaHome
+      val defaultJavaHome = JvmUtils.resolveInstalledJdk()
+      logOutput("JDK is not found in ${testContext.ide.build}. Fallback to default java: $defaultJavaHome")
+      return defaultJavaHome
+    }
   }
 
   private fun logStartupInfo(finalOptions: VMOptions) {

@@ -1,7 +1,5 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.tools.ide.starter.bus.EventState
-import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -11,7 +9,11 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
+import com.intellij.tools.ide.starter.bus.EventState
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logOutput
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlin.io.path.div
 import kotlin.reflect.jvm.isAccessible
 
@@ -42,7 +44,7 @@ interface TestContainer<T> {
   /**
    * @return <Build Number, InstalledIde>
    */
-  fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
+  suspend fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     return ideInfo.getInstaller(ideInfo).install(ideInfo)
   }
 
@@ -62,7 +64,10 @@ interface TestContainer<T> {
    */
   fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext {
     logOutput("Resolving IDE build for $testName...")
-    val (buildNumber, ide) = resolveIDE(testCase.ideInfo)
+    val (buildNumber, ide) = @Suppress("SSBasedInspection")
+    runBlocking(Dispatchers.Default) {
+      resolveIDE(testCase.ideInfo)
+    }
 
     require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
 

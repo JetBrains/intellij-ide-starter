@@ -13,7 +13,7 @@ import kotlin.io.path.div
 /** Prebuilt installer, distributed via archive (.tar.gz, .exe, .dmg) */
 class StandardInstaller(override val downloader: IdeDownloader = di.direct.instance<IdeDownloader>()) : IdeInstaller {
 
-  override fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
+  override suspend fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val installersDirectory = (GlobalPaths.instance.installersDirectory / ideInfo.productCode).createDirectories()
 
     //Download

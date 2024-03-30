@@ -24,7 +24,7 @@ interface InstalledIde {
 
   fun startConfig(vmOptions: VMOptions, logsDir: Path): IDEStartConfig
 
-  fun resolveAndDownloadTheSameJDK(): Path
+  suspend fun resolveAndDownloadTheSameJDK(): Path
 
   /** Check the major version of the build number.
    * Eg: 232.9921.47 => 232

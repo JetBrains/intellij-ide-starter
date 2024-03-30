@@ -82,7 +82,7 @@ class MacOsIdeDistribution : IdeDistribution() {
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$appDir}"
 
-      override fun resolveAndDownloadTheSameJDK(): Path {
+      override suspend fun resolveAndDownloadTheSameJDK(): Path {
         val jbrHome = appHome / "jbr"
 
         require(jbrHome.isDirectory()) {
