@@ -357,4 +357,19 @@ data class VMOptions(
 
   @Suppress("SpellCheckingInspection")
   fun enforceNoSplash() = addLine("-Dnosplash=true")
+
+  fun removeSystemClassLoader() {
+    removeLine("-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader")
+  }
+
+  fun addArchiveClassesAtExitIfNecessary() {
+    val line = data.firstOrNull { it.startsWith("-XX:SharedArchiveFile=") } ?: return
+    removeLine(line)
+    addLine(line.replace("SharedArchiveFile", "ArchiveClassesAtExit"))
+  }
+
+
+  fun addSharedArchiveFile(pathToArchive: Path) {
+    addLine("-XX:SharedArchiveFile=${pathToArchive}")
+  }
 }

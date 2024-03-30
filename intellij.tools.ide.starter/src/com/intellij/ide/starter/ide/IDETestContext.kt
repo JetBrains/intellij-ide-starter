@@ -16,6 +16,7 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.openTestCaseProject
 import com.intellij.ide.starter.runner.startIdeWithoutProject
+import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
@@ -55,6 +56,9 @@ class IDETestContext(
 ) {
   companion object {
     const val OPENTELEMETRY_FILE = "opentelemetry.json"
+
+    fun appCdsAwareTestName(testName: String, currentRepetition: Int): String =
+      "$testName${if (currentRepetition % 2 == 0) "-appcds" else ""}_${(currentRepetition + 1) / 2}"
   }
 
   fun copy(ide: InstalledIde? = null, _resolvedProjectHome: Path? = null): IDETestContext {
@@ -594,6 +598,18 @@ class IDETestContext(
         </component>
       </application>
     """)
+    return this
+  }
+
+  fun applyAppCdsIfNecessary(currentRepetition: Int): IDETestContext {
+    if (currentRepetition % 2 == 0) {
+      // classes.jsa in jbr is not suitable for reuse, regenerate it, remove when it will be fixed
+      JvmUtils.execJavaCmd(ide.resolveAndDownloadTheSameJDK(), listOf("-Xshare:dump"))
+      applyVMOptionsPatch {
+        removeSystemClassLoader()
+        addSharedArchiveFile(paths.systemDir / "ide.jsa")
+      }
+    }
     return this
   }
 
