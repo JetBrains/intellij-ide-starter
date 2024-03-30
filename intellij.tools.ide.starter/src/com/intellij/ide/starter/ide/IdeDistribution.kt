@@ -1,8 +1,8 @@
 package com.intellij.ide.starter.ide
 
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.readText
 
 abstract class IdeDistribution {
   abstract fun installIde(unpackDir: Path, executableFileName: String): InstalledIde
@@ -12,7 +12,7 @@ abstract class IdeDistribution {
     fun readProductCodeAndBuildNumberFromBuildTxt(buildTxtPath: Path): Pair<String, String> {
       require(buildTxtPath.isRegularFile()) { "Cannot find build.txt file" }
 
-      val (productCode, build) = buildTxtPath.readText().trim().split("-", limit = 2)
+      val (productCode, build) = Files.readString(buildTxtPath).trim().split('-', limit = 2)
       return Pair(productCode, build)
     }
   }

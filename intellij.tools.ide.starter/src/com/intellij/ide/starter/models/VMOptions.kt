@@ -21,11 +21,13 @@ data class VMOptions(
   private var env: Map<String, String>
 ) {
   companion object {
-    fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions = VMOptions(
-      ide,
-      data = file.readLines().map { it.trim() }.filter { it.isNotBlank() },
-      env = emptyMap()
-    )
+    fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions {
+      return VMOptions(
+        ide = ide,
+        data = file.readLines().map { it.trim() }.filter { it.isNotBlank() },
+        env = emptyMap(),
+      )
+    }
   }
 
   override fun toString() = buildString {
@@ -212,8 +214,9 @@ data class VMOptions(
     addSystemProperty("freeze.reporter.profiling", false)
   }
 
-  fun takeScreenshotsPeriodically() =
+  fun takeScreenshotsPeriodically() {
     addSystemProperty("ide.performance.screenshot", "heartbeat")
+  }
 
   fun installTestScript(testName: String, paths: IDEDataPaths, commands: Iterable<MarshallableCommand>) {
     val scriptText = commands.joinToString(separator = System.lineSeparator()) { it.storeToString() }
@@ -237,11 +240,13 @@ data class VMOptions(
     addSystemProperty("snapshots.path", snapshotsDir)
   }
 
-  fun withJvmCrashLogDirectory(jvmCrashLogDirectory: Path) =
+  fun withJvmCrashLogDirectory(jvmCrashLogDirectory: Path) {
     addLine("-XX:ErrorFile=${jvmCrashLogDirectory.toAbsolutePath()}${File.separator}java_error_in_idea_%p.log", "-XX:ErrorFile=")
+  }
 
-  fun withHeapDumpOnOutOfMemoryDirectory(directory: Path) =
+  fun withHeapDumpOnOutOfMemoryDirectory(directory: Path) {
     addLine("-XX:HeapDumpPath=${directory.toAbsolutePath()}${File.separator}heap-dump.hprof", "-XX:HeapDumpPath=")
+  }
 
   fun withXmx(sizeMb: Int) = addLine("-Xmx" + sizeMb + "m", "-Xmx")
 
@@ -291,7 +296,7 @@ data class VMOptions(
   @Suppress("unused")
   fun withCICompilerCount(count: Int) {
     removeLine("-XX:CICompilerCount=2")
-    addLine("-XX:CICompilerCount=${count}")
+    addLine("-XX:CICompilerCount=$count")
   }
 
   @Suppress("unused")
@@ -318,13 +323,15 @@ data class VMOptions(
    * One file will be produced each minute (depends on the configuration in OpenTelemetry).
    * Thus, by default, it's better to set it to a high number, so long-running tests will not report invalid metrics.
    */
-  fun setOpenTelemetryMaxFilesNumber(maxFilesNumber: Int = 120) =
+  fun setOpenTelemetryMaxFilesNumber(maxFilesNumber: Int = 120) {
     addSystemProperty("idea.diagnostic.opentelemetry.metrics.max-files-to-keep", maxFilesNumber)
+  }
 
   fun disableAutoImport(disabled: Boolean = true) = addSystemProperty("external.system.auto.import.disabled", disabled)
 
-  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) =
+  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) {
     addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
+  }
 
   fun skipIndicesInitialization(value: Boolean = true) = addSystemProperty("idea.skip.indices.initialization", value)
 
@@ -334,8 +341,9 @@ data class VMOptions(
    * Include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE.
    * Works only when the IDE is built from sources.
    */
-  fun setRuntimeModuleRepository(installationDirectory: Path) =
+  fun setRuntimeModuleRepository(installationDirectory: Path) {
     addSystemProperty("intellij.platform.runtime.repository.path", installationDirectory.resolve("modules/module-descriptors.jar").pathString)
+  }
 
   fun hasOption(option: String): Boolean = data.any { it.contains(option) }
 

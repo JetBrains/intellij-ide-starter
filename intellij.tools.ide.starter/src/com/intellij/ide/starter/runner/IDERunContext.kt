@@ -1,7 +1,5 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.tools.ide.starter.bus.EventState
-import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -23,8 +21,10 @@ import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
-import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
+import com.intellij.tools.ide.starter.bus.EventState
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.createDirectories
@@ -37,7 +37,6 @@ import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -118,7 +117,7 @@ data class IDERunContext(
   fun withVMOptions(patchVMOptions: VMOptions.() -> Unit) = addVMOptionsPatch(patchVMOptions)
 
   /**
-   * Method applies patch to the current run and the patch will be disregarded for the next run.
+   * Method applies a patch to the current run, and the patch will be disregarded for the next run.
    */
   fun addVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDERunContext {
     patchesForVMOptions.add(patchVMOptions)
@@ -383,20 +382,20 @@ data class IDERunContext(
 
   private fun logStartupInfo(finalOptions: VMOptions) {
     logOutput(buildString {
-      appendLine("Starting IDE for ${contextName} with timeout $runTimeout")
+      appendLine("Starting IDE for $contextName with timeout $runTimeout")
       appendLine("  VM Options: [" + finalOptions.toString().lineSequence().map { it.trim() }.joinToString(" ") + "]")
       appendLine("  On Java : [" + System.getProperty("java.home") + "]")
     })
   }
 
   private fun deleteSavedAppStateOnMac() {
-    if (SystemInfo.isMac) {
+    if (SystemInfoRt.isMac) {
       val filesToBeDeleted = listOf(
         "com.jetbrains.${testContext.testCase.ideInfo.installerProductName}-EAP.savedState",
         "com.jetbrains.${testContext.testCase.ideInfo.installerProductName}.savedState"
       )
       val home = System.getProperty("user.home")
-      val savedAppStateDir = Paths.get(home).resolve("Library").resolve("Saved Application State")
+      val savedAppStateDir = Path.of(home).resolve("Library").resolve("Saved Application State")
       savedAppStateDir.toFile()
         .walkTopDown().maxDepth(1)
         .filter { file -> filesToBeDeleted.any { fileToBeDeleted -> file.name == fileToBeDeleted } }
