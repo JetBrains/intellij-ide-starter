@@ -373,6 +373,7 @@ data class VMOptions(
   fun addArchiveClassesAtExitIfNecessary() {
     val line = data.firstOrNull { it.startsWith("-XX:SharedArchiveFile=") } ?: return
     removeLine(line)
+    dropDebug()
     addLine(line.replace("SharedArchiveFile", "ArchiveClassesAtExit"))
   }
 
