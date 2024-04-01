@@ -27,9 +27,11 @@ import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ui.NewUiValue
+import com.intellij.util.system.OS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
+import org.jetbrains.intellij.build.dependencies.JdkDownloader
 import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
@@ -611,7 +613,7 @@ class IDETestContext(
   fun applyAppCdsIfNecessary(currentRepetition: Int): IDETestContext {
     if (currentRepetition % 2 == 0) {
       // classes.jsa in jbr is not suitable for reuse, regenerate it, remove when it will be fixed
-      val jbrDistroPath = ide.installationPath / "jbr"
+      val jbrDistroPath = if (OS.CURRENT == OS.macOS) ide.installationPath / "jbr" / "Contents" / "Home" else ide.installationPath / "jbr"
       if (jbrDistroPath.exists()) {
         JvmUtils.execJavaCmd(jbrDistroPath, listOf("-Xshare:dump"))
       }
