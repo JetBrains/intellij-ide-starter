@@ -109,6 +109,7 @@ interface TestContainer<T> {
           withEnv("STUDIO_VM_OPTIONS", context.ide.patchedVMOptionsFile.toString())
         }
       false -> context
+        .disableLoadShellEnv()
         .disableInstantIdeShutdown()
         .disableFusSendingOnIdeClose()
         .disableLinuxNativeMenuForce()

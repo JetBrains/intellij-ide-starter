@@ -193,6 +193,14 @@ class IDETestContext(
     disableAutoImport(disabled)
   }
 
+  fun disableLoadShellEnv(disabled: Boolean = true) = applyVMOptionsPatch {
+    disableLoadShellEnv(disabled)
+  }
+
+  fun setJdkDownloaderHome(path: Path) = applyVMOptionsPatch {
+    addSystemProperty("jdk.downloader.home", path)
+  }
+
   fun disableOrdinaryIndexes() = applyVMOptionsPatch {
     addSystemProperty("idea.use.only.index.infrastructure.extension", true)
   }

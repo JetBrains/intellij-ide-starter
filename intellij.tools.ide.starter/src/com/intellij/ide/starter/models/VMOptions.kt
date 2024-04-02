@@ -329,6 +329,8 @@ data class VMOptions(
 
   fun disableAutoImport(disabled: Boolean = true) = addSystemProperty("external.system.auto.import.disabled", disabled)
 
+  fun disableLoadShellEnv(disabled: Boolean = true) = addSystemProperty("ij.load.shell.env", !disabled)
+
   fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) {
     addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
   }
