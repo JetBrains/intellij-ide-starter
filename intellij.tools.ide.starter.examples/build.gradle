@@ -30,7 +30,6 @@ repositories {
 
 dependencies {
   testImplementation 'com.jetbrains.intellij.tools:ide-starter-squashed:LATEST-EAP-SNAPSHOT'
-  testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit4:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-starter-junit5:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector-starter:LATEST-EAP-SNAPSHOT'
