@@ -9,10 +9,10 @@ fun IDETestContext.disableCLionTestIndexing() =
 
 // Should be passed manually (through TC or run configuration)
 val isRadler by lazy { System.getProperty("intellij.clion.radler.perf.tests", "false").toBoolean() }
+val clionPrefix by lazy {if (isRadler) "radler" else "clion"}
 
 fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
-  val prefix = if (isRadler) "radler" else "clion"
-  val context = Starter.newContext("$prefix/$testName", testCase)
+  val context = Starter.newContext("$clionPrefix/$testName", testCase)
   return context
     .setMemorySize(4096)
     .applyVMOptionsPatch {
