@@ -1,5 +1,6 @@
 package com.intellij.tools.ide.starter.bus
 
+import com.intellij.tools.ide.starter.bus.events.Event
 import com.intellij.tools.ide.util.common.logError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.filterNotNull
@@ -13,14 +14,15 @@ open class EventsReceiver(private val producer: EventsProducer) {
   private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
     throw throwable
   }
+
   // Using IO(has more threads) to avoid coroutine's threads lock by producers.
   private val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob + exceptionHandler)
   private val subscribers = HashMap<String, Any>()
   private val subscribersLock = ReentrantLock()
 
-  fun <Event : com.intellij.tools.ide.starter.bus.events.Event, SubscriberType : Any> subscribeTo(event: Class<Event>,
-                                                                                                                     subscriber: SubscriberType,
-                                                                                                                     callback: suspend (event: Event) -> Unit) {
+  fun <EventType : Event, SubscriberType : Any> subscribeTo(event: Class<EventType>,
+                                                            subscriber: SubscriberType,
+                                                            callback: suspend (event: EventType) -> Unit) {
 
     subscribersLock.withLock {
       // To avoid double subscriptions
