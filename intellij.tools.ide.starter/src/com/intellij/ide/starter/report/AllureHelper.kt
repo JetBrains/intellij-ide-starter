@@ -2,6 +2,7 @@ package com.intellij.ide.starter.report
 
 import com.intellij.tools.ide.util.common.logError
 import io.qameta.allure.Allure
+import io.qameta.allure.model.Status
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -26,13 +27,17 @@ object AllureHelper {
 
     companion object {
       fun getMimeTypeByExtension(file: File): MimeType {
-        return entries.firstOrNull { it.ext == ".${file.extension}"} ?: TEXT
+        return entries.firstOrNull { it.ext == ".${file.extension}" } ?: TEXT
       }
     }
   }
 
   fun <T> step(name: String, action: () -> T): T {
     return Allure.step(name, Allure.ThrowableContextRunnable { action.invoke() })
+  }
+
+  fun skippedStep(name: String) {
+    Allure.step(name, Status.SKIPPED)
   }
 
   fun attachFile(name: String, file: File) {
