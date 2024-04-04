@@ -9,7 +9,6 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
-import com.intellij.tools.ide.starter.bus.EventState
 import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +23,7 @@ interface TestContainer<T> {
 
   companion object {
     init {
-      StarterBus.subscribeOnlyOnce(TestContainer<*>::javaClass, eventState = EventState.AFTER) { _: TestContextInitializedEvent ->
+      StarterBus.subscribe(TestContainer<*>::javaClass) { _: TestContextInitializedEvent ->
         logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
       }
     }
@@ -75,7 +74,8 @@ interface TestContainer<T> {
       val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
       if (testCase.ideInfo.platformPrefix == "JetBrainsClient") {
         commonPath / "embedded-client"
-      } else {
+      }
+      else {
         commonPath
       }
     }
@@ -96,7 +96,7 @@ interface TestContainer<T> {
 
     testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
 
-    StarterBus.postAndWaitProcessing(TestContextInitializedEvent(EventState.AFTER, contextWithAppliedHooks))
+    StarterBus.postAndWaitProcessing(TestContextInitializedEvent(contextWithAppliedHooks))
 
     return contextWithAppliedHooks
   }

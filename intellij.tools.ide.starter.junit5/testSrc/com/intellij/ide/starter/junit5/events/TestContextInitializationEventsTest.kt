@@ -8,14 +8,9 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContextInitializedEvent
 import com.intellij.ide.starter.utils.hyphenateTestName
-import com.intellij.tools.ide.starter.bus.EventState
 import com.intellij.tools.ide.starter.bus.StarterBus
-import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.timing.eventually
-import io.kotest.assertions.withClue
-import io.kotest.inspectors.shouldForAtLeastOne
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.RepeatedTest
@@ -46,7 +41,7 @@ class TestContextInitializationEventsTest {
 
   @AfterEach
   fun afterEach() {
-    StarterBus.LISTENER.unsubscribe()
+    StarterBus.unsubscribeAll()
   }
 
   @RepeatedTest(value = 200)
@@ -60,15 +55,7 @@ class TestContextInitializationEventsTest {
 
     runBlocking {
       eventually(duration = 2.seconds, poll = 100.milliseconds) {
-        withClue("There should be 1 events fired. Events: ${firedEvents.map { it.state }}") {
-          firedEvents.shouldHaveSize(1)
-        }
-      }
-    }
-
-    assertSoftly {
-      withClue("Event should be fired at the end of test context initialization: Events: ${firedEvents.map { it.state }}") {
-        firedEvents.shouldForAtLeastOne { it.state.shouldBe(EventState.AFTER) }
+        firedEvents.shouldHaveSize(1)
       }
     }
   }

@@ -42,7 +42,8 @@ sourceSets {
 dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation("com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT")
+  implementation "com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT"
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 kotlin {

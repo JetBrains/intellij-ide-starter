@@ -19,11 +19,11 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.AllureHelper
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsOnCI
+import com.intellij.ide.starter.runner.events.*
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
-import com.intellij.tools.ide.starter.bus.EventState
 import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
@@ -176,7 +176,7 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
-    StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.BEFORE, IdeLaunchEventData(runContext = this, ideProcess = null)))
+    StarterBus.postAndWaitProcessing(IdeBeforeLaunchEvent(this))
 
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
@@ -197,8 +197,8 @@ data class IDERunContext(
       val vmOptions: VMOptions = calculateVmOptions()
       val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
       if (startConfig is Closeable) {
-        StarterBus.subscribe<IdeLaunchEvent, IDERunContext>(this, eventState = EventState.AFTER) { event ->
-          if (event.data.runContext === this) {
+        StarterBus.subscribe(this) { event: IdeAfterLaunchEvent ->
+          if (event.runContext === this) {
             startConfig.close()
           }
         }
@@ -222,12 +222,14 @@ data class IDERunContext(
           stdoutRedirect = stdout,
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
-            StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.IN_TIME, IdeLaunchEventData(runContext = this, ideProcess = process)))
+            StarterBus.postAndWaitProcessing(
+              IdeLaunchEvent(runContext = this, ideProcess = process))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig.workDir, ideProcessId, "ide")
           },
           onBeforeKilled = { process, pid ->
-            StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.BEFORE_KILL, IdeLaunchEventData(runContext = this, ideProcess = process)))
+            StarterBus.postAndWaitProcessing(
+              IdeBeforeKillEvent(this, process, pid))
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
           expectedExitCode = expectedExitCode,
@@ -252,10 +254,7 @@ data class IDERunContext(
       throw Exception(getErrorMessage(exception, ciFailureDetails), exception)
     }
     finally {
-      StarterBus.postAndWaitProcessing(IdeLaunchEvent(EventState.AFTER, IdeLaunchEventData(runContext = this,
-                                                                                           ideProcess = null,
-                                                                                           ideProcessId = ideProcessId,
-                                                                                           isRunSuccessful = isRunSuccessful)))
+      StarterBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
 
       if (isRunSuccessful) {
         validateVMOptionsWereSet(this)
@@ -422,13 +421,12 @@ data class IDERunContext(
    */
   fun withScreenRecording() {
     val screenRecorder = IDEScreenRecorder(this)
-    StarterBus.subscribeOnlyOnce(IDERunContext::javaClass) { event: IdeLaunchEvent ->
-      if (event.state == EventState.BEFORE) {
-        screenRecorder.start()
-      }
-      else if (event.state == EventState.AFTER) {
-        screenRecorder.stop()
-      }
+    StarterBus.subscribe(IDERunContext::javaClass) { _: IdeBeforeLaunchEvent ->
+      screenRecorder.start()
+    }
+
+    StarterBus.subscribe(IDERunContext::javaClass) { _: IdeAfterLaunchEvent ->
+      screenRecorder.stop()
     }
   }
 }

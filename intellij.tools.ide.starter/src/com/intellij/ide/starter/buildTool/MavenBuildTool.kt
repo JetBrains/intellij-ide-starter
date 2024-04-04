@@ -1,13 +1,13 @@
 package com.intellij.ide.starter.buildTool
 
-import com.intellij.tools.ide.starter.bus.EventState
-import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
-import com.intellij.ide.starter.runner.IdeLaunchEvent
+import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
+import com.intellij.ide.starter.runner.events.IdeBeforeKillEvent
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.io.findOrCreateDirectory
 import com.intellij.tools.ide.performanceTesting.commands.dto.MavenArchetypeInfo
+import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logOutput
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
@@ -39,21 +39,21 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
   }
 
   init {
-    StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.AFTER) { event: IdeLaunchEvent ->
-      if (event.data.runContext.testContext === testContext) {
+    StarterBus.subscribe(GradleBuildTool::javaClass) { event: IdeAfterLaunchEvent ->
+      if (event.runContext.testContext === testContext) {
         collectDumpFile(MAVEN_DAEMON_NAME,
-                        event.data.runContext.logsDir,
+                        event.runContext.logsDir,
                         testContext.ide.resolveAndDownloadTheSameJDK(),
                         testContext.ide.installationPath)
         destroyMavenIndexerProcessIfExists()
       }
     }
 
-    StarterBus.subscribeOnlyOnce(MavenBuildTool::javaClass, eventState = EventState.BEFORE_KILL) { event: IdeLaunchEvent ->
+    StarterBus.subscribe(MavenBuildTool::javaClass) { event: IdeBeforeKillEvent ->
       testContext.ide.resolveAndDownloadTheSameJDK()
-      if (event.data.runContext.testContext === testContext) {
+      if (event.runContext.testContext === testContext) {
         collectDumpFile(MAVEN_DAEMON_NAME,
-                        event.data.runContext.logsDir,
+                        event.runContext.logsDir,
                         testContext.ide.resolveAndDownloadTheSameJDK(),
                         testContext.ide.installationPath)
       }

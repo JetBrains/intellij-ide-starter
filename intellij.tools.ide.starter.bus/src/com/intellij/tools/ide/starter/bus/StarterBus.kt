@@ -1,63 +1,35 @@
 package com.intellij.tools.ide.starter.bus
 
+import com.intellij.tools.ide.starter.bus.events.Event
+import java.util.concurrent.TimeoutException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /** Event bus */
 object StarterBus {
-  val BUS = FlowBus()
-  val LISTENER = EventsReceiver(BUS)
+  private val PRODUCER = EventsProducer()
+  val LISTENER = EventsReceiver(PRODUCER)
 
-  /** @see com.intellij.tools.ide.starter.bus.FlowBus.postAndWaitProcessing */
-  fun <T : Signal> postAndWaitProcessing(event: T, retain: Boolean = true, timeout: Duration = 30.seconds): Boolean {
-    return BUS.postAndWaitProcessing(event, LISTENER, retain, timeout = timeout)
+  /** Post [event] and await processing.
+   * Different events can be processed in parallel
+   * Throws [TimeoutException] after [timeout]
+   *  */
+  fun <T : Event> postAndWaitProcessing(event: T, timeout: Duration = 30.seconds) {
+    PRODUCER.postAndWaitProcessing(event, timeout)
   }
 
-  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribe */
-  inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribe(
+  /** Subscribes [subscriber] by [SubscriberType] to event [EventType]
+   * Can have only one subscription by pair subscriber + event
+   *  */
+  inline fun <reified EventType : Event, reified SubscriberType : Any> subscribe(
     subscriber: SubscriberType,
-    skipRetained: Boolean = false,
-    eventState: EventState,
     noinline callback: suspend (event: EventType) -> Unit
   ): StarterBus {
-    LISTENER.subscribe<EventType, SubscriberType>(subscriber = subscriber, skipRetained = skipRetained,
-                                                  eventStateFilter = { it == eventState }, callback)
+    LISTENER.subscribeTo(event = EventType::class.java, subscriber = subscriber, callback)
     return this
   }
 
-  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribe */
-  inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribe(
-    subscriber: SubscriberType,
-    skipRetained: Boolean = false,
-    noinline eventStateFilter: (EventState) -> Boolean = { true },
-    noinline callback: suspend (event: EventType) -> Unit
-  ): StarterBus {
-    LISTENER.subscribe<EventType, SubscriberType>(subscriber = subscriber, skipRetained = skipRetained,
-                                                  eventStateFilter = eventStateFilter, callback)
-    return this
-  }
-
-  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribeOnlyOnce */
-  inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribeOnlyOnce(
-    subscriber: SubscriberType,
-    skipRetained: Boolean = false,
-    eventState: EventState,
-    noinline callback: suspend (event: EventType) -> Unit
-  ): StarterBus {
-    LISTENER.subscribeOnlyOnce<EventType, SubscriberType>(subscriber = subscriber, skipRetained = skipRetained,
-                                                          eventStateFilter = { it == eventState }, callback)
-    return this
-  }
-
-  /** @see com.intellij.tools.ide.starter.bus.EventsReceiver.subscribeOnlyOnce */
-  inline fun <reified EventType : Signal, reified SubscriberType : Any> subscribeOnlyOnce(
-    subscriber: SubscriberType,
-    skipRetained: Boolean = false,
-    noinline eventStateFilter: (EventState) -> Boolean = { true },
-    noinline callback: suspend (event: EventType) -> Unit
-  ): StarterBus {
-    LISTENER.subscribeOnlyOnce<EventType, SubscriberType>(subscriber = subscriber, skipRetained = skipRetained,
-                                                          eventStateFilter = eventStateFilter, callback)
-    return this
+  fun unsubscribeAll() {
+    LISTENER.unsubscribeAll()
   }
 }
