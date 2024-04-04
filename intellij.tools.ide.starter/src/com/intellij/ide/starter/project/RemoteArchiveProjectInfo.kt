@@ -83,9 +83,7 @@ data class RemoteArchiveProjectInfo(
   private fun String.transformUrlToZipName(): String {
     return when (projectURL.contains("https://github.com")) {
       true -> {
-        this.removePrefix("https://github.com/").split("/").let {
-          it[0] + "_" + it[1] + ".zip"
-        }
+        this.removePrefix("https://github.com/").split("/").joinToString("_", postfix = ".zip")
       }
       false -> projectURL.split("/").last()
     }
