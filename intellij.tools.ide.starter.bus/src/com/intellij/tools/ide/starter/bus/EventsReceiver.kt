@@ -15,7 +15,7 @@ open class EventsReceiver(private val producer: EventsProducer) {
   }
   // Using IO(has more threads) to avoid coroutine's threads lock by producers.
   private val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob + exceptionHandler)
-  private val subscribers = HashMap<String, String>()
+  private val subscribers = HashMap<String, Any>()
   private val subscribersLock = ReentrantLock()
 
   fun <Event : com.intellij.tools.ide.starter.bus.events.Event, SubscriberType : Any> subscribeTo(event: Class<Event>,
@@ -25,8 +25,8 @@ open class EventsReceiver(private val producer: EventsProducer) {
     subscribersLock.withLock {
       // To avoid double subscriptions
       val jobHash = subscriber.hashCode().toString() + event.simpleName
-      if (subscribers.contains(jobHash) && subscribers[jobHash] == jobHash) return
-      subscribers.put(jobHash, jobHash)
+      if (subscribers.contains(jobHash) && subscribers[jobHash] == subscriber) return
+      subscribers.put(jobHash, subscriber)
     }
 
     val flow = producer.getOrCreateFlowForEvent(event)
