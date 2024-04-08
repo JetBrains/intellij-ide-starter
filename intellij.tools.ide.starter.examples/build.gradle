@@ -41,6 +41,9 @@ dependencies {
 
   testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
   testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
+
+  testImplementation "com.jetbrains.fus.reporting:ap-validation:76"
+  testImplementation "com.jetbrains.fus.reporting:model:76"
 }
 
 kotlin {
