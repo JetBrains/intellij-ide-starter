@@ -10,6 +10,7 @@ import com.intellij.util.SystemProperties
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
+import kotlin.jvm.optionals.getOrNull
 
 object ErrorReporterToCI: ErrorReporter {
   /**
@@ -22,7 +23,8 @@ object ErrorReporterToCI: ErrorReporter {
   }
 
   fun collectErrors(logsDir: Path): List<Error> {
-    val rootErrorsDir = logsDir / ErrorReporter.ERRORS_DIR_NAME
+    //client has structure log/2024-04-11_at_11-06-10/script-errors so we need to look deeeper
+    val rootErrorsDir = Files.find(logsDir, 3, { path, _ -> path.name == ErrorReporter.ERRORS_DIR_NAME }).findFirst().getOrNull()
     if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
     return collectExceptions(rootErrorsDir) + collectFreezes(logsDir)
   }
@@ -30,8 +32,8 @@ object ErrorReporterToCI: ErrorReporter {
   /**
    * Method only collects exceptions from [ErrorReporter.ERRORS_DIR_NAME] and skip freezes
    */
-  private fun collectExceptions(rootErrorsDir: Path): List<Error> {
-    if (!rootErrorsDir.isDirectory()) {
+  private fun collectExceptions(rootErrorsDir: Path?): List<Error> {
+    if (rootErrorsDir == null || !rootErrorsDir.isDirectory()) {
       return emptyList()
     }
     val errors = mutableListOf<Error>()
