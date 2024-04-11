@@ -3,6 +3,7 @@ package com.intellij.tools.ide.starter.bus
 import com.intellij.tools.ide.starter.bus.events.Event
 import java.util.concurrent.TimeoutException
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /** Event bus */
@@ -14,7 +15,7 @@ object StarterBus {
    * Different events can be processed in parallel
    * Throws [TimeoutException] after [timeout]
    *  */
-  fun <T : Event> postAndWaitProcessing(event: T, timeout: Duration = 30.seconds) {
+  fun <T : Event> postAndWaitProcessing(event: T, timeout: Duration = 5.minutes) {
     PRODUCER.postAndWaitProcessing(event, timeout)
   }
 
