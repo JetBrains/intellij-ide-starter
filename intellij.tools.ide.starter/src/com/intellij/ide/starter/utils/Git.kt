@@ -371,7 +371,7 @@ object Git {
     ProcessExecutor(
       "git-create-worktree",
       workDir = dir,
-      timeout = 10.minutes,
+      timeout = 20.minutes,
       args = arguments,
       stdoutRedirect = stdout,
       stderrRedirect = stderr
