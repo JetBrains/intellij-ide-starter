@@ -12,6 +12,18 @@ import org.apache.http.client.methods.HttpGet
 
 object JetBrainsDataServiceClient {
   private const val DATA_SERVICE_URL = "https://data.services.jetbrains.com"
+  private const val RELEASES_REPO_URL = "https://www.jetbrains.com/intellij-repository/releases/"
+
+  fun getIdeaIUAnnotations(libVersion: String): List<String> {
+    val getUrlToJbDataServices = RELEASES_REPO_URL
+    val annotationRegex = "idea/ideaIU/${libVersion}.*?/ideaIU-${libVersion}.*?-annotations.zip".toRegex()
+    val versionRegex = "\\d{4}\\.\\d+(\\.\\d+)?".toRegex()
+    return HttpClient.sendRequest(HttpGet(getUrlToJbDataServices)) {
+      val result = annotationRegex.findAll(it.entity.content.bufferedReader().readText()).map { match -> versionRegex.find(match.value)!!.value }.toList()
+      return@sendRequest result
+    }
+  }
+
 
   fun getReleases(request: ProductInfoRequestParameters): Map<String, List<ReleaseInfo>> {
     val getUrlToJbDataServices = "$DATA_SERVICE_URL/products/releases${request.toUriQuery()}"
