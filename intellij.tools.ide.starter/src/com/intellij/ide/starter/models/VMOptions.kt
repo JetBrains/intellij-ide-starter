@@ -21,6 +21,8 @@ data class VMOptions(
   private var env: Map<String, String>
 ) {
   companion object {
+    const val ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION = "full.scanning.on.startup.can.be.skipped"
+
     fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions {
       return VMOptions(
         ide = ide,

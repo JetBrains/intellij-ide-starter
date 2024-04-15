@@ -7,6 +7,7 @@ import com.intellij.ide.starter.ide.IDEStartConfig
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.models.VMOptions.Companion.ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.process.collectJavaThreadDump
 import com.intellij.ide.starter.process.collectMemoryDump
@@ -19,7 +20,10 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.AllureHelper
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsOnCI
-import com.intellij.ide.starter.runner.events.*
+import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
+import com.intellij.ide.starter.runner.events.IdeBeforeKillEvent
+import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
+import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
@@ -150,6 +154,9 @@ data class IDERunContext(
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
       withGCLogs(reportsDir / "gcLog.log")
       setOpenTelemetryMaxFilesNumber()
+      if (!hasOption(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION)) {
+        addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, false)
+      }
 
       if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION)) {
         withClassFileVerification()

@@ -7,6 +7,7 @@ import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.models.VMOptions.Companion.ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.profiler.ProfilerType
@@ -31,7 +32,6 @@ import com.intellij.util.system.OS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
-import org.jetbrains.intellij.build.dependencies.JdkDownloader
 import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
@@ -176,6 +176,12 @@ class IDETestContext(
       // Dumping of lists of indexed file paths may require a lot of memory.
       withXmx(4 * 1024)
     }
+
+  fun allowSkippingFullScanning(allow: Boolean = true): IDETestContext =
+    applyVMOptionsPatch {
+      addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, allow)
+    }
+
 
   @Suppress("unused")
   fun collectMemorySnapshotOnFailedPluginUnload(): IDETestContext =
