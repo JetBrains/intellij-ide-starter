@@ -239,6 +239,10 @@ class IDETestContext(
     configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
   }
 
+  fun enableExternalSystemVerboseLogs() = applyVMOptionsPatch {
+    configureLoggers(LogLevel.TRACE, "com.intellij.openapi.externalSystem")
+  }
+
   fun wipeSystemDir() = apply {
     if (!preserveSystemDir) {
       //TODO: it would be better to allocate a new context instead of wiping the folder
