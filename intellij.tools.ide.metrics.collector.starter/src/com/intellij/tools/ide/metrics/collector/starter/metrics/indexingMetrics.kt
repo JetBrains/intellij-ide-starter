@@ -65,6 +65,9 @@ data class IndexingMetrics(
   val totalNumberOfIndexedFilesWritingIndexValues: Int
     get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfIndexedFiles - it.totalNumberOfNothingToWriteFiles } }
 
+  val totalNumberOfIndexedFilesWithNothingToWrite: Int
+    get() = indexingHistories.sumOf { history -> history.fileProviderStatistics.sumOf { it.totalNumberOfNothingToWriteFiles } }
+
   val indexedFiles: List<JsonIndexedFile>
     get() = indexingHistories.flatMap { history -> history.fileProviderStatistics.flatMap { it.indexedFiles ?: emptyList() } }
 
@@ -233,6 +236,7 @@ data class IndexingMetrics(
       PerformanceMetrics.newDuration("dumbModeTimeWithPauses", durationMillis = totalDumbModeTimeWithPauses),
       PerformanceMetrics.newCounter("numberOfIndexedFiles", value = numberOfIndexedFiles.toLong()),
       PerformanceMetrics.newCounter("numberOfIndexedFilesWritingIndexValue", value = totalNumberOfIndexedFilesWritingIndexValues.toLong()),
+      PerformanceMetrics.newCounter("numberOfIndexedFilesWithNothingToWrite", value = totalNumberOfIndexedFilesWithNothingToWrite.toLong()),
       PerformanceMetrics.newCounter("numberOfFilesIndexedByExtensions", value = numberOfFilesFullyIndexedByExtensions.toLong()),
       PerformanceMetrics.newCounter("numberOfFilesIndexedWithoutExtensions",
                                     value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
