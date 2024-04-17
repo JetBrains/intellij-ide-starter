@@ -13,9 +13,9 @@ class IDETestContextConfig {
   var systemProperties: Map<String, String> = mapOf()
 }
 
-fun Starter.newContext(ideInfo: IdeInfo, configure: IDETestContextConfig.() -> Unit = {}): IDETestContext {
+fun Starter.newContext(ideInfo: IdeInfo, testName: String = CurrentTestMethod.displayName(), configure: IDETestContextConfig.() -> Unit = {}): IDETestContext {
   val config = IDETestContextConfig().apply(configure)
-  return newTestContainer().newContext(testName = CurrentTestMethod.displayName(), testCase = TestCase(ideInfo, config.project)).applyVMOptionsPatch {
+  return newTestContainer().newContext(testName = testName, testCase = TestCase(ideInfo, config.project)).applyVMOptionsPatch {
     config.systemProperties.forEach {
       addSystemProperty(it.key, it.value)
     }
