@@ -46,12 +46,15 @@ sealed class ExecOutputRedirect {
     private var writer: PrintWriter? = null
 
     override fun close() {
-      writer?.close()
+      writer?.apply {
+        flush()
+        close()
+      }
     }
 
     override fun redirectLine(line: String) {
       reportOnStdoutIfNecessary(line)
-      if(writer == null) {
+      if (writer == null) {
         outputFile.apply {
           toPath().parent.createDirectories()
           createNewFile()
