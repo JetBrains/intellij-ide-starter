@@ -84,7 +84,7 @@ open class TeamCityCIServer(
 
   private val listOfPatternsWhichShouldBeIgnored by lazy {
     val ignoredPattern = System.getenv("IGNORED_TEST_FAILURE_PATTERN")
-    logOutput("Ignored patterns form ENV $ignoredPattern")
+    logOutput("DEBUG: ignored patterns form ENV $ignoredPattern")
     val patterns = mutableListOf(
       "No files have been downloaded for .+:.+".toRegex(),
       "Library '.+' resolution failed".toRegex(),
