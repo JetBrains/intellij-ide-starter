@@ -69,9 +69,10 @@ open class TeamCityCIServer(
   }
 
   val buildStartTime: String by lazy {
-    if(buildId == LOCAL_RUN_ID) {
+    if (buildId == LOCAL_RUN_ID) {
       ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME)
-    } else {
+    }
+    else {
       val fullUrl = TeamCityClient.guestAuthUri.resolve("builds/id:${buildId}?fields=startDate")
       TeamCityClient.get(fullUrl).fields().asSequence().firstOrNull { it.key == "startDate" }?.value?.asText()?.let {
         runCatching {
@@ -91,12 +92,18 @@ open class TeamCityCIServer(
       "Too many IDE internal errors. Monitoring stopped.".toRegex(),
       "Invalid folding descriptor detected".toRegex()
     )
+    val patternsForSafePush = listOf(
+      "Non-idempotent computation: it returns different results when invoked multiple times".toRegex(),
+    )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       val ignoredPatterns = ignoredPattern.split("\n")
       ignoredPatterns.forEach {
         logOutput("Add $it ignored pattern from env")
         patterns.add(it.toRegex())
       }
+    }
+    if (isSafePush()) {
+      patterns.addAll(patternsForSafePush)
     }
     patterns
   }
@@ -149,8 +156,8 @@ open class TeamCityCIServer(
   override val branchName by lazy { buildParams["teamcity.build.branch"] ?: "" }
 
   val configurationName by lazy { getBuildParam("teamcity.buildConfName") }
-  val buildVcsNumber by lazy {getBuildParam("build.vcs.number") ?: "Unknown"}
-  val buildConfigName: String? by lazy {getBuildParam("teamcity.buildConfName")}
+  val buildVcsNumber by lazy { getBuildParam("build.vcs.number") ?: "Unknown" }
+  val buildConfigName: String? by lazy { getBuildParam("teamcity.buildConfName") }
   override val buildParams by lazy {
     val configurationPropertiesFile = systemProperties["teamcity.configuration.properties.file"]
 
@@ -271,7 +278,10 @@ open class TeamCityCIServer(
     }
 
     fun addTestMetadata(testName: String, type: TeamCityMetadataType, flowId: String, name: String?, value: String) {
-      val nameAttr = if(name != null) { "name='${name.processStringForTC()}'" } else ""
+      val nameAttr = if (name != null) {
+        "name='${name.processStringForTC()}'"
+      }
+      else ""
       println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' flowId='$flowId']")
     }
 
