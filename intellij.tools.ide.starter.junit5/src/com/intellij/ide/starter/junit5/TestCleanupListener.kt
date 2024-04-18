@@ -4,7 +4,6 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.coroutine.testSuiteSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
-import com.intellij.tools.ide.starter.bus.StarterBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelChildren
@@ -30,7 +29,6 @@ open class TestCleanupListener : TestExecutionListener {
       catchAll {
         perTestSupervisorScope.coroutineContext.cancelChildren(CancellationException("Test `$testIdentifierName` execution is finished"))
       }
-      StarterBus.unsubscribeAll()
       ConfigurationStorage.instance().resetToDefault()
     }
 

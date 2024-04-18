@@ -28,7 +28,7 @@ import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.createDirectories
@@ -183,7 +183,7 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
-    StarterBus.postAndWaitProcessing(IdeBeforeLaunchEvent(this))
+    EventsBus.postAndWaitProcessing(IdeBeforeLaunchEvent(this))
 
     deleteSavedAppStateOnMac()
     val paths = testContext.paths
@@ -204,7 +204,7 @@ data class IDERunContext(
       val vmOptions: VMOptions = calculateVmOptions()
       val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
       if (startConfig is Closeable) {
-        StarterBus.subscribe(this) { event: IdeAfterLaunchEvent ->
+        EventsBus.subscribe(this) { event: IdeAfterLaunchEvent ->
           if (event.runContext === this) {
             startConfig.close()
           }
@@ -229,13 +229,13 @@ data class IDERunContext(
           stdoutRedirect = stdout,
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
-            StarterBus.postAndWaitProcessing(
+            EventsBus.postAndWaitProcessing(
               IdeLaunchEvent(runContext = this, ideProcess = process))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig.workDir, ideProcessId, "ide")
           },
           onBeforeKilled = { process, pid ->
-            StarterBus.postAndWaitProcessing(
+            EventsBus.postAndWaitProcessing(
               IdeBeforeKillEvent(this, process, pid))
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
@@ -261,7 +261,7 @@ data class IDERunContext(
       throw Exception(getErrorMessage(exception, ciFailureDetails), exception)
     }
     finally {
-      StarterBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
+      EventsBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
 
       if (isRunSuccessful) {
         validateVMOptionsWereSet(this)
@@ -428,11 +428,11 @@ data class IDERunContext(
    */
   fun withScreenRecording() {
     val screenRecorder = IDEScreenRecorder(this)
-    StarterBus.subscribe(IDERunContext::javaClass) { _: IdeBeforeLaunchEvent ->
+    EventsBus.subscribe(IDERunContext::javaClass) { _: IdeBeforeLaunchEvent ->
       screenRecorder.start()
     }
 
-    StarterBus.subscribe(IDERunContext::javaClass) { _: IdeAfterLaunchEvent ->
+    EventsBus.subscribe(IDERunContext::javaClass) { _: IdeAfterLaunchEvent ->
       screenRecorder.stop()
     }
   }

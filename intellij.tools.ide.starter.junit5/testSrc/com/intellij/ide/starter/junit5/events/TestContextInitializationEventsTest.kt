@@ -8,7 +8,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContextInitializedEvent
 import com.intellij.ide.starter.utils.hyphenateTestName
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import io.kotest.assertions.timing.eventually
 import io.kotest.matchers.collections.shouldHaveSize
 import kotlinx.coroutines.runBlocking
@@ -41,13 +41,13 @@ class TestContextInitializationEventsTest {
 
   @AfterEach
   fun afterEach() {
-    StarterBus.unsubscribeAll()
+    EventsBus.unsubscribeAll()
   }
 
   @RepeatedTest(value = 200)
   fun `events for test runner init should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<TestContextInitializedEvent>()
-    StarterBus.subscribe(this) { event: TestContextInitializedEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: TestContextInitializedEvent -> firedEvents.add(event) }
 
     val testName = testInfo.displayName.hyphenateTestName()
 

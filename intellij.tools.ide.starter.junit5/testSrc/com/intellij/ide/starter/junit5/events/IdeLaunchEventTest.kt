@@ -10,7 +10,7 @@ import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.starter.bus.events.Event
 import examples.data.TestCases
 import io.kotest.assertions.assertSoftly
@@ -31,16 +31,16 @@ class IdeLaunchEventTest {
 
   @AfterEach
   fun afterEach() {
-    StarterBus.unsubscribeAll()
+    EventsBus.unsubscribeAll()
   }
 
   @RepeatedTest(value = 5)
   fun `events for ide launch should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<Event>()
-    StarterBus.subscribe(this) { event: IdeBeforeLaunchEvent -> firedEvents.add(event) }
-    StarterBus.subscribe(this) { event: IdeLaunchEvent -> firedEvents.add(event) }
-    StarterBus.subscribe(this) { event: IdeBeforeKillEvent -> firedEvents.add(event) }
-    StarterBus.subscribe(this) { event: IdeAfterLaunchEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeBeforeLaunchEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeLaunchEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeBeforeKillEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeAfterLaunchEvent -> firedEvents.add(event) }
 
     val context = Starter.newContext(testInfo.hyphenateWithClass(), TestCases.IU.withProject(NoProject).useRelease())
 
@@ -67,12 +67,12 @@ class IdeLaunchEventTest {
   @RepeatedTest(value = 5)
   fun `events for twice ide launch should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<Event>()
-    StarterBus.subscribe(this) {
+    EventsBus.subscribe(this) {
       event: IdeBeforeLaunchEvent -> firedEvents.add(event)
     }
-    StarterBus.subscribe(this) { event: IdeLaunchEvent -> firedEvents.add(event) }
-    StarterBus.subscribe(this) { event: IdeBeforeKillEvent -> firedEvents.add(event) }
-    StarterBus.subscribe(this) { event: IdeAfterLaunchEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeLaunchEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeBeforeKillEvent -> firedEvents.add(event) }
+    EventsBus.subscribe(this) { event: IdeAfterLaunchEvent -> firedEvents.add(event) }
 
     val context = Starter.newContext(testInfo.hyphenateWithClass(), TestCases.IU.withProject(NoProject).useRelease())
 

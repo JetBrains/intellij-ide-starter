@@ -2,16 +2,15 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.utils.FileSystem
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.starter.bus.events.Event
 import com.intellij.tools.ide.util.common.logOutput
-import kotlin.time.Duration.Companion.seconds
 
 
 class ValidateVMOptionsWereSetEvent(runContext: IDERunContext) : Event()
 
 internal fun validateVMOptionsWereSet(runContext: IDERunContext) {
-  StarterBus.postAndWaitProcessing(ValidateVMOptionsWereSetEvent(runContext), timeout = 15.seconds)
+  EventsBus.postAndWaitProcessing(ValidateVMOptionsWereSetEvent(runContext))
 
   logOutput("Run VM options validation")
 

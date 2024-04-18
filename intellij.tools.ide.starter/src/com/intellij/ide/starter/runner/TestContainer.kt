@@ -9,7 +9,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -23,7 +23,7 @@ interface TestContainer<T> {
 
   companion object {
     init {
-      StarterBus.subscribe(TestContainer<*>::javaClass) { _: TestContextInitializedEvent ->
+      EventsBus.subscribe(TestContainer<*>::javaClass) { _: TestContextInitializedEvent ->
         logOutput("Starter configuration storage: ${ConfigurationStorage.instance().getAll()}")
       }
     }
@@ -96,7 +96,7 @@ interface TestContainer<T> {
 
     testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
 
-    StarterBus.postAndWaitProcessing(TestContextInitializedEvent(contextWithAppliedHooks))
+    EventsBus.postAndWaitProcessing(TestContextInitializedEvent(contextWithAppliedHooks))
 
     return contextWithAppliedHooks
   }

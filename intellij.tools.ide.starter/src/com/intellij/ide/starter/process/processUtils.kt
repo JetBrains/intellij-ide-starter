@@ -8,11 +8,8 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -355,10 +352,10 @@ private fun destroyProcessById(processId: Long) {
       logOutput("Destroy process by pid '${it.pid()}'")
       it.destroy()
       catchAll {
-        runBlocking(Dispatchers.IO) {
-          // Usually daemons wait 2 requests for 10 seconds after ide shutdown
-          withTimeout(20.seconds) { it.onExit().await() }
-        }
+        // Usually daemons wait 2 requests for 10 seconds after ide shutdown
+        logOutput("Start waiting on exit for process '$processId'")
+        it.onExit().get(2, TimeUnit.MINUTES)
+        logOutput("Finish waiting on exit for process '$processId'")
       }
       it.destroyForcibly()
     }

@@ -2,19 +2,24 @@ package com.intellij.ide.starter.buildTool
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.intellij.ide.starter.buildTool.events.GradleDaemonEvent
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
-import com.intellij.ide.starter.runner.events.IdeBeforeKillEvent
+import com.intellij.ide.starter.process.getProcessesIdByProcessName
+import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
+//import com.intellij.tools.ide.starter.bus.shared.events.buildTools.GradleDaemonStartedEvent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.http.client.methods.HttpGet
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -29,50 +34,27 @@ import kotlin.time.Duration.Companion.minutes
 open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.GRADLE, testContext) {
 
   companion object {
-    private const val GRADLE_DAEMON_NAME = "gradleDaemon"
-    private fun destroyGradleDaemonProcessIfExists() {
-      destroyProcessIfExists(GRADLE_DAEMON_NAME)
-    }
+    private const val GRADLE_DAEMON_NAME = "GradleDaemon"
   }
 
   init {
-    // Doesn't work because sending an event occurs in another process.
-    //StarterBus.subscribeOnlyOnce(GradleBuildTool::javaClass, eventState = EventState.IN_TIME) { event: IdeLaunchEvent ->
-    //  val existingProcesses = mutableSetOf<Long>()
-    //  if (event.data.runContext.testContext === testContext) {
-    //    StarterBus.subscribe(GradleBuildTool::javaClass, eventState = EventState.IN_TIME) { eventData: Event<String> ->
-    //      if (eventData.data == "GRADLE_DAEMON_STARTED") {
-    //        getProcessesIdByProcessName(GRADLE_DAEMON_NAME).filter { !existingProcesses.contains(it) }.forEach {
-    //          existingProcesses.add(it)
-    //          event.data.runContext.startCollectThreadDumpsLoop(event.data.runContext.logsDir,
-    //                                                            event.data.ideProcess!!,
-    //                                                            testContext.ide.resolveAndDownloadTheSameJDK(),
-    //                                                            testContext.ide.installationPath,
-    //                                                            it,
-    //                                                            "$GRADLE_DAEMON_NAME-$it")
-    //        }
-    //      }
-    //    }
-    //  }
-    //}
-
-    StarterBus.subscribe(GradleBuildTool::javaClass) { event: IdeAfterLaunchEvent ->
+    EventsBus.subscribe(GradleBuildTool::javaClass) { event: IdeLaunchEvent ->
+      val existingProcesses = mutableSetOf<Long>()
       if (event.runContext.testContext === testContext) {
-        collectDumpFile(GRADLE_DAEMON_NAME,
-                        event.runContext.logsDir,
-                        testContext.ide.resolveAndDownloadTheSameJDK(),
-                        testContext.ide.installationPath)
-        destroyGradleDaemonProcessIfExists()
-      }
-    }
-
-    StarterBus.subscribe(GradleBuildTool::javaClass) { event: IdeBeforeKillEvent ->
-      testContext.ide.resolveAndDownloadTheSameJDK()
-      if (event.runContext.testContext === testContext) {
-        collectDumpFile(GRADLE_DAEMON_NAME,
-                        event.runContext.logsDir,
-                        testContext.ide.resolveAndDownloadTheSameJDK(),
-                        testContext.ide.installationPath)
+        EventsBus.subscribe(GradleBuildTool::javaClass) { gradleEvent: GradleDaemonEvent ->
+          println(gradleEvent.data.state)
+          CoroutineScope(Dispatchers.Default).launch {
+            getProcessesIdByProcessName(GRADLE_DAEMON_NAME).filter { !existingProcesses.contains(it) }.forEach {
+              existingProcesses.add(it)
+              event.runContext.startCollectThreadDumpsLoop(event.runContext.logsDir,
+                                                           event.ideProcess,
+                                                           testContext.ide.resolveAndDownloadTheSameJDK(),
+                                                           testContext.ide.installationPath,
+                                                           it,
+                                                           "$GRADLE_DAEMON_NAME-$it")
+            }
+          }
+        }
       }
     }
   }

@@ -1,22 +1,21 @@
-package com.intellij.tools.ide.starter.bus.impl
+package com.intellij.tools.ide.starter.bus.local
 
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.starter.bus.events.Event
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.time.Duration.Companion.seconds
 
 class FiringNestedEventsTest {
   @AfterEach
   fun afterEach() {
-    StarterBus.unsubscribeAll()
+    EventsBus.unsubscribeAll()
   }
 
   class FirstEvent : Event() {
     init {
-      StarterBus.postAndWaitProcessing(SecondEvent(), timeout = 2.seconds)
+      EventsBus.postAndWaitProcessing(SecondEvent())
     }
   }
 
@@ -27,7 +26,7 @@ class FiringNestedEventsTest {
     val firstSubscriberProcessedEvent = AtomicBoolean(false)
     val secondSubscriberProcessedEvent = AtomicBoolean(false)
 
-    StarterBus
+    EventsBus
       .subscribe(this) { _: FirstEvent ->
         firstSubscriberProcessedEvent.set(true)
       }
@@ -35,7 +34,7 @@ class FiringNestedEventsTest {
         secondSubscriberProcessedEvent.set(true)
       }
 
-    StarterBus.postAndWaitProcessing(FirstEvent(), timeout = 2.seconds)
+    EventsBus.postAndWaitProcessing(FirstEvent())
 
     assertTrue(firstSubscriberProcessedEvent.get())
     assertTrue(secondSubscriberProcessedEvent.get())

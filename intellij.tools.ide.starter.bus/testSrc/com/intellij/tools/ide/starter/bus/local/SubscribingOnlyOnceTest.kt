@@ -1,6 +1,6 @@
-package com.intellij.tools.ide.starter.bus.impl
+package com.intellij.tools.ide.starter.bus.local
 
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.starter.bus.events.Event
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class SubscribingOnlyOnceTest {
   @AfterEach
   fun afterEach() {
-    StarterBus.unsubscribeAll()
+    EventsBus.unsubscribeAll()
   }
 
   @Test
@@ -21,7 +21,7 @@ class SubscribingOnlyOnceTest {
     val eventProcessedTimes = AtomicInteger()
     val secondProcessedTimes = AtomicInteger()
 
-    StarterBus
+    EventsBus
       .subscribe(this) { _: Event ->
         eventProcessedTimes.incrementAndGet()
       }
@@ -35,7 +35,7 @@ class SubscribingOnlyOnceTest {
         secondProcessedTimes.incrementAndGet()
       }
 
-    StarterBus.postAndWaitProcessing(Event())
+    EventsBus.postAndWaitProcessing(Event())
 
     assertEquals(eventProcessedTimes.get(), 1)
     assertEquals(secondProcessedTimes.get(), 1)
@@ -43,7 +43,7 @@ class SubscribingOnlyOnceTest {
     eventProcessedTimes.set(0)
     secondProcessedTimes.set(0)
 
-    StarterBus.postAndWaitProcessing(Event())
+    EventsBus.postAndWaitProcessing(Event())
 
 
     assertEquals(eventProcessedTimes.get(), 1)

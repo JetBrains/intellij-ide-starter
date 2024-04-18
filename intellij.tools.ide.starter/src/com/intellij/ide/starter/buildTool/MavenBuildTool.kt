@@ -3,11 +3,10 @@ package com.intellij.ide.starter.buildTool
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
-import com.intellij.ide.starter.runner.events.IdeBeforeKillEvent
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.io.findOrCreateDirectory
 import com.intellij.tools.ide.performanceTesting.commands.dto.MavenArchetypeInfo
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
@@ -17,6 +16,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.createFile
+import kotlin.time.Duration.Companion.minutes
 
 open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.MAVEN, testContext) {
   companion object {
@@ -39,23 +39,9 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
   }
 
   init {
-    StarterBus.subscribe(GradleBuildTool::javaClass) { event: IdeAfterLaunchEvent ->
+    EventsBus.subscribe(GradleBuildTool::javaClass, 1.minutes) { event: IdeAfterLaunchEvent ->
       if (event.runContext.testContext === testContext) {
-        collectDumpFile(MAVEN_DAEMON_NAME,
-                        event.runContext.logsDir,
-                        testContext.ide.resolveAndDownloadTheSameJDK(),
-                        testContext.ide.installationPath)
         destroyMavenIndexerProcessIfExists()
-      }
-    }
-
-    StarterBus.subscribe(MavenBuildTool::javaClass) { event: IdeBeforeKillEvent ->
-      testContext.ide.resolveAndDownloadTheSameJDK()
-      if (event.runContext.testContext === testContext) {
-        collectDumpFile(MAVEN_DAEMON_NAME,
-                        event.runContext.logsDir,
-                        testContext.ide.resolveAndDownloadTheSameJDK(),
-                        testContext.ide.installationPath)
       }
     }
   }

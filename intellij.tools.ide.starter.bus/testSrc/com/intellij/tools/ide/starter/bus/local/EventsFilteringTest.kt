@@ -1,6 +1,6 @@
-package com.intellij.tools.ide.starter.bus.impl
+package com.intellij.tools.ide.starter.bus.local
 
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.starter.bus.events.Event
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -32,7 +32,7 @@ class EventsFilteringTest {
 
   @AfterEach
   fun afterEach() {
-    StarterBus.unsubscribeAll()
+    EventsBus.unsubscribeAll()
   }
 
   class CustomEvent : Event()
@@ -42,24 +42,24 @@ class EventsFilteringTest {
 
   @RepeatedTest(value = 200)
   fun `filtering events by type is working`() {
-    StarterBus.subscribe(this) { _: Event ->
+    EventsBus.subscribe(this) { _: Event ->
       isEventProcessed.set(true)
     }
 
-    StarterBus.postAndWaitProcessing(CustomEvent())
+    EventsBus.postAndWaitProcessing(CustomEvent())
     checkIsEventProcessed(false) { isEventProcessed.get() }
 
-    StarterBus.postAndWaitProcessing(Event())
+    EventsBus.postAndWaitProcessing(Event())
     checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
   @RepeatedTest(value = 100)
   fun `single event is published`() {
-    StarterBus.subscribe(this) { _: Event ->
+    EventsBus.subscribe(this) { _: Event ->
       isEventProcessed.set(true)
     }
 
-    StarterBus.postAndWaitProcessing(Event())
+    EventsBus.postAndWaitProcessing(Event())
     checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
@@ -68,16 +68,16 @@ class EventsFilteringTest {
     val firstSubscriberInvocationsData = mutableSetOf<Any>()
     val secondSubscriberInvocationsData = mutableSetOf<Any>()
 
-    StarterBus
+    EventsBus
       .subscribe(this) { event: Event -> firstSubscriberInvocationsData.add(event) }
       .subscribe(this) { event: Event -> secondSubscriberInvocationsData.add(event) }
 
     val firstSignal = BeforeEvent()
-    StarterBus.postAndWaitProcessing(firstSignal)
-    StarterBus.postAndWaitProcessing(CustomEvent())
+    EventsBus.postAndWaitProcessing(firstSignal)
+    EventsBus.postAndWaitProcessing(CustomEvent())
     val secondSignal = AfterEvent()
-    StarterBus.postAndWaitProcessing(secondSignal)
-    StarterBus.postAndWaitProcessing(AnotherCustomEvent())
+    EventsBus.postAndWaitProcessing(secondSignal)
+    EventsBus.postAndWaitProcessing(AnotherCustomEvent())
 
     firstSubscriberInvocationsData.containsAll(listOf(firstSignal, secondSignal))
     secondSubscriberInvocationsData.containsAll(listOf(firstSignal, secondSignal))
@@ -85,17 +85,17 @@ class EventsFilteringTest {
 
   @Test
   fun `filtering custom events in subscribe`() {
-    StarterBus.subscribe(this) { _: CustomEvent ->
+    EventsBus.subscribe(this) { _: CustomEvent ->
       isEventProcessed.set(true)
     }
 
     repeat(5) {
-      StarterBus.postAndWaitProcessing(BeforeEvent())
-      StarterBus.postAndWaitProcessing(AfterEvent())
+      EventsBus.postAndWaitProcessing(BeforeEvent())
+      EventsBus.postAndWaitProcessing(AfterEvent())
       checkIsEventProcessed(shouldEventBeProcessed = false) { isEventProcessed.get() }
     }
 
-    StarterBus.postAndWaitProcessing(CustomEvent())
+    EventsBus.postAndWaitProcessing(CustomEvent())
     checkIsEventProcessed(shouldEventBeProcessed = true) { isEventProcessed.get() }
   }
 }

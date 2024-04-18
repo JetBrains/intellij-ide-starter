@@ -1,13 +1,13 @@
-package com.intellij.tools.ide.starter.bus.impl
+package com.intellij.tools.ide.starter.bus.local
 
-import com.intellij.tools.ide.starter.bus.StarterBus
+import com.intellij.tools.ide.starter.bus.EventsBus
+import com.intellij.tools.ide.starter.bus.exceptions.EventBusException
 import com.intellij.tools.ide.starter.bus.events.Event
 import kotlinx.coroutines.delay
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.RepeatedTest
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -18,7 +18,7 @@ class WaitingForSubscribersTest {
 
   @AfterEach
   fun afterEach() {
-    StarterBus.unsubscribeAll()
+    EventsBus.unsubscribeAll()
   }
 
   class CustomEvent : Event()
@@ -31,7 +31,7 @@ class WaitingForSubscribersTest {
     val firstSubscriberDelay = 2.seconds
     val secondSubscriberDelay = 4.seconds
 
-    StarterBus
+    EventsBus
       .subscribe("First") { _: Event ->
         delay(firstSubscriberDelay)
         firstSubscriberProcessedEvent.set(true)
@@ -45,7 +45,7 @@ class WaitingForSubscribersTest {
 
     // First event should not be processed by subscribers. Method should complete without waiting
     val firstEventDuration = measureTime {
-      StarterBus.postAndWaitProcessing(CustomEvent(), timeout = timeout)
+      EventsBus.postAndWaitProcessing(CustomEvent())
     }
     checkIsEventProcessed(false) { firstSubscriberProcessedEvent.get() }
     checkIsEventProcessed(false) { secondSubscriberProcessedEvent.get() }
@@ -53,7 +53,7 @@ class WaitingForSubscribersTest {
 
 
     val secondEventDuration = measureTime {
-      StarterBus.postAndWaitProcessing(Event(), timeout = timeout)
+      EventsBus.postAndWaitProcessing(Event())
     }
     checkIsEventProcessed(true) { firstSubscriberProcessedEvent.get() }
     checkIsEventProcessed(true) { secondSubscriberProcessedEvent.get() }
@@ -69,23 +69,23 @@ class WaitingForSubscribersTest {
 
     val firstSubscriberDelay = 4.seconds
     val secondSubscriberDelay = 6.seconds
+    val timeout = 2.seconds
 
-    StarterBus
-      .subscribe(firstSubscriberProcessedEvent) { _: Event ->
+    EventsBus
+      .subscribe(firstSubscriberProcessedEvent, timeout) { _: Event ->
         delay(firstSubscriberDelay)
         firstSubscriberProcessedEvent.set(true)
       }
-      .subscribe(secondSubscriberProcessedEvent) { _: Event ->
+      .subscribe(secondSubscriberProcessedEvent, timeout) { _: Event ->
         delay(secondSubscriberDelay)
         secondSubscriberProcessedEvent.set(true)
       }
 
-    val timeout = 2.seconds
+
     val duration = measureTime {
       try {
-        StarterBus.postAndWaitProcessing(Event(), timeout = timeout)
-      }
-      catch (t: TimeoutException) {
+        EventsBus.postAndWaitProcessing(Event())
+      } catch (e: EventBusException) {
         gotException.set(true)
       }
     }
