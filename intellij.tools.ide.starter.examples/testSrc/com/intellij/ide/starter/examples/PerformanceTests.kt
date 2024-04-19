@@ -13,9 +13,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.bufferedWriter
-import kotlin.io.path.div
+import kotlin.io.path.*
 
 @Disabled("Requires local installation of IDE, configs and project")
 class PerformanceTests {
@@ -103,6 +101,28 @@ class PerformanceTests {
         it.time
       }.last().time
     writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import", finishTime - startTime)))
+  }
+
+  @Test
+  fun runRunConfiguration() {
+    val configurationName = "SimpleRun"
+    val startRunConfiguration = CommandChain()
+      .startProfile("runConfiguration")
+      .runConfiguration(configurationName)
+      .stopProfile()
+      .exitApp()
+    val result = context.runIDE(commands = startRunConfiguration, launchName = "runConfiguration")
+    var metric = -1L
+    result.runContext.logsDir.forEachDirectoryEntry {
+      if(it.isRegularFile()){
+        it.forEachLine {
+          if(it.contains("processTerminated in: $configurationName:")) {
+            metric = it.split(":").last().trim().toLong()
+          }
+        }
+      }
+    }
+    writeMetricsToCSV(result, listOf(Metric.newDuration("runConfiguration", metric)))
   }
 
 
