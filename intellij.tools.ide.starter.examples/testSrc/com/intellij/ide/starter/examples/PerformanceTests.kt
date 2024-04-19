@@ -125,6 +125,21 @@ class PerformanceTests {
     writeMetricsToCSV(result, listOf(Metric.newDuration("runConfiguration", metric)))
   }
 
+  @Test
+  fun runBuild() {
+    val startRunConfiguration = CommandChain()
+      .startProfile("build")
+      .build()
+      .stopProfile()
+      .exitApp()
+    val result = context.runIDE(commands = startRunConfiguration, launchName = "build")
+    val metrics = getMetricsFromSpanAndChildren(
+      (result.runContext.logsDir / "opentelemetry.json"),
+      SpanFilter.nameEquals("build_compilation_duration")
+    )
+    writeMetricsToCSV(result, metrics)
+  }
+
 
   @Test
   fun findUsage() {
