@@ -2,8 +2,11 @@ package com.intellij.ide.starter.examples
 
 import com.intellij.ide.starter.extended.statistics.StatisticsEventsHarvester
 import com.intellij.ide.starter.extended.statistics.filterByEventId
+import com.intellij.ide.starter.extended.statistics.getDataFromEvent
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
+import com.intellij.ide.starter.utils.Git
+import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics.Metric
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
@@ -88,19 +91,23 @@ class PerformanceTests {
   fun reloadMavenProject() {
     val reloadMavenProject = CommandChain()
       .startProfile("reloadMavenProject")
+      .checkoutBranch("43b46f36cef25076a8014e247c4fdf4499d924da", "temp")
+      .waitForSmartMode()
       .importMavenProject()
       .stopProfile()
       .exitApp()
     val result = context.runIDE(commands = reloadMavenProject, launchName = "reloadMavenProject")
-    val startTime = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
-      .filterByEventId("import_project.started").sortedBy {
-        it.time
-      }.first().time
-    val finishTime = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
+    val firstImport = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
       .filterByEventId("import_project.finished").sortedBy {
         it.time
-      }.last().time
-    writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import", finishTime - startTime)))
+      }.first().getDataFromEvent<Long>(EventFields.DurationMs.name)
+    val lastImport = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
+      .filterByEventId("import_project.finished").sortedBy {
+        it.time
+      }.last().getDataFromEvent<Long>(EventFields.DurationMs.name)
+    Git.checkout(context.resolvedProjectHome, "master")
+    writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import/lastImport", lastImport)))
+    writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import/firstImport", firstImport)))
   }
 
   @Test
