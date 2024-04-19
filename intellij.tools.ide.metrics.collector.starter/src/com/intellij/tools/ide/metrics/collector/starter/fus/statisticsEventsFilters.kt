@@ -91,6 +91,8 @@ fun <T, M> Iterable<LogEvent>.groupByEventDataKey(dataKey: String, typeConverter
   return rawMap as Map<M, List<LogEvent>>
 }
 
-fun Iterable<LogEvent>.filterByEventId(vararg eventId: String): List<LogEvent> {
-  return this.filter { it.event.id in eventId }
+fun Iterable<LogEvent>.filterByEventId(vararg eventId: String, sourceAction: String = ""): List<LogEvent> {
+  filter { it.event.id in eventId }.apply {
+    return if (sourceAction.isNotEmpty()) filter { e -> e.event.data["source_action"] == sourceAction } else this
+  }
 }
