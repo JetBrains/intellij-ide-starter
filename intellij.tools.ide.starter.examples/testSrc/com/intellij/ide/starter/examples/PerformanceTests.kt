@@ -1,13 +1,13 @@
 package com.intellij.ide.starter.examples
 
-import com.intellij.ide.starter.extended.statistics.StatisticsEventsHarvester
-import com.intellij.ide.starter.extended.statistics.filterByEventId
-import com.intellij.ide.starter.extended.statistics.getDataFromEvent
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.utils.Git
 import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics.Metric
+import com.intellij.tools.ide.metrics.collector.starter.fus.StatisticsEventsHarvester
+import com.intellij.tools.ide.metrics.collector.starter.fus.filterByEventId
+import com.intellij.tools.ide.metrics.collector.starter.fus.getDataFromEvent
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.metrics.collector.telemetry.getMetricsFromSpanAndChildren
