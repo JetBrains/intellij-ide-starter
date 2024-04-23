@@ -203,6 +203,10 @@ data class VMOptions(
     addSystemProperty("test.build_tool.daemon.profiler", true)
   }
 
+  fun collectingGradleDaemonThreadDump() {
+    addSystemProperty("test.build_tool.daemon.threads_dump", true)
+  }
+
   fun inHeadlessMode() = addSystemProperty("java.awt.headless", true)
 
   fun disableStartupDialogs() {
