@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.tools.ide.starter.bus.shared.dto.SharedEventDto
 import com.intellij.tools.ide.starter.bus.shared.dto.SubscriberDto
 import com.intellij.tools.ide.starter.bus.shared.server.services.EventsFlowService
-import com.intellij.tools.ide.util.common.logOutput
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import java.io.BufferedReader
@@ -32,8 +31,8 @@ object LocalEventBusServer : EventBusServer {
     exchange.responseBody.bufferedWriter().use { writer -> writer.write(response) }
   }
 
-  override fun startServer() {
-    try {
+  override fun startServer(): Boolean {
+    return try {
       server = HttpServer.create(InetSocketAddress(port), 0)
 
       server.createContext("/postAndWaitProcessing") { exchange ->
@@ -116,9 +115,12 @@ object LocalEventBusServer : EventBusServer {
       }
 
       server.start()
+      println("Server started on port $port")
+      true
     }
     catch (bind: BindException) {
-      logOutput("Server already running")
+      println("Server already running")
+      false
     }
   }
 }

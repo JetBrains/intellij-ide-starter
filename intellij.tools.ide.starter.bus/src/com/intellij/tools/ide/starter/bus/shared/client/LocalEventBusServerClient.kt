@@ -105,6 +105,15 @@ class LocalEventBusServerClient(val server: LocalEventBusServer) : EventBusServe
   }
 
   override fun startServerProcess() {
-    server.startServer()
+    if (!server.startServer()) {
+      try {
+        val onStartEvents = getEvents()
+        println("Events on server start: $onStartEvents")
+      }
+      catch (t: Throwable) {
+        println("Server is running but we cannot get events")
+        throw t
+      }
+    }
   }
 }
