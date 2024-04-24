@@ -28,8 +28,10 @@ data class IndexingMetrics(
 ) {
   val scanningHistories: List<JsonProjectScanningHistory>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
+      .sortedBy { it.times.updatingStart.instant }
   val indexingHistories: List<JsonProjectDumbIndexingHistory>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectDumbIndexingHistory>()
+      .sortedBy { it.times.updatingStart.instant }
   private val scanningStatistics: List<JsonScanningStatistics>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
       .flatMap { history -> history.scanningStatistics }
