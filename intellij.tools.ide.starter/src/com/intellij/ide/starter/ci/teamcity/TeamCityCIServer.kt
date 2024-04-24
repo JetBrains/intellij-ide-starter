@@ -91,9 +91,15 @@ open class TeamCityCIServer(
       "Too many IDE internal errors. Monitoring stopped.".toRegex(),
       "Invalid folding descriptor detected".toRegex()
     )
+    val patternsForSafePush = listOf(
+      "Non-idempotent computation: it returns different results when invoked multiple times".toRegex(),
+    )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       logOutput("Add $ignoredPattern ignored pattern from env")
       patterns.add(ignoredPattern.toRegex())
+    }
+    if (isSafePush()) {
+      patterns.addAll(patternsForSafePush)
     }
     patterns
   }
