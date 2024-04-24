@@ -21,6 +21,7 @@ object LocalEventBusServer : EventBusServer {
   override fun endServer() {
     if (this::server.isInitialized) {
       server.stop(0)
+      println("Server stopped")
     }
   }
 
