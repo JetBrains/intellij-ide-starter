@@ -39,6 +39,7 @@ object AllureReport {
       if (link != null) {
         Allure.link("CI server", link)
       }
+      Allure.label("layer", "Exception")
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
         it.name = "Exception in ${testName.ifBlank { contextName }}"
