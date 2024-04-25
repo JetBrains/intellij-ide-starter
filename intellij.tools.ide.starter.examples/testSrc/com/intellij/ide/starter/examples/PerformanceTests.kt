@@ -51,8 +51,11 @@ class PerformanceTests {
         writer.newLine()
       }
     }
-    println("Result CSV is written to: ${resultCsv.absolutePathString()}")
+    println("Result CSV is written to: file://${resultCsv.absolutePathString()}")
     println("#".repeat(20))
+
+    println("Snapshots can be found at: file://" + results.runContext.snapshotsDir)
+
     return resultCsv
   }
 
