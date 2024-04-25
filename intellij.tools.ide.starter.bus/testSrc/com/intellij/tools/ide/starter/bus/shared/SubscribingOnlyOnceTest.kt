@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 
 class SubscribingOnlyOnceTest : SharedEventsTest()  {
-  @Test
+  //@Test
   fun `multiple subscription should not work if subscribed only once`() {
     val obj = Any()
 

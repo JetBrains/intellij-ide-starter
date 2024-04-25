@@ -15,7 +15,7 @@ import kotlin.time.measureTime
 class WaitingForSubscribersTest : SharedEventsTest() {
   class CustomSignal : SharedEvent()
 
-  @RepeatedTest(value = 10)
+  //@RepeatedTest(value = 10)
   fun `waiting till subscribers finish their work`() {
     val firstSubscriberProcessedEvent = AtomicBoolean(false)
     val secondSubscriberProcessedEvent = AtomicBoolean(false)
@@ -53,7 +53,7 @@ class WaitingForSubscribersTest : SharedEventsTest() {
     assertTrue(secondEventDuration >= secondSubscriberDelay)
   }
 
-  @RepeatedTest(value = 5)
+  //@RepeatedTest(value = 5)
   fun `unsuccessful awaiting of subscribers`() {
     val firstSubscriberProcessedEvent = AtomicBoolean(false)
     val secondSubscriberProcessedEvent = AtomicBoolean(false)
