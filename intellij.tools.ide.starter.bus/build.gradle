@@ -41,6 +41,7 @@ sourceSets {
 
 dependencies {
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0"
+  runtimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "com.jetbrains.intellij.tools:ide-util-common:LATEST-TRUNK-SNAPSHOT"
   implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
