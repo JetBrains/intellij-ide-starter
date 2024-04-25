@@ -14,6 +14,8 @@ import java.util.*
 
 object AllureReport {
 
+  private val ignoreLabels = setOf("layer", "AS_ID")
+
   fun reportFailure(contextName: String, message: String, stackTrace: String, link: String? = null) {
     try {
       val uuid = UUID.randomUUID().toString()
@@ -33,8 +35,8 @@ object AllureReport {
       }
       Allure.getLifecycle().scheduleTestCase(result)
       Allure.getLifecycle().startTestCase(uuid)
-      labels.forEach {
-        Allure.label(it.name, it.value)
+      labels.filter { label ->  !ignoreLabels.contains(label.name) }.forEach {
+          Allure.label(it.name, it.value)
       }
       if (link != null) {
         Allure.link("CI server", link)
@@ -44,7 +46,7 @@ object AllureReport {
         it.status = Status.FAILED
         it.name = "Exception in ${testName.ifBlank { contextName }}"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
-        it.fullName = fullName.ifBlank { contextName }
+        it.fullName = fullName.ifBlank { contextName } + ".exception"
         it.testCaseName = testCaseName
         it.historyId = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
       }
