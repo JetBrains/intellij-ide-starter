@@ -12,7 +12,7 @@ class FiringNestedEventsTest : SharedEventsTest() {
 
   class SecondEvent : SharedEvent()
 
-  //@Test
+  @Test
   fun `firing nested events should work`() {
     val firstSubscriberProcessedEvent = AtomicBoolean(false)
     val secondSubscriberProcessedEvent = AtomicBoolean(false)

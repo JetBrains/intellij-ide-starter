@@ -49,7 +49,7 @@ class EventProcessingWithMultitaskingTest : SharedEventsTest() {
     assertEquals(counter.get(), maxTasksNumber)
   }
 
-  //@Test
+  @Test
   fun `awaiting event processing exactly one event`(): Unit = runBlocking {
     EventsBus.subscribe<YourEvent1>(YourEventsReceiver()) {
       delay(500.milliseconds)
@@ -59,7 +59,7 @@ class EventProcessingWithMultitaskingTest : SharedEventsTest() {
     runEventProcessingTest(YourEvent1(), timeout = 5.seconds)
   }
 
-  //@Test
+  @Test
   fun `awaiting event processing on different event reference`(): Unit = runBlocking {
     EventsBus.subscribe<YourEvent1>(YourEventsReceiver()) {
       delay(500.milliseconds)

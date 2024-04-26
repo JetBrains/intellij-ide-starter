@@ -35,7 +35,7 @@ class EventsFilteringTest : SharedEventsTest() {
   class AfterSignal : SharedEvent()
   class AnotherCustomSignal : SharedEvent()
 
-  //@RepeatedTest(value = 200)
+  @RepeatedTest(value = 200)
   fun `filtering events by type is working`() {
     EventsBus.subscribe(this) { _: SharedEvent ->
       isEventProcessed.set(true)
@@ -48,7 +48,7 @@ class EventsFilteringTest : SharedEventsTest() {
     checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
-  //@RepeatedTest(value = 100)
+  @RepeatedTest(value = 100)
   fun `single event is published`() {
     EventsBus.subscribe(this) { _: SharedEvent ->
       isEventProcessed.set(true)
@@ -58,7 +58,7 @@ class EventsFilteringTest : SharedEventsTest() {
     checkIsEventProcessed(true) { isEventProcessed.get() }
   }
 
-  //@RepeatedTest(value = 100)
+  @RepeatedTest(value = 100)
   fun `multiple same events is published and handled by subscribers`() {
     val firstSubscriberInvocationsData = mutableSetOf<Any>()
     val secondSubscriberInvocationsData = mutableSetOf<Any>()
@@ -78,7 +78,7 @@ class EventsFilteringTest : SharedEventsTest() {
     secondSubscriberInvocationsData.containsAll(listOf(firstSignal, secondSignal))
   }
 
-  //@Test
+  @Test
   fun `filtering custom events in subscribe`() {
     EventsBus.subscribe(this) { _: CustomSignal ->
       isEventProcessed.set(true)
