@@ -14,13 +14,13 @@ import java.util.concurrent.CompletableFuture
 
 object LocalEventBusServer : EventBusServer {
   override val port: Int = 45654
-  private val eventsFlowService = EventsFlowService()
+  private lateinit var eventsFlowService: EventsFlowService
   private val objectMapper = jacksonObjectMapper()
   private lateinit var server: HttpServer
 
   override fun endServer() {
     if (this::server.isInitialized) {
-      server.stop(10)
+      server.stop(5)
       println("Server stopped")
     }
   }
@@ -35,6 +35,7 @@ object LocalEventBusServer : EventBusServer {
   override fun startServer(): Boolean {
     return try {
       server = HttpServer.create(InetSocketAddress(port), 0)
+      eventsFlowService = EventsFlowService()
 
       server.createContext("/postAndWaitProcessing") { exchange ->
         CompletableFuture.runAsync {
@@ -120,7 +121,7 @@ object LocalEventBusServer : EventBusServer {
       true
     }
     catch (bind: BindException) {
-      println("Server already running")
+      println("Server already running. ${bind.message}")
       false
     }
   }
