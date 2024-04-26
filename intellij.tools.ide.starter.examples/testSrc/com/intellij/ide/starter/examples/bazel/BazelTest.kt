@@ -25,7 +25,7 @@ class BazelTest {
       it.pluginConfigurator.installPluginFromPluginManager("com.google.idea.bazel.ijwb","2024.04.09.0.1-api-version-241")
     }
 
-    val results = context.runIDE(commands = CommandChain())
+    val results = context.runIDE(commands = CommandChain().exitApp())
 
     val metrics = getMetricsFromSpanAndChildren(
       (results.runContext.logsDir / "opentelemetry.json"), SpanFilter.nameContains("Progress: ")
