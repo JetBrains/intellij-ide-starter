@@ -300,6 +300,10 @@ class IDETestContext(
     addSystemProperty("idea.pkgs.disableLoading", true)
   }
 
+  fun disableAIAssistantToolwindowActivationOnStart() = applyVMOptionsPatch {
+    addSystemProperty("llm.ai.assistant.toolwindow.activation.on.start", false)
+  }
+
   fun removeIdeaProjectDirectory(): IDETestContext {
     val ideaDirPath = resolvedProjectHome.resolve(".idea")
 
