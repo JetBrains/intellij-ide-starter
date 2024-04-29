@@ -167,6 +167,8 @@ data class VMOptions(
 
   fun enableVerboseOpenTelemetry() = addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
 
+  fun allowSkippingFullScanning() = addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, true)
+
   /**
    * [categories] - Could be packages, classes ...
    */
