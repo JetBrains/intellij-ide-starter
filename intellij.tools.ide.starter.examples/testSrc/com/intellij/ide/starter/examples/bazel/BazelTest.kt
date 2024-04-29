@@ -9,6 +9,7 @@ import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingM
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.metrics.collector.telemetry.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.performanceTesting.commands.*
+import com.intellij.util.io.createParentDirectories
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.io.path.div
@@ -19,10 +20,18 @@ class BazelTest {
   fun openBazelProject() {
     val testCase = TestCase(IdeProductProvider.IC, GitHubProject.fromGithub(
       branchName = "master",
-      repoRelativeUrl = "MaXal/bazel-java"
+      repoRelativeUrl = "https://github.com/bazelbuild/bazel.git"
     )).useRelease("2024.1")
     val context = Starter.newContext("openBazelProject", testCase).also {
-      it.pluginConfigurator.installPluginFromPluginManager("com.google.idea.bazel.ijwb","2024.04.09.0.1-api-version-241")
+      it.pluginConfigurator.installPluginFromPluginManager("com.google.idea.bazel.ijwb", "2024.04.09.0.1-api-version-241")
+      (it.resolvedProjectHome / "tools"/ "intellij" / ".managed.bazelproject").createParentDirectories().toFile().writeText("""
+targets:
+  //examples:srcs
+
+directories:
+  .
+
+    """)
     }
 
     val results = context.runIDE(commands = CommandChain().exitApp())
@@ -32,7 +41,7 @@ class BazelTest {
     )
     val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics()
 
-    writeMetricsToCSV(results, metrics+indexingMetrics)
+    writeMetricsToCSV(results, metrics + indexingMetrics)
   }
 
 }
