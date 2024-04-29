@@ -20,10 +20,7 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.AllureHelper
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsOnCI
-import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
-import com.intellij.ide.starter.runner.events.IdeBeforeKillEvent
-import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
-import com.intellij.ide.starter.runner.events.IdeLaunchEvent
+import com.intellij.ide.starter.runner.events.*
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
@@ -235,6 +232,9 @@ data class IDERunContext(
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig.workDir, ideProcessId, "ide")
           },
           onBeforeKilled = { process, pid ->
+            if (testContext.profilerType != ProfilerType.NONE) {
+              EventsBus.postAndWaitProcessing(StopProfilerEvent(listOf()))
+            }
             EventsBus.postAndWaitProcessing(
               IdeBeforeKillEvent(this, process, pid))
             captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
