@@ -4,12 +4,14 @@ import com.intellij.ide.starter.community.model.ReleaseInfo
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.installer.IdeInstallerFile
 import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.system.OS
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
+import java.time.LocalDate
 import kotlin.io.path.exists
 
 object PublicIdeDownloader : IdeDownloader {
@@ -20,13 +22,23 @@ object PublicIdeDownloader : IdeDownloader {
     try {
       val sortedByDate = releaseInfoMap.values.first().sortedByDescending { it.date }
 
-      if (filteringParams.majorVersion.isNotBlank()) return sortedByDate.first { it.majorVersion == filteringParams.majorVersion }
+      val build = when {
+        filteringParams.majorVersion.isNotBlank() -> sortedByDate.first { it.majorVersion == filteringParams.majorVersion}
+        // find the latest release / eap, if no specific params were provided
+        filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank() -> sortedByDate.first()
+        filteringParams.versionNumber.isNotBlank() -> sortedByDate.first { it.version == filteringParams.versionNumber }
+        filteringParams.buildNumber.isNotBlank() -> sortedByDate.first { it.build == filteringParams.buildNumber }
+        else -> null
+      }
 
-      // find the latest release / eap, if no specific params were provided
-      if (filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank()) return sortedByDate.first()
+      if (build != null) {
+        val expirationDate = build.date.plusDays(30)
+        if (build.type == "eap" && expirationDate.isBefore(LocalDate.now())) {
+          throw SetupException("EAP build ${build.build} expired on $expirationDate")
+        }
 
-      if (filteringParams.versionNumber.isNotBlank()) return sortedByDate.first { it.version == filteringParams.versionNumber }
-      if (filteringParams.buildNumber.isNotBlank()) return sortedByDate.first { it.build == filteringParams.buildNumber }
+        return build
+      }
     }
     catch (e: Exception) {
       logError("Failed to find specific release by parameters $filteringParams")
