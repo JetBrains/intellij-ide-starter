@@ -18,28 +18,27 @@ import java.nio.file.Paths
 
 class Setup {
 
-
-  // This helpers are required to run locally installed IDE instead of downloading one
-  class IdeNotDownloader(private val installer: Path) : IdeDownloader {
-    override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstallerFile {
-      return IdeInstallerFile(installer, "locally-installed-ide")
-    }
-  }
-
-  private fun createInstallerFactory() = object : IdeInstallerFactory() {
-    override fun createInstaller(ideInfo: IdeInfo, downloader: IdeDownloader) =
-      ExistingIdeInstaller(Paths.get(PATH_TO_INSTALLED_IDE))
-  }
-
-  init {
-    di = DI {
-      extend(di)
-      bindSingleton<IdeInstallerFactory>(overrides = true) { createInstallerFactory() }
-      bindSingleton<IdeDownloader>(overrides = true) { IdeNotDownloader(Paths.get(PATH_TO_INSTALLED_IDE)) }
-    }
-  }
-
   companion object {
+    init {
+      di = DI {
+        extend(di)
+        bindSingleton<IdeInstallerFactory>(overrides = true) { createInstallerFactory() }
+        bindSingleton<IdeDownloader>(overrides = true) { IdeNotDownloader(Paths.get(PATH_TO_INSTALLED_IDE)) }
+      }
+    }
+
+    private fun createInstallerFactory() = object : IdeInstallerFactory() {
+      override fun createInstaller(ideInfo: IdeInfo, downloader: IdeDownloader) =
+        ExistingIdeInstaller(Paths.get(PATH_TO_INSTALLED_IDE))
+    }
+
+    // This helpers are required to run locally installed IDE instead of downloading one
+    class IdeNotDownloader(private val installer: Path) : IdeDownloader {
+      override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstallerFile {
+        return IdeInstallerFile(installer, "locally-installed-ide")
+      }
+    }
+
     private val LOCAL_PATH = System.getProperty("user.home")
 
     // ----- CONFIGURATION SECTION ----
