@@ -10,6 +10,8 @@ import java.nio.file.Path
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.text.SemVer
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.ide.starter.utils.getUpdateEnvVarsWithAddedPath
+import com.intellij.ide.starter.utils.updatePathEnvVariable
 import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Files
 import kotlin.io.path.exists
@@ -64,7 +66,7 @@ fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: St
                   projectDir,
                   timeout = 10.minutes,
                   args = args,
-                  environmentVariables = getUpdatedEnvVars(nodejsRoot),
+                  environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot),
                   stdoutRedirect = stdout
   ).start()
 }
@@ -77,7 +79,7 @@ fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
                   projectDir,
                   timeout = 5.minutes,
                   args = listOf("$packageManagerPath", "build"),
-                  environmentVariables = getUpdatedEnvVars(nodejsRoot)
+                  environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot)
   ).start()
 }
 
@@ -86,12 +88,7 @@ fun IDETestContext.enableNewTSEvaluator() = applyVMOptionsPatch {
 }
 
 fun IDETestContext.updatePath(path: Path) = applyVMOptionsPatch {
-  val pathEnv = if (SystemInfo.isWindows) "Path" else "PATH"
-  val envVars = getUpdatedEnvVars(path)[pathEnv]
-
-  if (envVars != null) {
-    withEnv(pathEnv, envVars)
-  }
+  updatePathEnvVariable(path)
 }
 
 private fun buildNodePath(path: Path): Path {
@@ -109,17 +106,10 @@ private fun enableCorepack(nodejsRoot: Path) {
                   nodejsRoot,
                   timeout = 1.minutes,
                   args = listOf("$corePackPath", "enable"),
-                  environmentVariables = getUpdatedEnvVars(nodejsRoot)
+                  environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot)
   ).start()
 }
 
-private fun getUpdatedEnvVars(path: Path): Map<String, String> {
-  val pathEnv = if (SystemInfo.isWindows) "Path" else "PATH"
-  val pathSeparator = if (SystemInfo.isWindows) ";" else ":"
-  val currentPath = System.getenv().getOrDefault(pathEnv, "")
-
-  return System.getenv() + mapOf(pathEnv to "$currentPath$pathSeparator$path")
-}
 
 private fun getNodePathByVersion(version: String): Path {
   val nodeJSDir = GlobalPaths.instance.getCacheDirectoryFor("nodejs")
