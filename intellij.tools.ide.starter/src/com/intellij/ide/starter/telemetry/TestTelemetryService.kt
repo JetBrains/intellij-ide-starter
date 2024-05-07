@@ -9,13 +9,13 @@ import org.kodein.di.instance
 interface TestTelemetryService {
   companion object {
     val instance: TestTelemetryService by lazy { di.direct.instance() }
+
+    fun spanBuilder(spanName: String): SpanBuilder {
+      return instance.getTracer().spanBuilder(spanName)
+    }
   }
 
   fun getTracer(): Tracer
 
   fun shutdown()
-
-  fun spanBuilder(spanName: String): SpanBuilder {
-   return instance.getTracer().spanBuilder(spanName)
-  }
 }
