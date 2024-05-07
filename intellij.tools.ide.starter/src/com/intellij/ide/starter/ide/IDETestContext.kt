@@ -368,7 +368,7 @@ class IDETestContext(
     collectNativeThreads: Boolean = false,
     configure: IDERunContext.() -> Unit = {}
   ): IDEStartResult {
-    val span = TestTelemetryService.instance.getTracer().spanBuilder("runIDE").setAttribute("launchName", launchName).startSpan()
+    val span = TestTelemetryService.instance.spanBuilder("runIDE").setAttribute("launchName", launchName).startSpan()
     span.makeCurrent().use {
       val runContext = IDERunContext(
         testContext = this,
@@ -385,7 +385,7 @@ class IDETestContext(
       try {
         val ideRunResult = runContext.runIDE()
         if (isReportPublishingEnabled) {
-          val publishSpan = TestTelemetryService.instance.getTracer().spanBuilder("publisher").startSpan()
+          val publishSpan = TestTelemetryService.instance.spanBuilder("publisher").startSpan()
           for (it in publishers) {
             it.publishResultOnSuccess(ideRunResult)
           }
@@ -573,7 +573,7 @@ class IDETestContext(
   }
 
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
-    val span = TestTelemetryService.instance.getTracer().spanBuilder("setupSdk").startSpan()
+    val span = TestTelemetryService.instance.spanBuilder("setupSdk").startSpan()
     if (sdkObjects == null) return this
     try {
       System.setProperty("DO_NOT_REPORT_ERRORS", "true")
