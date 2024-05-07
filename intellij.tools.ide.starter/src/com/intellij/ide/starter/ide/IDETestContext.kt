@@ -17,6 +17,7 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.openTestCaseProject
 import com.intellij.ide.starter.runner.startIdeWithoutProject
+import com.intellij.ide.starter.telemetry.TestTelemetryService
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
@@ -367,33 +368,39 @@ class IDETestContext(
     collectNativeThreads: Boolean = false,
     configure: IDERunContext.() -> Unit = {}
   ): IDEStartResult {
-    val runContext = IDERunContext(
-      testContext = this,
-      commandLine = commandLine,
-      commands = commands,
-      runTimeout = runTimeout,
-      useStartupScript = useStartupScript,
-      launchName = launchName,
-      expectedKill = expectedKill,
-      expectedExitCode = expectedExitCode,
-      collectNativeThreads = collectNativeThreads,
-    ).also(configure)
+    val span = TestTelemetryService.instance.getTracer().spanBuilder("runIDE").setAttribute("launchName", launchName).startSpan()
+    span.makeCurrent().use {
+      val runContext = IDERunContext(
+        testContext = this,
+        commandLine = commandLine,
+        commands = commands,
+        runTimeout = runTimeout,
+        useStartupScript = useStartupScript,
+        launchName = launchName,
+        expectedKill = expectedKill,
+        expectedExitCode = expectedExitCode,
+        collectNativeThreads = collectNativeThreads,
+      ).also(configure)
 
-    try {
-      val ideRunResult = runContext.runIDE()
-      if (isReportPublishingEnabled) {
-        for (it in publishers) {
-          it.publishResultOnSuccess(ideRunResult)
+      try {
+        val ideRunResult = runContext.runIDE()
+        if (isReportPublishingEnabled) {
+          val publishSpan = TestTelemetryService.instance.getTracer().spanBuilder("publisher").startSpan()
+          for (it in publishers) {
+            it.publishResultOnSuccess(ideRunResult)
+          }
+          publishSpan.end()
         }
+        if (ideRunResult.failureError != null) {
+          throw ideRunResult.failureError
+        }
+        return ideRunResult
       }
-      if (ideRunResult.failureError != null) {
-        throw ideRunResult.failureError
-      }
-      return ideRunResult
-    }
-    finally {
-      if (isReportPublishingEnabled) publishers.forEach {
-        it.publishAnywayAfterRun(runContext)
+      finally {
+        if (isReportPublishingEnabled) publishers.forEach {
+          it.publishAnywayAfterRun(runContext)
+        }
+        span.end()
       }
     }
   }
@@ -566,6 +573,7 @@ class IDETestContext(
   }
 
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
+    val span = TestTelemetryService.instance.getTracer().spanBuilder("setupSdk").startSpan()
     if (sdkObjects == null) return this
     try {
       System.setProperty("DO_NOT_REPORT_ERRORS", "true")
@@ -593,7 +601,7 @@ class IDETestContext(
       this
         //some caches from IDE warmup may stay
         .wipeSystemDir()
-
+    span.end()
     return this
   }
 

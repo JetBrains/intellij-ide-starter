@@ -24,6 +24,8 @@ import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.telemetry.NoopTestTelemetryService
+import com.intellij.ide.starter.telemetry.TestTelemetryService
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.*
 import java.net.URI
@@ -62,6 +64,7 @@ var di = DI {
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }
+  bindSingleton<TestTelemetryService> { NoopTestTelemetryService() }
   bindSingleton(tag = "teamcity.uri") { URI("https://buildserver.labs.intellij.net").normalize() }
   bindSingleton<AllurePath> {
     object : AllurePath {
