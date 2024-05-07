@@ -14,6 +14,7 @@ import java.io.File
 import java.lang.management.ManagementFactory
 import java.nio.file.Path
 import kotlin.io.path.*
+import kotlin.time.Duration
 
 data class VMOptions(
   private val ide: InstalledIde,
@@ -216,6 +217,10 @@ data class VMOptions(
     addSystemProperty("jb.privacy.policy.text", "<!--999.999-->")
     addSystemProperty("jb.privacy.policy.ai.assistant.text", "<!--999.999-->")
     addSystemProperty("writerside.eula.reviewed.and.accepted", true)
+  }
+
+  fun setFreezeReportingInterval(interval: Duration){
+    addSystemProperty("performance.watcher.unresponsive.interval.ms", interval.inWholeMilliseconds)
   }
 
   fun disableFreezeReportingProfiling() {
