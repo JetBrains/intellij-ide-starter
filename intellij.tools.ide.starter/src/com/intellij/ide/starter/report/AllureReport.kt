@@ -16,7 +16,7 @@ object AllureReport {
 
   private val ignoreLabels = setOf("layer", "AS_ID")
 
-  fun reportFailure(contextName: String, message: String, stackTrace: String, link: String? = null) {
+  fun reportFailure(contextName: String, message: String, stackTrace: String, link: String? = null, suffix: String = "Exception") {
     try {
       val uuid = UUID.randomUUID().toString()
       val result = TestResult()
@@ -44,7 +44,7 @@ object AllureReport {
       Allure.label("layer", "Exception")
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
-        it.name = "Exception in ${testName.ifBlank { contextName }}"
+        it.name = "$suffix in ${testName.ifBlank { contextName }}"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
         it.fullName = fullName.ifBlank { contextName } + ".exception"
         it.testCaseName = testCaseName
