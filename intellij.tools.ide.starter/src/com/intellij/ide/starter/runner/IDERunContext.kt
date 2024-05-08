@@ -261,17 +261,31 @@ data class IDERunContext(
       throw Exception(getErrorMessage(exception, ciFailureDetails), exception)
     }
     finally {
-      EventsBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
+      try {
+        EventsBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
 
-      if (isRunSuccessful) {
-        validateVMOptionsWereSet(this)
+        if (isRunSuccessful) {
+          validateVMOptionsWereSet(this)
+        }
+        testContext.collectJBRDiagnosticFiles(ideProcessId)
+
+        deleteJVMCrashes()
+        ErrorReporter.instance.reportErrorsAsFailedTests(this)
       }
-      testContext.collectJBRDiagnosticFiles(ideProcessId)
-
-      deleteJVMCrashes()
-      ErrorReporter.instance.reportErrorsAsFailedTests(this)
-      publishArtifacts()
-      AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
+      catch (e: Exception) {
+        logError("Fail to execute finally block of runIDE $contextName", e)
+        throw e
+      }
+      finally {
+        kotlin.runCatching {
+          publishArtifacts()
+          AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
+        }.onFailure {
+          logError("Fail to execute publishArtifacts run for $contextName", it)
+        }.onSuccess {
+          logOutput("Successfully finished publishArtifacts run for $contextName")
+        }
+      }
     }
   }
 
