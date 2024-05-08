@@ -133,7 +133,7 @@ object ErrorReporterToCI: ErrorReporter {
                                             details = stackTraceContent)
         AllureReport.reportFailure(runContext.contextName, messageText,
                                    stackTraceContent,
-                                   failureDetailsProvider.getLinkToCIArtifacts(runContext))
+                                   link = failureDetailsProvider.getLinkToCIArtifacts(runContext))
       }
     }
   }
