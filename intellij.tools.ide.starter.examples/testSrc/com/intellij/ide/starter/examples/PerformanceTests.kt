@@ -95,6 +95,9 @@ class PerformanceTests {
     writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import/firstImport", firstImport)))
   }
 
+  /**
+   * Test works since 2024.1
+   */
   @Test
   fun runRunConfiguration() {
     val configurationName = "SimpleRun"
@@ -104,17 +107,25 @@ class PerformanceTests {
       .stopProfile()
       .exitApp()
     val result = context.runIDE(commands = startRunConfiguration, launchName = "runConfiguration")
-    var metric = -1L
-    result.runContext.logsDir.forEachDirectoryEntry {
-      if(it.isRegularFile()){
-        it.forEachLine {
-          if(it.contains("processTerminated in: $configurationName:")) {
-            metric = it.split(":").last().trim().toLong()
+    // 2024.2+
+    val metricsFromOt = getMetricsFromSpanAndChildren(
+      (result.runContext.logsDir / "opentelemetry.json"),
+      SpanFilter.nameEquals("runRunConfiguration")
+    )
+    val metrics = metricsFromOt.ifEmpty {
+      //backward compatibility with 2024.1
+      result.runContext.logsDir.forEachDirectoryEntry {
+        if(it.isRegularFile()){
+          it.forEachLine {
+            if(it.contains("processTerminated in:")) {
+              return@ifEmpty listOf(Metric.newDuration("runConfiguration", it.split(":").last().trim().toLong()))
+            }
           }
         }
       }
+      return@ifEmpty emptyList<Metric>()
     }
-    writeMetricsToCSV(result, listOf(Metric.newDuration("runConfiguration", metric)))
+    writeMetricsToCSV(result, metrics)
   }
 
   @Test
