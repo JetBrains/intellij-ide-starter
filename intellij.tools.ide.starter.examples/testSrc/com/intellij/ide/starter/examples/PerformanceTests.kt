@@ -76,23 +76,27 @@ class PerformanceTests {
   fun reloadMavenProject() {
     val reloadMavenProject = CommandChain()
       .startProfile("reloadMavenProject")
+      .importMavenProject()
       .checkoutBranch("43b46f36cef25076a8014e247c4fdf4499d924da", "temp")
       .waitForSmartMode()
       .importMavenProject()
       .stopProfile()
       .exitApp()
-    val result = context.runIDE(commands = reloadMavenProject, launchName = "reloadMavenProject")
-    val firstImport = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
+    val result = context.runIDE(commands = reloadMavenProject, launchName = "reloadMavenProject") {
+      addVMOptionsPatch {
+        skipIndicesInitialization(true)
+        disableAutoImport(true)
+      }
+    }
+    val totalImport = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
       .filterByEventId("import_project.finished").sortedBy {
         it.time
-      }.first().getDataFromEvent<Long>(EventFields.DurationMs.name)
-    val lastImport = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
-      .filterByEventId("import_project.finished").sortedBy {
-        it.time
-      }.last().getDataFromEvent<Long>(EventFields.DurationMs.name)
-    Git.checkout(context.resolvedProjectHome, "master")
-    writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import/lastImport", lastImport)))
-    writeMetricsToCSV(result, listOf(Metric.newDuration("maven.import/firstImport", firstImport)))
+      }.sumOf { it.getDataFromEvent<Long>(EventFields.DurationMs.name) }
+    val testTime = getMetricsFromSpanAndChildren(
+      (result.runContext.logsDir / "opentelemetry.json"),
+      SpanFilter.nameEquals("performance_test")
+    )
+    writeMetricsToCSV(result, listOf(Metric.newDuration("totalImport", totalImport))+ testTime)
   }
 
   /**
