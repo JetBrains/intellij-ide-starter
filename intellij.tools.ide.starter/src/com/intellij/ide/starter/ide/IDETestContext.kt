@@ -240,6 +240,10 @@ class IDETestContext(
     configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
   }
 
+  fun enableEventBusDebugLogs() = applyVMOptionsPatch {
+    addSystemProperty("eventbus.debug", true)
+  }
+
   fun enableExternalSystemVerboseLogs() = applyVMOptionsPatch {
     configureLoggers(LogLevel.TRACE, "com.intellij.openapi.externalSystem")
   }
