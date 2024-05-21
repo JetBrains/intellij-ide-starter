@@ -2,7 +2,6 @@ package com.intellij.ide.starter.examples.junit5
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.intellij.ide.starter.examples.data.TestCases
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.getName
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.IDERunContext
@@ -20,7 +19,6 @@ import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
 
-@ExtendWith(JUnit5StarterAssistant::class)
 class StartupPerformanceTest {
   @Test
   fun testStartupPerformance() {

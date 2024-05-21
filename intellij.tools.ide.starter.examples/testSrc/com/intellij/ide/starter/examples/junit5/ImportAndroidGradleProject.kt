@@ -2,7 +2,6 @@ package com.intellij.ide.starter.examples.junit5
 
 import com.intellij.ide.starter.frameworks.AndroidFramework
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.Starter
@@ -13,7 +12,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(JUnit5StarterAssistant::class)
 class ImportAndroidGradleProject {
 
 

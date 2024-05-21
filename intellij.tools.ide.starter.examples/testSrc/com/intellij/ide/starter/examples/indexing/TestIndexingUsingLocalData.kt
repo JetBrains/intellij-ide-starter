@@ -6,7 +6,6 @@ import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -19,7 +18,6 @@ import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.nio.file.Paths
 
-@ExtendWith(JUnit5StarterAssistant::class)
 @Disabled("Requires local installation of IDE, configs and project")
 class TestIndexing {
   init {
