@@ -16,6 +16,20 @@ import kotlin.time.Duration.Companion.seconds
 
 // TODO: consider using https://github.com/oshi/oshi for acquiring process info
 
+fun getProcessList(): ArrayList<ProcessMetaInfo> {
+  val processes = arrayListOf<ProcessMetaInfo>()
+  if (SystemInfo.isWindows) catchAll {
+    processes += dumpListOfProcessesOnWindows()
+  }
+  else if (SystemInfo.isLinux) catchAll {
+    processes += dumpListOfProcessesOnLinux()
+  }
+  else catchAll {
+    processes += dumpListOfProcessesOnMacOS()
+  }
+  return processes
+}
+
 /**
  * CI may not kill processes started during the build (for TeamCity: TW-69045).
  * They stay alive and consume resources after tests.
