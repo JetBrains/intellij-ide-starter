@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.driver.engine
 
 import com.intellij.driver.client.Driver
+import com.intellij.ide.starter.driver.waitForCondition
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.process.exec.ProcessExecutor.Companion.killProcessGracefully
 import com.intellij.ide.starter.utils.catchAll
@@ -8,11 +9,10 @@ import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
-import org.awaitility.Awaitility
-import java.util.concurrent.TimeUnit
 import kotlin.let
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 open class BackgroundRun(val startResult: Deferred<IDEStartResult>, val driver: Driver, val process: ProcessHandle? = null) {
   open fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration = 1.minutes, block: Driver.() -> R): IDEStartResult {
@@ -38,10 +38,7 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, val driver: 
         takeScreenshot("beforeIdeClosed")
       }
       exitApplication()
-      Awaitility.await()
-        .pollInterval(3, TimeUnit.SECONDS)
-        .atMost(closeIdeTimeout.inWholeSeconds, TimeUnit.SECONDS)
-        .until { !isConnected }
+      waitForCondition(closeIdeTimeout, 3.seconds) { !isConnected }
     }
     catch (t: Throwable) {
       logError("Error on exit application via Driver", t)

@@ -2,6 +2,7 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler
+import com.intellij.ide.starter.driver.waitForCondition
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDECommandLine
@@ -12,12 +13,13 @@ import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import org.awaitility.Awaitility.await
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class IDERemoteClientHandler(private val hostContext: IDETestContext, private val clientContext: IDETestContext) {
 
@@ -67,32 +69,23 @@ class IDERemoteClientHandler(private val hostContext: IDETestContext, private va
   }
 
   private fun awaitForLogFile(logFile: Path) {
-    await()
-      .pollInterval(1, TimeUnit.SECONDS)
-      .atMost(30, TimeUnit.SECONDS)
-      .until { logFile.exists() }
+    waitForCondition(30.seconds, 1.seconds) { logFile.exists() }
   }
 
   private fun awaitHostStart() {
-    await()
-      .pollInterval(1, TimeUnit.SECONDS)
-      .atMost(2, TimeUnit.MINUTES)
-      .until { this::hostRunContext.isInitialized }
+    waitForCondition(2.minutes, 1.seconds) { this::hostRunContext.isInitialized }
   }
 
   private fun awaitJoinLink(logFile: Path): String {
     awaitForLogFile(logFile)
     val linkEntryPrefix = "Join link: tcp"
     var linkEntry: String? = null
-    await()
-      .pollInterval(1, TimeUnit.SECONDS)
-      .atMost(14, TimeUnit.SECONDS)
-      .until {
-        val logLines = Files.readAllLines(logFile)
-        val foundEntry = logLines.find { it.contains(linkEntryPrefix) }
-        linkEntry = foundEntry
-        linkEntry != null
-      }
+    waitForCondition(14.seconds, 1.seconds) {
+      val logLines = Files.readAllLines(logFile)
+      val foundEntry = logLines.find { it.contains(linkEntryPrefix) }
+      linkEntry = foundEntry
+      linkEntry != null
+    }
     val match = "tcp://.+".toRegex().find(linkEntry!!)
     if (match?.value == null) {
       error("Couldn't find link from entry: $linkEntry")
