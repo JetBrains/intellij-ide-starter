@@ -25,7 +25,7 @@ object XorgWindowManagerHandler {
 
   private val displayNumber = AtomicInteger(10)
   // see LinuxIdeDistribution.linuxCommandLine()
-  private val resolution = "1920x1080"
+  private val resolution = "1920x1080x24"
 
   // region xvfb
   private val xvbName = "Xvfb"
