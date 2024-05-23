@@ -28,19 +28,21 @@ object XorgWindowManagerHandler {
   private val resolution = "1920x1080x24"
 
   // region xvfb
-  private val xvbName = "Xvfb"
+  private val xvfbName = "Xvfb"
 
 
 
   private fun getRunningDisplays(): List<Int> {
+    logOutput("Looking for running displays")
     val found = getProcessList()
-      .filter { it.command.contains(xvbName) }.map {
+      .filter { it.command.contains(xvfbName) }.map {
+        logOutput(it.command)
         it.command.split(" ")
           .single { arg -> arg.startsWith(":") }
           .drop(1)
           .toInt()
       }
-    logOutput("Found $xvbName displays: $found")
+    logOutput("Found $xvfbName displays: $found")
     return found
   }
 
@@ -54,15 +56,15 @@ object XorgWindowManagerHandler {
     val display = ":$number"
     perTestSupervisorScope.async {
       ProcessExecutor(
-        presentableName = "Run $xvbName",
+        presentableName = "Run $xvfbName",
         timeout = 2.hours,
-        args = listOf("/usr/bin/$xvbName", display, "-ac", "-screen", "0", resolution, "-nolisten", "tcp", "-wr"),
+        args = listOf("/usr/bin/$xvfbName", display, "-ac", "-screen", "0", resolution, "-nolisten", "tcp", "-wr"),
         workDir = null,
-        stdoutRedirect = ExecOutputRedirect.ToStdOut("[$xvbName]"),
-        stderrRedirect = ExecOutputRedirect.ToStdOut("[$xvbName-err]")
+        stdoutRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName]"),
+        stderrRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName-err]")
       ).start()
     }
-    logOutput("Started $xvbName display: $display")
+    logOutput("Started $xvfbName display: $display")
     return number
   }
 
