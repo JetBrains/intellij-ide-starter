@@ -73,8 +73,7 @@ class RemDevDriverRunner : DriverRunner {
 
   private fun getClientExecutableFileName(ideInfo: IdeInfo, fromInstaller: Boolean) =
     when {
-      SystemInfo.isLinux && fromInstaller -> "jetbrains_client"
-      SystemInfo.isWindows && fromInstaller -> "jetbrains_client64"
+      (SystemInfo.isLinux || SystemInfo.isWindows) && fromInstaller -> "jetbrains_client"
       else -> ideInfo.executableFileName
     }
 
