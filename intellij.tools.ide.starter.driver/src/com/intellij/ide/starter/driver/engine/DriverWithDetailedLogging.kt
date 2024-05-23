@@ -60,7 +60,7 @@ internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by
 
   private fun saveHierarchy(path: String) {
     try {
-      ui.robotService.saveHierarchy(path)
+      ui.robotProvider.saveHierarchy(path)
     }
     catch (_: Throwable) {
     }
