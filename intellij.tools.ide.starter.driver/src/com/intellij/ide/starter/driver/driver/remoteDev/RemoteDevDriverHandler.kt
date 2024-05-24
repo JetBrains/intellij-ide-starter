@@ -14,7 +14,6 @@ class RemoteDevDriverOptions : DriverOptions() {
 class RemoteDevDriverHandler : DriverHandler() {
   companion object {
     fun rdctVmOptions(options: RemoteDevDriverOptions): Map<String, String> =
-      mapOf("rdct.tests.backendJmxPort" to options.hostDriverPort.toString(),
-            "rdct.tests.frontendJmxPort" to options.driverPort.toString())
+      mapOf("rdct.tests.backendJmxPort" to options.hostDriverPort.toString())
   }
 }
