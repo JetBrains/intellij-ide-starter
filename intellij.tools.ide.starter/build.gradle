@@ -6,6 +6,7 @@ group = "com.jetbrains.intellij.tools"
 buildscript {
   ext.kotlin_version = '1.9.10'
   ext.jackson_version = '2.16.0'
+  ext.otel_version = '1.37.0'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
@@ -52,6 +53,9 @@ dependencies {
   implementation "com.jetbrains.qodana:qodana-sarif:0.2.100"
   implementation 'commons-io:commons-io:2.15.0'
   implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
+  implementation "io.opentelemetry:opentelemetry-api:$otel_version"
+  implementation "io.opentelemetry:opentelemetry-sdk:$otel_version"
+
   implementation 'io.qameta.allure:allure-java-commons:2.25.0'
   api("com.jetbrains.intellij.tools:ide-starter-bus:LATEST-TRUNK-SNAPSHOT")
   // TODO: change versions to LATEST-EAP-SNAPSHOT or remove completely in next EAP

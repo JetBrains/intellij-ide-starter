@@ -41,22 +41,27 @@ data class IdeInfo(
   companion object
 
   val installerFilePrefix
-    get() = when (productCode) {
-      "IU" -> "ideaIU"
-      "IC" -> "ideaIC"
-      "WS" -> "WebStorm"
-      "PS" -> "PhpStorm"
-      "DB" -> "datagrip"
-      "GO" -> "goland"
-      "RM" -> "RubyMine"
-      "PY" -> "pycharmPY"
-      "CL" -> "CLion"
-      "DS" -> "dataspell"
-      "PC" -> "pycharmPC"
-      "QA" -> "aqua"
-      "RR" -> "RustRover"
-      "AI" -> "AndroidStudio"
-      else -> error("Unknown product code: $productCode")
+    get() = if (platformPrefix == "JetBrainsClient") {
+      "JetBrainsClient"
+    }
+    else {
+      when (productCode) {
+        "IU" -> "ideaIU"
+        "IC" -> "ideaIC"
+        "WS" -> "WebStorm"
+        "PS" -> "PhpStorm"
+        "DB" -> "datagrip"
+        "GO" -> "goland"
+        "RM" -> "RubyMine"
+        "PY" -> "pycharmPY"
+        "CL" -> "CLion"
+        "DS" -> "dataspell"
+        "PC" -> "pycharmPC"
+        "QA" -> "aqua"
+        "RR" -> "RustRover"
+        "AI" -> "AndroidStudio"
+        else -> error("Unknown product code: $productCode")
+      }
     }
 
   val installerProductName

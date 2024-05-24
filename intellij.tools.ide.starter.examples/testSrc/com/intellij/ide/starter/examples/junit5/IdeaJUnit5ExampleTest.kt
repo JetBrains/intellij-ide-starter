@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.examples.junit5
 
 import com.intellij.ide.starter.examples.data.TestCases
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(JUnit5StarterAssistant::class)
 class IdeaJUnit5ExampleTest {
   @Test
   fun openGradleJitPack() {

@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.examples.indexing
 
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.junit5.JUnit5StarterAssistant
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 
-@ExtendWith(JUnit5StarterAssistant::class)
 @Disabled("Requires local installation of IDE, configs and project")
 class ScalabilityTest {
   @Test

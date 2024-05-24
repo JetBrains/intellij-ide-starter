@@ -19,7 +19,7 @@ class WindowsIdeDistribution : IdeDistribution() {
 
     val executablePath = allBinFiles.singleOrNull { file ->
       file.fileName.toString() == "${executableFileName}64.exe"
-    } ?: error("Failed to detect executable name, ending with 64.exe in:\n${allBinFiles.joinToString("\n")}")
+    } ?: error("Failed to detect executable ${executableFileName}64.exe:\n${allBinFiles.joinToString("\n")}")
 
     return object : InstalledIde {
       override val bundledPluginsDir = unpackDir.resolve("plugins")

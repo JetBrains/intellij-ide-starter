@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer.Companion.processStringForTC
+import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.tools.ide.util.common.logError
@@ -16,9 +17,10 @@ object AllureReport {
 
   private val ignoreLabels = setOf("layer", "AS_ID")
 
-  fun reportFailure(contextName: String, message: String, stackTrace: String, link: String? = null, suffix: String = "Exception") {
+  fun reportFailure(contextName: String, message: String, originalStackTrace: String, link: String? = null, suffix: String = "Exception") {
     try {
       val uuid = UUID.randomUUID().toString()
+      val stackTrace = "${originalStackTrace}${System.lineSeparator().repeat(2)}ContextName: ${contextName}${System.lineSeparator()}TestName: ${CurrentTestMethod.get()?.fullName()}"
       val result = TestResult()
       result.uuid = uuid
       //inherit labels from the main test case for the exception
@@ -35,8 +37,8 @@ object AllureReport {
       }
       Allure.getLifecycle().scheduleTestCase(result)
       Allure.getLifecycle().startTestCase(uuid)
-      labels.filter { label ->  !ignoreLabels.contains(label.name) }.forEach {
-          Allure.label(it.name, it.value)
+      labels.filter { label -> !ignoreLabels.contains(label.name) }.forEach {
+        Allure.label(it.name, it.value)
       }
       if (link != null) {
         Allure.link("CI server", link)
@@ -52,7 +54,8 @@ object AllureReport {
       }
       Allure.getLifecycle().stopTestCase(uuid)
       Allure.getLifecycle().writeTestCase(uuid)
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       logError("Fail to write allure", e)
     }
   }

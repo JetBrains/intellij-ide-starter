@@ -29,6 +29,14 @@ jobs:
         with:
           arguments: clean build test
           build-root-directory: intellij.tools.ide.starter.examples
+      - name: Store reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
       - name: Notify in Slack in case of failure
         uses: slackapi/slack-github-action@v1.24.0
         if: ${{ failure() }}

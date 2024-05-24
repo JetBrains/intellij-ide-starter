@@ -69,7 +69,7 @@ object TeamCityClient {
     val number = if (!ideInfo.buildNumber.isBlank()) "number:${ideInfo.buildNumber}," else ""
     val branchName = System.getProperty("use.branch.name", "")
     val branch = if (branchName.isNotEmpty()) "branch:$branchName," else ""
-    val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${ideInfo.buildType},${branch}${tag}${number}status:SUCCESS,state:(finished:true),count:1")
+    val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${ideInfo.buildType},${branch}${tag}${number}status:SUCCESS,branch:default:any,state:(finished:true),count:1")
 
     val build = get(fullUrl).fields().asSequence().first { it.key == "build" }.value
     val buildId = build.findValue("id").asText()

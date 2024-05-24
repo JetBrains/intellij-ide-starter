@@ -21,9 +21,11 @@ sourceSets {
 repositories {
   maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
   maven { url = "https://cache-redirector.jetbrains.com/intellij-dependencies" }
+  maven { url = "https://cache-redirector.jetbrains.com/download.jetbrains.com/teamcity-repository" }
 
   maven { url = "https://www.jetbrains.com/intellij-repository/releases" }
   maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }
+  maven { url = "https://download.jetbrains.com/teamcity-repository" }
 
   maven { url = "https://cache-redirector.jetbrains.com/packages.jetbrains.team/maven/p/grazi/grazie-platform-public" }
 }
@@ -40,6 +42,7 @@ dependencies {
   testImplementation 'commons-io:commons-io:2.15.0'
 
   testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+  testImplementation 'org.junit.platform:junit-platform-launcher:1.10.2'
   testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
 
   testImplementation "com.jetbrains.fus.reporting:ap-validation:76"
