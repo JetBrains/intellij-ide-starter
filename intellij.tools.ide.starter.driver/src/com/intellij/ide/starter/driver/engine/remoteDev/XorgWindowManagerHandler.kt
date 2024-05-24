@@ -25,7 +25,7 @@ object XorgWindowManagerHandler {
 
   private val displayNumber = AtomicInteger(10)
   // see LinuxIdeDistribution.linuxCommandLine()
-  private val resolution = "1920x1080x24"
+  private val resolution = "1920x1080"
 
   // region xvfb
   private val xvfbName = "Xvfb"
@@ -58,7 +58,7 @@ object XorgWindowManagerHandler {
       ProcessExecutor(
         presentableName = "Run $xvfbName",
         timeout = 2.hours,
-        args = listOf("/usr/bin/$xvfbName", display, "-ac", "-screen", "0", resolution, "-nolisten", "tcp", "-wr"),
+        args = listOf("/usr/bin/$xvfbName", display, "-ac", "-screen", "0", "${resolution}x24", "-nolisten", "tcp", "-wr"),
         workDir = null,
         stdoutRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName]"),
         stderrRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName-err]")
