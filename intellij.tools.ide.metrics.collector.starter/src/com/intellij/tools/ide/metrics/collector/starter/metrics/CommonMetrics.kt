@@ -50,7 +50,8 @@ object CommonMetrics {
                             "JVM.GC.collectionTimesMs" to MetricsSelectionStrategy.SUM,
                             "JVM.totalCpuTimeMs" to MetricsSelectionStrategy.SUM,
                             "JVM.maxHeapBytes" to MetricsSelectionStrategy.MAXIMUM,
-                            "JVM.maxThreadCount" to MetricsSelectionStrategy.MAXIMUM)
+                            "JVM.maxThreadCount" to MetricsSelectionStrategy.MAXIMUM,
+                            "JVM.totalTimeToSafepointsMs" to MetricsSelectionStrategy.SUM)
   ): List<PerformanceMetrics.Metric> {
     try {
       return metricsStrategies.flatMap { (metricName, strategy) ->
