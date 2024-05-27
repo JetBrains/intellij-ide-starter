@@ -2,8 +2,12 @@ package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.runner.SetupException
 import com.intellij.openapi.application.PathManager
+import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.tools.ide.util.common.withRetryBlocking
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
@@ -97,15 +101,20 @@ object Git {
     val arguments = mutableListOf("git", "clone", repoUrl, destinationDir.toString())
     if (branchName.isNotEmpty()) arguments.addAll(listOf("-b", branchName))
 
-    ProcessExecutor(
-      presentableName = cmdName,
-      workDir = destinationDir.parent.toAbsolutePath(),
-      timeout = timeout,
-      args = arguments,
-      stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
-      stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
-      onlyEnrichExistedEnvVariables = true
-    ).start()
+    withRetryBlocking("Git clone $repoUrl failed", rollback = {
+      logOutput("Deleting $destinationDir")
+      destinationDir.toFile().deleteRecursively()
+    }) {
+      ProcessExecutor(
+        presentableName = cmdName,
+        workDir = destinationDir.parent.toAbsolutePath(),
+        timeout = timeout,
+        args = arguments,
+        stdoutRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+        stderrRedirect = ExecOutputRedirect.ToStdOut("[$cmdName]"),
+        onlyEnrichExistedEnvVariables = true
+      ).start()
+    } ?: throw SetupException("Git clone $repoUrl failed")
   }
 
   fun status(projectDir: Path): Long {
