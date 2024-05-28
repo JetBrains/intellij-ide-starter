@@ -21,7 +21,6 @@ buildscript {
 repositories {
   maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
   maven { url = "https://cache-redirector.jetbrains.com/intellij-dependencies" }
-  maven { url = "https://cache-redirector.jetbrains.com/download.jetbrains.com/teamcity-repository" }
 
   maven { url = "https://www.jetbrains.com/intellij-repository/releases" }
   maven { url = "https://www.jetbrains.com/intellij-repository/snapshots" }
@@ -64,7 +63,6 @@ dependencies {
   implementation("com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-TRUNK-SNAPSHOT")
   implementation('com.jetbrains.intellij.platform:ide-impl:LATEST-TRUNK-SNAPSHOT')
   implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-TRUNK-SNAPSHOT')
-  implementation('com.jetbrains.intellij.platform:build-scripts-downloader:LATEST-TRUNK-SNAPSHOT')
 }
 
 configurations {

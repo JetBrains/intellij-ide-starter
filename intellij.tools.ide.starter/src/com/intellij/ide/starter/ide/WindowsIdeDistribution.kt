@@ -60,7 +60,7 @@ class WindowsIdeDistribution : IdeDistribution() {
 
         // in Android Studio bundled only JRE
         if (productCode == IdeProductProvider.AI.productCode) return jbrHome
-        return JBRDownloader.downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion)
+        return JBRResolver.downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion)
       }
     }
   }
