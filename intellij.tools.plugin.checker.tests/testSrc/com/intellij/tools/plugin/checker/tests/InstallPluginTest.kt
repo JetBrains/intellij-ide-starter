@@ -184,16 +184,6 @@ class InstallPluginTest {
         return emptyList()
       }
 
-      if (params.event.productCode == IdeProductProvider.QA.productCode) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet - it has a new license the testing framework doesn't support"))
-        return emptyList()
-      }
-
-      if (params.event.productCode == IdeProductProvider.RR.productCode) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet - it has a new license the testing framework doesn't support"))
-        return emptyList()
-      }
-
       val link = params.event.productLink.substring(0, params.event.productLink.indexOf(".tar.gz"))
       val downloadLink: String = link + when (OS.CURRENT) {
         OS.Linux -> ".tar.gz"

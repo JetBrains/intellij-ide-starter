@@ -481,6 +481,8 @@ class IDETestContext(
       IdeProductProvider.PY.productCode -> "pycharm.key"
       IdeProductProvider.DB.productCode -> "datagrip.key"
       IdeProductProvider.CL.productCode -> "clion.key"
+      IdeProductProvider.QA.productCode -> "aqua.key"
+      IdeProductProvider.RR.productCode -> "rustrover.key"
       else -> return this
     }
     val keyFile = paths.configDir.resolve(licenseKeyFileName).toFile()
