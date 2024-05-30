@@ -4,16 +4,16 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.util.system.CpuArch
-import java.nio.file.Path
-import com.intellij.openapi.util.SystemInfo
-import com.intellij.util.text.SemVer
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.getUpdateEnvVarsWithAddedPath
 import com.intellij.ide.starter.utils.updatePathEnvVariable
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.system.CpuArch
+import com.intellij.util.text.SemVer
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 
@@ -83,8 +83,8 @@ fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
   ).start()
 }
 
-fun IDETestContext.enableNewTSEvaluator() = applyVMOptionsPatch {
-  addSystemProperty("typescript.compiler.evaluation", "true")
+fun IDETestContext.setUseTypesFromServer(value: Boolean) = applyVMOptionsPatch {
+  addSystemProperty("typescript.compiler.evaluation", value.toString())
 }
 
 fun IDETestContext.updatePath(path: Path) = applyVMOptionsPatch {
