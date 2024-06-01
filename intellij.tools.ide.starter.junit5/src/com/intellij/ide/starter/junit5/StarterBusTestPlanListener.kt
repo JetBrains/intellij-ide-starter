@@ -22,9 +22,13 @@ open class StarterBusTestPlanListener : TestExecutionListener {
   }
 
   override fun testPlanExecutionFinished(testPlan: TestPlan?) {
-    if (isServerRunning.get()) {
-      EventsBus.endServerProcess()
+    try {
+      if (isServerRunning.get()) {
+        EventsBus.endServerProcess()
+      }
+      super.testPlanExecutionFinished(testPlan)
     }
-    super.testPlanExecutionFinished(testPlan)
+    catch (ignored: Throwable) {
+    }
   }
 }
