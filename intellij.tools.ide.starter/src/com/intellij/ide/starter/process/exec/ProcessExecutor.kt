@@ -6,7 +6,6 @@ import com.intellij.ide.starter.utils.getThrowableText
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
-import kotlinx.coroutines.future.await
 import java.io.IOException
 import java.lang.Runnable
 import java.nio.file.Files
@@ -36,9 +35,9 @@ class ProcessExecutor(val presentableName: String,
   companion object {
     fun killProcessGracefully(process: ProcessHandle) {
       process.destroy()
-      runBlocking(Dispatchers.IO) { withTimeout(20.seconds) { process.onExit().await() } }
-
-      process.destroyForcibly()
+      runCatching { process.onExit().get(20, TimeUnit.SECONDS) }.onFailure {
+        process.destroyForcibly()
+      }
     }
   }
 
