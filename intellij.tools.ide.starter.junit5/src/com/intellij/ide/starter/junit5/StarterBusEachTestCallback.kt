@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.junit5.StarterBusTestPlanListener.Companion.isServerRunning
-import com.intellij.ide.starter.runner.SetupException
 import com.intellij.tools.ide.starter.bus.EventsBus
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
@@ -14,9 +13,7 @@ class StarterBusEachTestCallback : BeforeEachCallback, AfterEachCallback {
       EventsBus.startServerProcess()
       isServerRunning.set(true)
     }
-    catch (t: Throwable) {
-      // Temporary ignore exception
-      //throw SetupException("Unable to start event bus server", t)
+    catch (_: Throwable) {
     }
   }
 

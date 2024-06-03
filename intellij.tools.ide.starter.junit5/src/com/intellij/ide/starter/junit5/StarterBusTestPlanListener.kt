@@ -15,7 +15,7 @@ open class StarterBusTestPlanListener : TestExecutionListener {
       EventsBus.startServerProcess()
       isServerRunning.set(true)
     }
-    catch (t: Throwable) {
+    catch (_: Throwable) {
       // Skip exceptions here to avoid failing all tests
     }
     super.testPlanExecutionStarted(testPlan)
