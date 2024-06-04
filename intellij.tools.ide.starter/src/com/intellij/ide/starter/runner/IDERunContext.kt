@@ -22,6 +22,8 @@ import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.events.*
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
+import com.intellij.ide.starter.telemetry.TestTelemetryService
+import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
@@ -216,6 +218,7 @@ data class IDERunContext(
       val finalArgs = startConfig.commandLine + commandLine(this).args
       File(finalArgs.first()).setExecutable(true)
       val executionTime = measureTime {
+        val span = TestTelemetryService.spanBuilder("ide process").startSpan()
         ProcessExecutor(
           presentableName = "run-ide-$contextName",
           workDir = startConfig.workDir,
@@ -226,18 +229,22 @@ data class IDERunContext(
           stdoutRedirect = stdout,
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
+            span.addEvent("process created")
             EventsBus.postAndWaitProcessing(
               IdeLaunchEvent(runContext = this, ideProcess = process))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
             startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig.workDir, ideProcessId, "ide")
           },
           onBeforeKilled = { process, pid ->
-            if (testContext.profilerType != ProfilerType.NONE) {
-              EventsBus.postAndWaitProcessing(StopProfilerEvent(listOf()))
+            span.end()
+            computeWithSpan("runIde post-processing") {
+              if (testContext.profilerType != ProfilerType.NONE) {
+                EventsBus.postAndWaitProcessing(StopProfilerEvent(listOf()))
+              }
+              EventsBus.postAndWaitProcessing(
+                IdeBeforeKillEvent(this, process, pid))
+              captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
             }
-            EventsBus.postAndWaitProcessing(
-              IdeBeforeKillEvent(this, process, pid))
-            captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
           },
           expectedExitCode = expectedExitCode,
         ).start()
@@ -262,28 +269,32 @@ data class IDERunContext(
     }
     finally {
       try {
-        EventsBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
+        computeWithSpan("runIde post-processing") {
+          EventsBus.postAndWaitProcessing(IdeAfterLaunchEvent(runContext = this, isRunSuccessful = isRunSuccessful))
 
-        if (isRunSuccessful) {
-          validateVMOptionsWereSet(this)
+          if (isRunSuccessful) {
+            validateVMOptionsWereSet(this)
+          }
+          testContext.collectJBRDiagnosticFiles(ideProcessId)
+
+          deleteJVMCrashes()
+          ErrorReporter.instance.reportErrorsAsFailedTests(this)
         }
-        testContext.collectJBRDiagnosticFiles(ideProcessId)
-
-        deleteJVMCrashes()
-        ErrorReporter.instance.reportErrorsAsFailedTests(this)
       }
       catch (e: Exception) {
         logError("Fail to execute finally block of runIDE $contextName", e)
         throw e
       }
       finally {
-        kotlin.runCatching {
-          publishArtifacts()
-          AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
-        }.onFailure {
-          logError("Fail to execute publishArtifacts run for $contextName", it)
-        }.onSuccess {
-          logOutput("Successfully finished publishArtifacts run for $contextName")
+        computeWithSpan("runIde post-processing") {
+          kotlin.runCatching {
+            publishArtifacts()
+            AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
+          }.onFailure {
+            logError("Fail to execute publishArtifacts run for $contextName", it)
+          }.onSuccess {
+            logOutput("Successfully finished publishArtifacts run for $contextName")
+          }
         }
       }
     }
