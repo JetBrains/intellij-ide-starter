@@ -18,6 +18,7 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.openTestCaseProject
 import com.intellij.ide.starter.runner.startIdeWithoutProject
 import com.intellij.ide.starter.telemetry.TestTelemetryService
+import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
@@ -389,11 +390,11 @@ class IDETestContext(
       try {
         val ideRunResult = runContext.runIDE()
         if (isReportPublishingEnabled) {
-          val publishSpan = TestTelemetryService.spanBuilder("publisher").startSpan()
-          for (it in publishers) {
-            it.publishResultOnSuccess(ideRunResult)
+          computeWithSpan("publisher") {
+            for (it in publishers) {
+              it.publishResultOnSuccess(ideRunResult)
+            }
           }
-          publishSpan.end()
         }
         if (ideRunResult.failureError != null) {
           throw ideRunResult.failureError
@@ -578,8 +579,7 @@ class IDETestContext(
     return this
   }
 
-  fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext {
-    val span = TestTelemetryService.spanBuilder("setupSdk").startSpan()
+  fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext = computeWithSpan("setupSdk") {
     if (sdkObjects == null) return this
     try {
       System.setProperty("DO_NOT_REPORT_ERRORS", "true")
@@ -607,7 +607,6 @@ class IDETestContext(
       this
         //some caches from IDE warmup may stay
         .wipeSystemDir()
-    span.end()
     return this
   }
 

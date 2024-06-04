@@ -11,6 +11,7 @@ import com.intellij.ide.starter.driver.engine.color
 import com.intellij.ide.starter.report.AllureHelper
 import com.intellij.ide.starter.report.AllureHelper.step
 import com.intellij.ide.starter.telemetry.TestTelemetryService
+import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.util.common.logOutput
 
@@ -18,16 +19,17 @@ fun Driver.execute(commands: CommandChain, project: Project? = null) {
   waitForProjectOpen()
   for (cmd in commands) {
     val commandString = cmd.storeToString()
-    val span = TestTelemetryService.spanBuilder("execute command").setAttribute("commands", commandString).startSpan()
-    val split = commandString.split(" ")
-    val stepName = "Execute command " + split.first()
-    step(stepName) {
-      if (split.size > 1) {
-        AllureHelper.attachText("Params", split.drop(1).joinToString(" "))
+    computeWithSpan("execute command") { span ->
+      span.setAttribute("commands", commandString)
+      val split = commandString.split(" ")
+      val stepName = "Execute command " + split.first()
+      step(stepName) {
+        if (split.size > 1) {
+          AllureHelper.attachText("Params", split.drop(1).joinToString(" "))
+        }
+        service<PlaybackRunnerService>().runScript(project ?: singleProject(), commandString)
       }
-      service<PlaybackRunnerService>().runScript(project ?: singleProject(), commandString)
     }
-    span.end()
   }
 }
 
