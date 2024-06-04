@@ -1,11 +1,13 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
 import kotlin.io.path.div
+import kotlin.io.path.exists
 
 interface JBRDownloader {
   suspend fun downloadJbr(jbrFileName: String): Path
@@ -21,7 +23,8 @@ object StarterJBRDownloader : JBRDownloader {
 
     HttpClient.downloadIfMissing(downloadUrl, localFile, retries = 1, timeout = 5.minutes)
 
-    FileSystem.unpackIfMissing(localFile, localDir)
+    if (!localDir.exists()) FileSystem.unpack(localFile, jbrCacheDirectory)
+    if (!localDir.exists()) throw SetupException("Couldn't find the extracted JDK folder at ${localDir.toAbsolutePath()}")
 
     return localDir
   }
