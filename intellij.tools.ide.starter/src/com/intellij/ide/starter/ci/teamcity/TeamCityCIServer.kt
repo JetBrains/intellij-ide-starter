@@ -73,8 +73,8 @@ open class TeamCityCIServer(
       ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME)
     }
     else {
-      val fullUrl = TeamCityClient.guestAuthUri.resolve("builds/id:${buildId}?fields=startDate")
-      TeamCityClient.get(fullUrl).fields().asSequence().firstOrNull { it.key == "startDate" }?.value?.asText()?.let {
+      val fullUrl = TeamCityClient.restUri.resolve("builds/id:${buildId}?fields=startDate")
+      TeamCityClient.get(fullUrl) { it.withAuth() }.fields().asSequence().firstOrNull { it.key == "startDate" }?.value?.asText()?.let {
         runCatching {
           ZonedDateTime.parse(it, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
         }.getOrNull()
