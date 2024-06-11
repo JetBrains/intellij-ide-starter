@@ -16,6 +16,10 @@ buildscript {
 
 sourceSets {
   test.kotlin.srcDirs += 'testSrc'
+  test.resources {
+    srcDirs "resources"
+    includes = ["**/*.*"]
+  }
 }
 
 repositories {
