@@ -8,6 +8,7 @@ import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessesIdByProcessName
+import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
@@ -35,6 +36,9 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
   companion object {
     private const val GRADLE_DAEMON_NAME = "GradleDaemon"
+    fun destroyGradleDaemonProcessIfExists() {
+      destroyProcessIfExists(GRADLE_DAEMON_NAME)
+    }
   }
 
   init {
