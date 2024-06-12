@@ -11,6 +11,12 @@ interface ReportPublisher {
   fun publishResultOnSuccess(ideStartResult: IDEStartResult)
 
   /**
+   * Publish a report if run threw an exception [throwable]
+   * @see com.intellij.ide.starter.runner.IDERunContext.runIDE
+   */
+  fun publishResultOnException(context: IDERunContext, throwable: Throwable) {}
+
+  /**
    * Publish report even if error occurred during run ide
    */
   fun publishAnywayAfterRun(context: IDERunContext)

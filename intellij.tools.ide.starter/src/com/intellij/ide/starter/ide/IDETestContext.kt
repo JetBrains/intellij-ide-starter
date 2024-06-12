@@ -401,6 +401,12 @@ class IDETestContext(
         }
         return ideRunResult
       }
+      catch (throwable: Throwable) {
+        if (isReportPublishingEnabled) publishers.forEach {
+          it.publishResultOnException(runContext, throwable)
+        }
+        throw throwable
+      }
       finally {
         if (isReportPublishingEnabled) publishers.forEach {
           it.publishAnywayAfterRun(runContext)
