@@ -452,13 +452,13 @@ data class IDERunContext(
    * Make sure that tests are run with: `-Djava.awt.headless=false` option
    */
   fun withScreenRecording() {
-    val screenRecorder = IDEScreenRecorder(this)
+    val screenRecorder = runCatching { IDEScreenRecorder(this) }.getOrNull()
     EventsBus.subscribe(IDERunContext::javaClass) { _: IdeBeforeLaunchEvent ->
-      screenRecorder.start()
+      screenRecorder?.start()
     }
 
     EventsBus.subscribe(IDERunContext::javaClass) { _: IdeAfterLaunchEvent ->
-      screenRecorder.stop()
+      screenRecorder?.stop()
     }
   }
 }
