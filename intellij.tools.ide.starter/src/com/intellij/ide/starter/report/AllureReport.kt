@@ -44,13 +44,14 @@ object AllureReport {
         Allure.link("CI server", link)
       }
       Allure.label("layer", "Exception")
+      val hash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
         it.name = "$suffix in ${testName.ifBlank { contextName }}"
         it.statusDetails = StatusDetails().setMessage(message).setTrace(stackTrace)
-        it.fullName = fullName.ifBlank { contextName } + ".exception"
+        it.fullName = fullName.ifBlank { contextName } + ".${hash}" + ".${suffix.lowercase()}"
         it.testCaseName = testCaseName
-        it.historyId = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
+        it.historyId = hash
       }
       Allure.getLifecycle().stopTestCase(uuid)
       Allure.getLifecycle().writeTestCase(uuid)
