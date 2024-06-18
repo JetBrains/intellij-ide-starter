@@ -45,7 +45,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     if (javaScreenRecorder != null) {
       javaScreenRecorder?.start()
     }
-    else {
+    else if (SystemInfo.isLinux) {
       ffmpegProcess = runCatching { startFFMpegRecording(runContext) }.getOrElse {
         logOutput("Can't start ffmpeg recording: ${it.message}")
         null
