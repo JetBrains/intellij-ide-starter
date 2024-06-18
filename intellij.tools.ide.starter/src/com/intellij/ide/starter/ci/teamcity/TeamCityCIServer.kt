@@ -60,7 +60,7 @@ open class TeamCityCIServer(
   }
 
   override fun isTestFailureShouldBeIgnored(message: String): Boolean {
-    listOfPatternsWhichShouldBeIgnored.forEach { pattern ->
+    getListOfPatternsWhichShouldBeIgnored().forEach { pattern ->
       if (pattern.containsMatchIn(message)) {
         return true
       }
@@ -83,7 +83,7 @@ open class TeamCityCIServer(
     }
   }
 
-  private val listOfPatternsWhichShouldBeIgnored by lazy {
+  private fun getListOfPatternsWhichShouldBeIgnored(): MutableList<Regex> {
     val ignoredPattern = System.getenv("IGNORED_TEST_FAILURE_PATTERN")
     logOutput("DEBUG: ignored patterns form ENV $ignoredPattern")
     val patterns = mutableListOf(
@@ -100,7 +100,7 @@ open class TeamCityCIServer(
         patterns.add(it.toRegex())
       }
     }
-    patterns
+    return patterns
   }
 
   private fun loadProperties(propertiesPath: Path): Map<String, String> =
