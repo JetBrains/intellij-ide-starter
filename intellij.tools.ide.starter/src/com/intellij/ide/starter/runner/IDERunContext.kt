@@ -57,7 +57,7 @@ data class IDERunContext(
   val launchName: String = "",
   val expectedKill: Boolean = false,
   val expectedExitCode: Int = 0,
-  val collectNativeThreads: Boolean = false
+  val collectNativeThreads: Boolean = false,
 ) {
   val contextName: String
     get() = if (launchName.isNotEmpty()) {
@@ -327,12 +327,14 @@ data class IDERunContext(
     }
   }
 
-  private suspend fun captureDiagnosticOnKill(logsDir: Path,
-                                              jdkHome: Path,
-                                              startConfig: IDEStartConfig,
-                                              pid: Long,
-                                              process: Process,
-                                              snapshotsDir: Path) {
+  private suspend fun captureDiagnosticOnKill(
+    logsDir: Path,
+    jdkHome: Path,
+    startConfig: IDEStartConfig,
+    pid: Long,
+    process: Process,
+    snapshotsDir: Path,
+  ) {
 
     catchAll {
       takeScreenshot(logsDir)
@@ -378,12 +380,14 @@ data class IDERunContext(
     }
   }
 
-  suspend fun startCollectThreadDumpsLoop(logsDir: Path,
-                                          process: Process,
-                                          jdkHome: Path,
-                                          workDir: Path,
-                                          collectingProcessId: Long,
-                                          processName: String) {
+  suspend fun startCollectThreadDumpsLoop(
+    logsDir: Path,
+    process: Process,
+    jdkHome: Path,
+    workDir: Path,
+    collectingProcessId: Long,
+    processName: String,
+  ) {
     val monitoringThreadDumpDir = logsDir.resolve(processName).resolve("monitoring-thread-dumps").createDirectoriesIfNotExist()
 
     var cnt = 0
@@ -448,17 +452,14 @@ data class IDERunContext(
     addSystemProperty("idea.log.path", logsDir)
   }
 
-  /**
-   * Make sure that tests are run with: `-Djava.awt.headless=false` option
-   */
   fun withScreenRecording() {
-    val screenRecorder = runCatching { IDEScreenRecorder(this) }.getOrNull()
-    EventsBus.subscribe(IDERunContext::javaClass) { _: IdeBeforeLaunchEvent ->
-      screenRecorder?.start()
+    val screenRecorder = IDEScreenRecorder(this)
+    EventsBus.subscribe(IDERunContext::javaClass) { _: IdeLaunchEvent ->
+      screenRecorder.start()
     }
-
     EventsBus.subscribe(IDERunContext::javaClass) { _: IdeAfterLaunchEvent ->
-      screenRecorder?.stop()
+      screenRecorder.stop()
     }
   }
+
 }

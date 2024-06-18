@@ -5,6 +5,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
+import com.intellij.ide.starter.utils.getRunningDisplays
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.async
@@ -15,10 +16,8 @@ import kotlin.collections.single
 import kotlin.collections.singleOrNull
 import kotlin.io.path.div
 import kotlin.io.path.pathString
-import kotlin.text.drop
 import kotlin.text.split
 import kotlin.text.startsWith
-import kotlin.text.toInt
 import kotlin.time.Duration.Companion.hours
 
 object XorgWindowManagerHandler {
@@ -30,21 +29,6 @@ object XorgWindowManagerHandler {
   // region xvfb
   private val xvfbName = "Xvfb"
 
-
-
-  private fun getRunningDisplays(): List<Int> {
-    logOutput("Looking for running displays")
-    val found = getProcessList()
-      .filter { it.command.contains(xvfbName) }.map {
-        logOutput(it.command)
-        it.command.split(" ")
-          .single { arg -> arg.startsWith(":") }
-          .drop(1)
-          .toInt()
-      }
-    logOutput("Found $xvfbName displays: $found")
-    return found
-  }
 
   fun provideDisplay(): Int {
     val displays = getRunningDisplays()
