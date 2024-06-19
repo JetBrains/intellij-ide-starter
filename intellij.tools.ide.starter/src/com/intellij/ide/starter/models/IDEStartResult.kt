@@ -20,6 +20,11 @@ data class IDEStartResult(
 
   val mainReportAttributes get() = mapOf("execution time" to executionTime.toString())
 
+  /**
+   * @return client result if run was in split mode, or receiver if we ran monolithic ide (when frontend and backend are the same)
+   */
+  fun frontendResult(): IDEStartResult = clientResult ?: this
+
   private fun logVmOptionDiff(vmOptionsDiff: VMOptionsDiff?) {
     if (vmOptionsDiff != null && !vmOptionsDiff.isEmpty) {
       logOutput("VMOptions were changed:")
