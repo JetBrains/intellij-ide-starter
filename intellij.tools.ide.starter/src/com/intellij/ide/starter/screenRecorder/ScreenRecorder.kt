@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.screenRecorder
 
+import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.ide.starter.utils.getRunningDisplays
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import org.monte.media.Format
@@ -53,14 +53,15 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     }
   }
 
-  fun stop(){
+  fun stop() {
     javaScreenRecorder?.stop()
     ffmpegProcess?.destroy()
   }
 
   private fun startFFMpegRecording(ideRunContext: IDERunContext): Process? {
     val resolution = "1920x1080"
-    val displayWithColumn = ":" + (getRunningDisplays().firstOrNull() ?: "0")
+    val isXvfbRunIgnored = System.getenv("DISPLAY") != null || StarterConfigurationStorage.shouldIgnoreXvfbRun()
+    val displayWithColumn = ":" + if (isXvfbRunIgnored) "0" else "88"
     val recordingFile = ideRunContext.logsDir / "screen.mkv"
     val ffmpegLogFile = (ideRunContext.logsDir / "ffmpeg.log").also { it.createFile() }
     val args = listOf("/usr/bin/ffmpeg", "-f", "x11grab", "-video_size", resolution, "-framerate", "3", "-i",
