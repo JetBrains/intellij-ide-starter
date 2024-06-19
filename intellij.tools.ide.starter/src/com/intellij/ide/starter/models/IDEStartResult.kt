@@ -10,7 +10,9 @@ data class IDEStartResult(
   val runContext: IDERunContext,
   val executionTime: Duration = 0.minutes,
   val vmOptionsDiff: VMOptionsDiff? = null,
-  val failureError: Throwable? = null
+  val failureError: Throwable? = null,
+  /** property is not null for split mode */
+  var clientResult: IDEStartResult? = null,
 ) {
   val context: IDETestContext get() = runContext.testContext
 

@@ -31,8 +31,8 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
       remoteClientDriver.closeIdeAndWait(closeIdeTimeout, false)
       hostDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
     }
-    runBlocking { hostResult.await() }
-    return runBlocking { return@runBlocking clientResult.await() }
+    val clientResult = runBlocking { return@runBlocking clientResult.await() }
+    return runBlocking { hostResult.await().apply { this.clientResult = clientResult } }
   }
 
   private fun projectOpenAwaitOnFrontend() {
