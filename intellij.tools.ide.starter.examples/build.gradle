@@ -40,6 +40,10 @@ dependencies {
   testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-metrics-collector-starter:LATEST-EAP-SNAPSHOT'
   testImplementation 'com.jetbrains.intellij.tools:ide-performance-testing-commands:LATEST-EAP-SNAPSHOT'
+  testImplementation 'com.jetbrains.intellij.tools:ide-starter-driver:LATEST-EAP-SNAPSHOT'
+  testImplementation 'com.jetbrains.intellij.driver:driver-client:LATEST-EAP-SNAPSHOT'
+  testImplementation 'com.jetbrains.intellij.driver:driver-sdk:LATEST-EAP-SNAPSHOT'
+  testImplementation 'com.jetbrains.intellij.driver:driver-model:LATEST-EAP-SNAPSHOT'
   testImplementation "org.kodein.di:kodein-di-jvm:7.20.2"
 
   testImplementation 'junit:junit:4.13.2'
