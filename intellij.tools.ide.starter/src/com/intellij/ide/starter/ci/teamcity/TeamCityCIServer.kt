@@ -85,7 +85,7 @@ open class TeamCityCIServer(
 
   private fun getListOfPatternsWhichShouldBeIgnored(): MutableList<Regex> {
     val ignoredPattern = System.getenv("IGNORED_TEST_FAILURE_PATTERN")
-    logOutput("DEBUG: ignored patterns form ENV $ignoredPattern")
+    logOutput("DEBUG: ignored patterns from ENV $ignoredPattern")
     val patterns = mutableListOf(
       "No files have been downloaded for .+:.+".toRegex(),
       "Library '.+' resolution failed".toRegex(),
