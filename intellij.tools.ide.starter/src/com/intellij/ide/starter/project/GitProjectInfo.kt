@@ -36,6 +36,11 @@ data class GitProjectInfo(
   override val downloadTimeout: Duration = 10.minutes,
 
   /**
+   * Set to true if you test don't need full VCS history and branches and project doesn't use submodules.
+   */
+  val shallow: Boolean = false,
+
+  /**
    * Relative path inside Image file, where project home is located
    */
   val projectHomeRelativePath: (Path) -> Path = { it },
@@ -54,7 +59,7 @@ data class GitProjectInfo(
     get() = repositoryRootDir.let(projectHomeRelativePath)
 
   private fun cloneRepo(projectHome: Path) {
-    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, timeout = downloadTimeout)
+    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, shallow = false, timeout = downloadTimeout)
   }
 
   private fun setupRepositoryState(projectHome: Path) {

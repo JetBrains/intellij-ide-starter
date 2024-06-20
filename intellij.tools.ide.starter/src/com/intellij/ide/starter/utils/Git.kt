@@ -4,10 +4,8 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.SetupException
 import com.intellij.openapi.application.PathManager
-import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.tools.ide.util.common.withRetryBlocking
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
@@ -95,11 +93,12 @@ object Git {
     return Path(stdout.read().split("\n").first().trim()).toAbsolutePath()
   }
 
-  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "", timeout: Duration = 10.minutes) {
+  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "", shallow: Boolean, timeout: Duration = 10.minutes) {
     val cmdName = "git-clone"
 
     val arguments = mutableListOf("git", "clone", repoUrl, destinationDir.toString())
     if (branchName.isNotEmpty()) arguments.addAll(listOf("-b", branchName))
+    if (shallow) arguments.addAll(listOf("--depth", "1"))
 
     withRetryBlocking("Git clone $repoUrl failed", rollback = {
       logOutput("Deleting $destinationDir")
