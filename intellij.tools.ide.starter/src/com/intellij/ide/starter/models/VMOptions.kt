@@ -393,6 +393,11 @@ data class VMOptions(
   }
 
 
+  fun setLockingMode(mode: Int){
+    addLine("-XX:+UnlockExperimentalVMOptions")
+    addLine("-XX:LockingMode=$mode")
+  }
+
   fun addSharedArchiveFile(pathToArchive: Path) {
     addLine("-XX:SharedArchiveFile=${pathToArchive}")
   }
