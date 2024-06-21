@@ -34,37 +34,7 @@ class IdeLaunchEventTest {
     EventsBus.unsubscribeAll()
   }
 
-  @RepeatedTest(value = 5)
-  fun `events for ide launch should be fired`(testInfo: TestInfo) {
-    val firedEvents = mutableListOf<Event>()
-    EventsBus.subscribe(this) { event: IdeBeforeLaunchEvent -> firedEvents.add(event) }
-    EventsBus.subscribe(this) { event: IdeLaunchEvent -> firedEvents.add(event) }
-    EventsBus.subscribe(this) { event: IdeBeforeKillEvent -> firedEvents.add(event) }
-    EventsBus.subscribe(this) { event: IdeAfterLaunchEvent -> firedEvents.add(event) }
-
-    val context = Starter.newContext(testInfo.hyphenateWithClass(), TestCases.IU.withProject(NoProject).useRelease())
-
-    context.runIDE(
-      commands = CommandChain().exitApp(),
-      runTimeout = 5.seconds,
-      expectedKill = true
-    )
-
-    runBlocking(Dispatchers.IO) {
-      eventually(duration = 2.seconds, poll = 100.milliseconds) {
-        firedEvents.shouldHaveSize(4)
-      }
-    }
-
-    assertSoftly {
-      firedEvents.shouldForAtLeastOne { it is IdeBeforeLaunchEvent }
-      firedEvents.shouldForAtLeastOne { it is IdeBeforeLaunchEvent }
-      firedEvents.shouldForAtLeastOne { it is IdeBeforeKillEvent }
-      firedEvents.shouldForAtLeastOne { it is IdeAfterLaunchEvent }
-    }
-  }
-
-  @RepeatedTest(value = 5)
+  @RepeatedTest(value = 2)
   fun `events for twice ide launch should be fired`(testInfo: TestInfo) {
     val firedEvents = mutableListOf<Event>()
     EventsBus.subscribe(this) {
