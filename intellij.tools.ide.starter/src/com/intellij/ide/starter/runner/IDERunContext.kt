@@ -290,6 +290,10 @@ data class IDERunContext(
           kotlin.runCatching {
             publishArtifacts()
             AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
+            val ideaLog = logsDir / "idea.log"
+            if (ideaLog.exists()) {
+              AllureHelper.attachFile("idea.log", logsDir / "idea.log")
+            }
           }.onFailure {
             logError("Fail to execute publishArtifacts run for $contextName", it)
           }.onSuccess {
