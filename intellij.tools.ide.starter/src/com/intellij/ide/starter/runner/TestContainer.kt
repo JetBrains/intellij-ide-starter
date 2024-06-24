@@ -60,8 +60,10 @@ interface TestContainer<T> {
   /**
    * Starting point to run your test.
    * @param preserveSystemDir Only for local runs when you know that having "dirty" system folder is ok and want to speed up test execution.
+   * @param baseContext - optional base context. If passed, some set up steps for the new context are omitted and we are re-using base context information.
+   *                      For example - project unpacking
    */
-  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext {
+  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, baseContext: IDETestContext? = null): IDETestContext {
     logOutput("Resolving IDE build for $testName...")
     val (buildNumber, ide) = @Suppress("SSBasedInspection")
     runBlocking(Dispatchers.Default) {
@@ -84,7 +86,7 @@ interface TestContainer<T> {
     logOutput("Using IDE paths for '$testName': $paths")
     logOutput("IDE to run for '$testName': $ide")
 
-    val projectHome = testCase.projectInfo.downloadAndUnpackProject()
+    val projectHome = baseContext?.resolvedProjectHome ?: testCase.projectInfo.downloadAndUnpackProject()
     var testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 

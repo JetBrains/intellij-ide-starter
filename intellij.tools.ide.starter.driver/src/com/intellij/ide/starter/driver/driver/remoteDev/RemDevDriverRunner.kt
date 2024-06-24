@@ -4,14 +4,14 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.client.impl.JmxHost
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
+import com.intellij.ide.starter.driver.driver.remoteDev.RemoteDevDriverHandler.Companion.rdctVmOptions
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
 import com.intellij.ide.starter.driver.engine.DriverRunner
+import com.intellij.ide.starter.driver.engine.DriverWithDetailedLogging
 import com.intellij.ide.starter.driver.engine.LocalDriverRunner
 import com.intellij.ide.starter.driver.engine.remoteDev.RemDevDriver
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
-import com.intellij.ide.starter.driver.engine.DriverWithDetailedLogging
-import com.intellij.ide.starter.driver.driver.remoteDev.RemoteDevDriverHandler.Companion.rdctVmOptions
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.project.NoProject
@@ -42,7 +42,9 @@ class RemDevDriverRunner : DriverRunner {
       ConfigurationStorage.instance().put(StarterConfigurationStorage.INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, true)
     }
 
-    val clientContext = Starter.newContext(context.testName, context.testCase.copy(ideInfo = context.testCase.ideInfo.copy(platformPrefix = "JetBrainsClient", executableFileName = getClientExecutableFileName(context.testCase.ideInfo, fromInstaller))))
+    val clientContext = Starter.newContext(context.testName,
+                                           context.testCase.copy(ideInfo = context.testCase.ideInfo.copy(platformPrefix = "JetBrainsClient", executableFileName = getClientExecutableFileName(context.testCase.ideInfo, fromInstaller))),
+                                           baseContext = context)
     val ideRemoteClientHandler = IDERemoteClientHandler(context, clientContext)
 
     val driver = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${options.driverPort}")))
