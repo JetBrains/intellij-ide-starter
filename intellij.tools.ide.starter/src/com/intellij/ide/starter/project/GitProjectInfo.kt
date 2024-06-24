@@ -59,7 +59,7 @@ data class GitProjectInfo(
     get() = repositoryRootDir.let(projectHomeRelativePath)
 
   private fun cloneRepo(projectHome: Path) {
-    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, shallow = false, timeout = downloadTimeout)
+    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, shallow = shallow, timeout = downloadTimeout)
   }
 
   private fun setupRepositoryState(projectHome: Path) {
