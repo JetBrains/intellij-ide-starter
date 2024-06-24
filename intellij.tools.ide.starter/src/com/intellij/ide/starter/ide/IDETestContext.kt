@@ -669,6 +669,17 @@ class IDETestContext(
     return this
   }
 
+  fun disableStickyLines(): IDETestContext {
+    writeConfigFile("options/editor.xml", """
+      <application>
+        <component name="EditorSettings">
+          <option name="SHOW_STICKY_LINES" value="false" />
+        </component>
+      </application>
+    """)
+    return this
+  }
+
   private fun writeConfigFile(relativePath: String, text: String): IDETestContext {
     val configFile = paths.configDir.toAbsolutePath().resolve(relativePath)
     configFile.parent.createDirectories()
