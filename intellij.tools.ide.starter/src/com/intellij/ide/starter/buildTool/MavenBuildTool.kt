@@ -58,7 +58,7 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
 
   fun useNewMavenLocalRepository(): MavenBuildTool {
     temporaryMavenM3RepoPath.toFile().mkdirs()
-    testContext.applyVMOptionsPatch { addSystemProperty("idea.force.m2.home", temporaryMavenM3RepoPath.toString()) }
+    testContext.applyVMOptionsPatch { addSystemProperty("maven.repo.local", temporaryMavenM3RepoPath.toString()) }
     return this
   }
 
@@ -82,9 +82,11 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
     }
   }
 
-  fun setPropertyInPomXml(propertyName: String,
-                          propertyValue: String,
-                          modulePath: Path = testContext.resolvedProjectHome): MavenBuildTool {
+  fun setPropertyInPomXml(
+    propertyName: String,
+    propertyValue: String,
+    modulePath: Path = testContext.resolvedProjectHome,
+  ): MavenBuildTool {
     val pomXml = modulePath.resolve("pom.xml")
     val propertiesTag = "<properties>"
     val closePropertiesTag = "</properties>"
