@@ -9,7 +9,7 @@ fun IDETestContext.disableCLionTestIndexing() =
 
 // Should be passed manually (through TC or run configuration)
 val isRadler by lazy { System.getProperty("intellij.clion.radler.perf.tests", "false").toBoolean() }
-val clionPrefix by lazy {if (isRadler) "radler" else "clion"}
+val clionPrefix by lazy { if (isRadler) "radler" else "clion" }
 
 fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
   val context = Starter.newContext("$clionPrefix/$testName", testCase)
@@ -30,6 +30,8 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
         // Enable Classic
         addSystemProperty("idea.suppressed.plugins.set.selector", "classic")
       }
+
+      addSystemProperty("ide.mac.file.chooser.native", "false")
 
       // Disable a/b testing (not necessary, but it is cleaner this way)
       addSystemProperty("clion.ab.test", "false")
