@@ -2,7 +2,6 @@ package com.intellij.tools.ide.metrics.collector.starter.publishing
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.tools.ide.metrics.collector.analysis.CompareSetting
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterMetricsCollector
 import com.intellij.tools.ide.util.common.PrintFailuresMode
@@ -20,7 +19,6 @@ import com.intellij.tools.ide.util.common.withRetryBlocking
  */
 abstract class MetricsPublisher<T> {
   protected val metricsCollectors: MutableList<StarterMetricsCollector> = mutableListOf()
-  protected var metricsComparisonConfiguration: Map<String, CompareSetting> = mutableMapOf()
 
   protected abstract var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit
 
@@ -33,11 +31,6 @@ abstract class MetricsPublisher<T> {
 
   fun configurePublishAction(publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit): T {
     this.publishAction = publishAction
-    return this.asTypeT()
-  }
-
-  fun setCompareSettingForMetrics(metricsNames: List<String>, compareSetting: CompareSetting): T {
-    this.metricsComparisonConfiguration = metricsNames.associateWith { compareSetting }
     return this.asTypeT()
   }
 
