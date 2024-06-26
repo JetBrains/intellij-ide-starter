@@ -165,10 +165,6 @@ data class IDERunContext(
         setRuntimeModuleRepository(testContext.ide.installationPath)
       }
 
-      if (!StarterConfigurationStorage.shouldRunOnInstaller()) {
-        addSystemProperty("wsl.use.remote.agent.for.nio.filesystem", "false")
-      }
-
       installProfiler()
       setSnapshotPath(snapshotsDir)
       setPathForMemorySnapshot()
