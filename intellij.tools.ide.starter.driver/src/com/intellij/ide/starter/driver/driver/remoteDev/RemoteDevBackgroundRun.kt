@@ -36,14 +36,13 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
   }
 
   private fun projectOpenAwaitOnFrontend() {
-    waitFor(duration = 30.seconds, errorMessage = "The project is still not opened on frontend") {
+    waitFor(message = "Project is opened on frontend", timeout = 30.seconds) {
       remoteClientDriver.isProjectOpened()
     }
   }
 
   private fun toolbarIsShownAwaitOnFrontend() {
-    waitFor(duration = 100.seconds, errorMessage = "The toolbar is still not shown on frontend, " +
-                                                  "make sure window manager is initialised correctly") {
+    waitFor(message = "The toolbar is shown on frontend", timeout = 100.seconds) {
       // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
       runCatching { remoteClientDriver.ui.ideFrame { mainToolbar } }.isSuccess
     }
