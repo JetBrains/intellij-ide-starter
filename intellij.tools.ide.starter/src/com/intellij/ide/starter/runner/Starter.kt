@@ -11,10 +11,6 @@ object Starter {
     return testContainer.invoke()
   }
 
-  /**
-   * @param baseContext - optional base context. If passed, some set up steps for the new context are omitted and we are re-using base context information.
-   *                      For example - project unpacking
-   */
-  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, baseContext: IDETestContext? = null): IDETestContext =
-    newTestContainer().newContext(testName = testName, testCase = testCase, preserveSystemDir = preserveSystemDir, baseContext = baseContext)
+  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext =
+    newTestContainer().newContext(testName = testName, testCase = testCase, preserveSystemDir = preserveSystemDir)
 }

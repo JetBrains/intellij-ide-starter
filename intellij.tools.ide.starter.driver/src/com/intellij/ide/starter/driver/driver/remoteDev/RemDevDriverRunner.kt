@@ -42,9 +42,9 @@ class RemDevDriverRunner : DriverRunner {
       ConfigurationStorage.instance().put(StarterConfigurationStorage.INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, true)
     }
 
-    val clientContext = Starter.newContext(context.testName,
+    val clientContext = Starter.newTestContainer().createFromExisting(context.testName,
                                            context.testCase.copy(ideInfo = context.testCase.ideInfo.copy(platformPrefix = "JetBrainsClient", executableFileName = getClientExecutableFileName(context.testCase.ideInfo, fromInstaller))),
-                                           baseContext = context)
+                                                                      existingContext = context)
     val ideRemoteClientHandler = IDERemoteClientHandler(context, clientContext)
 
     val driver = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${options.driverPort}")))

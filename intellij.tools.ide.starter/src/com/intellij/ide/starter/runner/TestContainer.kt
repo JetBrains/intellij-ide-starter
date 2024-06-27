@@ -9,10 +9,12 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
+import com.intellij.ide.starter.project.NoProject
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.reflect.jvm.isAccessible
 
@@ -57,13 +59,24 @@ interface TestContainer<T> {
     }
   }
 
+
+  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext =
+    newContext(testName, testCase, preserveSystemDir, testCase.projectInfo.downloadAndUnpackProject())
+
+  /**
+   * Creates a context from the `existingContext` one. The difference from the [newContext] method is that the project is not set up, but
+   * re-used from the `existingContext`
+   */
+  fun createFromExisting(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, existingContext: IDETestContext): IDETestContext =
+    newContext(testName, testCase, preserveSystemDir, if (testCase.projectInfo is NoProject) null else existingContext.resolvedProjectHome)
+
   /**
    * Starting point to run your test.
    * @param preserveSystemDir Only for local runs when you know that having "dirty" system folder is ok and want to speed up test execution.
    * @param baseContext - optional base context. If passed, some set up steps for the new context are omitted and we are re-using base context information.
    *                      For example - project unpacking
    */
-  fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, baseContext: IDETestContext? = null): IDETestContext {
+  private fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, projectHome: Path?): IDETestContext {
     logOutput("Resolving IDE build for $testName...")
     val (buildNumber, ide) = @Suppress("SSBasedInspection")
     runBlocking(Dispatchers.Default) {
@@ -86,7 +99,6 @@ interface TestContainer<T> {
     logOutput("Using IDE paths for '$testName': $paths")
     logOutput("IDE to run for '$testName': $ide")
 
-    val projectHome = baseContext?.resolvedProjectHome ?: testCase.projectInfo.downloadAndUnpackProject()
     var testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 
