@@ -33,7 +33,7 @@ object XorgWindowManagerHandler {
   private fun runXvfb(): Int {
     val number = displayNumber.getAndIncrement()
     val display = ":$number"
-    perTestSupervisorScope.async {
+    perClientSupervisorScope.async {
       ProcessExecutor(
         presentableName = "Run $xvfbName",
         timeout = 2.hours,
