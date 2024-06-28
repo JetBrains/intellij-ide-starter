@@ -6,10 +6,14 @@ import com.intellij.driver.sdk.ui.components.ideFrame
 import com.intellij.driver.sdk.ui.components.mainToolbar
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
+import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.models.IDEStartResult
+import com.intellij.ide.starter.utils.catchAll
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -32,6 +36,9 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
       hostDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
     }
     val clientResult = runBlocking { return@runBlocking clientResult.await() }
+    catchAll {
+      perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run `${clientResult.runContext.contextName}` execution is finished"))
+    }
     return runBlocking { hostResult.await().apply { this.clientResult = clientResult } }
   }
 

@@ -54,7 +54,7 @@ object XorgWindowManagerHandler {
   private val ffmpegName = "ffmpeg"
   fun subscribeToStartRecording() {
     EventsBus.subscribe("subscribeToStartRecording") { ideLaunchEvent: IdeLaunchEvent ->
-      perTestSupervisorScope.async {
+      perClientSupervisorScope.async {
         val ideRunContext = ideLaunchEvent.runContext
         val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
         val recordingFile = ideRunContext.logsDir / "screen.mkv"
