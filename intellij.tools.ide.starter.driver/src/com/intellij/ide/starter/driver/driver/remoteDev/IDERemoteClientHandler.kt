@@ -12,6 +12,7 @@ import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import java.nio.file.Files
 import java.nio.file.Path
@@ -59,7 +60,7 @@ class IDERemoteClientHandler(private val hostContext: IDETestContext, private va
   }
 
   fun runClientInBackground(options: RemoteDevDriverOptions, launchName: String): Deferred<IDEStartResult> {
-    return perTestSupervisorScope.async {
+    return GlobalScope.async {
       runClient(options, launchName)
     }
   }

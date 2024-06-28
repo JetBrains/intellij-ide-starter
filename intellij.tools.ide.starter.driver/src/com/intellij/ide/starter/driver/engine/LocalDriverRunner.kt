@@ -36,7 +36,7 @@ class LocalDriverRunner : DriverRunner {
       } ?: driverDeferred.completeExceptionally(TimeoutException("Driver couldn't connect"))
     }
     val currentStep = Allure.getLifecycle().currentTestCaseOrStep
-    val runResult = perTestSupervisorScope.async {
+    val runResult = GlobalScope.async {
       Allure.getLifecycle().setCurrentTestCase(currentStep.orElse(UUID.randomUUID().toString()))
       try {
         context.runIDE(commandLine,
