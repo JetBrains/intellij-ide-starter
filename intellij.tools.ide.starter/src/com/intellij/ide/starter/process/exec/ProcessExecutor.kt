@@ -143,11 +143,19 @@ class ProcessExecutor(val presentableName: String,
     logOutput("  ... successfully finished external process for `$presentableName` with exit code $expectedExitCode")
   }
 
+  @Throws(ExecTimeoutException::class)
+  fun start(printEnvVariables: Boolean = true) {
+    @Suppress("SSBasedInspection")
+    runBlocking(Dispatchers.IO) {
+      startCancellable(printEnvVariables)
+    }
+  }
+
   /**
    * Creates new process and wait for it's completion
    */
   @Throws(ExecTimeoutException::class)
-  fun start(printEnvVariables: Boolean = true) {
+  suspend fun startCancellable(printEnvVariables: Boolean = true) {
     require(args.isNotEmpty()) { "Arguments must be not empty to start external process `$presentableName`" }
 
     val processBuilder = ProcessBuilder()
@@ -172,7 +180,7 @@ class ProcessExecutor(val presentableName: String,
       }
     })
 
-    val process = processBuilder.start()
+    @Suppress("BlockingMethodInNonBlockingContext") val process = processBuilder.start()
 
     val processId = process.pid()
     val onProcessCreatedJob: Job = perTestSupervisorScope.launch {
@@ -208,7 +216,7 @@ class ProcessExecutor(val presentableName: String,
     }
 
     try {
-      if (!runCatching { process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS) }.getOrDefault(false)) {
+      if (!runInterruptible(Dispatchers.IO) { runCatching { process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS) }.getOrDefault(false) }) {
         val timeoutHookThread = Thread(Runnable {
           logOutput(
             "   ... terminating process `$presentableName` because it runs more than  ${timeout.inWholeSeconds} seconds ...")
@@ -216,6 +224,7 @@ class ProcessExecutor(val presentableName: String,
         }, "process-timeout-hook")
 
         timeoutHookThread.start()
+        @Suppress("BlockingMethodInNonBlockingContext")
         timeoutHookThread.join(20.seconds.inWholeMilliseconds)
         throw ExecTimeoutException(args.joinToString(" "), timeout)
       }

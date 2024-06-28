@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.driver.engine.remoteDev
 
+import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -10,14 +11,8 @@ import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.async
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.filter
-import kotlin.collections.map
-import kotlin.collections.single
-import kotlin.collections.singleOrNull
 import kotlin.io.path.div
 import kotlin.io.path.pathString
-import kotlin.text.split
-import kotlin.text.startsWith
 import kotlin.time.Duration.Companion.hours
 
 object XorgWindowManagerHandler {
@@ -46,7 +41,7 @@ object XorgWindowManagerHandler {
         workDir = null,
         stdoutRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName]"),
         stderrRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName-err]")
-      ).start()
+      ).startCancellable()
     }
     logOutput("Started $xvfbName display: $display")
     return number
@@ -73,7 +68,7 @@ object XorgWindowManagerHandler {
           workDir = null,
           stdoutRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile()),
           stderrRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile())
-        ).start()
+        ).startCancellable()
       }
     }
   }
@@ -118,7 +113,7 @@ object XorgWindowManagerHandler {
             workDir = null,
             stdoutRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile()),
             stderrRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile())
-          ).start()
+          ).startCancellable()
         }
         else {
           logOutput("$fluxboxName is already running on display $displayWithColumn")
