@@ -185,23 +185,23 @@ class ProcessExecutor(val presentableName: String,
     val stderrThread = redirectProcessOutput(process, false, stderrRedirect)
     val ioThreads = listOfNotNull(inputThread, stdoutThread, stderrThread)
 
+    var finishedGracefully = false
     fun killProcess() {
       catchAll { runBlocking(Dispatchers.IO) { onProcessCreatedJob.cancelAndJoin() } }
       catchAll { runBlocking(Dispatchers.IO) { withTimeout(1.minutes) { onBeforeKilled(process, processId) } } }
       process.descendants().forEach { catchAll { killProcessGracefully(it) } }
       catchAll { killProcessGracefully(process.toHandle()) }
       catchAll { ioThreads.forEach { it.interrupt() } }
+      finishedGracefully = true
     }
 
-    val stopper = Runnable {
+    val shutdownHookThread = Thread(Runnable {
       logOutput(
         "   ... terminating process `$presentableName` by request from external process (either SIGTERM or SIGKILL is caught) ...")
       killProcess()
-    }
-
-    val stopperThread = Thread(stopper, "process-shutdown-hook")
+    }, "process-shutdown-hook")
     try {
-      Runtime.getRuntime().addShutdownHook(stopperThread)
+      Runtime.getRuntime().addShutdownHook(shutdownHookThread)
     }
     catch (e: IllegalStateException) {
       logError("Process: $presentableName. Shutdown hook cannot be added because: ${e.message}")
@@ -209,18 +209,31 @@ class ProcessExecutor(val presentableName: String,
 
     try {
       if (!runCatching { process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS) }.getOrDefault(false)) {
-        stopperThread.apply {
-          start()
-          join(20.seconds.inWholeMilliseconds)
-        }
+        val timeoutHookThread = Thread(Runnable {
+          logOutput(
+            "   ... terminating process `$presentableName` because it runs more than  ${timeout.inWholeSeconds} seconds ...")
+          killProcess()
+        }, "process-timeout-hook")
+
+        timeoutHookThread.start()
+        timeoutHookThread.join(20.seconds.inWholeMilliseconds)
         throw ExecTimeoutException(args.joinToString(" "), timeout)
+      }
+      else {
+        finishedGracefully = true
       }
     }
     finally {
+      if (!finishedGracefully) {
+        logOutput(
+          "   ... gracefully terminating process `$presentableName` because of scope cancellation or failed attempt to do it in shutdown hook/timeout ..."
+        )
+        killProcess()
+      }
       process.destroyForcibly()
 
       try {
-        Runtime.getRuntime().removeShutdownHook(stopperThread)
+        Runtime.getRuntime().removeShutdownHook(shutdownHookThread)
       }
       catch (ise: java.lang.IllegalStateException) {
         // generate less noisy stacktraces on IDE shutdown
