@@ -12,6 +12,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.utils.catchAll
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
@@ -35,10 +36,16 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
       remoteClientDriver.closeIdeAndWait(closeIdeTimeout, false)
       hostDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
     }
+    @Suppress("SSBasedInspection")
     val clientResult = runBlocking { return@runBlocking clientResult.await() }
-    catchAll {
-      perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run `${clientResult.runContext.contextName}` execution is finished"))
+    @Suppress("SSBasedInspection")
+    runBlocking {
+      catchAll {
+        perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run `${clientResult.runContext.contextName}` execution is finished"))
+        perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
+      }
     }
+    @Suppress("SSBasedInspection")
     return runBlocking { hostResult.await().apply { this.clientResult = clientResult } }
   }
 
