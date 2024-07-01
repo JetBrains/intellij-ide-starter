@@ -232,6 +232,10 @@ class ProcessExecutor(val presentableName: String,
         finishedGracefully = true
       }
     }
+    catch (e: CancellationException) {
+      logOutput(" ... process `$presentableName` was cancelled because of ${e.message} ... ")
+      throw e
+    }
     finally {
       if (!finishedGracefully) {
         logOutput(
