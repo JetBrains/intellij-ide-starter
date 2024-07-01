@@ -4,7 +4,7 @@ import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
-import com.intellij.ide.starter.runner.events.IdeLaunchEvent
+import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
 import com.intellij.ide.starter.utils.getRunningDisplays
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
@@ -26,7 +26,7 @@ object XorgWindowManagerHandler {
 
   fun subscribeToStartRecording() {
     val ffmpegName = "ffmpeg"
-    EventsBus.subscribe("subscribeToStartRecording") { ideLaunchEvent: IdeLaunchEvent ->
+    EventsBus.subscribe("subscribeToStartRecording") { ideLaunchEvent: IdeBeforeLaunchEvent ->
       perClientSupervisorScope.async {
         val ideRunContext = ideLaunchEvent.runContext
         val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
@@ -71,7 +71,7 @@ object XorgWindowManagerHandler {
   }
 
   fun subscribeToStartFluxBox() {
-    EventsBus.subscribe("subscribeToStartFluxBox") { ideLaunchEvent: IdeLaunchEvent ->
+    EventsBus.subscribe("subscribeToStartFluxBox") { ideLaunchEvent: IdeBeforeLaunchEvent ->
       perClientSupervisorScope.async {
         val ideRunContext = ideLaunchEvent.runContext
         val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
