@@ -34,19 +34,21 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
     }
     finally {
       remoteClientDriver.closeIdeAndWait(closeIdeTimeout, false)
+
+      @Suppress("SSBasedInspection")
+      runBlocking {
+        catchAll {
+          perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run execution is finished"))
+          perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
+        }
+      }
       hostDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
     }
     @Suppress("SSBasedInspection")
-    val clientResult = runBlocking { return@runBlocking clientResult.await() }
-    @Suppress("SSBasedInspection")
-    runBlocking {
-      catchAll {
-        perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run `${clientResult.runContext.contextName}` execution is finished"))
-        perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
-      }
+    return runBlocking {
+      val clientResult = clientResult.await()
+      hostResult.await().apply { this.clientResult = clientResult }
     }
-    @Suppress("SSBasedInspection")
-    return runBlocking { hostResult.await().apply { this.clientResult = clientResult } }
   }
 
   private fun projectOpenAwaitOnFrontend() {
