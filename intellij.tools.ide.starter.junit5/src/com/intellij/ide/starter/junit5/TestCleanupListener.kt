@@ -7,6 +7,8 @@ import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.launcher.TestExecutionListener
 import org.junit.platform.launcher.TestIdentifier
@@ -26,8 +28,12 @@ open class TestCleanupListener : TestExecutionListener {
     logOutput("${this::class.simpleName} triggered on execution finished for `$testIdentifierName`")
 
     if (testIdentifier?.isTest == true) {
-      catchAll {
-        perTestSupervisorScope.coroutineContext.cancelChildren(CancellationException("Test `$testIdentifierName` execution is finished"))
+      @Suppress("SSBasedInspection")
+      runBlocking {
+        catchAll {
+          perTestSupervisorScope.coroutineContext.cancelChildren(CancellationException("Test `$testIdentifierName` execution is finished"))
+          perTestSupervisorScope.coroutineContext.job.children.forEach { it.join() }
+        }
       }
       ConfigurationStorage.instance().resetToDefault()
     }
