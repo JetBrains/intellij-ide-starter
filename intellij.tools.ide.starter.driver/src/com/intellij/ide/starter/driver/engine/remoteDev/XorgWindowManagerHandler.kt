@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.driver.engine.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
-import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
@@ -99,7 +98,7 @@ object XorgWindowManagerHandler {
 
   fun subscribeToStartFluxBox() {
     EventsBus.subscribe("subscribeToStartFluxBox") { ideLaunchEvent: IdeLaunchEvent ->
-      perTestSupervisorScope.async {
+      perClientSupervisorScope.async {
         val ideRunContext = ideLaunchEvent.runContext
         val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
 
