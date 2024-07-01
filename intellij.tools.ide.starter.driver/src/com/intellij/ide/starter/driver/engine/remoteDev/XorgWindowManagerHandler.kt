@@ -9,49 +9,23 @@ import com.intellij.ide.starter.utils.getRunningDisplays
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.async
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.div
 import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.hours
 
 object XorgWindowManagerHandler {
 
-  private val displayNumber = AtomicInteger(10)
   // see LinuxIdeDistribution.linuxCommandLine()
   private val resolution = "1920x1080"
 
-  // region xvfb
-  private val xvfbName = "Xvfb"
-
-
   fun provideDisplay(): Int {
-    val displays = getRunningDisplays()
-    return displays.singleOrNull() ?: runXvfb()
+    return getRunningDisplays().firstOrNull() ?: throw IllegalStateException("No display found")
   }
-
-  private fun runXvfb(): Int {
-    val number = displayNumber.getAndIncrement()
-    val display = ":$number"
-    perClientSupervisorScope.async {
-      ProcessExecutor(
-        presentableName = "Run $xvfbName",
-        timeout = 2.hours,
-        args = listOf("/usr/bin/$xvfbName", display, "-ac", "-screen", "0", "${resolution}x24", "-nolisten", "tcp", "-wr"),
-        workDir = null,
-        stdoutRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName]"),
-        stderrRedirect = ExecOutputRedirect.ToStdOut("[$xvfbName-err]")
-      ).startCancellable()
-    }
-    logOutput("Started $xvfbName display: $display")
-    return number
-  }
-
-  // endregion xvfb
 
   // region ffmpeg
 
-  private val ffmpegName = "ffmpeg"
   fun subscribeToStartRecording() {
+    val ffmpegName = "ffmpeg"
     EventsBus.subscribe("subscribeToStartRecording") { ideLaunchEvent: IdeLaunchEvent ->
       perClientSupervisorScope.async {
         val ideRunContext = ideLaunchEvent.runContext
