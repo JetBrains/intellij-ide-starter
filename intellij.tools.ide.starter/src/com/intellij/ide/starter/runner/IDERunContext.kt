@@ -238,12 +238,11 @@ data class IDERunContext(
           onBeforeKilled = { process, pid ->
             span.end()
             computeWithSpan("runIde post-processing") {
+              captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
+              EventsBus.postAndWaitProcessing(IdeBeforeKillEvent(this, process, pid))
               if (testContext.profilerType != ProfilerType.NONE) {
                 EventsBus.postAndWaitProcessing(StopProfilerEvent(listOf()))
               }
-              EventsBus.postAndWaitProcessing(
-                IdeBeforeKillEvent(this, process, pid))
-              captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
             }
           },
           expectedExitCode = expectedExitCode,
