@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.driver.engine.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
+import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_RESOLUTION
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
@@ -14,9 +15,6 @@ import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.hours
 
 object XorgWindowManagerHandler {
-
-  // see LinuxIdeDistribution.linuxCommandLine()
-  private val resolution = "1920x1080"
 
   fun provideDisplay(): Int {
     return getRunningDisplays().firstOrNull() ?: throw IllegalStateException("No display found")
@@ -35,7 +33,7 @@ object XorgWindowManagerHandler {
         ProcessExecutor(
           presentableName = "Start screen recording",
           timeout = 2.hours,
-          args = listOf("/usr/bin/$ffmpegName", "-f", "x11grab", "-video_size", resolution, "-framerate", "3", "-i",
+          args = listOf("/usr/bin/$ffmpegName", "-f", "x11grab", "-video_size", DEFAULT_DISPLAY_RESOLUTION, "-framerate", "3", "-i",
                         displayWithColumn,
                         "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString),
           workDir = null,

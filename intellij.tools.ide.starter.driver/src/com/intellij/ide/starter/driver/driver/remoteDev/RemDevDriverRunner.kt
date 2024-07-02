@@ -100,8 +100,6 @@ class RemDevDriverRunner : DriverRunner {
   private fun startXWindowHandlerIfNeeded(hostContext: IDETestContext, clientContext: IDETestContext) {
     if (SystemInfo.isLinux && System.getenv("DISPLAY") == null) {
       // client requires window manager, xvfb-run is not sufficient. It will be started manually later
-      ConfigurationStorage.instance().put(StarterConfigurationStorage.LINUX_IGNORE_XVFB_RUN, true)
-
       val displayNum = XorgWindowManagerHandler.provideDisplay()
       clientContext.ide.vmOptions.withEnv("DISPLAY", ":$displayNum")
       hostContext.ide.vmOptions.withEnv("DISPLAY", ":$displayNum")

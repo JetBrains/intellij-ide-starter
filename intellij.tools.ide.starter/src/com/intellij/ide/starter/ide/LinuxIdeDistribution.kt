@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -12,6 +11,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.time.Duration.Companion.seconds
+
+const val DEFAULT_DISPLAY_ID = "88"
+const val DEFAULT_DISPLAY_RESOLUTION = "1920x1080"
 
 class LinuxIdeDistribution : IdeDistribution() {
   companion object {
@@ -27,17 +29,17 @@ class LinuxIdeDistribution : IdeDistribution() {
       toolName
     }
 
-    fun linuxCommandLine(xvfbRunLog: Path): List<String> {
+    fun linuxCommandLine(xvfbRunLog: Path, commandEnv: Map<String, String> = emptyMap()): List<String> {
       return when {
-        System.getenv("DISPLAY") != null || StarterConfigurationStorage.shouldIgnoreXvfbRun() -> listOf()
+        System.getenv("DISPLAY") != null || commandEnv["DISPLAY"] != null -> listOf()
         else ->
           //hint https://gist.github.com/tullmann/2d8d38444c5e81a41b6d
           listOf(
             xvfbRunTool,
             "--error-file=" + xvfbRunLog.toAbsolutePath().toString(),
-            "--server-args=-ac -screen 0 1920x1080x24",
+            "--server-args=-ac -screen 0 ${DEFAULT_DISPLAY_RESOLUTION}x24",
             "--auto-servernum",
-            "--server-num=88"
+            "--server-num=$DEFAULT_DISPLAY_ID"
           )
       }
     }

@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.screenRecorder
 
-import com.intellij.ide.starter.config.StarterConfigurationStorage
+import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_ID
+import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_RESOLUTION
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
@@ -59,13 +60,13 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   }
 
   private fun startFFMpegRecording(ideRunContext: IDERunContext): Process? {
-    val resolution = "1920x1080"
-    val isXvfbRunIgnored = System.getenv("DISPLAY") != null || StarterConfigurationStorage.shouldIgnoreXvfbRun()
-    val displayWithColumn = ":" + if (isXvfbRunIgnored) "0" else "88"
+    val processVmOptions = ideRunContext.calculateVmOptions()
+    val resolution = DEFAULT_DISPLAY_RESOLUTION
+    val processDisplay = processVmOptions.environmentVariables["DISPLAY"] ?: System.getenv("DISPLAY") ?: ":$DEFAULT_DISPLAY_ID"
     val recordingFile = ideRunContext.logsDir / "screen.mkv"
     val ffmpegLogFile = (ideRunContext.logsDir / "ffmpeg.log").also { it.createFile() }
     val args = listOf("/usr/bin/ffmpeg", "-f", "x11grab", "-video_size", resolution, "-framerate", "3", "-i",
-                      displayWithColumn,
+                      processDisplay,
                       "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString)
     logOutput("Start screen recording to $recordingFile\nArgs: ${args.joinToString(" ")}")
 
