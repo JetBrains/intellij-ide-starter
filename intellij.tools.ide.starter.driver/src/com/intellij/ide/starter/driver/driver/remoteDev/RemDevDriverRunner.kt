@@ -102,7 +102,6 @@ class RemDevDriverRunner : DriverRunner {
       // client requires window manager, xvfb-run is not sufficient. It will be started manually later
       val displayNum = XorgWindowManagerHandler.provideDisplay()
       clientContext.ide.vmOptions.withEnv("DISPLAY", ":$displayNum")
-      hostContext.ide.vmOptions.withEnv("DISPLAY", ":$displayNum")
 
       XorgWindowManagerHandler.subscribeToStartFluxBox()
       XorgWindowManagerHandler.subscribeToStartRecording()
