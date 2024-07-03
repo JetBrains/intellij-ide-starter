@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
-import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler
+import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.driver.waitForCondition
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
@@ -16,7 +16,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
@@ -48,7 +47,13 @@ class IDERemoteClientHandler(private val hostContext: IDETestContext, private va
         commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
         commands = CommandChain(),
         runTimeout = options.runTimeout,
-        launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient")
+        launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
+        configure = {
+          if (vmOptions.environmentVariables[REQUIRE_FLUXBOX_VARIABLE] != null) {
+            XorgWindowManagerHandler.startFluxBox(this)
+            XorgWindowManagerHandler.startRecording(this)
+          }
+        })
         .also {
           logOutput("Remote IDE client run ${hostContext.testName} completed")
         }

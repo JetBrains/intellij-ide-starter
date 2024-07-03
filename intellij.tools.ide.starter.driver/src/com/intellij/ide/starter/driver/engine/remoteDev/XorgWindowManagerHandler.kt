@@ -5,9 +5,8 @@ import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_RESOLUTION
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
-import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
+import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.getRunningDisplays
-import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.async
 import kotlin.io.path.div
@@ -22,25 +21,22 @@ object XorgWindowManagerHandler {
 
   // region ffmpeg
 
-  fun subscribeToStartRecording() {
+  fun startRecording(ideRunContext: IDERunContext) {
     val ffmpegName = "ffmpeg"
-    EventsBus.subscribe("subscribeToStartRecording") { ideLaunchEvent: IdeBeforeLaunchEvent ->
-      perClientSupervisorScope.async {
-        val ideRunContext = ideLaunchEvent.runContext
-        val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
-        val recordingFile = ideRunContext.logsDir / "screen.mkv"
-        val ffmpegLogFile = ideRunContext.logsDir / "$ffmpegName.log"
-        ProcessExecutor(
-          presentableName = "Start screen recording",
-          timeout = 2.hours,
-          args = listOf("/usr/bin/$ffmpegName", "-f", "x11grab", "-video_size", DEFAULT_DISPLAY_RESOLUTION, "-framerate", "3", "-i",
-                        displayWithColumn,
-                        "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString),
-          workDir = null,
-          stdoutRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile()),
-          stderrRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile())
-        ).startCancellable()
-      }
+    perClientSupervisorScope.async {
+      val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
+      val recordingFile = ideRunContext.logsDir / "screen.mkv"
+      val ffmpegLogFile = ideRunContext.logsDir / "$ffmpegName.log"
+      ProcessExecutor(
+        presentableName = "Start screen recording",
+        timeout = 2.hours,
+        args = listOf("/usr/bin/$ffmpegName", "-f", "x11grab", "-video_size", DEFAULT_DISPLAY_RESOLUTION, "-framerate", "3", "-i",
+                      displayWithColumn,
+                      "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString),
+        workDir = null,
+        stdoutRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile()),
+        stderrRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile())
+      ).startCancellable()
     }
   }
   // endregion ffmpeg
@@ -68,27 +64,24 @@ object XorgWindowManagerHandler {
     ).start()
   }
 
-  fun subscribeToStartFluxBox() {
-    EventsBus.subscribe("subscribeToStartFluxBox") { ideLaunchEvent: IdeBeforeLaunchEvent ->
-      perClientSupervisorScope.async {
-        val ideRunContext = ideLaunchEvent.runContext
-        val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
+  fun startFluxBox(ideRunContext: IDERunContext) {
+    perClientSupervisorScope.async {
+      val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
 
-        if (!isFluxBoxIsRunning(displayWithColumn)) {
-          verifyFluxBoxInstalled()
-          val fluxboxRunLog = ideRunContext.logsDir / "$fluxboxName.log"
-          ProcessExecutor(
-            presentableName = "Start $fluxboxName",
-            timeout = 2.hours,
-            args = listOf("/usr/bin/${fluxboxName}", "-display", displayWithColumn),
-            workDir = null,
-            stdoutRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile()),
-            stderrRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile())
-          ).startCancellable()
-        }
-        else {
-          logOutput("$fluxboxName is already running on display $displayWithColumn")
-        }
+      if (!isFluxBoxIsRunning(displayWithColumn)) {
+        verifyFluxBoxInstalled()
+        val fluxboxRunLog = ideRunContext.logsDir / "$fluxboxName.log"
+        ProcessExecutor(
+          presentableName = "Start $fluxboxName",
+          timeout = 2.hours,
+          args = listOf("/usr/bin/${fluxboxName}", "-display", displayWithColumn),
+          workDir = null,
+          stdoutRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile()),
+          stderrRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile())
+        ).startCancellable()
+      }
+      else {
+        logOutput("$fluxboxName is already running on display $displayWithColumn")
       }
     }
   }

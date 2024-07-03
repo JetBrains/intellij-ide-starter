@@ -32,6 +32,8 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+const val REQUIRE_FLUXBOX_VARIABLE = "REQUIRE_FLUXBOX"
+
 class RemDevDriverRunner : DriverRunner {
   override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
     val options = RemoteDevDriverOptions()
@@ -60,7 +62,7 @@ class RemDevDriverRunner : DriverRunner {
     }
 
     val hostRun = LocalDriverRunner().runIdeWithDriver(context, context.buildBackendCommandLine(), commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
-    startXWindowHandlerIfNeeded(clientContext)
+    detectDisplayIfNecessary(clientContext)
     val clientRun = ideRemoteClientHandler.runClientInBackground(options, launchName)
 
     return runBlocking { RemoteDevBackgroundRun(clientRun, hostRun.startResult, hostRun.driver, driverDeferred.await(), hostRun.process) }
@@ -97,14 +99,12 @@ class RemDevDriverRunner : DriverRunner {
     return context
   }
 
-  private fun startXWindowHandlerIfNeeded(clientContext: IDETestContext) {
+  private fun detectDisplayIfNecessary(clientContext: IDETestContext) {
     if (SystemInfo.isLinux && System.getenv("DISPLAY") == null) {
-      // client requires window manager, xvfb-run is not sufficient. It will be started manually later
       val displayNum = XorgWindowManagerHandler.provideDisplay()
-      clientContext.ide.vmOptions.withEnv("DISPLAY", ":$displayNum")
-
-      XorgWindowManagerHandler.subscribeToStartFluxBox()
-      XorgWindowManagerHandler.subscribeToStartRecording()
+      val clientVmOptions = clientContext.ide.vmOptions
+      clientVmOptions.withEnv("DISPLAY", ":$displayNum")
+      clientVmOptions.withEnv(REQUIRE_FLUXBOX_VARIABLE, "true")
     }
   }
 }
