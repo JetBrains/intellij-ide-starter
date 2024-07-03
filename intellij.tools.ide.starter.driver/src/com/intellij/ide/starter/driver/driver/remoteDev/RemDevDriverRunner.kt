@@ -60,7 +60,7 @@ class RemDevDriverRunner : DriverRunner {
     }
 
     val hostRun = LocalDriverRunner().runIdeWithDriver(context, context.buildBackendCommandLine(), commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
-    startXWindowHandlerIfNeeded(context, clientContext)
+    startXWindowHandlerIfNeeded(clientContext)
     val clientRun = ideRemoteClientHandler.runClientInBackground(options, launchName)
 
     return runBlocking { RemoteDevBackgroundRun(clientRun, hostRun.startResult, hostRun.driver, driverDeferred.await(), hostRun.process) }
@@ -97,7 +97,7 @@ class RemDevDriverRunner : DriverRunner {
     return context
   }
 
-  private fun startXWindowHandlerIfNeeded(hostContext: IDETestContext, clientContext: IDETestContext) {
+  private fun startXWindowHandlerIfNeeded(clientContext: IDETestContext) {
     if (SystemInfo.isLinux && System.getenv("DISPLAY") == null) {
       // client requires window manager, xvfb-run is not sufficient. It will be started manually later
       val displayNum = XorgWindowManagerHandler.provideDisplay()
