@@ -5,6 +5,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.ide.starter.utils.Git
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
@@ -104,9 +105,9 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
     }
   }
 
-  fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String) {
-    val projectHome = testContext.resolvedProjectHome
-    if (projectHome.toFile().name.startsWith("intellij-community") && !(projectHome / "android").toFile().exists()) {
+  fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String, commit: String = "") {
+    val communityProjectHome = testContext.resolvedProjectHome
+    if (communityProjectHome.toFile().name.startsWith("intellij-community") && !(communityProjectHome / "android").toFile().exists()) {
       val commandLineArgs = listOf("git", "clone", "git://git.jetbrains.org/idea/android.git", "android", "--depth", "1")
       val adjustedCommandLineArgs = when (intellijCommunityVersion) {
         "master" -> commandLineArgs
@@ -124,13 +125,18 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
 
       ProcessExecutor(
         "git-clone-android-plugin",
-        workDir = projectHome, timeout = 10.minutes,
+        workDir = communityProjectHome, timeout = 10.minutes,
         args = adjustedCommandLineArgs,
         stdoutRedirect = stdout,
         stderrRedirect = stderr
       ).start()
 
       logOutput(stdout.read().trim())
+
+      logOutput("HEAD commit hash for the android repo is " +
+                Git.getLocalCurrentCommitHash(communityProjectHome / "android"))
+
+      if (commit != "") Git.reset(repositoryDirectory = communityProjectHome / "android", commitHash = commit)
     }
   }
 
