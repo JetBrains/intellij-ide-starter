@@ -52,6 +52,7 @@ class RemDevDriverRunner : DriverRunner {
     val driver = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${options.driverPort}")))
     val driverDeferred = CompletableDeferred<Driver>()
     EventsBus.subscribe(driverDeferred) { event: IdeLaunchEvent ->
+      if (driverDeferred.isCompleted) return@subscribe
       withTimeoutOrNull(3.minutes) {
         ideRemoteClientHandler.onHostStarted(event)
         while (!driver.isConnected) {
