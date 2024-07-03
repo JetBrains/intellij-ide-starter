@@ -33,6 +33,10 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
 
       addSystemProperty("ide.mac.file.chooser.native", "false")
 
+      addSystemProperty("apple.laf.useScreenMenuBar","false")
+
+      addSystemProperty("jbScreenMenuBar.enable","false")
+
       // Disable a/b testing (not necessary, but it is cleaner this way)
       addSystemProperty("clion.ab.test", "false")
 
