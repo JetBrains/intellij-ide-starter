@@ -10,7 +10,6 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.project.NoProject
-import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Dispatchers
@@ -137,7 +136,6 @@ interface TestContainer<T> {
           if (isUnderDebug()) {
             debug(5010, suspend = false)
           }
-          configureLoggers(LogLevel.DEBUG, "com.intellij.codeInsight")
         }
         .disableMinimap()
         .addProjectToTrustedLocations()
