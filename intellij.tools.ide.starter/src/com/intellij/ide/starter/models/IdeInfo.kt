@@ -41,10 +41,7 @@ data class IdeInfo(
   companion object
 
   val installerFilePrefix
-    get() = if (platformPrefix == "JetBrainsClient") {
-      "JetBrainsClient"
-    }
-    else {
+    get() =
       when (productCode) {
         "IU" -> "ideaIU"
         "IC" -> "ideaIC"
@@ -62,7 +59,6 @@ data class IdeInfo(
         "AI" -> "AndroidStudio"
         else -> error("Unknown product code: $productCode")
       }
-    }
 
   val installerProductName
     get() = when (productCode) {
