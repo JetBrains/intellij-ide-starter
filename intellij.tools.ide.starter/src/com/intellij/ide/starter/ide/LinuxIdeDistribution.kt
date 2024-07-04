@@ -111,7 +111,7 @@ class LinuxIdeDistribution : IdeDistribution() {
 
           override val errorDiagnosticFiles = listOf(xvfbRunLog)
           override val workDir = appHome
-          override val commandLine: List<String> = linuxCommandLine(xvfbRunLog) + executablePath.toAbsolutePath().toString()
+          override val commandLine: List<String> = linuxCommandLine(xvfbRunLog, vmOptions.environmentVariables) + executablePath.toAbsolutePath().toString()
         }
 
       override val build = build
