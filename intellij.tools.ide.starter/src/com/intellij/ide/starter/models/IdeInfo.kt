@@ -34,6 +34,9 @@ data class IdeInfo(
 
   val downloadURI: URI? = null,
 
+  /**QDJVM, QDGO, QDJVMC ... */
+  val qodanaProductCode: String? = null,
+
   val fullName: String,
 
   val getInstaller: (IdeInfo) -> IdeInstaller = { di.direct.instance<IdeInstallerFactory>().createInstaller(it) }

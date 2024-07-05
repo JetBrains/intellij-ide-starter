@@ -6,7 +6,8 @@ object IdeProductImp : IdeProduct {
     productCode = "GO",
     platformPrefix = "GoLand",
     executableFileName = "goland",
-    fullName = "GoLand"
+    fullName = "GoLand",
+    qodanaProductCode = "QDGO"
   )
 
   /** IntelliJ Ultimate */
@@ -14,7 +15,8 @@ object IdeProductImp : IdeProduct {
     productCode = "IU",
     platformPrefix = "idea",
     executableFileName = "idea",
-    fullName = "IDEA"
+    fullName = "IDEA",
+    qodanaProductCode = "QDJVM"
   )
 
   /** IntelliJ Community */
@@ -22,7 +24,8 @@ object IdeProductImp : IdeProduct {
     productCode = "IC",
     platformPrefix = "Idea",
     executableFileName = "idea",
-    fullName = "IDEA Community"
+    fullName = "IDEA Community",
+    qodanaProductCode = "QDJVMC"
   )
 
   /** Android Studio */
@@ -38,7 +41,8 @@ object IdeProductImp : IdeProduct {
     productCode = "WS",
     platformPrefix = "WebStorm",
     executableFileName = "webstorm",
-    fullName = "WebStorm"
+    fullName = "WebStorm",
+    qodanaProductCode = "QDJS"
   )
 
   /** PhpStorm */
@@ -46,7 +50,8 @@ object IdeProductImp : IdeProduct {
     productCode = "PS",
     platformPrefix = "PhpStorm",
     executableFileName = "phpstorm",
-    fullName = "PhpStorm"
+    fullName = "PhpStorm",
+    qodanaProductCode = "QDPHP"
   )
 
   /** DataGrip */
@@ -70,7 +75,8 @@ object IdeProductImp : IdeProduct {
     productCode = "PY",
     platformPrefix = "Python",
     executableFileName = "pycharm",
-    fullName = "PyCharm"
+    fullName = "PyCharm",
+    qodanaProductCode = "QDPY"
   )
 
   /** CLion */
@@ -78,7 +84,8 @@ object IdeProductImp : IdeProduct {
     productCode = "CL",
     platformPrefix = "CLion",
     executableFileName = "clion",
-    fullName = "CLion"
+    fullName = "CLion",
+    qodanaProductCode = "QDCPP"
   )
 
   /** DataSpell */
@@ -94,7 +101,8 @@ object IdeProductImp : IdeProduct {
     productCode = "PC",
     platformPrefix = "PyCharmCore",
     executableFileName = "pycharm",
-    fullName = "PyCharm"
+    fullName = "PyCharm",
+    qodanaProductCode = "QDPYC"
   )
 
   /** Aqua */
