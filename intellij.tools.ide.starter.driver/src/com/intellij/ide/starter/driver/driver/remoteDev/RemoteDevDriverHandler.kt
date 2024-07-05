@@ -14,6 +14,9 @@ class RemoteDevDriverOptions : DriverOptions() {
 class RemoteDevDriverHandler : DriverHandler() {
   companion object {
     fun rdctVmOptions(options: RemoteDevDriverOptions): Map<String, String> =
-      mapOf("rdct.tests.backendJmxPort" to options.hostDriverPort.toString())
+      mapOf("rdct.tests.backendJmxPort" to options.hostDriverPort.toString(),
+            "ide.mac.file.chooser.native" to "false",
+            "apple.laf.useScreenMenuBar" to "false",
+            "jbScreenMenuBar.enabled" to "false")
   }
 }

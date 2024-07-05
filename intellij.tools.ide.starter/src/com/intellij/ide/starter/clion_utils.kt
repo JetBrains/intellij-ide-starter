@@ -25,6 +25,9 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
 
         // Enable radler
         addSystemProperty("idea.suppressed.plugins.set.selector", "radler")
+
+        addSystemProperty("jbScreenMenuBar.isEnabled","false")
+        addSystemProperty("apple.laf.useScreenMenuBar", "false")
       }
       else {
         // Enable Classic
@@ -35,7 +38,7 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
 
       addSystemProperty("apple.laf.useScreenMenuBar","false")
 
-      addSystemProperty("jbScreenMenuBar.enable","false")
+      addSystemProperty("jbScreenMenuBar.enabled","false")
 
       // Disable a/b testing (not necessary, but it is cleaner this way)
       addSystemProperty("clion.ab.test", "false")
