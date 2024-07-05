@@ -231,6 +231,14 @@ data class VMOptions(
     addSystemProperty("ide.performance.screenshot", "heartbeat")
   }
 
+  fun skipMoveFilesDialogs() {
+    addSystemProperty("ide.performance.skip.move.files.dialog", "true")
+  }
+
+  fun skipRefactoringConflictsDialogs() {
+    addSystemProperty("ide.performance.skip.refactoring.conflicts.dialog", "true")
+  }
+
   fun installTestScript(testName: String, paths: IDEDataPaths, commands: Iterable<MarshallableCommand>) {
     val scriptText = commands.joinToString(separator = System.lineSeparator()) { it.storeToString() }
 
