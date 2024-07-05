@@ -57,6 +57,7 @@ data class IdeInfo(
         "QA" -> "aqua"
         "RR" -> "RustRover"
         "AI" -> "AndroidStudio"
+        "JBC" -> "JetBrainsClient"
         else -> error("Unknown product code: $productCode")
       }
 
