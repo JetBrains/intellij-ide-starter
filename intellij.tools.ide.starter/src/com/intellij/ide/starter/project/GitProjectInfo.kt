@@ -23,6 +23,7 @@ data class GitProjectInfo(
    */
   val repositoryUrl: String,
 
+  /** If empty - latest */
   val commitHash: String = "",
 
   /**
@@ -45,7 +46,7 @@ data class GitProjectInfo(
    */
   val projectHomeRelativePath: (Path) -> Path = { it },
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
-  private val description: String = ""
+  private val description: String = "",
 ) : ProjectInfoSpec {
 
   val repositoryRootDir: Path
@@ -108,9 +109,11 @@ data class GitProjectInfo(
       projectRootDirectorySetup(repositoryRootDir)
       setupRepositoryState(repositoryRootDir)
     }
-    catch (_: Exception) {
-      logError("Failed to setup the test project git repository state as: $this")
-      logError("Trying one more time from clean checkout")
+    catch (ex: Exception) {
+      logError(buildString {
+        appendLine("Failed to setup the test project git repository state as: $this")
+        appendLine("Trying one more time from clean checkout")
+      }, ex)
 
       repositoryRootDir.toFile().deleteRecursively()
 

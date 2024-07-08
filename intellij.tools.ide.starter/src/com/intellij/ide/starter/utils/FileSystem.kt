@@ -119,6 +119,14 @@ object FileSystem {
     }
   }
 
+  fun compressToTar(source: Path, outputArchive: Path, compressionType: CompressionType? = null) {
+    val archiver = if (compressionType == null) ArchiverFactory.createArchiver(ArchiveFormat.TAR)
+    else ArchiverFactory.createArchiver(ArchiveFormat.TAR, compressionType)
+
+    val outputArchiveParentDir = outputArchive.parent.apply { createDirectories() }
+    archiver.create(outputArchive.nameWithoutExtension, outputArchiveParentDir.toFile(), source.toFile())
+  }
+
   fun unpackTarGz(tarFile: File, targetDir: File) {
     targetDir.deleteRecursively()
     unpackTarGz(tarFile.toPath(), targetDir.toPath())
