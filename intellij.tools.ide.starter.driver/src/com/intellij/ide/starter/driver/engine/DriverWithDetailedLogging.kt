@@ -96,7 +96,7 @@ internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by
           runContext?.let { context ->
             logOutput("Adding screenshot to metadata")
             TeamCityClient.publishTeamCityArtifacts(Path(screenshotPath), context.contextName.replaceSpecialCharactersWithHyphens(), "driverError.png", false)
-            TeamCityCIServer.addTestMetadata(getTestMethodName().ifEmpty { context.contextName }, TeamCityCIServer.TeamCityMetadataType.IMAGE, flowId = null, name = null, value = context.contextName.replaceSpecialCharactersWithHyphens() + "/driverError.png")
+            TeamCityCIServer.addTestMetadata(testName = null, TeamCityCIServer.TeamCityMetadataType.IMAGE, flowId = null, name = null, value = context.contextName.replaceSpecialCharactersWithHyphens() + "/driverError.png")
           }
         }
       }

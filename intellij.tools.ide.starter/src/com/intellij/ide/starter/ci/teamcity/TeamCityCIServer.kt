@@ -272,15 +272,14 @@ open class TeamCityCIServer(
       addTestMetadata(testName, TeamCityMetadataType.TEXT, flowId, null, value)
     }
 
-    fun addTestMetadata(testName: String, type: TeamCityMetadataType, flowId: String?, name: String?, value: String) {
-      val nameAttr = if (name != null) {
-        "name='${name.processStringForTC()}'"
-      }
-      else ""
-      val flow = if (flowId != null) {
-        "flowId='$flowId'"
-      } else ""
-      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' ${flow}]")
+    /**
+     * Use testName=null and flowId=null if you want to add test metadata to the current running test
+     */
+    fun addTestMetadata(testName: String?, type: TeamCityMetadataType, flowId: String?, name: String?, value: String) {
+      val nameAttr = name?.let { "name='${it.processStringForTC()}'" } ?: ""
+      val flow = flowId?.let { "flowId='$it'" } ?: ""
+      val testName = testName?.let { "testName='${it.processStringForTC()}'" } ?: ""
+      println("##teamcity[testMetadata $testName type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' ${flow}]")
     }
 
     fun progressStart(activityName: String) {
