@@ -272,12 +272,15 @@ open class TeamCityCIServer(
       addTestMetadata(testName, TeamCityMetadataType.TEXT, flowId, null, value)
     }
 
-    fun addTestMetadata(testName: String, type: TeamCityMetadataType, flowId: String, name: String?, value: String) {
+    fun addTestMetadata(testName: String, type: TeamCityMetadataType, flowId: String?, name: String?, value: String) {
       val nameAttr = if (name != null) {
         "name='${name.processStringForTC()}'"
       }
       else ""
-      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' flowId='$flowId']")
+      val flow = if (flowId != null) {
+        "flowId='$flowId'"
+      } else ""
+      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' ${flow}]")
     }
 
     fun progressStart(activityName: String) {

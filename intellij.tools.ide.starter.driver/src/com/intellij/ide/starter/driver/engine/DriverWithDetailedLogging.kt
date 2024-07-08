@@ -7,14 +7,20 @@ import com.intellij.driver.model.LockSemantics
 import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.report.FailureDetailsOnCI
+import com.intellij.ide.starter.report.FailureDetailsOnCI.Companion.getTestMethodName
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
+import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.io.path.Path
 import kotlin.io.path.div
+import kotlin.text.ifEmpty
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -86,6 +92,13 @@ internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by
           "file://$it"
         }
         append("Screenshot: $path\n".color(LogColor.BLUE))
+        if (CIServer.instance.isBuildRunningOnCI) {
+          runContext?.let { context ->
+            logOutput("Adding screenshot to metadata")
+            TeamCityClient.publishTeamCityArtifacts(Path(screenshotPath), context.contextName.replaceSpecialCharactersWithHyphens(), "driverError.png", false)
+            TeamCityCIServer.addTestMetadata(getTestMethodName().ifEmpty { context.contextName }, TeamCityCIServer.TeamCityMetadataType.IMAGE, flowId = null, name = null, value = context.contextName.replaceSpecialCharactersWithHyphens() + "/driverError.png")
+          }
+        }
       }
       if (CIServer.instance.isBuildRunningOnCI) {
         runContext?.let {
