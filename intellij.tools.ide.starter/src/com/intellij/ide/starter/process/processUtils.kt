@@ -356,7 +356,7 @@ fun getAllJavaProcesses(): List<String> {
     stdoutRedirect = stdout
   ).start()
 
-  logOutput("List of java processes: " + stdout.read())
+  logOutput("List of java processes: \n" + stdout.read())
   return stdout.read().split("\n")
 }
 
