@@ -42,6 +42,7 @@ class RemDevDriverRunner : DriverRunner {
   private fun getDriverDeferred(ideFrontendHandler: IDEFrontendHandler, driver: DriverWithDetailedLogging): CompletableDeferred<Driver> {
     val driverDeferred = CompletableDeferred<Driver>()
     EventsBus.subscribe(driverDeferred) { event: IdeLaunchEvent ->
+      if (driverDeferred.isCompleted) return@subscribe
       withTimeoutOrNull(3.minutes) {
         ideFrontendHandler.handleBackendContext(event.runContext)
         while (!driver.isConnected) {
