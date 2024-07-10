@@ -1,5 +1,7 @@
 package com.intellij.ide.starter.runner
 
+import com.intellij.ide.starter.buildTool.GradleBuildTool
+import com.intellij.ide.starter.buildTool.events.GradleDaemonEvent
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -230,6 +232,11 @@ data class IDERunContext(
           stderrRedirect = stderr,
           onProcessCreated = { process, pid ->
             span.addEvent("process created")
+            EventsBus.subscribe(process) { _: IdeExceptionEvent ->
+              if(process.isAlive) {
+                captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
+              }
+            }
             EventsBus.postAndWaitProcessing(
               IdeLaunchEvent(runContext = this, ideProcess = process))
             ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
