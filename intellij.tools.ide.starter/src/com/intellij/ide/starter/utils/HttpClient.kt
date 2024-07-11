@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.impl.client.HttpClientBuilder
 import java.io.File
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -40,15 +41,16 @@ object HttpClient {
    * @return true - if successful, false - otherwise
    */
   fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
-    logOutput("Downloading $url to $outPath")
+    val encodeUrl = url.replace(" ", "%20")
+    logOutput("Downloading $encodeUrl to $outPath")
 
     @Suppress("RAW_RUN_BLOCKING")
     runBlocking {
       withTimeout(timeout = timeout) {
-        withRetry(messageOnFailure = "Failure during downloading $url to $outPath", retries = retries) {
-          sendRequest(HttpGet(url)) { response ->
+        withRetry(messageOnFailure = "Failure during downloading $encodeUrl to $outPath", retries = retries) {
+          sendRequest(HttpGet(encodeUrl)) { response ->
             if (response.statusLine.statusCode == 404) {
-              throw HttpNotFound("Server returned 404 Not Found: $url")
+              throw HttpNotFound("Server returned 404 Not Found: $encodeUrl")
             }
 
             if (response.statusLine.statusCode == 403 && url.startsWith("https://cache-redirector.jetbrains.com/")) {
@@ -58,7 +60,7 @@ object HttpClient {
             }
 
             if(response.statusLine.statusCode != 200) {
-              throw SetupException("Failed to download $url: $response")
+              throw SetupException("Failed to download $encodeUrl: $response")
             }
             if (!outPath.parent.exists()) {
               outPath.parent.createDirectories()
