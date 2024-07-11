@@ -99,7 +99,7 @@ class MetricsDiffCalculationTest {
 
     return (1..numberOfMetrics)
       .map { index ->
-        PerformanceMetrics.newDuration("metric_$index", durationMillis = index.toLong())
+        PerformanceMetrics.newDuration("metric_$index", durationMillis = index)
       }
   }
 
@@ -123,8 +123,8 @@ class MetricsDiffCalculationTest {
 
     assertSoftly {
       diff.shouldHaveSize(5)
-      diff.filter { it.value == 0L }.shouldHaveSize(4)
-      diff.single { it.value != 0L }.value.shouldBe(5)
+      diff.filter { it.value == 0 }.shouldHaveSize(4)
+      diff.single { it.value != 0 }.value.shouldBe(5)
     }
   }
 
@@ -136,8 +136,8 @@ class MetricsDiffCalculationTest {
 
     assertSoftly {
       diff.shouldHaveSize(6)
-      diff.filter { it.value == 0L }.shouldHaveSize(2)
-      diff.filter { it.value != 0L }.shouldHaveSize(4)
+      diff.filter { it.value == 0 }.shouldHaveSize(2)
+      diff.filter { it.value != 0 }.shouldHaveSize(4)
     }
   }
 
@@ -155,8 +155,8 @@ class MetricsDiffCalculationTest {
 
     assertSoftly {
       diff.shouldHaveSize(3)
-      diff.filter { it.value == 0L }.shouldBeEmpty()
-      diff.filter { it.value != 0L }.shouldHaveSize(3)
+      diff.filter { it.value == 0 }.shouldBeEmpty()
+      diff.filter { it.value != 0 }.shouldHaveSize(3)
     }
   }
 }

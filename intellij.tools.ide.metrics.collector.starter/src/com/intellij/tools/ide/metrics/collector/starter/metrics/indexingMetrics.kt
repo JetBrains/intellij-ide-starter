@@ -181,12 +181,12 @@ data class IndexingMetrics(
       }.computeAverageSpeed()
     }
 
-  private val processingTimePerFileType: Map<String, Long>
+  private val processingTimePerFileType: Map<String, Int>
     get() {
-      val indexingDurationMap = mutableMapOf<String, Long>()
+      val indexingDurationMap = mutableMapOf<String, Int>()
       indexingHistories.forEach { indexingHistory ->
         indexingHistory.totalStatsPerFileType.forEach { totalStatsPerFileType ->
-          val duration = (indexingHistory.times.totalWallTimeWithPauses.nano * totalStatsPerFileType.partOfTotalProcessingTime.partition).toLong()
+          val duration = (indexingHistory.times.totalWallTimeWithPauses.nano * totalStatsPerFileType.partOfTotalProcessingTime.partition).toInt()
           indexingDurationMap[totalStatsPerFileType.fileType] = indexingDurationMap[totalStatsPerFileType.fileType]?.let { it + duration }
                                                                 ?: duration
         }
@@ -232,18 +232,18 @@ data class IndexingMetrics(
     val numberOfIndexedFiles = totalNumberOfIndexedFiles
     val numberOfFilesFullyIndexedByExtensions = totalNumberOfFilesFullyIndexedByExtensions
     return listOf(
-      PerformanceMetrics.newDuration("indexingTimeWithoutPauses", durationMillis = totalIndexingTimeWithoutPauses),
-      PerformanceMetrics.newDuration("scanningTimeWithoutPauses", durationMillis = totalScanFilesTimeWithoutPauses),
-      PerformanceMetrics.newDuration("pausedTimeInIndexingOrScanning", durationMillis = totalPausedTime),
-      PerformanceMetrics.newDuration("dumbModeTimeWithPauses", durationMillis = totalDumbModeTimeWithPauses),
-      PerformanceMetrics.newCounter("numberOfIndexedFiles", value = numberOfIndexedFiles.toLong()),
-      PerformanceMetrics.newCounter("numberOfIndexedFilesWritingIndexValue", value = totalNumberOfIndexedFilesWritingIndexValues.toLong()),
-      PerformanceMetrics.newCounter("numberOfIndexedFilesWithNothingToWrite", value = totalNumberOfIndexedFilesWithNothingToWrite.toLong()),
-      PerformanceMetrics.newCounter("numberOfFilesIndexedByExtensions", value = numberOfFilesFullyIndexedByExtensions.toLong()),
+      PerformanceMetrics.newDuration("indexingTimeWithoutPauses", durationMillis = totalIndexingTimeWithoutPauses.toInt()),
+      PerformanceMetrics.newDuration("scanningTimeWithoutPauses", durationMillis = totalScanFilesTimeWithoutPauses.toInt()),
+      PerformanceMetrics.newDuration("pausedTimeInIndexingOrScanning", durationMillis = totalPausedTime.toInt()),
+      PerformanceMetrics.newDuration("dumbModeTimeWithPauses", durationMillis = totalDumbModeTimeWithPauses.toInt()),
+      PerformanceMetrics.newCounter("numberOfIndexedFiles", value = numberOfIndexedFiles),
+      PerformanceMetrics.newCounter("numberOfIndexedFilesWritingIndexValue", value = totalNumberOfIndexedFilesWritingIndexValues),
+      PerformanceMetrics.newCounter("numberOfIndexedFilesWithNothingToWrite", value = totalNumberOfIndexedFilesWithNothingToWrite),
+      PerformanceMetrics.newCounter("numberOfFilesIndexedByExtensions", value = numberOfFilesFullyIndexedByExtensions),
       PerformanceMetrics.newCounter("numberOfFilesIndexedWithoutExtensions",
-                                    value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions).toLong()),
-      PerformanceMetrics.newCounter("numberOfRunsOfScannning", value = totalNumberOfRunsOfScanning.toLong()),
-      PerformanceMetrics.newCounter("numberOfRunsOfIndexing", value = totalNumberOfRunsOfIndexing.toLong())
+                                    value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions)),
+      PerformanceMetrics.newCounter("numberOfRunsOfScannning", value = totalNumberOfRunsOfScanning),
+      PerformanceMetrics.newCounter("numberOfRunsOfIndexing", value = totalNumberOfRunsOfIndexing)
     ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeAvg, "Avg") +
            getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeWorst, "Worst") +
            getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguageAvg, "Avg") +
@@ -262,7 +262,7 @@ private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
     it.name.startsWith("$metricPrefixInCSV.") && it.name.endsWith(".time.ns")
   }.collect(runResult.runContext).associate {
     val language = timeRegex.find(it.id.name)?.groups?.get(1)?.value
-    Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value))
+    Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value.toLong()).toInt())
   }
   val sizeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.size\\.bytes")
   val size = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
@@ -271,7 +271,7 @@ private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
     val language = sizeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, it.value)
   }
-  val speed = time.filter { it.value != 0L }.mapValues {
+  val speed = time.filter { it.value != 0 }.mapValues {
     size.getValue(it.key) / it.value
   }
 
@@ -301,25 +301,25 @@ fun extractIndexingMetrics(startResult: IDEStartResult, projectName: String? = n
 
 private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>, suffix: String): List<PerformanceMetrics.Metric> =
   mapFileTypeToSpeed.map {
-    PerformanceMetrics.newCounter("processingSpeed$suffix#${it.key}", value = it.value.toLong())
+    PerformanceMetrics.newCounter("processingSpeed$suffix#${it.key}", value = it.value)
   }
 
 private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>, suffix: String): List<PerformanceMetrics.Metric> =
   mapBaseLanguageToSpeed.map {
-    PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage$suffix#${it.key}", value = it.value.toLong())
+    PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage$suffix#${it.key}", value = it.value)
   }
 
-private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
+private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Int>): List<PerformanceMetrics.Metric> =
   mapFileTypeToDuration.map {
-    PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value))
+    PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value.toLong()).toInt())
   }
 
-data class ScanningStatistics(val numberOfScannedFiles: Long = 0, val numberOfSkippedFiles: Long = 0, val totalSumOfThreadTimesWithPauses: Long = 0) {
+data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val totalSumOfThreadTimesWithPauses: Int = 0) {
   fun merge(scanningStatistics: JsonScanningStatistics): ScanningStatistics {
     return ScanningStatistics(
       numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
       numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,
-      totalSumOfThreadTimesWithPauses = totalSumOfThreadTimesWithPauses + scanningStatistics.totalOneThreadTimeWithPauses.milliseconds
+      totalSumOfThreadTimesWithPauses = totalSumOfThreadTimesWithPauses + scanningStatistics.totalOneThreadTimeWithPauses.milliseconds.toInt()
     )
   }
 }

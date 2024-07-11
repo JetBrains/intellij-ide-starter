@@ -7,8 +7,8 @@ import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemet
 import com.intellij.tools.ide.util.common.logError
 
 object CommonMetrics {
-  private fun Number.convertNsToMs(): Long {
-    return this.toLong() / 1_000_000
+  private fun Number.convertNsToMs(): Int {
+    return (this.toLong() / 1_000_000).toInt()
   }
 
   fun getAwtMetrics(startResult: IDEStartResult): List<PerformanceMetrics.Metric> {

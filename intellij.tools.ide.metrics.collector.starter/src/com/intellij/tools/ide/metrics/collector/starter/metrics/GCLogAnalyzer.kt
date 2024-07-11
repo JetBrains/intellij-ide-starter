@@ -106,10 +106,10 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
       if (parameter in requestedMetrics) {
         when (type) {
           "-", "M" -> {
-            gcMetrics.add(PerformanceMetrics.Metric.newCounter(parameter, value.toLong()))
+            gcMetrics.add(PerformanceMetrics.Metric.newCounter(parameter, value.toInt()))
           }
           "s" -> {
-            gcMetrics.add(PerformanceMetrics.Metric.newDuration(parameter, (value * 1000).toLong()))
+            gcMetrics.add(PerformanceMetrics.Metric.newDuration(parameter, (value * 1000).toInt()))
           }
           else -> {
             println("Unknown type: $type")

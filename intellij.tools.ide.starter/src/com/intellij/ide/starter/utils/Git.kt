@@ -116,7 +116,7 @@ object Git {
     } ?: throw SetupException("Git clone $repoUrl failed")
   }
 
-  fun status(projectDir: Path): Long {
+  fun status(projectDir: Path): Int {
     val arguments = mutableListOf("git", "-c", "core.fsmonitor=false", "status")
 
     val startTimer = System.currentTimeMillis()
@@ -133,7 +133,7 @@ object Git {
     ).start()
 
     val endTimer = System.currentTimeMillis()
-    val duration = endTimer - startTimer
+    val duration = (endTimer - startTimer).toInt()
     println("Git status took $duration")
     println("Git status output: ${execOutStatus.read()}")
 
@@ -433,7 +433,7 @@ object Git {
     return stdout.read().isNotEmpty()
   }
 
-  fun countTotalNumberOfCommits(dir: Path): Long {
+  fun countTotalNumberOfCommits(dir: Path): Int {
     val stdout = ExecOutputRedirect.ToString()
 
     ProcessExecutor(
@@ -444,7 +444,7 @@ object Git {
       stdoutRedirect = stdout
     ).start()
 
-    return stdout.read().trim().toLong()
+    return stdout.read().trim().toInt()
   }
 
   /**
