@@ -17,7 +17,7 @@ fun getRunningDisplays(): List<Int> {
     }
   logOutput("Found Xvfb displays: $found")
   if (found.isEmpty()) {
-    logOutput("Full process list was: ${fullProcessList.joinToString { "\n" }}")
+    logOutput("Full process list was: ${fullProcessList.map { it.command }.map { !it.startsWith("[") }.joinToString("\n" )}")
   }
   return found
 }
