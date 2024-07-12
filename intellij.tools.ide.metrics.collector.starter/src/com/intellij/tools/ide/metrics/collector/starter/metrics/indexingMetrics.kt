@@ -181,12 +181,12 @@ data class IndexingMetrics(
       }.computeAverageSpeed()
     }
 
-  private val processingTimePerFileType: Map<String, Int>
+  private val processingTimePerFileType: Map<String, Long>
     get() {
-      val indexingDurationMap = mutableMapOf<String, Int>()
+      val indexingDurationMap = mutableMapOf<String, Long>()
       indexingHistories.forEach { indexingHistory ->
         indexingHistory.totalStatsPerFileType.forEach { totalStatsPerFileType ->
-          val duration = (indexingHistory.times.totalWallTimeWithPauses.nano * totalStatsPerFileType.partOfTotalProcessingTime.partition).toInt()
+          val duration = (indexingHistory.times.totalWallTimeWithPauses.nano * totalStatsPerFileType.partOfTotalProcessingTime.partition).toLong()
           indexingDurationMap[totalStatsPerFileType.fileType] = indexingDurationMap[totalStatsPerFileType.fileType]?.let { it + duration }
                                                                 ?: duration
         }
@@ -309,7 +309,7 @@ private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String
     PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage$suffix#${it.key}", value = it.value)
   }
 
-private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Int>): List<PerformanceMetrics.Metric> =
+private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
   mapFileTypeToDuration.map {
     PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value.toLong()).toInt())
   }
