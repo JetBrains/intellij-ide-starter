@@ -54,8 +54,8 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
     awaitBackendStart()
     val joinLink = awaitJoinLink(backendRunContext.logsDir / "idea.log")
 
-    frontendContext.ide.vmOptions.let{
-      //setup xDisply
+    frontendContext.ide.vmOptions.let {
+      //setup xDisplay
       it.addDisplayIfNecessary()
 
       //add driver related vmOptions
