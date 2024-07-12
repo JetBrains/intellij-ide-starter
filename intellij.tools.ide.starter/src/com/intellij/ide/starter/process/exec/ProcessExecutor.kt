@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.process.exec
 
+import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.getThrowableText
@@ -18,19 +19,21 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class ProcessExecutor(val presentableName: String,
-                      val workDir: Path?,
-                      val timeout: Duration = 10.minutes,
-                      val environmentVariables: Map<String, String> = System.getenv(),
-                      val args: List<String>,
-                      val errorDiagnosticFiles: List<Path> = emptyList(),
-                      val stdoutRedirect: ExecOutputRedirect = ExecOutputRedirect.NoRedirect,
-                      val stderrRedirect: ExecOutputRedirect = ExecOutputRedirect.NoRedirect,
-                      val onProcessCreated: suspend (Process, Long) -> Unit = { _, _ -> },
-                      val onBeforeKilled: suspend (Process, Long) -> Unit = { _, _ -> },
-                      val stdInBytes: ByteArray = byteArrayOf(),
-                      val onlyEnrichExistedEnvVariables: Boolean = false,
-                      val expectedExitCode: Int = 0) {
+class ProcessExecutor(
+  val presentableName: String,
+  val workDir: Path?,
+  val timeout: Duration = 10.minutes,
+  val environmentVariables: Map<String, String> = System.getenv(),
+  val args: List<String>,
+  val errorDiagnosticFiles: List<Path> = emptyList(),
+  val stdoutRedirect: ExecOutputRedirect = ExecOutputRedirect.NoRedirect,
+  val stderrRedirect: ExecOutputRedirect = ExecOutputRedirect.NoRedirect,
+  val onProcessCreated: suspend (Process, Long) -> Unit = { _, _ -> },
+  val onBeforeKilled: suspend (Process, Long) -> Unit = { _, _ -> },
+  val stdInBytes: ByteArray = byteArrayOf(),
+  val onlyEnrichExistedEnvVariables: Boolean = false,
+  val expectedExitCode: Int = 0,
+) {
 
   companion object {
     fun killProcessGracefully(process: ProcessHandle) {
@@ -44,7 +47,7 @@ class ProcessExecutor(val presentableName: String,
   private fun redirectProcessOutput(
     process: Process,
     outOrErrStream: Boolean,
-    redirectOutput: ExecOutputRedirect
+    redirectOutput: ExecOutputRedirect,
   ): Thread {
     val inputStream = if (outOrErrStream) process.inputStream else process.errorStream
     return thread(start = true, isDaemon = true, name = "Redirect " + (if (outOrErrStream) "stdout" else "stderr")) {
@@ -82,8 +85,10 @@ class ProcessExecutor(val presentableName: String,
     }
   }
 
-  private fun ProcessBuilder.actualizeEnvVariables(environmentVariables: Map<String, String> = System.getenv(),
-                                                   onlyEnrichExistedEnvVariables: Boolean = false): ProcessBuilder {
+  private fun ProcessBuilder.actualizeEnvVariables(
+    environmentVariables: Map<String, String> = System.getenv(),
+    onlyEnrichExistedEnvVariables: Boolean = false,
+  ): ProcessBuilder {
     val processEnvironment = environment()
     if (processEnvironment == environmentVariables) return this
 
@@ -144,7 +149,7 @@ class ProcessExecutor(val presentableName: String,
   }
 
   @Throws(ExecTimeoutException::class)
-  fun start(printEnvVariables: Boolean = true) {
+  fun start(printEnvVariables: Boolean = StarterConfigurationStorage.shouldLogEnvVariables()) {
     @Suppress("SSBasedInspection")
     runBlocking(Dispatchers.IO) {
       startCancellable(printEnvVariables)
@@ -155,7 +160,7 @@ class ProcessExecutor(val presentableName: String,
    * Creates new process and wait for it's completion
    */
   @Throws(ExecTimeoutException::class)
-  suspend fun startCancellable(printEnvVariables: Boolean = true) {
+  suspend fun startCancellable(printEnvVariables: Boolean = StarterConfigurationStorage.shouldLogEnvVariables()) {
     require(args.isNotEmpty()) { "Arguments must be not empty to start external process `$presentableName`" }
 
     val processBuilder = ProcessBuilder()

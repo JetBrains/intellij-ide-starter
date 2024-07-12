@@ -28,6 +28,11 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
      *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
      */
     fun shouldIncludeRuntimeModuleRepositoryInIde(): Boolean = instance().getBoolean(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY)
+
+    const val ENV_LOG_ENVIRONMENT_VARIABLES = "LOG_ENVIRONMENT_VARIABLES"
+
+    /** Log env variables produced by [com.intellij.ide.starter.process.exec.ProcessExecutor] */
+    fun shouldLogEnvVariables() = instance().getBoolean(ENV_LOG_ENVIRONMENT_VARIABLES)
   }
 
   override fun resetToDefault() {
@@ -35,5 +40,6 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
     put(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, System.getenv(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD))
     put(ENV_JUNIT_RUNNER_USE_INSTALLER, System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER))
     put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, false)
+    put(ENV_LOG_ENVIRONMENT_VARIABLES, true)
   }
 }
