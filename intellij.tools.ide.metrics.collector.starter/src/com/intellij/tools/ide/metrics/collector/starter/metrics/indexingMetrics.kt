@@ -24,7 +24,7 @@ import kotlin.io.path.name
  */
 data class IndexingMetrics(
   val ideStartResult: IDEStartResult,
-  val jsonIndexDiagnostics: List<JsonIndexingActivityDiagnostic>
+  val jsonIndexDiagnostics: List<JsonIndexingActivityDiagnostic>,
 ) {
   val scanningHistories: List<JsonProjectScanningHistory>
     get() = jsonIndexDiagnostics.map { it.projectIndexingActivityHistory }.filterIsInstance<JsonProjectScanningHistory>()
@@ -254,15 +254,17 @@ data class IndexingMetrics(
   }
 }
 
-private fun collectPerformanceMetricsFromCSV(runResult: IDEStartResult,
-                                             metricPrefixInCSV: String,
-                                             resultingMetricPrefix: String): List<PerformanceMetrics.Metric> {
+private fun collectPerformanceMetricsFromCSV(
+  runResult: IDEStartResult,
+  metricPrefixInCSV: String,
+  resultingMetricPrefix: String,
+): List<PerformanceMetrics.Metric> {
   val timeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.time\\.ns")
   val time = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
     it.name.startsWith("$metricPrefixInCSV.") && it.name.endsWith(".time.ns")
-  }.collect(runResult.runContext).associate {
+  }.collect(runResult.runContext) { it.key to TimeUnit.NANOSECONDS.toMillis(it.value.value).toInt() }.associate {
     val language = timeRegex.find(it.id.name)?.groups?.get(1)?.value
-    Pair(language, TimeUnit.NANOSECONDS.toMillis(it.value.toLong()).toInt())
+    Pair(language, it.value)
   }
   val sizeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.size\\.bytes")
   val size = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {

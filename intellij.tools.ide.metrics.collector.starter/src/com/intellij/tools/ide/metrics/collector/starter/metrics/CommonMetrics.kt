@@ -1,6 +1,7 @@
 package com.intellij.tools.ide.metrics.collector.starter.metrics
 
 import com.intellij.ide.starter.models.IDEStartResult
+import com.intellij.tools.ide.metrics.collector.OpenTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
@@ -15,8 +16,8 @@ object CommonMetrics {
     try {
       return StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
         it.name == "AWTEventQueue.dispatchTimeTotalNS"
-      }.collect(startResult.runContext).map {
-        PerformanceMetrics.Metric.newDuration("AWTEventQueue.dispatchTimeTotal", it.value.convertNsToMs())
+      }.collect(startResult.runContext.logsDir) { it.key to it.value.value.convertNsToMs() }.map {
+        PerformanceMetrics.Metric.newDuration("AWTEventQueue.dispatchTimeTotal", it.value)
       }
     }
     catch (e: Exception) {
@@ -44,25 +45,28 @@ object CommonMetrics {
     return emptyList()
   }
 
-  fun getJvmMetrics(startResult: IDEStartResult,
-                    metricsStrategies: Map<String, MetricsSelectionStrategy>
-                    = mapOf("JVM.GC.collections" to MetricsSelectionStrategy.SUM,
-                            "JVM.GC.collectionTimesMs" to MetricsSelectionStrategy.SUM,
-                            "JVM.totalCpuTimeMs" to MetricsSelectionStrategy.SUM,
-                            "JVM.maxHeapBytes" to MetricsSelectionStrategy.MAXIMUM,
-                            "JVM.maxThreadCount" to MetricsSelectionStrategy.MAXIMUM,
-                            "JVM.totalTimeToSafepointsMs" to MetricsSelectionStrategy.SUM)
+  fun getJvmMetrics(
+    startResult: IDEStartResult,
+    metricsStrategies: Map<String, MetricsSelectionStrategy>
+    = mapOf("JVM.GC.collections" to MetricsSelectionStrategy.SUM,
+            "JVM.GC.collectionTimesMs" to MetricsSelectionStrategy.SUM,
+            "JVM.totalCpuTimeMs" to MetricsSelectionStrategy.SUM,
+            "JVM.maxHeapBytes" to MetricsSelectionStrategy.MAXIMUM,
+            "JVM.maxThreadCount" to MetricsSelectionStrategy.MAXIMUM,
+            "JVM.totalTimeToSafepointsMs" to MetricsSelectionStrategy.SUM),
   ): List<PerformanceMetrics.Metric> {
     try {
       return metricsStrategies.flatMap { (metricName, strategy) ->
-        StarterTelemetryJsonMeterCollector(strategy) { it.name.startsWith(metricName) }.collect(startResult.runContext).map {
-          val value = if (it.id.name.contains("Bytes")) it.value / 1_000_000 else it.value
-          val name = if (it.id.name.contains("Bytes")) it.id.name.replace("Bytes", "Megabytes") else it.id.name
+        StarterTelemetryJsonMeterCollector(strategy) { it.name.startsWith(metricName) }.collect(startResult.runContext){
+          val value = if (it.key.contains("Bytes")) (it.value.value / 1_000_000).toInt() else it.value.value.toInt()
+          val name = if (it.key.contains("Bytes")) it.key.replace("Bytes", "Megabytes") else it.key
+          name to value
+        }.map {
           if (it.id.name.contains("Time")) {
             PerformanceMetrics.Metric.newDuration(it.id.name, it.value)
           }
           else {
-            PerformanceMetrics.Metric.newCounter(name, value)
+            PerformanceMetrics.Metric.newCounter(it.id.name, it.value)
           }
         }
       }
