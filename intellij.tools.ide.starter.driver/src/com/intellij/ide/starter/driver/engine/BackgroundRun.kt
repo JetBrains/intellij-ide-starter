@@ -8,23 +8,43 @@ import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlin.let
+import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-open class BackgroundRun(val startResult: Deferred<IDEStartResult>, val driver: Driver, val process: ProcessHandle? = null) {
+open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: ProcessHandle? = null) {
+
+  val driver: Driver by lazy {
+    @Suppress("SSBasedInspection")
+    runBlocking {
+      runCatching {
+        withTimeout(3.minutes) {
+          while (!driverWithoutAwaitedConnection.isConnected) {
+            delay(3.seconds)
+          }
+        }
+      }.onFailure {
+        driverWithoutAwaitedConnection.closeIdeAndWait(1.minutes)
+      }
+    }
+    driverWithoutAwaitedConnection
+  }
+
   open fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration = 1.minutes, block: Driver.() -> R): IDEStartResult {
     try {
       driver.withContext { block(this) }
     }
     finally {
       driver.closeIdeAndWait(closeIdeTimeout)
+      @Suppress("SSBasedInspection")
       runBlocking {
         startResult.await()
       }
     }
+    @Suppress("SSBasedInspection")
     return runBlocking { return@runBlocking startResult.await() }
   }
 

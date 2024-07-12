@@ -11,30 +11,36 @@ import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.utils.catchAll
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.job
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
                              private val hostResult: Deferred<IDEStartResult>,
                              private val hostDriver: Driver,
-                             private val remoteClientDriver: Driver,
+                             remoteClientDriver: Driver,
                              hostProcess: ProcessHandle? = null
 ) : BackgroundRun(clientResult, remoteClientDriver, hostProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
+      @Suppress("SSBasedInspection")
+      runBlocking {
+        withTimeout(3.minutes) {
+          while (!hostDriver.isConnected) {
+            delay(3.seconds)
+          }
+        }
+      }
       if (hostDriver.isProjectOpened()) {
         projectOpenAwaitOnFrontend()
         toolbarIsShownAwaitOnFrontend()
       }
-      remoteClientDriver.withContext { block(this) }
+      driver.withContext { block(this) }
     }
     finally {
-      remoteClientDriver.closeIdeAndWait(closeIdeTimeout, false)
+      driver.closeIdeAndWait(closeIdeTimeout, false)
 
       @Suppress("SSBasedInspection")
       runBlocking {
@@ -54,13 +60,13 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
 
   private fun projectOpenAwaitOnFrontend() {
     waitFor(message = "Project is opened on frontend", timeout = 30.seconds) {
-      remoteClientDriver.isProjectOpened()
+      driver.isProjectOpened()
     }
   }
 
   private fun toolbarIsShownAwaitOnFrontend() {
     // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
-    remoteClientDriver.ui.ideFrame().mainToolbar.waitFound(100.seconds)
+    driver.ui.ideFrame().mainToolbar.waitFound(100.seconds)
   }
 
   override fun closeIdeAndWait(closeIdeTimeout: Duration) {
