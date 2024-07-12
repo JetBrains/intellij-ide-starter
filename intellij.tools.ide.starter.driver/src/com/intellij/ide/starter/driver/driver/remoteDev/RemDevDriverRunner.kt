@@ -30,26 +30,28 @@ class RemDevDriverRunner : DriverRunner {
     val ideBackendHandler = IDEBackendHandler(context, remoteDevDriverOptions)
     val ideFrontendHandler = IDEFrontendHandler(backendContext = context, remoteDevDriverOptions)
 
-    val driver = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.driverPort}")))
-    val driverDeferred = getDriverDeferred(ideFrontendHandler, driver)
-
+    EventsBus.subscribe("waiting backend start") { event: IdeLaunchEvent ->
+      ideFrontendHandler.handleBackendContext(event.runContext)
+    }
     val backendRun = ideBackendHandler.run(commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
+
+    val driver = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.driverPort}")))
+    val driverDeferred = getDriverDeferred(driver)
     val frontendRun = ideFrontendHandler.runInBackground(launchName)
 
     return runBlocking { RemoteDevBackgroundRun(frontendRun, backendRun.startResult, backendRun.driver, driverDeferred.await(), backendRun.process) }
   }
 
-  private fun getDriverDeferred(ideFrontendHandler: IDEFrontendHandler, driver: DriverWithDetailedLogging): CompletableDeferred<Driver> {
+  private fun getDriverDeferred(driver: DriverWithDetailedLogging): CompletableDeferred<Driver> {
     val driverDeferred = CompletableDeferred<Driver>()
-    EventsBus.subscribe(driverDeferred) { event: IdeLaunchEvent ->
+    EventsBus.subscribe("waiting client start") { event: IdeLaunchEvent ->
       if (driverDeferred.isCompleted) return@subscribe
       withTimeoutOrNull(3.minutes) {
-        ideFrontendHandler.handleBackendContext(event.runContext)
         while (!driver.isConnected) {
           delay(3.seconds)
         }
         driverDeferred.complete(driver)
-      } ?: driverDeferred.completeExceptionally(TimeoutException("Driver couldn't connect"))
+      } ?: driverDeferred.completeExceptionally(TimeoutException("Driver couldn't connect to frontend"))
     }
     return driverDeferred
   }
