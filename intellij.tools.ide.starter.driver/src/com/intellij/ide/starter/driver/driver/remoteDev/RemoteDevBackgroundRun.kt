@@ -2,6 +2,7 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.isProjectOpened
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.ideFrame
 import com.intellij.driver.sdk.ui.components.mainToolbar
 import com.intellij.driver.sdk.ui.ui
@@ -58,10 +59,8 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
   }
 
   private fun toolbarIsShownAwaitOnFrontend() {
-    waitFor(message = "The toolbar is shown on frontend", timeout = 100.seconds) {
-      // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
-      runCatching { remoteClientDriver.ui.ideFrame { mainToolbar } }.isSuccess
-    }
+    // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
+    remoteClientDriver.ui.ideFrame().mainToolbar.waitFound(100.seconds)
   }
 
   override fun closeIdeAndWait(closeIdeTimeout: Duration) {
