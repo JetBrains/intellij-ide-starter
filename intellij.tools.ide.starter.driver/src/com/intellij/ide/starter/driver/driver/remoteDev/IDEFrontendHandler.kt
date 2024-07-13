@@ -12,7 +12,6 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
-import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
@@ -74,32 +73,31 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
       }
     }
 
-
-    return try {
-      frontendContext.runIDE(
-        commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
-        commands = CommandChain(),
-        runTimeout = remoteDevDriverOptions.runTimeout,
-        launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
-        configure = {
-          if (frontendContext.ide.vmOptions.environmentVariables[REQUIRE_FLUXBOX_VARIABLE] != null) {
-            XorgWindowManagerHandler.startFluxBox(this)
-            XorgWindowManagerHandler.startRecording(this)
-          }
-        })
-        .also {
-          logOutput("Remote IDE client run ${backendContext.testName} completed")
+    return frontendContext.runIDE(
+      commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
+      commands = CommandChain(),
+      runTimeout = remoteDevDriverOptions.runTimeout,
+      launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
+      configure = {
+        if (frontendContext.ide.vmOptions.environmentVariables[REQUIRE_FLUXBOX_VARIABLE] != null) {
+          XorgWindowManagerHandler.startFluxBox(this)
+          XorgWindowManagerHandler.startRecording(this)
         }
-    }
-    catch (e: Throwable) {
-      logError("Error during JBClient IDE execution", e)
-      throw e
-    }
+      })
+      .also {
+        logOutput("Remote IDE client run ${backendContext.testName} completed")
+      }
   }
 
   fun runInBackground(launchName: String): Deferred<IDEStartResult> {
     return GlobalScope.async {
-      run(launchName)
+      try {
+        run(launchName)
+      }
+      catch (e: Exception) {
+        logOutput("Exception starting the client. Client is not launched: ${e.message}")
+        throw e
+      }
     }
   }
 
