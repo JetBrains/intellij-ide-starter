@@ -54,11 +54,13 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
 
   protected fun Driver.closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean = true) {
     try {
-      if (takeScreenshot) {
-        takeScreenshot("beforeIdeClosed")
+      if (driver.isConnected) {
+        if (takeScreenshot) {
+          takeScreenshot("beforeIdeClosed")
+        }
+        exitApplication()
+        waitForCondition(closeIdeTimeout, 3.seconds) { !isConnected }
       }
-      exitApplication()
-      waitForCondition(closeIdeTimeout, 3.seconds) { !isConnected }
     }
     catch (t: Throwable) {
       logError("Error on exit application via Driver", t)
