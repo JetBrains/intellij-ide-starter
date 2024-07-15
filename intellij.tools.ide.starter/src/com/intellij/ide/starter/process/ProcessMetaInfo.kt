@@ -1,8 +1,8 @@
 package com.intellij.ide.starter.process
 
-abstract class ProcessMetaInfo(
-  open val pid: Int,
-  open val command: String
+data class ProcessMetaInfo(
+  val pid: Int,
+  val command: String
 ) {
   override fun toString() = "$pid $command"
 }

@@ -14,20 +14,10 @@ import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-// TODO: consider using https://github.com/oshi/oshi for acquiring process info
-
-fun getProcessList(): ArrayList<ProcessMetaInfo> {
-  val processes = arrayListOf<ProcessMetaInfo>()
-  if (SystemInfo.isWindows) catchAll {
-    processes += dumpListOfProcessesOnWindows()
+fun getProcessList(): List<ProcessMetaInfo> {
+  return oshi.SystemInfo().operatingSystem.processes.map {
+    ProcessMetaInfo(it.processID, it.commandLine)
   }
-  else if (SystemInfo.isLinux) catchAll {
-    processes += dumpListOfProcessesOnLinux()
-  }
-  else catchAll {
-    processes += dumpListOfProcessesOnMacOS()
-  }
-  return processes
 }
 
 /**
@@ -37,120 +27,27 @@ fun getProcessList(): ArrayList<ProcessMetaInfo> {
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
 fun killOutdatedProcesses(commandsToSearch: Iterable<String> = listOf("/perf-startup/", "\\perf-startup\\")) {
-  val processes = arrayListOf<ProcessMetaInfo>()
+  val processes = oshi.SystemInfo().operatingSystem.processes
   var killProcess: (Int) -> Unit = {}
 
   if (SystemInfo.isWindows) catchAll {
-    processes += dumpListOfProcessesOnWindows()
     killProcess = { killProcessOnWindows(it) }
   }
   else if (SystemInfo.isLinux) catchAll {
-    processes += dumpListOfProcessesOnLinux()
     killProcess = { killProcessOnUnix(it) }
   }
   else catchAll {
-    processes += dumpListOfProcessesOnMacOS()
     killProcess = { killProcessOnUnix(it) }
   }
 
   val processIdsToKill = processes.filter { process ->
-    commandsToSearch.any { process.command.contains(it) }
-  }.map { it.pid }
+    commandsToSearch.any { process.commandLine.contains(it) }
+  }.map { it.processID }
 
   logOutput("These processes must be killed before the next test run: [$processIdsToKill]")
   for (pid in processIdsToKill) {
     catchAll { killProcess(pid) }
   }
-}
-
-private fun dumpListOfProcessesOnMacOS(): List<MacOsProcessMetaInfo> {
-  check(SystemInfo.isMac)
-  val stdoutRedirect = ExecOutputRedirect.ToString()
-  ProcessExecutor("ps",
-                  GlobalPaths.instance.testsDirectory,
-                  timeout = 1.minutes,
-                  args = listOf("ps", "-ax"),
-                  stdoutRedirect = stdoutRedirect
-  ).start()
-
-  val processLines = stdoutRedirect.read().lines().drop(1).map { it.trim() }.filterNot { it.isBlank() }
-  //PID TTY           TIME CMD
-  //  1 ??         0:43.67 /sbin/launchd
-  val processes = arrayListOf<MacOsProcessMetaInfo>()
-  for (line in processLines) {
-    var rest = line
-    fun nextString(): String {
-      val result = rest.substringBefore(" ").trim()
-      rest = rest.substringAfter(" ").dropWhile { it == ' ' }
-      return result
-    }
-
-    val pid = nextString().toInt()
-    nextString() //TTY
-    nextString() //TIME
-    val command = rest
-    processes += MacOsProcessMetaInfo(pid, command)
-  }
-  return processes
-}
-
-private fun dumpListOfProcessesOnLinux(): List<LinuxProcessMetaInfo> {
-  check(SystemInfo.isLinux)
-  val stdoutRedirect = ExecOutputRedirect.ToString()
-  ProcessExecutor("ps",
-                  GlobalPaths.instance.testsDirectory,
-                  timeout = 1.minutes,
-                  args = listOf("ps", "-aux"),
-                  stdoutRedirect = stdoutRedirect
-  ).start()
-
-  val processLines = stdoutRedirect.read().lines().drop(1).map { it.trim() }.filterNot { it.isBlank() }
-  //USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-  //root       823  0.0  0.0 1576524 8128 ?        Ssl  дек01   0:08 /usr/bin/containerd
-  val processes = arrayListOf<LinuxProcessMetaInfo>()
-  for (line in processLines) {
-    var rest = line
-    fun nextString(): String {
-      val result = rest.substringBefore(" ").trim()
-      rest = rest.substringAfter(" ").dropWhile { it == ' ' }
-      return result
-    }
-    nextString() //user
-    val pid = nextString().toInt()
-    nextString() //cpu
-    nextString() //mem
-    val vsz = nextString().toInt()
-    val rss = nextString().toInt()
-    nextString() //tty
-    nextString() //stat
-    nextString() //start
-    nextString() //time
-    val command = rest
-    processes += LinuxProcessMetaInfo(pid, vsz, rss, command)
-  }
-  return processes
-}
-
-private fun dumpListOfProcessesOnWindows(): List<WindowsProcessMetaInfo> {
-  check(SystemInfo.isWindows)
-  val stdoutRedirect = ExecOutputRedirect.ToString()
-  ProcessExecutor("wmic",
-                  GlobalPaths.instance.testsDirectory,
-                  timeout = 1.minutes,
-                  args = listOf("wmic", "process", "get", "Description,ExecutablePath,ProcessId", "/format:csv"),
-                  stdoutRedirect = stdoutRedirect
-  ).start()
-
-  val processLines = stdoutRedirect.read().lines().map { it.trim() }.filterNot { it.isBlank() }.drop(1)
-
-  val processes = arrayListOf<WindowsProcessMetaInfo>()
-
-  for (line in processLines) {
-    val rest = line.split(",")
-    processes += WindowsProcessMetaInfo(rest[3].toInt(), rest[2], rest[1])
-  }
-
-  return processes
 }
 
 private fun killProcessOnWindows(pid: Int) {
@@ -279,7 +176,7 @@ fun collectJavaThreadDump(
   javaHome: Path,
   workDir: Path,
   javaProcessId: Long,
-  dumpFile: Path
+  dumpFile: Path,
 ) {
   val ext = if (SystemInfo.isWindows) ".exe" else ""
   val jstackPath = listOf(
@@ -325,7 +222,7 @@ fun jcmd(
   javaHome: Path,
   workDir: Path,
   javaProcessId: Long,
-  command: List<String>
+  command: List<String>,
 ) {
   val pathToJcmd = "bin/jcmd"
   val ext = if (SystemInfo.isWindows) ".exe" else ""
