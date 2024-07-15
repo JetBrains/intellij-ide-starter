@@ -54,7 +54,7 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
 
   protected fun Driver.closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean = true) {
     try {
-      if (driver.isConnected) {
+      if (isConnected) {
         if (takeScreenshot) {
           takeScreenshot("beforeIdeClosed")
         }
