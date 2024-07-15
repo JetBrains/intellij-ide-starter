@@ -13,9 +13,7 @@ import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.util.common.logOutput
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.div
@@ -49,10 +47,9 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
 
   private lateinit var backendRunContext: IDERunContext
 
-  private fun run(launchName: String): IDEStartResult {
+  fun runInBackground(launchName: String): Deferred<IDEStartResult> {
     awaitBackendStart()
     val joinLink = awaitJoinLink(backendRunContext.logsDir / "idea.log")
-
     frontendContext.ide.vmOptions.let {
       //setup xDisplay
       it.addDisplayIfNecessary()
@@ -72,27 +69,22 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
         it.dropDebug()
       }
     }
-
-    return frontendContext.runIDE(
-      commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
-      commands = CommandChain(),
-      runTimeout = remoteDevDriverOptions.runTimeout,
-      launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
-      configure = {
-        if (frontendContext.ide.vmOptions.environmentVariables[REQUIRE_FLUXBOX_VARIABLE] != null) {
-          XorgWindowManagerHandler.startFluxBox(this)
-          XorgWindowManagerHandler.startRecording(this)
-        }
-      })
-      .also {
-        logOutput("Remote IDE client run ${backendContext.testName} completed")
-      }
-  }
-
-  fun runInBackground(launchName: String): Deferred<IDEStartResult> {
     return GlobalScope.async {
       try {
-        run(launchName)
+        frontendContext.runIDE(
+          commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
+          commands = CommandChain(),
+          runTimeout = remoteDevDriverOptions.runTimeout,
+          launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
+          configure = {
+            if (frontendContext.ide.vmOptions.environmentVariables[REQUIRE_FLUXBOX_VARIABLE] != null) {
+              XorgWindowManagerHandler.startFluxBox(this)
+              XorgWindowManagerHandler.startRecording(this)
+            }
+          })
+          .also {
+            logOutput("Remote IDE client run ${backendContext.testName} completed")
+          }
       }
       catch (e: Exception) {
         logOutput("Exception starting the client. Client is not launched: ${e.message}")
