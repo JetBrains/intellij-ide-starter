@@ -16,7 +16,7 @@ object CommonMetrics {
     try {
       return StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
         it.name == "AWTEventQueue.dispatchTimeTotalNS"
-      }.collect(startResult.runContext.logsDir) { it.key to it.value.value.convertNsToMs() }.map {
+      }.collect(startResult.runContext.logsDir) { name, value -> name to value.convertNsToMs() }.map {
         PerformanceMetrics.Metric.newDuration("AWTEventQueue.dispatchTimeTotal", it.value)
       }
     }
@@ -57,10 +57,12 @@ object CommonMetrics {
   ): List<PerformanceMetrics.Metric> {
     try {
       return metricsStrategies.flatMap { (metricName, strategy) ->
-        StarterTelemetryJsonMeterCollector(strategy) { it.name.startsWith(metricName) }.collect(startResult.runContext){
-          val value = if (it.key.contains("Bytes")) (it.value.value / 1_000_000).toInt() else it.value.value.toInt()
-          val name = if (it.key.contains("Bytes")) it.key.replace("Bytes", "Megabytes") else it.key
-          name to value
+        StarterTelemetryJsonMeterCollector(strategy) { it.name.startsWith(metricName) }.collect(startResult.runContext){ name, value ->
+          if (name.contains("Bytes")){
+            return@collect name.replace("Bytes", "Megabytes") to (value / 1_000_000).toInt()
+          } else {
+            name to value.toInt()
+          }
         }.map {
           if (it.id.name.contains("Time")) {
             PerformanceMetrics.Metric.newDuration(it.id.name, it.value)

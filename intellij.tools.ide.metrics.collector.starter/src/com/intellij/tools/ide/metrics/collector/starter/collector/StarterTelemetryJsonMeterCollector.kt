@@ -13,5 +13,5 @@ class StarterTelemetryJsonMeterCollector(
   meterFilter: (MetricData) -> Boolean
 ) : OpenTelemetryJsonMeterCollector(metricsSelectionStrategy, meterFilter), StarterMetricsCollector {
   override fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric> = collect(runContext.logsDir)
-  fun collect(runContext: IDERunContext, transform: (Map.Entry<String, LongPointData>) -> Pair<String, Int>): List<PerformanceMetrics.Metric> = collect(runContext.logsDir, transform)
+  fun collect(runContext: IDERunContext, transform: (String, Long) -> Pair<String, Int>): List<PerformanceMetrics.Metric> = collect(runContext.logsDir, transform)
 }

@@ -262,7 +262,7 @@ private fun collectPerformanceMetricsFromCSV(
   val timeRegex = Regex("${metricPrefixInCSV}\\.(.+)\\.time\\.ns")
   val time = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
     it.name.startsWith("$metricPrefixInCSV.") && it.name.endsWith(".time.ns")
-  }.collect(runResult.runContext) { it.key to TimeUnit.NANOSECONDS.toMillis(it.value.value).toInt() }.associate {
+  }.collect(runResult.runContext) { name, value -> name to TimeUnit.NANOSECONDS.toMillis(value).toInt() }.associate {
     val language = timeRegex.find(it.id.name)?.groups?.get(1)?.value
     Pair(language, it.value)
   }
