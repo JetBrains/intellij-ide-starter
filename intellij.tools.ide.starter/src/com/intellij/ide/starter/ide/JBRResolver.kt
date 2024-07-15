@@ -2,6 +2,7 @@ package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.SetupException
+import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
@@ -57,7 +58,7 @@ object JBRResolver {
     return catchAll { downloadAndUnpackJbrIfNeeded(getJBRVersionFromSources(jbrFullVersion)) } ?: throw JBRDownloadException(jbrFullVersion)
   }
 
-  private suspend fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path {
+  private suspend fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path = computeWithSpan("download and unpack JBR") {
     val (majorVersion, buildNumber) = listOf(jbrVersion.majorVersion, jbrVersion.buildNumber)
 
     val os = when {
