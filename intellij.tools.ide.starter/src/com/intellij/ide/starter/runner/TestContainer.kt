@@ -10,6 +10,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.project.NoProject
+import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +62,7 @@ interface TestContainer<T> {
 
 
   fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext =
-    newContext(testName, testCase, preserveSystemDir, testCase.projectInfo.downloadAndUnpackProject())
+    newContext(testName, testCase, preserveSystemDir, computeWithSpan("download and unpack project") { testCase.projectInfo.downloadAndUnpackProject() })
 
   /**
    * Creates a context from the `existingContext` one. The difference from the [newContext] method is that the project is not set up, but
@@ -80,7 +81,9 @@ interface TestContainer<T> {
     logOutput("Resolving IDE build for $testName...")
     val (buildNumber, ide) = @Suppress("SSBasedInspection")
     runBlocking(Dispatchers.Default) {
-      resolveIDE(testCase.ideInfo)
+      computeWithSpan("resolving IDE") {
+        resolveIDE(testCase.ideInfo)
+      }
     }
 
     require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
