@@ -10,8 +10,10 @@ import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.Starter
+import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
 import java.nio.file.Files
@@ -69,7 +71,11 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
         it.dropDebug()
       }
     }
-    return GlobalScope.async {
+    val process = CompletableDeferred<ProcessHandle>()
+    EventsBus.subscribe(process) { event: IdeLaunchEvent ->
+      process.complete(event.ideProcess.toHandle())
+    }
+    val result = GlobalScope.async {
       try {
         frontendContext.runIDE(
           commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
@@ -87,10 +93,13 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
           }
       }
       catch (e: Exception) {
+        process.completeExceptionally(e)
         logOutput("Exception starting the client. Client is not launched: ${e.message}")
         throw e
       }
     }
+    runBlocking { process.await() }
+    return result
   }
 
   fun handleBackendContext(backedRunContext: IDERunContext) {
