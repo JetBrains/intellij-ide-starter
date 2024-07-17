@@ -50,8 +50,9 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
   private lateinit var backendRunContext: IDERunContext
 
   fun runInBackground(launchName: String): Deferred<IDEStartResult> {
+    val backendLogFile = backendRunContext.logsDir / "idea.log"
     awaitBackendStart()
-    val joinLink = awaitJoinLink(backendRunContext.logsDir / "idea.log")
+    val joinLink = awaitJoinLink(backendLogFile)
     frontendContext.ide.vmOptions.let {
       //setup xDisplay
       it.addDisplayIfNecessary()
@@ -118,10 +119,10 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
     awaitForLogFile(logFile)
     val linkEntryPrefix = "Join link: tcp"
     var linkEntry: String? = null
-    waitForCondition(14.seconds, 1.seconds) {
+    waitForCondition(timeout = 14.seconds, pollInterval = 1.seconds) {
       val logLines = Files.readAllLines(logFile)
-      val foundEntry = logLines.find { it.contains(linkEntryPrefix) }
-      linkEntry = foundEntry
+      val joinLinkLines = logLines.filter { it.contains(linkEntryPrefix) }.distinct().also { logOutput("Found joinLinks: $it") }
+      linkEntry = joinLinkLines.lastOrNull()
       linkEntry != null
     }
     val match = "tcp://.+".toRegex().find(linkEntry!!)
@@ -129,6 +130,7 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
       error("Couldn't find link from entry: $linkEntry")
     }
     else {
+      logOutput("joinLink: ${match.value}")
       return match.value
     }
   }
