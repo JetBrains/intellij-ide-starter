@@ -25,9 +25,6 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
 
         // Enable radler
         addSystemProperty("idea.suppressed.plugins.set.selector", "radler")
-
-        addSystemProperty("jbScreenMenuBar.isEnabled","false")
-        addSystemProperty("apple.laf.useScreenMenuBar", "false")
       }
       else {
         // Enable Classic
