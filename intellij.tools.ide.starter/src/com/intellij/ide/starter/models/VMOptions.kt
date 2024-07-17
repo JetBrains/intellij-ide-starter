@@ -405,4 +405,8 @@ data class VMOptions(
   fun addSharedArchiveFile(pathToArchive: Path) {
     addLine("-XX:SharedArchiveFile=${pathToArchive}")
   }
+
+  fun disableGotItTooltips() {
+    addSystemProperty("ide.integration.test.disable.got.it.tooltips", true)
+  }
 }
