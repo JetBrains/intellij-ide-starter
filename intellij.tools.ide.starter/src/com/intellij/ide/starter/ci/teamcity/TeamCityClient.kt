@@ -98,14 +98,16 @@ object TeamCityClient {
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
   ) {
+    logOutput("TeamCity publishTeamCityArtifacts ${source.fileName}")
     val sanitizedArtifactPath = artifactPath.replaceSpecialCharactersWithHyphens()
     val sanitizedArtifactName = artifactName.replaceSpecialCharactersWithHyphens()
 
+    logOutput("TeamCity before check source.exists")
     if (!source.exists()) {
       logOutput("TeamCity artifact $source does not exist")
       return
     }
-
+    logOutput("TeamCity after check source.exists")
     var suffix: String
     var nextSuffix = 0
     var artifactDir: Path
