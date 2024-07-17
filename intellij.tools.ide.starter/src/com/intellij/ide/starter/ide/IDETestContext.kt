@@ -239,6 +239,7 @@ class IDETestContext(
 
   fun enableWorkspaceModelVerboseLogs() = applyVMOptionsPatch {
     configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
+    configureLoggers(LogLevel.TRACE, "com.intellij.platform.workspace")
   }
 
   fun enableEventBusDebugLogs() = applyVMOptionsPatch {
