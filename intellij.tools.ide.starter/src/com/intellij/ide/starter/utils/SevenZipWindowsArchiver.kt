@@ -11,7 +11,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.measureTime
 
-object SevenZipArchiver {
+object SevenZipWindowsArchiver {
   enum class Compresssion(val value: Byte) {
     NONE(0),
     LEVEL_1(1),
@@ -69,14 +69,15 @@ object SevenZipArchiver {
     ).start()
   }
 
-  fun createZipArchive(
+  fun createArchive(
     source: Path,
     outputArchive: Path,
     timeout: Duration = 10.minutes,
+    archiveType: String = "zip",
     compression: Compresssion = Compresssion.NONE,
     excludingDirectories: List<String> = emptyList(),
   ) {
-    if (source.extension == "zip") {
+    if (source.extension in listOf("7z", "zip")) {
       logOutput("Looks like $source is already an archive. Skipping archiving.")
       source.copyTo(outputArchive, overwrite = true)
       return
@@ -97,7 +98,9 @@ object SevenZipArchiver {
         workDir = source,
         timeout = timeout,
         args = listOf(sevenZipExePath.absolutePathString(),
-                      "a", "-mx${compression.value}", outputArchive.absolutePathString(), source.absolutePathString(),
+                      "a", "-mx${compression.value}", "-mmt${Runtime.getRuntime().availableProcessors() / 2}",
+                      "-t$archiveType",
+                      outputArchive.absolutePathString(), source.absolutePathString(),
                       *excludes.toTypedArray()),
         stderrRedirect = ExecOutputRedirect.ToStdOut("7z-create-archive")
       ).start()

@@ -3,7 +3,7 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.FileSystem
-import com.intellij.ide.starter.utils.SevenZipArchiver
+import com.intellij.ide.starter.utils.SevenZipWindowsArchiver
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logOutput
 import java.io.File
@@ -23,7 +23,7 @@ object IdeArchiveExtractor {
     logOutput("Extracting application into $unpackDir")
     when {
       ideInstallerFile.extension == "dmg" -> unpackDmg(ideInstallerFile, unpackDir.toPath())
-      ideInstallerFile.extension == "exe" -> SevenZipArchiver.unpackWinMsi(ideInstallerFile, unpackDir)
+      ideInstallerFile.extension == "exe" -> SevenZipWindowsArchiver.unpackWinMsi(ideInstallerFile, unpackDir)
       ideInstallerFile.extension == "zip" -> FileSystem.unpack(ideInstallerFile.toPath(), unpackDir.toPath())
       ideInstallerFile.name.endsWith(".tar.gz") -> FileSystem.unpackTarGz(ideInstallerFile, unpackDir)
       else -> error("Unsupported build file: $ideInstallerFile")
