@@ -6,9 +6,9 @@
 
 #### Overview
 
-The Starter for IntelliJ IDEA based IDEs is designed to help you create and run tests for IntelliJ-based IDEs. 
+The Starter will help you create and run tests for IntelliJ-based IDEs.
 It can run an IDE from an existing installer or download one if needed, configure IDE, launch the IDE as an external process, send commands to the IDE, 
-and collect the logs, metrics and other IDEs output after test execution.
+collect the logs, metrics and other IDEs output after test execution.
 
 Additional features include:
 * Executing commands inside IDE (see the list of available commands below)
@@ -16,6 +16,7 @@ Additional features include:
 * Executing custom code (without relying on external libraries not available in the IDE)
 * CI integration (optional)
 * Test artifact collection
+* Freeze/exception collection
 * Reporting artifacts to CI (optional)
 * Running tests with a profiler (not yet included)
 

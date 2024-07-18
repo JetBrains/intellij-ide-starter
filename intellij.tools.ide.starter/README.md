@@ -2,7 +2,7 @@
 
 #### Overview
 
-This repository contains the core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/blob/master/README.md)
+The core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/blob/master/README.md)
 
 ##### Basics
 Test starts IDE in a separate process so the test runtime and the IDE runtime are isolated.
@@ -111,6 +111,19 @@ di = DI {
       bindSingleton<CIServer>(overrides = true) { YourImplementationOfCI() }
 }
 ```
+
+### Freeze/exception collection
+
+Freezes or exceptions are collected by default by Starter and reported as an individual failure of a test on CI.  
+To enable this machinery you should provide [an implementation of your CiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt#L50) (by default [NoCiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/ci/NoCIServer.kt#L7) is used).  
+As an example of implementation you may take a look at [TeamCityCiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/ci/teamcity/TeamCityCIServer.kt#L18). 
+Yust override your CiServer in DI (as described in the code snipped above) and reporting of freezes and exceptions should work.
+
+If you want a more detailed customization you might find the following useful:
+Test reports errors via [ErrorReporter](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt#L51). 
+The default implementation is [ErrorReporterToCI](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/report/ErrorReporterToCI.kt#L15).  
+
+If you want to customize head of the error message you can do that via your own implementation of [FailureDetailsOnCi](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/report/FailureDetailsOnCI.kt#L10), which is also registered via DI.  
 
 ### Debugging the test
 
