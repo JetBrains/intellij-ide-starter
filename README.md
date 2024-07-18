@@ -1,4 +1,4 @@
-[![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub) 
+[![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 ![](https://camo.githubusercontent.com/b044da88664180ea9ad36112161507223610b3bd229f10a67e47145edf94a8f5/68747470733a2f2f6a622e67672f6261646765732f6f6666696369616c2d706c61737469632e737667)
 ![](https://github.com/JetBrains/intellij-ide-starter/actions/workflows/starter-examples.yaml/badge.svg)
 
@@ -7,10 +7,12 @@
 #### Overview
 
 The Starter will help you create and run tests for IntelliJ-based IDEs.
-It can run an IDE from an existing installer or download one if needed, configure IDE, launch the IDE as an external process, send commands to the IDE, 
+It can run an IDE from an existing installer or download one if needed, configure IDE, launch the IDE as an external process, send commands
+to the IDE,
 collect the logs, metrics and other IDEs output after test execution.
 
 Additional features include:
+
 * Executing commands inside IDE (see the list of available commands below)
 * Implementing custom commands for use in tests
 * Executing custom code (without relying on external libraries not available in the IDE)
@@ -20,7 +22,8 @@ Additional features include:
 * Reporting artifacts to CI (optional)
 * Running tests with a profiler (not yet included)
 
-More details how it works can be [found here](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter/README.md)
+More details how it works can
+be [found here](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter/README.md)
 
 #### Supported products
 
@@ -35,14 +38,17 @@ More details how it works can be [found here](https://github.com/JetBrains/intel
 
 ##### How to use
 
-For the required `build.gradle` and various test scenarios, refer to the [Examples](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter.examples) directory.
+For the required `build.gradle` and various test scenarios, refer to
+the [Examples](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter.examples) directory.
 
 ##### Available commands
 
-The available commands can be found in the [performance-testing-commands package](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.performanceTesting.commands/src/com/jetbrains/performancePlugin/commands/chain/generalCommandChain.kt)
+The available commands can be found in
+the [performance-testing-commands package](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.performanceTesting.commands/src/com/jetbrains/performancePlugin/commands/chain/generalCommandChain.kt)
 which includes performance-intensive operations and IDE configuration commands.
 
 Examples of included commands:
+
 - waitForSmartMode()
 - flushIndexes()
 - setupProjectSdk(sdkName: String, sdkType: String, sdkPath: String)]
@@ -76,9 +82,10 @@ Examples of included commands:
 - importGradleProject()
 - and many more
 
-
 ### Performance testing/Metrics collection
 
-Metrics are values collected during test execution, including operation durations, command results (e.g., the number of elements in completion lists), and more.  
-You can find more information about different approach to collect metrics (with or without Starter) in [Starter Readme](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter#performance-testingmetrics-collection)
+Metrics are values collected during test execution, including operation durations, command results (e.g., the number of elements in
+completion lists), and more.  
+You can find more information about different approach to collect metrics (with or without Starter)
+in [Starter Readme](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter#performance-testingmetrics-collection)
 

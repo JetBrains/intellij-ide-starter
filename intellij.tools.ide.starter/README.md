@@ -2,33 +2,41 @@
 
 #### Overview
 
-The core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to the [main README](https://github.com/JetBrains/intellij-ide-starter/blob/master/README.md)
+The core of the Starter test framework for IntelliJ IDEA-based IDEs. For a general overview, refer to
+the [main README](https://github.com/JetBrains/intellij-ide-starter/blob/master/README.md)
 
 ##### Basics
+
 Test starts IDE in a separate process so the test runtime and the IDE runtime are isolated.
-To control IDE you should use commands. 
+To control IDE you should use commands.
 There are two ways to make the IDE execute the command
+
 1) Write a scenario to the file (list of plain text strings in a special format) and pass it to the IDE
 2) trigger single command remotely with a JMX call (Driver implementation).  
    Currently is not available in a public version of Starter.
 
-In both cases commands will be executed via [performanceTestingPlugin](https://github.com/JetBrains/intellij-community/tree/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting) or it's extension points.
+In both cases commands will be executed
+via [performanceTestingPlugin](https://github.com/JetBrains/intellij-community/tree/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting)
+or it's extension points.
 
-List of basic out-of-the-box commands that goes with performanceTestingPlugin is available [here](https://github.com/JetBrains/intellij-community/blob/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt#L4)
-
+List of basic out-of-the-box commands that goes with performanceTestingPlugin is
+available [here](https://github.com/JetBrains/intellij-community/blob/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt#L4)
 
 ##### Run with JUnit5
-Starter isn't bound to any of test engines, so you can run it via any test engine you like.  
-But there is ready to use JUnit5 integration library and [examples of tests based on JUnit5 can be found here](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit5/IdeaJUnit5ExampleTest.kt)
 
+Starter isn't bound to any of test engines, so you can run it via any test engine you like.  
+But there is ready to use JUnit5 integration library
+and [examples of tests based on JUnit5 can be found here](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter.examples/testSrc/com/intellij/ide/starter/examples/junit5/IdeaJUnit5ExampleTest.kt)
 
 ##### Short guide how to write your own command/extension of performanceTestingPlugin
+
 As earlier was said, the performanceTesting plugin does all the job to execute your commands in IDE.  
 To implement your own commands you need to create a plugin that extends performanceTestingPlugin.
 
 Basic setup should look something like this:
 
 Create a `resources/META-INF/plugin.xml`
+
 ```
 <idea-plugin>
   <name>Your plugin name</name>
@@ -45,6 +53,7 @@ Create a `resources/META-INF/plugin.xml`
 ```
 
 Then create a command provider
+
 ```
 package com.intellij.myPlugin.performanceTesting
 
@@ -56,6 +65,7 @@ class MyPluginCommandProvider : CommandProvider {
 ```
 
 And implementation of your own command
+
 ```
 package com.intellij.myPlugin.performanceTesting.command
 
@@ -74,6 +84,7 @@ internal class MyCommand(text: String, line: Int) : PlaybackCommandCoroutineAdap
 ```
 
 Test implementation (that will use Starter and tell the plugin to invoke your command) will like this
+
 ```
 fun <T : CommandChain> T.runMyCommand(): T {
   addCommand(CMD_PREFIX + "myCommandName")
@@ -96,12 +107,12 @@ class ExampleOfMyCommandTest {
 }
 ```
 
-
 #### How to override/modify default starter behavior
 
 You can modify or extend any behavior initialized through the Kodein DI framework according to your needs. To do so, refer to the    
 [DI container initialization](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt)  
-For example, you can create your own implementation of CIServer and provide it through DI. Make sure to use the same Kodein version specified in the starter project's `build.gradle`.
+For example, you can create your own implementation of CIServer and provide it through DI. Make sure to use the same Kodein version
+specified in the starter project's `build.gradle`.
 
 Example:
 
@@ -115,42 +126,51 @@ di = DI {
 ### Freeze/exception collection
 
 Freezes or exceptions are collected by default by Starter and reported as an individual failure of a test on CI.  
-To enable this machinery you should provide [an implementation of your CiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt#L50) (by default [NoCiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/ci/NoCIServer.kt#L7) is used).  
-As an example of implementation you may take a look at [TeamCityCiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/ci/teamcity/TeamCityCIServer.kt#L18). 
+To enable this machinery you should
+provide [an implementation of your CiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt#L50) (
+by
+default [NoCiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/ci/NoCIServer.kt#L7)
+is used).  
+As an example of implementation you may take a look
+at [TeamCityCiServer](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/ci/teamcity/TeamCityCIServer.kt#L18).
 Yust override your CiServer in DI (as described in the code snipped above) and reporting of freezes and exceptions should work.
 
 If you want a more detailed customization you might find the following useful:
-Test reports errors via [ErrorReporter](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt#L51). 
-The default implementation is [ErrorReporterToCI](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/report/ErrorReporterToCI.kt#L15).  
+Test reports errors
+via [ErrorReporter](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/di/diContainer.kt#L51).
+The default implementation
+is [ErrorReporterToCI](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/report/ErrorReporterToCI.kt#L15).
 
-If you want to customize head of the error message you can do that via your own implementation of [FailureDetailsOnCi](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/report/FailureDetailsOnCI.kt#L10), which is also registered via DI.  
+If you want to customize head of the error message you can do that via your own implementation
+of [FailureDetailsOnCi](https://github.com/JetBrains/intellij-ide-starter/blob/8c19f61989510def61e864515014d6e0df358342/intellij.tools.ide.starter/src/com/intellij/ide/starter/report/FailureDetailsOnCI.kt#L10),
+which is also registered via DI.
 
 ### Debugging the test
 
 TIP: If you enable `debugger.auto.attach.from.console` Registry, you can just click debug on the test in IntelliJ IDEA and everything will
 happen automatically.
 
-Since tests are executed inside the IDE as an external process for test, you cannot directly debug them. 
+Since tests are executed inside the IDE as an external process for test, you cannot directly debug them.
 To debug a test, you need to connect remotely to the IDE instance.
 
 General debugging workflow:
 
 1. Create run configuration for Remote JVM Debug:
-Debugger mode: **Attach to Remote JVM**   
-Host: **localhost** Port: **5005**  
-Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005```  
-2. Run your test. The required option will be added automatically. 
+   Debugger mode: **Attach to Remote JVM**   
+   Host: **localhost** Port: **5005**  
+   Command line arguments for remote JVM: ```-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005```
+2. Run your test. The required option will be added automatically.
 
 After seeing the console prompt to connect remotely to port 5005, run the created run configuration.
-
 
 ### Using JUnit5 extensions to modify Starter behavior
 
 For JUnit5, there are several extensions, which provide a convenient way to set configuration variables as needed.
-List of extensions [can be found here](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter.junit5/src/com/intellij/ide/starter/junit5/config)
-
+List of
+extensions [can be found here](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter.junit5/src/com/intellij/ide/starter/junit5/config)
 
 Example:
+
 ```
 @ExtendWith(EnableClassFileVerification::class)
 @ExtendWith(UseLatestDownloadedIdeBuild::class)
@@ -163,26 +183,33 @@ Also you might find useful environment variables, that can tweak Starter behavio
 They are located in configuration storage in `com.intellij.ide.starter.config.StarterConfigurationStorage`
 
 ### Downloading custom releases
+
 Downloading Custom Releases
 
-By default, when useEAP or useRelease methods are called, IDE installers will be downloaded from JetBrains' public hosting. If no version is specified, the latest version will be used. However, you can specify a desired version if needed.  
+By default, when useEAP or useRelease methods are called, IDE installers will be downloaded from JetBrains' public hosting. If no version is
+specified, the latest version will be used. However, you can specify a desired version if needed.
 
 ### Modifying VM Options
 
 There are two ways to modify the VM options. One is on `IDETestContext` and another on `IDERunContext`. The first one is used to modify
 VM options for the whole context that can be reused between runs. The second is used to modify VM options just for the current run.
 
-
 ### Performance testing/Metrics collection
 
-Out of the box, Starter can collect OpenTelemetry metrics using [intellij.tools.ide.metrics.collector.starter](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.metrics.collector.starter#readme) module.
+Out of the box, Starter can collect OpenTelemetry metrics
+using [intellij.tools.ide.metrics.collector.starter](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.metrics.collector.starter#readme)
+module.
 
 If you're interested in a more general approach to OpenTelemetry metrics collection (without Starter involved),
-you can look at [intellij.tools.ide.metrics.collector](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.tools.ide.metrics.collector#readme).
+you can look
+at [intellij.tools.ide.metrics.collector](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.tools.ide.metrics.collector#readme).
 
-There is also an option to run unit tests as a benchchmark tests via [PerformanceTestUtil.newPerformanceTest(...)](https://github.com/JetBrains/intellij-community/blob/def6433a5dd9f0a984cbc6e2835d27c97f2cb5f0/tools/intellij.tools.ide.metrics.benchmark/src/com/intellij/tools/ide/metrics/benchmark/PerformanceTestUtil.java#L19).  
+There is also an option to run unit tests as a benchchmark tests
+via [PerformanceTestUtil.newPerformanceTest(...)](https://github.com/JetBrains/intellij-community/blob/def6433a5dd9f0a984cbc6e2835d27c97f2cb5f0/tools/intellij.tools.ide.metrics.benchmark/src/com/intellij/tools/ide/metrics/benchmark/PerformanceTestUtil.java#L19).  
 Examples [of usages in IntelliJ repo](https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20PerformanceTestUtil.newPerformanceTest&type=code).
-Or you can take a look at the tests in [intellij.tools.ide.metrics.benchmark module](https://github.com/JetBrains/intellij-community/tree/20d3f729e88c7f3f66f93e8b647b77b2839e3f36/tools/intellij.tools.ide.metrics.benchmark/testSrc/com/intellij/tools/ide/metrics/benchmark).  
-More details can be found in [com.intellij.testFramework.PerformanceTestInfo#start()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L251), 
+Or you can take a look at the tests
+in [intellij.tools.ide.metrics.benchmark module](https://github.com/JetBrains/intellij-community/tree/20d3f729e88c7f3f66f93e8b647b77b2839e3f36/tools/intellij.tools.ide.metrics.benchmark/testSrc/com/intellij/tools/ide/metrics/benchmark).  
+More details can be found
+in [com.intellij.testFramework.PerformanceTestInfo#start()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L251),
 [com.intellij.testFramework.PerformanceTestInfo#startAsSubtest()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L291),
 [com.intellij.testFramework.PerformanceTestInfo#withTelemetryMeters()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L161),
