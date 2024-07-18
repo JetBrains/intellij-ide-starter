@@ -39,7 +39,7 @@ object SevenZipArchiver {
     val sevenZipNineToolExe = sevenZipNineTool.resolve("7za.exe")
 
     // Then, download the new 7-Zip and unpack it using the old one
-    val sevenZipUrl = "https://www.7-zip.org/a/7z1900-x64.exe"
+    val sevenZipUrl = "https://www.7-zip.org/a/7z2407-x64.exe"
     val sevenZipFile = sevenZipCacheDir / sevenZipUrl.split("/").last()
     val sevenZipTool = sevenZipCacheDir / sevenZipFile.fileName.nameWithoutExtension
 
