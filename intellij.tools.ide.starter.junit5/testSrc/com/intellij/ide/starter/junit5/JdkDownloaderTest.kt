@@ -12,7 +12,7 @@ class JdkDownloaderTest {
   fun testJDKCanBeDownloaded(){
     JdkDownloaderFacade.allJdks.shouldHaveAtLeastSize(10)
     val sdk = JdkDownloaderFacade.jdk11.toSdk()
-    sdk.sdkPath.toFile().exists().shouldBe(true)
+    Files.exists(sdk.sdkPath).shouldBe(true)
     Files.walk(sdk.sdkPath).use { it.count() }.shouldBeGreaterThan(JdkDownloaderFacade.MINIMUM_JDK_FILES_COUNT.toLong())
   }
 }
