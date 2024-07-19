@@ -51,8 +51,9 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
 
   fun runInBackground(launchName: String): Deferred<IDEStartResult> {
     val backendLogFile = backendRunContext.logsDir / "idea.log"
+    val logLinesBefore = Result.runCatching { Files.readAllLines(backendLogFile).size }.getOrDefault(0)
     awaitBackendStart()
-    val joinLink = awaitJoinLink(backendLogFile)
+    val joinLink = awaitJoinLink(backendLogFile, logLinesBefore)
     frontendContext.ide.vmOptions.let {
       //setup xDisplay
       it.addDisplayIfNecessary()
@@ -115,12 +116,12 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
     waitForCondition(2.minutes, 1.seconds) { this::backendRunContext.isInitialized }
   }
 
-  private fun awaitJoinLink(logFile: Path): String {
+  private fun awaitJoinLink(logFile: Path, skipLines: Int): String {
     awaitForLogFile(logFile)
     val linkEntryPrefix = "Join link: tcp"
     var linkEntry: String? = null
-    waitForCondition(timeout = 14.seconds, pollInterval = 1.seconds) {
-      val logLines = Files.readAllLines(logFile)
+    waitForCondition(timeout = 14.seconds, pollInterval = 2.seconds) {
+      val logLines = Files.readAllLines(logFile).drop(skipLines)
       val joinLinkLines = logLines.filter { it.contains(linkEntryPrefix) }.distinct().also { logOutput("Found joinLinks: $it") }
       linkEntry = joinLinkLines.lastOrNull()
       linkEntry != null
