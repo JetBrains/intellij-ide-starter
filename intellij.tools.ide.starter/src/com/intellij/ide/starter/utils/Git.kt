@@ -320,7 +320,8 @@ object Git {
         workDir = repositoryDirectory.toAbsolutePath(),
         timeout = 1.minutes,
         args = arguments,
-        stdoutRedirect = stdout
+        stdoutRedirect = stdout,
+        stderrRedirect = ExecOutputRedirect.ToStdOut("git-local-branches"),
       ).start()
     }
     catch (e: IllegalStateException) {
