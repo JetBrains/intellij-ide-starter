@@ -23,7 +23,7 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
   }
 
   fun getGCMetrics(
-    requestedMetrics: Array<String> = arrayOf("gcPause", "fullGCPause", "gcPauseCount", "totalHeapUsedMax", "freedMemoryByGC")
+    requestedMetrics: Array<String> = arrayOf("gcPause", "fullGCPause", "gcPauseCount", "totalHeapUsedMax", "freedMemoryByGC", "freedMemoryByFullGC", "freedMemory")
   ): Iterable<PerformanceMetrics.Metric> {
     return if ((ideStartResult.runContext.reportsDir / "gcLog.log").toFile().exists()) {
       processGCSummary(findExistingSummary() ?: generateGCSummaryFile(), requestedMetrics)
