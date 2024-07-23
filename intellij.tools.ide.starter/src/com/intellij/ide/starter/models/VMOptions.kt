@@ -219,6 +219,10 @@ data class VMOptions(
     addSystemProperty("writerside.eula.reviewed.and.accepted", true)
   }
 
+  fun disableNewUsersOnboardingDialogue() {
+    addSystemProperty("ide.newUsersOnboarding", false)
+  }
+
   fun setFreezeReportingInterval(interval: Duration){
     addSystemProperty("performance.watcher.unresponsive.interval.ms", interval.inWholeMilliseconds)
   }

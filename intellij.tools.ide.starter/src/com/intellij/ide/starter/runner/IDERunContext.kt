@@ -1,7 +1,5 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.ide.starter.buildTool.GradleBuildTool
-import com.intellij.ide.starter.buildTool.events.GradleDaemonEvent
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -147,6 +145,7 @@ data class IDERunContext(
   fun calculateVmOptions(): VMOptions {
     return testContext.ide.vmOptions.copy().apply {
       disableStartupDialogs()
+      disableNewUsersOnboardingDialogue()
       disableFreezeReportingProfiling()
       setFatalErrorNotificationEnabled()
       setFlagIntegrationTests()
