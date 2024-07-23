@@ -205,11 +205,11 @@ you can look
 at [intellij.tools.ide.metrics.collector](https://github.com/JetBrains/intellij-community/tree/master/tools/intellij.tools.ide.metrics.collector#readme).
 
 There is also an option to run unit tests as a benchchmark tests
-via [PerformanceTestUtil.newPerformanceTest(...)](https://github.com/JetBrains/intellij-community/blob/def6433a5dd9f0a984cbc6e2835d27c97f2cb5f0/tools/intellij.tools.ide.metrics.benchmark/src/com/intellij/tools/ide/metrics/benchmark/PerformanceTestUtil.java#L19).  
-Examples [of usages in IntelliJ repo](https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20PerformanceTestUtil.newPerformanceTest&type=code).
+via [Benchmark.newPerformanceTest(...)](https://github.com/JetBrains/intellij-community/blob/def6433a5dd9f0a984cbc6e2835d27c97f2cb5f0/tools/intellij.tools.ide.metrics.benchmark/src/com/intellij/tools/ide/metrics/benchmark/PerformanceTestUtil.java#L19).  
+Examples [of usages in IntelliJ repo](https://github.com/search?q=repo%3AJetBrains%2Fintellij-community%20Benchmark.newBenchmark&type=code).
 Or you can take a look at the tests
 in [intellij.tools.ide.metrics.benchmark module](https://github.com/JetBrains/intellij-community/tree/20d3f729e88c7f3f66f93e8b647b77b2839e3f36/tools/intellij.tools.ide.metrics.benchmark/testSrc/com/intellij/tools/ide/metrics/benchmark).  
 More details can be found
-in [com.intellij.testFramework.PerformanceTestInfo#start()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L251),
-[com.intellij.testFramework.PerformanceTestInfo#startAsSubtest()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L291),
-[com.intellij.testFramework.PerformanceTestInfo#withTelemetryMeters()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.PerformanceTestInfo.java#L161),
+in [com.intellij.testFramework.BenchmarkTestInfo#start()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.BenchmarkTestInfo.java#L251),
+[com.intellij.testFramework.BenchmarkTestInfo#startAsSubtest()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.BenchmarkTestInfo.java#L291),
+[com.intellij.testFramework.BenchmarkTestInfo#withTelemetryMeters()](https://github.com/JetBrains/intellij-community/blob/0b640c6fff1ceaf15eb602c7a05c81a91daaff49/platform/testFramework/src/com/intellij/testFramework/com.intellij.testFramework.BenchmarkTestInfo.java#L161),
