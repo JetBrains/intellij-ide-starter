@@ -6,7 +6,7 @@ import org.kodein.di.instance
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Key-Value storage for parameters to tweak starter behaviour
+ * Key-Value storage for parameters to tweak starter behavior
  */
 abstract class ConfigurationStorage {
   companion object {
