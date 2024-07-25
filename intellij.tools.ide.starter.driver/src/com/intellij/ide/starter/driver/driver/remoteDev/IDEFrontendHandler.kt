@@ -96,7 +96,7 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
       }
       catch (e: Exception) {
         process.completeExceptionally(e)
-        logOutput("Exception starting the client. Client is not launched: ${e.message}")
+        logOutput("Exception starting the frontend. Frontend is not launched: ${e.message}")
         throw e
       }
     }
