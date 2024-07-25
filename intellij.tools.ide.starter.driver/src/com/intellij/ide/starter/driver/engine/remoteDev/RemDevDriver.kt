@@ -13,6 +13,7 @@ import kotlin.collections.firstOrNull
 import kotlin.reflect.KClass
 
 class RemDevDriver(host: JmxHost?) : DriverImpl(host, true) {
+  override val polymorphRegistry: PolymorphRegistryImpl = PolymorphRegistryImpl(this)
   override fun <T : Any> cast(instance: Any, clazz: KClass<T>): T {
     if (instance is BeControlComponentBase) {
       val builderClass = clazz.annotations
