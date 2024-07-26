@@ -28,7 +28,7 @@ fun String.hyphenateTestName(): String {
       convertedPath = convertedPath.resolve(hyphenateString(originalPath.getName(pathNameIndex).name))
     }
 
-    convertedPath.toString()
+    convertedPath.toString().replace(convertedPath.fileSystem.separator, "/")
   }
   catch (_: Exception) {
     return hyphenateString(this)
