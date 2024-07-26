@@ -97,9 +97,7 @@ class MacOsIdeDistribution : IdeDistribution() {
         val jbrFullVersion = JvmUtils.callJavaVersion(javaHome).substringAfter("build ").substringBefore(")")
         logOutput("Found following $jbrFullVersion in the product: $productCode $build")
 
-        // in Android Studio bundled only JRE
-        if (productCode == IdeProductProvider.AI.productCode) return jbrHome
-        return JBRResolver.downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion)
+        return javaHome
       }
     }
   }
