@@ -58,9 +58,7 @@ class WindowsIdeDistribution : IdeDistribution() {
         val jbrFullVersion = JvmUtils.callJavaVersion(jbrHome).substringAfter("build ").substringBefore(")")
         logOutput("Found following $jbrFullVersion in the product: $productCode $build")
 
-        // in Android Studio bundled only JRE
-        if (productCode == IdeProductProvider.AI.productCode) return jbrHome
-        return JBRResolver.downloadAndUnpackJbrFromBuildIfNeeded(jbrFullVersion)
+        return jbrHome
       }
     }
   }
