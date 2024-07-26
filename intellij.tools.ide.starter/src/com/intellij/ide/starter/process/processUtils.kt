@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.process
 
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -251,7 +252,7 @@ fun getAllJavaProcesses(): List<String> {
     timeout = 30.seconds,
     args = listOf("jps", "-l"),
     stdoutRedirect = stdout
-  ).start()
+  ).start(printEnvVariables = CIServer.instance.isBuildRunningOnCI)
 
   logOutput("List of java processes: \n" + stdout.read())
   return stdout.read().split("\n")
