@@ -118,7 +118,7 @@ object TeamCityClient {
     }
     while (artifactDir.exists())
 
-    logOutput("Creating directories for artifact publishing $artifactDir")
+    logOutput("Creating directories for artifact publishing ${artifactDir.toUri()}")
     artifactDir.toFile().deleteRecursively()
     artifactDir.createDirectories()
 
