@@ -10,7 +10,6 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.report.FailureDetailsOnCI
-import com.intellij.ide.starter.report.FailureDetailsOnCI.Companion.getTestMethodName
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
@@ -20,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.io.path.Path
 import kotlin.io.path.div
-import kotlin.text.ifEmpty
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -85,13 +83,9 @@ internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by
         append("\tat $it\n")
       }
       screenshotPath?.let {
-        val path = if (CIServer.instance.isBuildRunningOnCI) {
-          it.substringAfterLast("log")
+        if (!CIServer.instance.isBuildRunningOnCI) {
+          append("Screenshot: file://$screenshotPath\n".color(LogColor.BLUE))
         }
-        else {
-          "file://$it"
-        }
-        append("Screenshot: $path\n".color(LogColor.BLUE))
         if (CIServer.instance.isBuildRunningOnCI) {
           runContext?.let { context ->
             logOutput("Adding screenshot to metadata")
