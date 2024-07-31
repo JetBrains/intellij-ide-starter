@@ -47,9 +47,8 @@ class MetricsPublisherExample : MetricsPublisher<MetricsPublisherExample>() {
     ideStartResult.context.publishArtifact(source = reportFile, artifactName = "metrics.performance.json")
   }
 
-  fun publishMetricsToYourCI(startResult: IDEStartResult): MetricsPublisherExample {
+  override fun publish(startResult: IDEStartResult) {
     publishAction(startResult, getCollectedMetrics(startResult))
-    return this
   }
 }
 
@@ -67,7 +66,7 @@ class MetricsCollectionTest {
     val exitCommandChain = CommandChain().exitApp()
     val startResult = context.runIDE(commands = exitCommandChain, runTimeout = 4.minutes)
 
-    val collectedMetrics = MetricsPublisherExample()
+    val publisher = MetricsPublisherExample()
       // add span collector (from opentelemetry.json file that is located in the log directory)
       .addMetricsCollector(StarterTelemetrySpanCollector(spanNames = spanNames))
       // add meters collector (from .csv files that is located in log directory)
@@ -76,8 +75,9 @@ class MetricsCollectionTest {
         StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.SUM) {
           metricPrefixes.any { prefix -> it.key.startsWith(prefix) }
         })
-      .publishMetricsToYourCI(startResult)
-      .getCollectedMetrics(startResult)
+
+    publisher.publish(startResult)
+    val collectedMetrics = publisher.getCollectedMetrics(startResult)
 
     withClue("Collected metrics should not be empty") {
       collectedMetrics.shouldNotBeEmpty()

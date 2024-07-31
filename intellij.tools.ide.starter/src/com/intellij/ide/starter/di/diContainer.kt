@@ -9,8 +9,8 @@ import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeDownloader
-import com.intellij.ide.starter.ide.StarterJBRDownloader
 import com.intellij.ide.starter.ide.JBRDownloader
+import com.intellij.ide.starter.ide.StarterJBRDownloader
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
@@ -62,7 +62,8 @@ var di = DI {
   bindArgSet<IDETestContext, BuildTool>()
   importAll(ideaBuildToolsDI)
 
-  bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
+  bindProvider<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
+
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
   bindSingleton<ConfigurationStorage> { StarterConfigurationStorage() }

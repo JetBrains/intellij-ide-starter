@@ -1,7 +1,6 @@
 package com.intellij.tools.ide.metrics.collector.starter
 
 import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
@@ -44,10 +43,9 @@ class MetricsDiffCalculationTest {
       it.name.startsWith("jps.") || it.name.startsWith("workspaceModel.")
     }
 
-  private fun getMetricsPublisher(): MetricsPublisher<Any> = object : ReportPublisher, MetricsPublisher<Any>() {
+  private fun getMetricsPublisher(): MetricsPublisher<Any> = object : MetricsPublisher<Any>() {
     override var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
-    override fun publishResultOnSuccess(ideStartResult: IDEStartResult) {}
-    override fun publishAnywayAfterRun(context: IDERunContext) {}
+    override fun publish(ideStartResult: IDEStartResult) {}
   }
 
   private val logsResourceDir: Path by lazy {
