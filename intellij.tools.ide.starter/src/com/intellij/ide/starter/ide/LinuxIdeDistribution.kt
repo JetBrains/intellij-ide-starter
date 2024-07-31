@@ -31,7 +31,7 @@ class LinuxIdeDistribution : IdeDistribution() {
 
     fun linuxCommandLine(xvfbRunLog: Path, commandEnv: Map<String, String> = emptyMap()): List<String> {
       return when {
-        (System.getenv("DISPLAY") != null || commandEnv["DISPLAY"] != null) && System.getProperty("follow.display") == null -> listOf()
+        System.getenv("DISPLAY") != null || commandEnv["DISPLAY"] != null -> listOf()
         else ->
           //hint https://gist.github.com/tullmann/2d8d38444c5e81a41b6d
           listOf(
