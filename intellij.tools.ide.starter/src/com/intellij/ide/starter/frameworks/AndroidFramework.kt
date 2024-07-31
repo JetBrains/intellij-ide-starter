@@ -108,7 +108,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
   fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String, commit: String = "") {
     val communityProjectHome = testContext.resolvedProjectHome
     if (communityProjectHome.toFile().name.startsWith("intellij-community") && !(communityProjectHome / "android").toFile().exists()) {
-      val commandLineArgs = listOf("git", "clone", "git://git.jetbrains.org/idea/android.git", "android")
+      val commandLineArgs = listOf("git", "clone", "ssh://git@git.jetbrains.team/ij/android.git", "android")
       val adjustedCommandLineArgs = when (intellijCommunityVersion) {
         "master" -> commandLineArgs
         else -> {
