@@ -45,7 +45,9 @@ class MetricsDiffCalculationTest {
 
   private fun getMetricsPublisher(): MetricsPublisher<Any> = object : MetricsPublisher<Any>() {
     override var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
-    override fun publish(ideStartResult: IDEStartResult) {}
+    override fun publish(ideStartResult: IDEStartResult): MetricsPublisher<Any> {
+      return this
+    }
   }
 
   private val logsResourceDir: Path by lazy {

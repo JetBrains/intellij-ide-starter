@@ -12,8 +12,9 @@ val metricsPublisherDI by DI.Module {
     object : MetricsPublisher<Any>() {
       override var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
 
-      override fun publish(ideStartResult: IDEStartResult) {
+      override fun publish(ideStartResult: IDEStartResult): MetricsPublisher<Any> {
         logError("Default metrics publisher is registered. If you need to publish your metrics - register your own publisher via DI.")
+        return this
       }
     }
   }

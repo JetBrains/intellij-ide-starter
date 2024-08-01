@@ -64,7 +64,7 @@ var di = DI {
   bindArgSet<IDETestContext, BuildTool>()
   importAll(ideaBuildToolsDI)
 
-  bindProvider<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
+  bindSingleton<List<ReportPublisher>> { listOf(ConsoleTestResultPublisher) }
 
   bindSingleton<IdeProduct> { IdeProductImp }
   bindSingleton<CurrentTestMethod> { CurrentTestMethod }
