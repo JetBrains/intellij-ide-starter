@@ -1,15 +1,12 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
-import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.driver.waitForCondition
-import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -23,21 +20,8 @@ import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class IDEFrontendHandler(private val backendContext: IDETestContext, private val remoteDevDriverOptions: RemoteDevDriverOptions) {
-
-  private val executableFileName = when {
-    (SystemInfo.isLinux || SystemInfo.isWindows) && StarterConfigurationStorage.shouldRunOnInstaller() -> "jetbrains_client"
-    else -> backendContext.testCase.ideInfo.executableFileName
-  }
-
-  private val clientTestCase = backendContext.testCase.copy(ideInfo = backendContext.testCase.ideInfo.copy(
-    platformPrefix = "JetBrainsClient",
-    executableFileName = executableFileName
-  ))
-
-  private val frontendContext = Starter.newTestContainer().createFromExisting(testName = backendContext.testName,
-                                                                              testCase = clientTestCase,
-                                                                              existingContext = backendContext)
+class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext, private val remoteDevDriverOptions: RemoteDevDriverOptions) {
+  private val frontendContext = ideRemDevTestContext.frontendIDEContext
 
   private fun VMOptions.addDisplayIfNecessary() {
     if (SystemInfo.isLinux && System.getenv("DISPLAY") == null) {
@@ -91,7 +75,7 @@ class IDEFrontendHandler(private val backendContext: IDETestContext, private val
             }
           })
           .also {
-            logOutput("Remote IDE client run ${backendContext.testName} completed")
+            logOutput("Remote IDE client run ${ideRemDevTestContext.testName} completed")
           }
       }
       catch (e: Exception) {

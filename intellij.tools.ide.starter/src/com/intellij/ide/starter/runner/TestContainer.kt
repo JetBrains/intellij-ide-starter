@@ -1,28 +1,27 @@
 package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.config.ConfigurationStorage
-import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.ide.InstalledIde
+import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
-import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import org.kodein.di.direct
+import org.kodein.di.instance
 import java.nio.file.Path
-import kotlin.io.path.div
 import kotlin.reflect.jvm.isAccessible
 
 interface TestContainer<T> {
   // TODO: Port setup hooks on using events
   // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
   val setupHooks: MutableList<IDETestContext.() -> IDETestContext>
+
+  val contextFactory: IDETestContextFactory
+    get() = di.direct.instance<IDETestContextFactory>()
 
   companion object {
     init {
@@ -33,6 +32,52 @@ interface TestContainer<T> {
 
     inline fun <reified T : TestContainer<T>> newInstance(): T {
       return T::class.constructors.single().apply { isAccessible = true }.call()
+    }
+
+    suspend fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
+      return ideInfo.getInstaller(ideInfo).install(ideInfo)
+    }
+
+    fun installPerformanceTestingPluginIfMissing(context: IDETestContext) {
+      val performancePluginId = "com.jetbrains.performancePlugin"
+
+      context.pluginConfigurator.apply {
+        val pluginState = getPluginInstalledState(performancePluginId)
+        if (pluginState != PluginInstalledState.INSTALLED && pluginState != PluginInstalledState.BUNDLED_TO_IDE)
+          installPluginFromPluginManager(performancePluginId, ide = context.ide)
+      }
+    }
+
+    fun applyDefaultVMOptions(context: IDETestContext): IDETestContext {
+      return when (context.testCase.ideInfo == IdeProductProvider.AI) {
+        true -> context
+          .applyVMOptionsPatch {
+            overrideDirectories(context.paths)
+            withEnv("STUDIO_VM_OPTIONS", context.ide.patchedVMOptionsFile.toString())
+          }
+        false -> context
+          .disableLoadShellEnv()
+          .disableInstantIdeShutdown()
+          .disableFusSendingOnIdeClose()
+          .disableLinuxNativeMenuForce()
+          .withGtk2OnLinux()
+          .skipGitLogIndexing()
+          .enableSlowOperationsInEdtInTests()
+          .enableAsyncProfiler()
+          .applyVMOptionsPatch {
+            overrideDirectories(context.paths)
+            if (isUnderDebug()) {
+              debug(5010, suspend = false)
+            }
+          }
+          .disableMinimap()
+          .addProjectToTrustedLocations()
+          .disableReportingStatisticsToProduction()
+          .disableReportingStatisticToJetStat()
+          .disableMigrationNotification()
+          .setKotestMaxCollectionEnumerateSize()
+          .acceptNonTrustedCertificates()
+      }
     }
   }
 
@@ -47,19 +92,12 @@ interface TestContainer<T> {
    * @return <Build Number, InstalledIde>
    */
   suspend fun resolveIDE(ideInfo: IdeInfo): Pair<String, InstalledIde> {
-    return ideInfo.getInstaller(ideInfo).install(ideInfo)
+    return TestContainer.resolveIDE(ideInfo)
   }
 
   fun installPerformanceTestingPluginIfMissing(context: IDETestContext) {
-    val performancePluginId = "com.jetbrains.performancePlugin"
-
-    context.pluginConfigurator.apply {
-      val pluginState = getPluginInstalledState(performancePluginId)
-      if (pluginState != PluginInstalledState.INSTALLED && pluginState != PluginInstalledState.BUNDLED_TO_IDE)
-        installPluginFromPluginManager(performancePluginId, ide = context.ide)
-    }
+    TestContainer.installPerformanceTestingPluginIfMissing(context)
   }
-
 
   fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false): IDETestContext =
     newContext(testName, testCase, preserveSystemDir, computeWithSpan("download and unpack project") { testCase.projectInfo.downloadAndUnpackProject() })
@@ -78,75 +116,6 @@ interface TestContainer<T> {
    *                      For example - project unpacking
    */
   private fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, projectHome: Path?): IDETestContext {
-    logOutput("Resolving IDE build for $testName...")
-    val (buildNumber, ide) = @Suppress("SSBasedInspection")
-    runBlocking(Dispatchers.Default) {
-      computeWithSpan("resolving IDE") {
-        resolveIDE(testCase.ideInfo)
-      }
-    }
-
-    require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
-
-    val testDirectory = run {
-      val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
-      if (testCase.ideInfo.platformPrefix == "JetBrainsClient") {
-        commonPath / "embedded-client"
-      }
-      else {
-        commonPath
-      }
-    }
-
-    val paths = IDEDataPaths.createPaths(testName, testDirectory, testCase.useInMemoryFileSystem)
-    logOutput("Using IDE paths for '$testName': $paths")
-    logOutput("IDE to run for '$testName': $ide")
-
-    var testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
-    testContext.wipeSystemDir()
-
-    testContext = applyDefaultVMOptions(testContext)
-
-    val contextWithAppliedHooks = setupHooks
-      .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
-      .apply { installPerformanceTestingPluginIfMissing(this) }
-
-    testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
-
-    EventsBus.postAndWaitProcessing(TestContextInitializedEvent(contextWithAppliedHooks))
-
-    return contextWithAppliedHooks
-  }
-
-  fun applyDefaultVMOptions(context: IDETestContext): IDETestContext {
-    return when (context.testCase.ideInfo == IdeProductProvider.AI) {
-      true -> context
-        .applyVMOptionsPatch {
-          overrideDirectories(context.paths)
-          withEnv("STUDIO_VM_OPTIONS", context.ide.patchedVMOptionsFile.toString())
-        }
-      false -> context
-        .disableLoadShellEnv()
-        .disableInstantIdeShutdown()
-        .disableFusSendingOnIdeClose()
-        .disableLinuxNativeMenuForce()
-        .withGtk2OnLinux()
-        .skipGitLogIndexing()
-        .enableSlowOperationsInEdtInTests()
-        .enableAsyncProfiler()
-        .applyVMOptionsPatch {
-          overrideDirectories(context.paths)
-          if (isUnderDebug()) {
-            debug(5010, suspend = false)
-          }
-        }
-        .disableMinimap()
-        .addProjectToTrustedLocations()
-        .disableReportingStatisticsToProduction()
-        .disableReportingStatisticToJetStat()
-        .disableMigrationNotification()
-        .setKotestMaxCollectionEnumerateSize()
-        .acceptNonTrustedCertificates()
-    }
+    return contextFactory.newContext(testName, testCase, preserveSystemDir, projectHome, setupHooks)
   }
 }

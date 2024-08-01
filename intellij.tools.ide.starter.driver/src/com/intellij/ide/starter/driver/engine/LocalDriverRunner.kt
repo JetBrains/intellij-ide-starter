@@ -9,11 +9,9 @@ import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
-import com.intellij.tools.ide.util.common.logOutput
 import io.qameta.allure.Allure
 import kotlinx.coroutines.*
 import java.util.*
-import kotlin.math.log
 import kotlin.time.Duration
 
 class LocalDriverRunner : DriverRunner {

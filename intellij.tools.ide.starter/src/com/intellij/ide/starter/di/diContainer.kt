@@ -8,9 +8,11 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.IDETestContextFactory
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.JBRDownloader
 import com.intellij.ide.starter.ide.StarterJBRDownloader
+import com.intellij.ide.starter.ide.LocalIDETestContextFactoryImpl
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
@@ -78,6 +80,7 @@ var di = DI {
   }
   bindProvider<TestContainer<*>> { TestContainer.newInstance<TestContainerImpl>() }
   bindSingleton<JBRDownloader> { StarterJBRDownloader }
+  bindSingleton<IDETestContextFactory> { LocalIDETestContextFactoryImpl() }
 }.apply {
   logOutput("Starter DI was initialized")
 }

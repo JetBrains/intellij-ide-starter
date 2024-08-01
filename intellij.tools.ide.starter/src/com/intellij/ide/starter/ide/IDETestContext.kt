@@ -49,16 +49,16 @@ import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-class IDETestContext(
+open class IDETestContext(
   val paths: IDEDataPaths,
   val ide: InstalledIde,
   val testCase: TestCase<*>,
   val testName: String,
-  private val _resolvedProjectHome: Path?,
+  val _resolvedProjectHome: Path?,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),
   var isReportPublishingEnabled: Boolean = true,
-  private var preserveSystemDir: Boolean = false
+  var preserveSystemDir: Boolean = false,
 ) {
   companion object {
     const val OPENTELEMETRY_FILE = "opentelemetry.json"

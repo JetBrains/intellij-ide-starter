@@ -12,14 +12,14 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 fun IDETestContext.runIdeWithDriver(commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
-                                                                 commands: Iterable<MarshallableCommand> = CommandChain(),
-                                                                 runTimeout: Duration = 10.minutes,
-                                                                 useStartupScript: Boolean = true,
-                                                                 launchName: String = "",
-                                                                 expectedKill: Boolean = false,
-                                                                 expectedExitCode: Int = 0,
-                                                                 collectNativeThreads: Boolean = false,
-                                                                 configure: IDERunContext.() -> Unit = {}): BackgroundRun {
+                                    commands: Iterable<MarshallableCommand> = CommandChain(),
+                                    runTimeout: Duration = 10.minutes,
+                                    useStartupScript: Boolean = true,
+                                    launchName: String = "",
+                                    expectedKill: Boolean = false,
+                                    expectedExitCode: Int = 0,
+                                    collectNativeThreads: Boolean = false,
+                                    configure: IDERunContext.() -> Unit = {}): BackgroundRun {
   val driverRunner = di.direct.instanceOrNull<DriverRunner>() ?: LocalDriverRunner()
   return driverRunner.runIdeWithDriver(this, commandLine, commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
 }

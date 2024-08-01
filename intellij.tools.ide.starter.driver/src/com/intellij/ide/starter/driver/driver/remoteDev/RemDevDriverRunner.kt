@@ -17,10 +17,11 @@ const val REQUIRE_FLUXBOX_VARIABLE = "REQUIRE_FLUXBOX"
 
 class RemDevDriverRunner : DriverRunner {
   override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
-    val remoteDevDriverOptions = RemoteDevDriverOptions()
+    require(context is IDERemDevTestContext) { "for split-mode context should be instance of ${IDERemDevTestContext::class.java.simpleName}" }
 
+    val remoteDevDriverOptions = RemoteDevDriverOptions()
     val ideBackendHandler = IDEBackendHandler(context, remoteDevDriverOptions)
-    val ideFrontendHandler = IDEFrontendHandler(backendContext = context, remoteDevDriverOptions)
+    val ideFrontendHandler = IDEFrontendHandler(context, remoteDevDriverOptions)
 
     EventsBus.subscribe(ideFrontendHandler) { event: IdeLaunchEvent ->
       ideFrontendHandler.handleBackendContext(event.runContext)
