@@ -7,11 +7,11 @@ import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 
-open class DoNotLogEnvironmentVariables : BeforeAllCallback, BeforeEachCallback {
+open class LogEnvironmentVariables : BeforeAllCallback, BeforeEachCallback {
   private fun configure() {
     if (CIServer.instance.isBuildRunningOnCI) return
 
-    ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_LOG_ENVIRONMENT_VARIABLES, false)
+    ConfigurationStorage.instance().put(StarterConfigurationStorage.ENV_LOG_ENVIRONMENT_VARIABLES, true)
   }
 
   override fun beforeEach(context: ExtensionContext) = configure()
