@@ -520,9 +520,13 @@ open class IDETestContext(
   fun publishArtifact(source: Path,
                       artifactPath: String = testName,
                       artifactName: String = source.fileName.toString()) {
-    CIServer.instance.publishArtifact(source = source,
-                                      artifactPath = artifactPath.replaceSpecialCharactersWithHyphens(),
-                                      artifactName = artifactName.replaceSpecialCharactersWithHyphens())
+    computeWithSpan("publish artifacts") { span ->
+      span.setAttribute("artifactPath", artifactPath)
+      span.setAttribute("artifactName", artifactName)
+      CIServer.instance.publishArtifact(source = source,
+                                        artifactPath = artifactPath.replaceSpecialCharactersWithHyphens(),
+                                        artifactName = artifactName.replaceSpecialCharactersWithHyphens())
+    }
   }
 
   @Suppress("unused")

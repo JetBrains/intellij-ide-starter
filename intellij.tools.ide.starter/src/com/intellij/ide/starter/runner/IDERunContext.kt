@@ -243,7 +243,7 @@ data class IDERunContext(
           },
           onBeforeKilled = { process, pid ->
             span.end()
-            computeWithSpan("runIde post-processing") {
+            computeWithSpan("runIde post-processing before killed") {
               captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
               EventsBus.postAndWaitProcessing(IdeBeforeKillEvent(this, process, pid))
               if (testContext.profilerType != ProfilerType.NONE) {
@@ -291,7 +291,7 @@ data class IDERunContext(
         throw e
       }
       finally {
-        computeWithSpan("runIde post-processing") {
+        computeWithSpan("runIde post-processing, allure and artifacts publishing") {
           kotlin.runCatching {
             publishArtifacts()
             AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })

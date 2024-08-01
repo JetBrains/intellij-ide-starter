@@ -1,6 +1,8 @@
 package com.intellij.ide.starter.report
 
+import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.util.text.HtmlChunk.span
 import com.intellij.tools.ide.util.common.logError
 import io.qameta.allure.Allure
 import io.qameta.allure.model.Status
@@ -71,15 +73,18 @@ object AllureHelper {
    */
   @OptIn(ExperimentalPathApi::class)
   fun addAttachmentsFromDir(dir: Path, filter: (Path) -> Boolean = { true }) {
-    dir.walk()
-      .filter(filter)
-      .forEach { file ->
-        kotlin.runCatching {
-          val name = file.parent.fileName.toString() + "/" + file.name
-          attachFile(name, file)
-        }.onFailure {
-          logError("Fail to attach file: ${file}", it)
+    computeWithSpan("Attach files to Allure report"){ span ->
+      span.setAttribute("dir", dir.toString())
+      dir.walk()
+        .filter(filter)
+        .forEach { file ->
+          kotlin.runCatching {
+            val name = file.parent.fileName.toString() + "/" + file.name
+            attachFile(name, file)
+          }.onFailure {
+            logError("Fail to attach file: ${file}", it)
+          }
         }
-      }
+    }
   }
 }
