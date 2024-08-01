@@ -17,4 +17,3 @@ interface StarterMetricsCollector {
    */
   fun collect(runContext: IDERunContext): List<PerformanceMetrics.Metric>
 }
-

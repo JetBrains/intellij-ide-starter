@@ -10,11 +10,8 @@ import org.kodein.di.bindProvider
 val metricsPublisherDI by DI.Module {
   bindProvider<MetricsPublisher<*>>() {
     object : MetricsPublisher<Any>() {
-      override var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
-
-      override fun publish(ideStartResult: IDEStartResult): MetricsPublisher<Any> {
+      override val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ ->
         logError("Default metrics publisher is registered. If you need to publish your metrics - register your own publisher via DI.")
-        return this
       }
     }
   }

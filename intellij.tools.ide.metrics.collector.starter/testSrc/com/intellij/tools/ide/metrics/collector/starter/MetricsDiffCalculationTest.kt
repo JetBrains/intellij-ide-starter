@@ -44,10 +44,7 @@ class MetricsDiffCalculationTest {
     }
 
   private fun getMetricsPublisher(): MetricsPublisher<Any> = object : MetricsPublisher<Any>() {
-    override var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
-    override fun publish(ideStartResult: IDEStartResult): MetricsPublisher<Any> {
-      return this
-    }
+    override val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
   }
 
   private val logsResourceDir: Path by lazy {
@@ -67,10 +64,10 @@ class MetricsDiffCalculationTest {
     val metricsPublisher: MetricsPublisher<Any> = getMetricsPublisher().apply { addMetricsCollector(getWorkspaceModelMeterCollector()) }
 
     setupDataPaths(testInfo, Path("before"))
-    val metricsBefore: List<PerformanceMetrics.Metric> = metricsPublisher.getCollectedMetrics(runContextMock)
+    val metricsBefore: List<PerformanceMetrics.Metric> = metricsPublisher.collectMetrics(runContextMock)
 
     setupDataPaths(testInfo, Path("after"))
-    val metricsAfter: List<PerformanceMetrics.Metric> = metricsPublisher.getCollectedMetrics(runContextMock)
+    val metricsAfter: List<PerformanceMetrics.Metric> = metricsPublisher.collectMetrics(runContextMock)
 
     val diff: List<PerformanceMetrics.Metric> = MetricsDiffCalculator.calculateDiff(metricsBefore, metricsAfter)
 

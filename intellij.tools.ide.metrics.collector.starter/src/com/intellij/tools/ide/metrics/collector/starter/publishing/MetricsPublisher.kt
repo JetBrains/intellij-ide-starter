@@ -8,6 +8,7 @@ import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterMetricsCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector
+import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.withRetryBlocking
 import io.opentelemetry.sdk.metrics.data.MetricData
@@ -21,21 +22,38 @@ import org.kodein.di.provider
  * Can compare metrics if needed during publishing.
  */
 abstract class MetricsPublisher<T> {
-  protected val metricsCollectors: MutableList<StarterMetricsCollector> = mutableListOf()
+  companion object {
+    /** Return a new instance of metric publisher.
+     * That is by design since tests may need their own metrics publishing configuration.
+     */
+    val newInstance: MetricsPublisher<*>
+      get() {
+        try {
+          return di.direct.provider<MetricsPublisher<*>>().invoke()
+        }
+        catch (e: Throwable) {
+          throw IllegalStateException("No metrics publishers were registered in Starter DI")
+        }
+      }
+  }
 
-  protected abstract var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit
+  private var configuration: T.(IDEStartResult) -> Unit = {}
+
+  protected val metricsCollectors: MutableList<StarterMetricsCollector> = mutableListOf()
+  protected abstract val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit
+
+  /** Will be invoked before publishing */
+  fun configure(config: T.(IDEStartResult) -> Unit): MetricsPublisher<T> {
+    configuration = config
+    return this
+  }
 
   fun addMetricsCollector(vararg collectors: StarterMetricsCollector): MetricsPublisher<T> {
     metricsCollectors.addAll(collectors)
     return this
   }
 
-  fun configurePublishAction(publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit): MetricsPublisher<T> {
-    this.publishAction = publishAction
-    return this
-  }
-
-  fun getCollectedMetrics(runContext: IDERunContext): List<PerformanceMetrics.Metric> = metricsCollectors.flatMap {
+  fun collectMetrics(runContext: IDERunContext): List<PerformanceMetrics.Metric> = metricsCollectors.flatMap {
     withRetryBlocking(
       messageOnFailure = "Failure on metrics collection",
       printFailuresMode = PrintFailuresMode.ONLY_LAST_FAILURE,
@@ -43,22 +61,21 @@ abstract class MetricsPublisher<T> {
     ?: throw RuntimeException("Couldn't collect metrics from collector ${it::class.simpleName}")
   }
 
-  fun getCollectedMetrics(ideStartResult: IDEStartResult): List<PerformanceMetrics.Metric> = getCollectedMetrics(ideStartResult.runContext)
+  fun collectMetrics(ideStartResult: IDEStartResult): List<PerformanceMetrics.Metric> {
+    configuration(this as T, ideStartResult)
+    return collectMetrics(ideStartResult.runContext)
+  }
 
   /** Collect metrics from all registered collectors and publish them */
-  abstract fun publish(ideStartResult: IDEStartResult): MetricsPublisher<T>
+  fun publish(ideStartResult: IDEStartResult): MetricsPublisher<T> {
+    publishAction(ideStartResult, collectMetrics(ideStartResult))
+    return this
+  }
 }
 
-/** Return a new instance of metric publisher */
+/** Return a new instance of metric publisher. Method is just for the sake of better discoverability of MetricsPublisher. */
 val IDEStartResult.newMetricsPublisher: MetricsPublisher<*>
-  get() {
-    try {
-      return di.direct.provider<MetricsPublisher<*>>().invoke()
-    }
-    catch (e: Throwable) {
-      throw IllegalStateException("No metrics publishers were registered in Starter DI")
-    }
-  }
+  get() = MetricsPublisher.newInstance
 
 /**
  * Shortcut for creating [StarterTelemetrySpanCollector], adding it as a collector, and publishing the collected metrics.
@@ -66,12 +83,10 @@ val IDEStartResult.newMetricsPublisher: MetricsPublisher<*>
  */
 fun MetricsPublisher<*>.publishOnlySpans(
   ideStartResult: IDEStartResult,
-  spanNames: List<String>,
-  aliases: Map<String, String> = mapOf(),
-) {
-  this.addMetricsCollector(StarterTelemetrySpanCollector(spanNames = spanNames, aliases = aliases))
-    .publish(ideStartResult)
-}
+  spanFilter: SpanFilter,
+  spanAliases: Map<String, String> = mapOf(),
+): MetricsPublisher<*> =
+  this.addSpanCollector(spanFilter, spanAliases = spanAliases).publish(ideStartResult)
 
 /**
  * Shortcut for creating [StarterTelemetryJsonMeterCollector], adding it as a collector, and publishing the collected metrics
@@ -81,7 +96,17 @@ fun MetricsPublisher<*>.publishOnlyMeters(
   ideStartResult: IDEStartResult,
   metricsSelectionStrategy: MetricsSelectionStrategy,
   meterFilter: (MetricData) -> Boolean,
-) {
-  this.addMetricsCollector(StarterTelemetryJsonMeterCollector(metricsSelectionStrategy, meterFilter))
-    .publish(ideStartResult)
-}
+): MetricsPublisher<*> =
+  this.addMeterCollector(metricsSelectionStrategy, meterFilter).publish(ideStartResult)
+
+/** Shortcut for adding a new span collector */
+fun MetricsPublisher<*>.addSpanCollector(
+  spanFilter: SpanFilter,
+  spanAliases: Map<String, String> = mapOf(),
+): MetricsPublisher<*> = this.addMetricsCollector(StarterTelemetrySpanCollector(spanFilter, spanAliases = spanAliases))
+
+/** Shortcut for adding a new meter collector */
+fun MetricsPublisher<*>.addMeterCollector(
+  metricsSelectionStrategy: MetricsSelectionStrategy,
+  meterFilter: (MetricData) -> Boolean,
+): MetricsPublisher<*> = this.addMetricsCollector(StarterTelemetryJsonMeterCollector(metricsSelectionStrategy, meterFilter))

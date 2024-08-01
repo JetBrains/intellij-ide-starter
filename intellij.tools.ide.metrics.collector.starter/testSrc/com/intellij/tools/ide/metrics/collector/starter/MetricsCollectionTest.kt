@@ -8,12 +8,12 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.starter.metrics.CommonMetrics
 import com.intellij.tools.ide.metrics.collector.starter.metrics.GCLogAnalyzer
 import com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher
-import com.intellij.tools.ide.metrics.collector.starter.publishing.newMetricsPublisher
+import com.intellij.tools.ide.metrics.collector.starter.publishing.addMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.publishing.addSpanCollector
+import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.util.common.logOutput
@@ -29,7 +29,7 @@ import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
 
 class MetricsPublisherExample : MetricsPublisher<MetricsPublisherExample>() {
-  override var publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { ideStartResult, metrics ->
+  override val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { ideStartResult, metrics ->
     val reportFile: Path = Files.createTempFile("metrics", ".json")
 
     val metricsSortedByName =
@@ -49,11 +49,6 @@ class MetricsPublisherExample : MetricsPublisher<MetricsPublisherExample>() {
     // You can implement your own logic for CIServer and register it via Kodein DI
     // more about that you can find in Starter readme
     ideStartResult.context.publishArtifact(source = reportFile, artifactName = "metrics.performance.json")
-  }
-
-  override fun publish(ideStartResult: IDEStartResult): MetricsPublisherExample {
-    publishAction(ideStartResult, getCollectedMetrics(ideStartResult))
-    return this
   }
 }
 
@@ -89,16 +84,15 @@ class MetricsCollectionTest {
     val exitCommandChain = CommandChain().exitApp()
     val startResult = context.runIDE(commands = exitCommandChain, runTimeout = 4.minutes)
 
-    val collectedMetrics = startResult.newMetricsPublisher
+    val collectedMetrics = MetricsPublisher.newInstance
       // add span collector (from opentelemetry.json file that is located in the log directory)
-      .addMetricsCollector(StarterTelemetrySpanCollector(spanNames = spanNames))
+      .addSpanCollector(SpanFilter.containsNameIn(spanNames))
       // add meters collector (from .csv files that is located in log directory)
-      .addMetricsCollector(
-        StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.SUM) {
-          metricPrefixes.any { prefix -> it.name.startsWith(prefix) }
-        })
+      .addMeterCollector(MetricsSelectionStrategy.SUM) {
+        metricPrefixes.any { prefix -> it.name.startsWith(prefix) }
+      }
       .publish(startResult)
-      .getCollectedMetrics(startResult)
+      .collectMetrics(startResult)
 
     withClue("Collected metrics should not be empty") {
       collectedMetrics.shouldNotBeEmpty()
