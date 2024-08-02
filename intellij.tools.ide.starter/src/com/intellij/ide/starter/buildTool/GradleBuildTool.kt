@@ -8,14 +8,12 @@ import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessesIdByProcessName
-import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.starter.bus.EventsBus
-//import com.intellij.tools.ide.starter.bus.shared.events.buildTools.GradleDaemonStartedEvent
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.CoroutineScope
@@ -262,6 +260,18 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
+  fun enableOpenTelemetry(): GradleBuildTool {
+    val telemetryDumpFolder = testContext.paths
+      .testHome
+      .resolve("log")
+    logOutput("Gradle daemon telemetry will be collected to $telemetryDumpFolder")
+    testContext.applyVMOptionsPatch {
+      addSystemProperty("gradle.daemon.opentelemetry.enabled", true)
+      addSystemProperty("gradle.daemon.opentelemetry.format", "JSON")
+      addSystemProperty("gradle.daemon.opentelemetry.folder", telemetryDumpFolder)
+    }
+    return this
+  }
 
   fun getLastGradleReleaseVersion(): String {
     return HttpClient.sendRequest(
