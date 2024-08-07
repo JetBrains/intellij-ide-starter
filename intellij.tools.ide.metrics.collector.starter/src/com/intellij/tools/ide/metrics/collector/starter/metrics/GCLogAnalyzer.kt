@@ -69,11 +69,16 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
       val command = ProcessHandle.current().info().command().orElse(null)
       val javaCommand = if (command.isNullOrBlank()) "java" else command
 
-      ProcessExecutor(
-        "gcviewer",
-        workDir = gcViewer.parent, timeout = 1.minutes,
-        args = listOf(javaCommand, "-jar", gcViewer.toAbsolutePath().toString(), paths, gcSummary.toAbsolutePath().toString())
-      ).start()
+      try {
+        ProcessExecutor(
+          "gcviewer",
+          workDir = gcViewer.parent, timeout = 1.minutes,
+          args = listOf(javaCommand, "-jar", gcViewer.toAbsolutePath().toString(), paths, gcSummary.toAbsolutePath().toString())
+        ).start()
+      } catch (t: Throwable) {
+        println("gcviewer process failed by: ${t.message}")
+      }
+
     }
     else {
       println("$gcLogPath doesn't exists")
