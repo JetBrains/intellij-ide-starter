@@ -32,6 +32,8 @@ import kotlin.time.Duration.Companion.minutes
 
 open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.GRADLE, testContext) {
 
+  val daemonOpenTelemetryPath: Path = (testContext.paths.testHome / "telemetry").createDirectories()
+
   companion object {
     private const val GRADLE_DAEMON_NAME = "GradleDaemon"
     fun destroyGradleDaemonProcessIfExists() {
@@ -261,14 +263,11 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   fun enableOpenTelemetry(): GradleBuildTool {
-    val telemetryDumpFolder = testContext.paths
-      .testHome
-      .resolve("log")
-    logOutput("Gradle daemon telemetry will be collected to $telemetryDumpFolder")
+    logOutput("Gradle daemon telemetry will be collected to $daemonOpenTelemetryPath")
     testContext.applyVMOptionsPatch {
       addSystemProperty("gradle.daemon.opentelemetry.enabled", true)
       addSystemProperty("gradle.daemon.opentelemetry.format", "JSON")
-      addSystemProperty("gradle.daemon.opentelemetry.folder", telemetryDumpFolder)
+      addSystemProperty("gradle.daemon.opentelemetry.folder", daemonOpenTelemetryPath)
     }
     return this
   }
