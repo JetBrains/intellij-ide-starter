@@ -10,7 +10,7 @@ interface ErrorReporter {
   companion object {
     const val MESSAGE_FILENAME = "message.txt"
     const val STACKTRACE_FILENAME = "stacktrace.txt"
-    const val ERRORS_DIR_NAME = "script-errors"
+    const val ERRORS_DIR_NAME = "errors"
     const val MAX_TEST_NAME_LENGTH = 250
     val instance: ErrorReporter
       get() = di.direct.instance<ErrorReporter>()
