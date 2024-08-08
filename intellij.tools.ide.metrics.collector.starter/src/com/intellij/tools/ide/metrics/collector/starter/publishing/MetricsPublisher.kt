@@ -5,6 +5,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
+import com.intellij.tools.ide.metrics.collector.starter.collector.ProvidedMetricsCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterMetricsCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector
@@ -110,3 +111,14 @@ fun MetricsPublisher<*>.addMeterCollector(
   metricsSelectionStrategy: MetricsSelectionStrategy,
   meterFilter: (MetricData) -> Boolean,
 ): MetricsPublisher<*> = this.addMetricsCollector(StarterTelemetryJsonMeterCollector(metricsSelectionStrategy, meterFilter))
+
+/** Shortcut for adding a new [ProvidedMetricsCollector] collector */
+fun MetricsPublisher<*>.addProvidedMetricsCollector(metrics: List<PerformanceMetrics.Metric>): MetricsPublisher<*> =
+  this.addMetricsCollector(ProvidedMetricsCollector(metrics))
+
+/**
+ * Shortcut for creating [ProvidedMetricsCollector], adding it as a collector, and publishing the collected metrics.
+ * @see [com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher.publish]
+ */
+fun MetricsPublisher<*>.publishOnlyProvidedMetrics(ideStartResult: IDEStartResult, metrics: List<PerformanceMetrics.Metric>): MetricsPublisher<*> =
+  this.addProvidedMetricsCollector(metrics).publish(ideStartResult)
