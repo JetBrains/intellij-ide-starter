@@ -397,7 +397,7 @@ data class IDERunContext(
     collectingProcessId: Long,
     processName: String,
   ) {
-    val monitoringThreadDumpDir = logsDir.resolve(processName).resolve("monitoring-thread-dumps").createDirectoriesIfNotExist()
+    val monitoringThreadDumpDir = logsDir.resolve("monitoring-thread-dumps-${processName}").createDirectoriesIfNotExist()
 
     var cnt = 0
     while (process.isAlive) {
