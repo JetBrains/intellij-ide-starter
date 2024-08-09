@@ -19,12 +19,21 @@ object ErrorReporterToCI: ErrorReporter {
    * Take a look at [com.jetbrains.performancePlugin.ProjectLoaded.reportErrorsFromMessagePool]
    */
   override fun reportErrorsAsFailedTests(runContext: IDERunContext) {
-    reportErrors(runContext, collectErrors(runContext.logsDir))
+    reportErrors(runContext, collectErrors(runContext.logsDir) + collectScriptErrors(runContext.logsDir))
   }
 
   fun collectErrors(logsDir: Path): List<Error> {
     //client has structure log/2024-04-11_at_11-06-10/script-errors so we need to look deeeper
     val rootErrorsDir = Files.find(logsDir, 3, { path, _ -> path.name == ErrorReporter.ERRORS_DIR_NAME }).findFirst().getOrNull()
+    if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
+    return collectExceptions(rootErrorsDir) + collectFreezes(logsDir)
+  }
+
+  /**
+   * To support legacy formant of errors reporting in "script-errors" dir
+   */
+  fun collectScriptErrors(logsDir: Path): List<Error> {
+    val rootErrorsDir = Files.find(logsDir, 3, { path, _ -> path.name == "script-" + ErrorReporter.ERRORS_DIR_NAME }).findFirst().getOrNull()
     if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
     return collectExceptions(rootErrorsDir) + collectFreezes(logsDir)
   }
