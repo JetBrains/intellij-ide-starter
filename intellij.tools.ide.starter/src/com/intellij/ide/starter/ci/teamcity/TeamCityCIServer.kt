@@ -27,7 +27,7 @@ open class TeamCityCIServer(
     TeamCityClient.publishTeamCityArtifacts(source = source, artifactPath = artifactPath, artifactName = artifactName)
   }
 
-  fun reportTest(testName: String, message: String, details: String, isFailure: Boolean) {
+  fun reportTest(testName: String, message: String, details: String, linkToLogs: String? = null, isFailure: Boolean) {
     val flowId = UUID.randomUUID().toString()
 
     val generifiedTestName = testName.processStringForTC()
@@ -39,15 +39,17 @@ open class TeamCityCIServer(
         generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId, generifiedTestName
       ))
     }
+    linkToLogs?.let { addTestMetadata(testName = generifiedTestName, TeamCityMetadataType.LINK, flowId = flowId, name = "Link to Logs and artifacts", value = it) }
+
     logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']", generifiedTestName, flowId, generifiedTestName))
   }
 
-  override fun reportTestFailure(testName: String, message: String, details: String) {
-    reportTest(testName, message, details, isFailure = true)
+  override fun reportTestFailure(testName: String, message: String, details: String, linkToLogs: String?) {
+    reportTest(testName, message, details, linkToLogs, isFailure = true)
   }
 
-  fun reportPassedTest(testName: String, message: String, details: String) {
-    reportTest(testName, message, details, isFailure = false)
+  fun reportPassedTest(testName: String, message: String, details: String, linkToLogs: String? = null) {
+    reportTest(testName, message, details, linkToLogs, isFailure = false)
   }
 
   override fun ignoreTestFailure(testName: String, message: String, details: String) {

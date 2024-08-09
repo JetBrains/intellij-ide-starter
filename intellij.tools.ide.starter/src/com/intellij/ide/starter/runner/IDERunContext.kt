@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.runner
 
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
@@ -283,6 +284,8 @@ data class IDERunContext(
           testContext.collectJBRDiagnosticFiles(ideProcessId)
 
           deleteJVMCrashes()
+          val link = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)
+          TeamCityCIServer.addTestMetadata(testName = null, TeamCityCIServer.TeamCityMetadataType.LINK, flowId = null, name = "Link to Logs and artifacts", value = link.toString())
           ErrorReporter.instance.reportErrorsAsFailedTests(this)
         }
       }

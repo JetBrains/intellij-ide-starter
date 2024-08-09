@@ -17,7 +17,7 @@ object NoCIServer : CIServer {
       """.trimIndent())
   }
 
-  override fun reportTestFailure(testName: String, message: String, details: String) {
+  override fun reportTestFailure(testName: String, message: String, details: String, linkToLogs: String?) {
     logError("""
       No logic for reporting test failure has been implemented.
       If you want to report tests failures (e.g. on CI) - implement [CIServer] interface and register it via KodeinDI as specified in Readme.

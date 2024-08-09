@@ -121,7 +121,7 @@ object ErrorReporterToCI: ErrorReporter {
 
       val failureDetailsProvider = FailureDetailsOnCI.instance
       val failureDetailsMessage = failureDetailsProvider.getFailureDetails(runContext)
-
+      val urlToLogs = failureDetailsProvider.getLinkToCIArtifacts(runContext).toString()
       if (CIServer.instance.isTestFailureShouldBeIgnored(messageText)) {
         CIServer.instance.ignoreTestFailure(testName = generifyErrorMessage(testName),
                                             message = failureDetailsMessage,
@@ -130,7 +130,8 @@ object ErrorReporterToCI: ErrorReporter {
       else {
         CIServer.instance.reportTestFailure(testName = generifyErrorMessage(testName),
                                             message = failureDetailsMessage,
-                                            details = stackTraceContent)
+                                            details = stackTraceContent,
+                                            linkToLogs = urlToLogs)
         AllureReport.reportFailure(runContext.contextName, messageText,
                                    stackTraceContent,
                                    link = failureDetailsProvider.getLinkToCIArtifacts(runContext))
