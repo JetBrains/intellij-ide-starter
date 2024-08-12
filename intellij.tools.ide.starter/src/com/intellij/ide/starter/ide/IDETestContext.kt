@@ -691,4 +691,15 @@ open class IDETestContext(
     configFile.writeText(text.trimIndent())
     return this
   }
+
+  fun enableDocRendering(): IDETestContext {
+    writeConfigFile("options/editor.xml", """
+      <application>
+        <component name="EditorSettings">
+          <option name="ENABLE_RENDERED_DOC" value="true" />
+        </component>
+      </application>
+    """)
+    return this
+  }
 }
