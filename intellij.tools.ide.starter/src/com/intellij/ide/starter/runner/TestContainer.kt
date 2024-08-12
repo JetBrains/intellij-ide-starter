@@ -1,27 +1,28 @@
 package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.config.ConfigurationStorage
-import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.*
+import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
-import org.kodein.di.direct
-import org.kodein.di.instance
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import java.nio.file.Path
+import kotlin.io.path.div
 import kotlin.reflect.jvm.isAccessible
 
 interface TestContainer<T> {
   // TODO: Port setup hooks on using events
   // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
   val setupHooks: MutableList<IDETestContext.() -> IDETestContext>
-
-  val contextFactory: IDETestContextFactory
-    get() = di.direct.instance<IDETestContextFactory>()
 
   companion object {
     init {
@@ -116,6 +117,43 @@ interface TestContainer<T> {
    *                      For example - project unpacking
    */
   private fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, projectHome: Path?): IDETestContext {
-    return contextFactory.newContext(testName, testCase, preserveSystemDir, projectHome, setupHooks)
+    logOutput("Resolving IDE build for $testName...")
+    val (buildNumber, ide) = @Suppress("SSBasedInspection")
+    (runBlocking(Dispatchers.Default) {
+      computeWithSpan("resolving IDE") {
+        resolveIDE(testCase.ideInfo)
+      }
+    })
+
+    require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
+
+    val testDirectory = run {
+      val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
+      if (testCase.ideInfo.platformPrefix == "JetBrainsClient") {
+        commonPath / "embedded-client"
+      }
+      else {
+        commonPath
+      }
+    }
+
+    val paths = IDEDataPaths.createPaths(testName, testDirectory, testCase.useInMemoryFileSystem)
+    logOutput("Using IDE paths for '$testName': $paths")
+    logOutput("IDE to run for '$testName': $ide")
+
+    var testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
+    testContext.wipeSystemDir()
+
+    testContext = applyDefaultVMOptions(testContext)
+
+    val contextWithAppliedHooks = setupHooks
+      .fold(testContext.updateGeneralSettings()) { acc, hook -> acc.hook() }
+      .apply { installPerformanceTestingPluginIfMissing(this) }
+
+    testCase.projectInfo.configureProjectBeforeUse.invoke(contextWithAppliedHooks)
+
+    EventsBus.postAndWaitProcessing(TestContextInitializedEvent(contextWithAppliedHooks))
+
+    return contextWithAppliedHooks
   }
 }
