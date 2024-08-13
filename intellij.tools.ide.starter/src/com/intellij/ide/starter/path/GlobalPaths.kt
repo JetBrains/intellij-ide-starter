@@ -27,6 +27,8 @@ abstract class GlobalPaths(val checkoutDir: Path) {
 
   open val testHomePath: Path = intelliJOutDirectory.resolve("perf-startup").createDirectories()
 
+  open val devServerDirectory: Path = intelliJOutDirectory.resolve("dev-run").createDirectories()
+
   val installersDirectory = (testHomePath / "installers").createDirectories()
 
   val testsDirectory = (testHomePath / "tests").createDirectories()
@@ -53,6 +55,9 @@ abstract class GlobalPaths(val checkoutDir: Path) {
         appendLine("Agent persistent cache directory disk usage $cacheDirectory")
         appendLine(cacheDirectory.getDirectoryTreePresentableSizes(2))
       }
+      appendLine()
+      appendLine("Directories' size from $devServerDirectory")
+      appendLine(devServerDirectory.getDirectoryTreePresentableSizes())
     }
   }
 
