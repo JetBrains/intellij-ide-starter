@@ -3,6 +3,7 @@ package com.intellij.ide.starter.project
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.FileSystem.isDirUpToDate
 import com.intellij.ide.starter.utils.HttpClient
@@ -26,7 +27,7 @@ data class RemoteArchiveProjectInfo(
   override val isReusable: Boolean = false,
   override val downloadTimeout: Duration = 10.minutes,
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
-  private val description: String = ""
+  private val description: String = "",
 ) : ProjectInfoSpec {
 
   private var subFolder: String = ""
@@ -47,6 +48,10 @@ data class RemoteArchiveProjectInfo(
 
     HttpClient.downloadIfMissing(url = projectURL, targetFile = zipFile, timeout = downloadTimeout)
     val imagePath: Path = zipFile
+
+    if (!imagePath.isRegularFile()) {
+      throw SetupException("Failed to download the project")
+    }
 
     val projectHome = if (subFolder.isEmpty()) {
       projectsUnpacked / getTopMostFolderFromZip(zipFile.toFile())

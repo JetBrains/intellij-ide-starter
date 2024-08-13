@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.FileSystem.isFileUpToDate
 import com.intellij.tools.ide.util.common.NoRetryException
 import com.intellij.tools.ide.util.common.logOutput
@@ -12,7 +11,6 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.impl.client.HttpClientBuilder
 import java.io.File
-import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -59,9 +57,6 @@ object HttpClient {
               throw HttpNotFound("Server returned 403 which we interpret as not found for cache-redirector urls: $url")
             }
 
-            if(response.statusLine.statusCode != 200) {
-              throw SetupException("Failed to download $encodeUrl: $response")
-            }
             if (!outPath.parent.exists()) {
               outPath.parent.createDirectories()
             }
