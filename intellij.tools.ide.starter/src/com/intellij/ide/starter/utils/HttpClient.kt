@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.FileSystem.isFileUpToDate
 import com.intellij.tools.ide.util.common.NoRetryException
 import com.intellij.tools.ide.util.common.logOutput
@@ -57,9 +56,6 @@ object HttpClient {
               throw HttpNotFound("Server returned 403 which we interpret as not found for cache-redirector urls: $url")
             }
 
-            if(response.statusLine.statusCode != 200) {
-              throw SetupException("Failed to download $url: $response")
-            }
             if (!outPath.parent.exists()) {
               outPath.parent.createDirectories()
             }
