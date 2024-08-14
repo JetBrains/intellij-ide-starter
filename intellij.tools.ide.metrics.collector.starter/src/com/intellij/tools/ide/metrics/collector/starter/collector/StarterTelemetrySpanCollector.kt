@@ -5,7 +5,12 @@ import com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 
-class StarterTelemetrySpanCollector(
+/**
+ * Collects OpenTelemetry spans as a Starter-specific adapter for [com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector]
+ *
+ * To publish collected metrics use [com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher.Companion.newInstance]
+ */
+open class StarterTelemetrySpanCollector(
   spanFilter: SpanFilter,
   spanAliases: Map<String, String> = mapOf(),
 ) : OpenTelemetrySpanCollector(spanFilter, spanAliases), StarterMetricsCollector {

@@ -17,10 +17,20 @@ import org.kodein.di.direct
 import org.kodein.di.provider
 
 /**
- * Aggregate metrics from different collectors [StarterMetricsCollector]
- * Eg: OpenTelemetry spans (.json), OpenTelemetry meters (.csv), or any other custom collectors.
- * Publish metrics with custom publishing logic.
+ * Aggregates metrics from different collectors of [StarterMetricsCollector].
+ * Publishes metrics with custom publishing logic.
  * Can compare metrics if needed during publishing.
+ *
+ * Start usage with [MetricsPublisher.newInstance]
+ *
+ * OpenTelemetry span collector [com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector].
+ *
+ * OpenTelemetry meter collector [com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector].
+ *
+ * Example of a custom collector [com.intellij.tools.ide.metrics.collector.starter.collector.ProvidedMetricsCollector].
+ *
+ * Note:
+ * MetricsPublisher implementation can be overridden via DI.
  */
 abstract class MetricsPublisher<T> {
   companion object {
