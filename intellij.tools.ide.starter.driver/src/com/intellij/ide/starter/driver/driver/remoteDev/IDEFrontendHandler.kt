@@ -33,11 +33,12 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
 
   private lateinit var backendRunContext: IDERunContext
 
+  private lateinit var backendLogFile: Path
+  private var logLinesBeforeBackendStarted = 0
+
   fun runInBackground(launchName: String): Deferred<IDEStartResult> {
-    val backendLogFile = backendRunContext.logsDir / "idea.log"
-    val logLinesBefore = Result.runCatching { Files.readAllLines(backendLogFile).size }.getOrDefault(0)
     awaitBackendStart()
-    val joinLink = awaitJoinLink(backendLogFile, logLinesBefore)
+    val joinLink = awaitJoinLink()
     frontendContext.ide.vmOptions.let {
       //setup xDisplay
       it.addDisplayIfNecessary()
@@ -88,8 +89,13 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
     return result
   }
 
-  fun handleBackendContext(backedRunContext: IDERunContext) {
-    backendRunContext = backedRunContext
+  fun handleBackendContext(context: IDERunContext) {
+    backendRunContext = context
+  }
+
+  fun handleBackendBeforeLaunch(context: IDERunContext) {
+    backendLogFile = context.logsDir / "idea.log"
+    logLinesBeforeBackendStarted = Result.runCatching { Files.readAllLines(backendLogFile).size }.getOrDefault(0)
   }
 
   private fun awaitForLogFile(logFile: Path) {
@@ -97,15 +103,18 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
   }
 
   private fun awaitBackendStart() {
-    waitForCondition(2.minutes, 1.seconds) { this::backendRunContext.isInitialized }
+    waitForCondition(2.minutes, 1.seconds) {
+      logOutput("awaitBackendStart")
+      this::backendRunContext.isInitialized
+    }
   }
 
-  private fun awaitJoinLink(logFile: Path, skipLines: Int): String {
-    awaitForLogFile(logFile)
+  private fun awaitJoinLink(): String {
+    awaitForLogFile(backendLogFile)
     val linkEntryPrefix = "Join link: tcp"
     var linkEntry: String? = null
     waitForCondition(timeout = 14.seconds, pollInterval = 2.seconds) {
-      val logLines = Files.readAllLines(logFile).drop(skipLines)
+      val logLines = Files.readAllLines(backendLogFile).drop(logLinesBeforeBackendStarted)
       val joinLinkLines = logLines.filter { it.contains(linkEntryPrefix) }.distinct().also { logOutput("Found joinLinks: $it") }
       linkEntry = joinLinkLines.lastOrNull()
       linkEntry != null

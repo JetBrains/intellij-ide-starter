@@ -8,9 +8,11 @@ import com.intellij.ide.starter.driver.engine.remoteDev.RemDevDriver
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
+import com.intellij.tools.ide.util.common.logOutput
 import kotlin.time.Duration
 
 const val REQUIRE_FLUXBOX_VARIABLE = "REQUIRE_FLUXBOX"
@@ -23,7 +25,13 @@ class RemDevDriverRunner : DriverRunner {
     val ideBackendHandler = IDEBackendHandler(context, remoteDevDriverOptions)
     val ideFrontendHandler = IDEFrontendHandler(context, remoteDevDriverOptions)
 
+    EventsBus.subscribe(ideFrontendHandler) { event: IdeBeforeLaunchEvent ->
+      logOutput("process IdeBeforeLaunchEvent: ${event.runContext}")
+      ideFrontendHandler.handleBackendBeforeLaunch(event.runContext)
+    }
+
     EventsBus.subscribe(ideFrontendHandler) { event: IdeLaunchEvent ->
+      logOutput("process IdeLaunchEvent: ${event.runContext}")
       ideFrontendHandler.handleBackendContext(event.runContext)
     }
     val backendRun = ideBackendHandler.run(commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
