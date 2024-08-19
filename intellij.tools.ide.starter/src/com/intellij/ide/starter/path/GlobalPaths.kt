@@ -25,7 +25,7 @@ abstract class GlobalPaths(val checkoutDir: Path) {
     false -> intelliJOutDirectory // Local run
   }
 
-  open val testHomePath: Path = intelliJOutDirectory.resolve("perf-startup").createDirectories()
+  open val testHomePath: Path = intelliJOutDirectory.resolve("ide-tests").createDirectories()
 
   open val devServerDirectory: Path = intelliJOutDirectory.resolve("dev-run").createDirectories()
 

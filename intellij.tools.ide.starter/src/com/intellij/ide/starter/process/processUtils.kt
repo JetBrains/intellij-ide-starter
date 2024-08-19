@@ -27,7 +27,7 @@ fun getProcessList(): List<ProcessMetaInfo> {
  * This lead to OOM and other errors during tests, for example,
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
-fun killOutdatedProcesses(commandsToSearch: Iterable<String> = listOf("/perf-startup/", "\\perf-startup\\")) {
+fun killOutdatedProcesses(commandsToSearch: Iterable<String> = listOf("/ide-tests/", "\\ide-tests\\")) {
   val processes = oshi.SystemInfo().operatingSystem.processes
   var killProcess: (Int) -> Unit = {}
 
@@ -119,24 +119,24 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
     We need to monitor command line parameters otherwise we might get the locally running IDE in local tests.
 
     An example of a process line:
-    1578401 com.intellij.idea.Main /home/sergey.patrikeev/Documents/intellij/out/perf-startup/tests/IU-211.1852/ijx-jdk-empty/verify-shared-index/temp/projects/idea-startup-performance-project-test-03/idea-startup-performance-project-test-03
+    1578401 com.intellij.idea.Main /home/sergey.patrikeev/Documents/intellij/out/ide-tests/tests/IU-211.1852/ijx-jdk-empty/verify-shared-index/temp/projects/idea-startup-performance-project-test-03/idea-startup-performance-project-test-03
 
     An example from TC:
     intellij project:
     81413 com.intellij.idea.Main /opt/teamcity-agent/work/71b862de01f59e23
 
     another project:
-    84318 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests5985285665047908961/perf-startup/tests/IU-installer-from-file/spring_boot/indexing_oldProjectModel/projects/projects/spring-boot-master/spring-boot-master
+    84318 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests5985285665047908961/ide-tests/tests/IU-installer-from-file/spring_boot/indexing_oldProjectModel/projects/projects/spring-boot-master/spring-boot-master
 
     An example from TC TestsDynamicBundledPluginsStableLinux
-    1879942 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests4436006118811351792/perf-startup/cache/projects/unpacked/javaproject_1.0.0/java-design-patterns-master
+    1879942 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests4436006118811351792/ide-tests/cache/projects/unpacked/javaproject_1.0.0/java-design-patterns-master
 
     Example from TC
     39848 com.intellij.idea.Main /mnt/agent/work/71b862de01f59e23/../intellij_copy_8157673bdd3048a6990b1214d6e9780b26b348e6
     */
     val pid = line.substringBefore(" ", "").toLongOrNull() ?: continue
-    if (line.contains("com.intellij.idea.Main") && (line.contains("/perf-startup/tests/") || line.contains(
-        "/perf-startup/cache/") || line.contains("/opt/teamcity-agent/work/") || line.contains("/mnt/agent/work/"))) {
+    if (line.contains("com.intellij.idea.Main") && (line.contains("/ide-tests/tests/") || line.contains(
+        "/ide-tests/cache/") || line.contains("/opt/teamcity-agent/work/") || line.contains("/mnt/agent/work/"))) {
       candidates.add(pid)
     }
   }

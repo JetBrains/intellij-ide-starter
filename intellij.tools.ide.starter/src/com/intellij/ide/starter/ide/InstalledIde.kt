@@ -12,7 +12,7 @@ interface InstalledIde {
   val productCode: String
   val isFromSources: Boolean
 
-  /** Eg: /opt/REPO/intellij/out/perf-startup/cache/builds/GO-233.6745.304/GoLand-233.6745.304/ */
+  /** Eg: /opt/REPO/intellij/out/ide-tests/cache/builds/GO-233.6745.304/GoLand-233.6745.304/ */
   val installationPath: Path
 
   /** Bundled plugins directory, if supported **/
