@@ -219,8 +219,8 @@ data class IDERunContext(
 
       val finalArgs = startConfig.commandLine + commandLine(this).args
       File(finalArgs.first()).setExecutable(true)
+      val span = TestTelemetryService.spanBuilder("ide process").startSpan()
       val executionTime = measureTime {
-        val span = TestTelemetryService.spanBuilder("ide process").startSpan()
         ProcessExecutor(
           presentableName = "run-ide-$contextName",
           workDir = startConfig.workDir,
@@ -255,6 +255,7 @@ data class IDERunContext(
           expectedExitCode = expectedExitCode,
         ).start()
       }
+      span.end()
       logOutput("IDE run $contextName completed in $executionTime")
 
       return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = startConfig.vmOptionsDiff())
