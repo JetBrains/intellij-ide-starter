@@ -2,6 +2,7 @@ package com.intellij.ide.starter.ci.teamcity
 
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -40,7 +41,15 @@ open class TeamCityCIServer(
       ))
     }
     linkToLogs?.let { addTestMetadata(testName = generifiedTestName, TeamCityMetadataType.LINK, flowId = flowId, name = "Link to Logs and artifacts", value = it) }
-
+    CurrentTestMethod.get()?.let {
+      addTestMetadata(
+        testName = generifiedTestName,
+        TeamCityMetadataType.TEXT,
+        flowId = flowId,
+        name = "Test name",
+        value = it.fullName(),
+      )
+    }
     logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']", generifiedTestName, flowId, generifiedTestName))
   }
 
