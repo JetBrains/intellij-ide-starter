@@ -105,7 +105,7 @@ private fun enableCorepack(nodejsRoot: Path) {
   ProcessExecutor(presentableName = "corepack enable",
                   nodejsRoot,
                   timeout = 1.minutes,
-                  args = listOf("$corePackPath", "enable"),
+                  args = listOf("$corePackPath", "--install-directory", ".", "enable"),
                   environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot)
   ).start()
 }
