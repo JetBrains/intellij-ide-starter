@@ -7,6 +7,10 @@ import com.intellij.ide.starter.runner.Starter
 fun IDETestContext.disableCLionTestIndexing() =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
 
+fun IDETestContext.setForcedTraceScenarios(vararg scenarios: String) = applyVMOptionsPatch {
+  this.addSystemProperty("rd.forced.trace.scenarios", scenarios.joinToString(","))
+}
+
 // Should be passed manually (through TC or run configuration)
 val isRadler by lazy { System.getProperty("intellij.clion.radler.perf.tests", "false").toBoolean() }
 val clionPrefix by lazy { if (isRadler) "radler" else "clion" }
