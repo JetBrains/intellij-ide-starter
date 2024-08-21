@@ -69,4 +69,5 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
       // Enable logging for `RadClangdCodeCompletionProviderImpl`
       addSystemProperty("clion.clang.clangd.debug", true)
     }
+    .disableAIAssistantToolwindowActivationOnStart()
 }
