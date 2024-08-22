@@ -27,17 +27,14 @@ data class RemoteArchiveProjectInfo(
   override val isReusable: Boolean = false,
   override val downloadTimeout: Duration = 10.minutes,
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
+  /**
+   * Relative path inside top-level archive directory, where project home is located
+   */
+  val projectHomeRelativePath: (Path) -> Path = { it },
   private val description: String = "",
 ) : ProjectInfoSpec {
 
-  private var subFolder: String = ""
-
   private fun getTopMostFolderFromZip(zipFile: File): String = ZipFile(zipFile).entries().nextElement().name.split("/").first()
-
-  fun withSubfolder(subFolder: String): RemoteArchiveProjectInfo {
-    this.subFolder = subFolder
-    return this
-  }
 
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
@@ -53,12 +50,7 @@ data class RemoteArchiveProjectInfo(
       throw SetupException("Failed to download the project")
     }
 
-    val projectHome = if (subFolder.isEmpty()) {
-      projectsUnpacked / getTopMostFolderFromZip(zipFile.toFile())
-    } else {
-      projectsUnpacked / getTopMostFolderFromZip(zipFile.toFile()) / subFolder
-    }
-
+    val projectHome = (projectsUnpacked / getTopMostFolderFromZip(zipFile.toFile())).let(projectHomeRelativePath)
 
     if (!isReusable) {
       val isDeleted = projectHome.toFile().deleteRecursively()
