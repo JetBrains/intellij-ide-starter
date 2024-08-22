@@ -3,6 +3,7 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.driver.waitForCondition
+import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.runner.IDECommandLine

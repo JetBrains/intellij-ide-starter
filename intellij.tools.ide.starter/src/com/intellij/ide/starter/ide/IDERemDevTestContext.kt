@@ -1,9 +1,7 @@
-package com.intellij.ide.starter.driver.driver.remoteDev
+package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.config.StarterConfigurationStorage
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.profiler.ProfilerType

@@ -24,6 +24,7 @@ import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.ide.starter.telemetry.NoopTestTelemetryService
@@ -76,7 +77,9 @@ var di = DI {
       }
     }
   }
-  bindProvider<TestContainer<*>> { TestContainer.newInstance<TestContainerImpl>() }
+
+  val remoteDevRunFromEnv = System.getenv().getOrDefault("REMOTE_DEV_RUN", "false").toBoolean()
+  bindProvider<TestContainer<*>> { if (remoteDevRunFromEnv) TestContainer.newInstance<RemDevTestContainer>() else TestContainer.newInstance<TestContainerImpl>() }
   bindSingleton<JBRDownloader> { StarterJBRDownloader }
 }.apply {
   logOutput("Starter DI was initialized")
