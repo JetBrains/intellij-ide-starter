@@ -318,7 +318,7 @@ object Git {
       ProcessExecutor(
         "git-local-branches",
         workDir = repositoryDirectory.toAbsolutePath(),
-        timeout = 1.minutes,
+        timeout = 8.minutes,
         args = arguments,
         stdoutRedirect = stdout,
         stderrRedirect = ExecOutputRedirect.ToStdOut("git-local-branches"),
