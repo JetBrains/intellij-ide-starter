@@ -102,7 +102,9 @@ open class TeamCityCIServer(
       "Library '.+' resolution failed".toRegex(),
       "Too many IDE internal errors. Monitoring stopped.".toRegex(),
       "Invalid folding descriptor detected".toRegex(),
-      "Non-idempotent computation: it returns different results when invoked multiple times".toRegex()
+      "Non-idempotent computation: it returns different results when invoked multiple times".toRegex(),
+      //RDCT-1508
+      "current modality=ModalityState:.+com.intellij.openapi.ui.impl.DialogWrapperPeerImpl".toRegex()
     )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       val ignoredPatterns = ignoredPattern.split("\n")
