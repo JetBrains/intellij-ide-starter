@@ -6,7 +6,6 @@ import com.intellij.ide.starter.ci.NoCIServer
 import com.intellij.ide.starter.community.PublicIdeDownloader
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.StarterConfigurationStorage
-import com.intellij.ide.starter.config.StarterConfigurationStorage.Companion.SPLIT_MODE_ENABLED
 import com.intellij.ide.starter.frameworks.Framework
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeDownloader
@@ -79,7 +78,7 @@ var di = DI {
     }
   }
 
-  bindProvider<TestContainer<*>> { if (SPLIT_MODE_ENABLED) TestContainer.newInstance<RemDevTestContainer>() else TestContainer.newInstance<TestContainerImpl>() }
+  bindProvider<TestContainer<*>> { if (StarterConfigurationStorage.isSplitMode()) TestContainer.newInstance<RemDevTestContainer>() else TestContainer.newInstance<TestContainerImpl>() }
   bindSingleton<JBRDownloader> { StarterJBRDownloader }
 }.apply {
   logOutput("Starter DI was initialized")

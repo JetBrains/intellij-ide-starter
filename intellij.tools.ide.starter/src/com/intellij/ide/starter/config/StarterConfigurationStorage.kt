@@ -8,11 +8,7 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
 
     const val ENV_USE_LATEST_DOWNLOADED_IDE_BUILD = "USE_LATEST_DOWNLOADED_IDE_BUILD"
 
-    /**
-     * This flag is supposed to be used only from the test framework/command handlers, not from tests themselves.
-     * Tests should know nothing about the environment they are running in and only contain the test scenario.
-     */
-    val SPLIT_MODE_ENABLED = System.getenv().getOrDefault("REMOTE_DEV_RUN", "false").toBoolean()
+    private const val SPLIT_MODE_ENABLED = "SPLIT_MODE_ENABLED"
 
     fun shouldUseLatestDownloadedIdeBuild() = instance().getBoolean(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD)
 
@@ -41,6 +37,13 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
 
     /** Log env variables produced by [com.intellij.ide.starter.process.exec.ProcessExecutor] */
     fun shouldLogEnvVariables() = instance().getBoolean(ENV_LOG_ENVIRONMENT_VARIABLES)
+
+    /**
+     * This flag is supposed to be used only from the test framework/command handlers, not from tests themselves.
+     * Tests should know nothing about the environment they are running in and only contain the test scenario.
+     */
+    fun isSplitMode(): Boolean = instance().getBoolean(SPLIT_MODE_ENABLED)
+    fun splitMode(value: Boolean) = instance().put(SPLIT_MODE_ENABLED, value)
   }
 
   override fun resetToDefault() {
@@ -49,5 +52,6 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
     put(ENV_JUNIT_RUNNER_USE_INSTALLER, System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER))
     put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, false)
     put(ENV_LOG_ENVIRONMENT_VARIABLES, CIServer.instance.isBuildRunningOnCI)
+    splitMode(System.getenv().getOrDefault("REMOTE_DEV_RUN", "false").toBoolean())
   }
 }
