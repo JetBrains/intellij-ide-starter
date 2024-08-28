@@ -8,6 +8,12 @@ open class StarterConfigurationStorage : ConfigurationStorage() {
 
     const val ENV_USE_LATEST_DOWNLOADED_IDE_BUILD = "USE_LATEST_DOWNLOADED_IDE_BUILD"
 
+    /**
+     * This flag is supposed to be used only from the test framework/command handlers, not from tests themselves.
+     * Tests should know nothing about the environment they are running in and only contain the test scenario.
+     */
+    val SPLIT_MODE_ENABLED = System.getenv().getOrDefault("REMOTE_DEV_RUN", "false").toBoolean()
+
     fun shouldUseLatestDownloadedIdeBuild() = instance().getBoolean(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD)
 
     const val ENV_JUNIT_RUNNER_USE_INSTALLER = "JUNIT_RUNNER_USE_INSTALLER"
