@@ -6,6 +6,8 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.openapi.util.io.findOrCreateDirectory
+import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.updater.Runner
 import java.nio.file.Path
@@ -49,18 +51,24 @@ object UpdateIdeUtils {
     return moduleRootPath
   }
 
-  private fun performUpdaterAction(actionParams: List<String>) {
+  private fun performUpdaterAction(actionParams: List<String>, logsDir: Path) {
     val classpath = getRunnerClassPaths()
+    val updaterLogsDir = logsDir.resolve("updater-${System.currentTimeMillis()}").findOrCreateDirectory()
+    updaterLogsDir.resolve("idea_updater.log").findOrCreateFile()
+    updaterLogsDir.resolve("idea_updater_error.log").findOrCreateFile()
     val args = mutableListOf("java",
+                             "-Didea.updater.log=$updaterLogsDir",
                              "-cp", classpath,
                              Runner::class.java.name) + actionParams
 
     ProcessExecutor("updater-${actionParams[0]}-patch",
                     null,
-                    args = args).start()
+                    args = args,
+                    stdoutRedirect = ExecOutputRedirect.ToString(),
+                    stderrRedirect = ExecOutputRedirect.ToString()).start()
   }
 
-  fun buildPatch(oldIde: InstalledIde, newIde: InstalledIde, patchOutputPath: String) {
+  fun buildPatch(oldIde: InstalledIde, newIde: InstalledIde, patchOutputPath: String, logsDir: Path) {
     logOutput("Create patch from ${oldIde.build} to ${newIde.build}")
     performUpdaterAction(listOf(
       "create",
@@ -69,13 +77,13 @@ object UpdateIdeUtils {
       oldIde.installationPath.toString(),
       newIde.installationPath.toString(),
       patchOutputPath,
-      "--jar=$updaterJar"))
+      "--jar=$updaterJar"), logsDir)
   }
 
-  fun applyPatch(idePath: String, patchPath: String) {
+  fun applyPatch(idePath: String, patchPath: String, logsDir: Path) {
     performUpdaterAction(listOf("batch-install",
                                 idePath,
                                 patchPath,
-                                "--jar=$updaterJar"))
+                                "--jar=$updaterJar"), logsDir)
   }
 }
