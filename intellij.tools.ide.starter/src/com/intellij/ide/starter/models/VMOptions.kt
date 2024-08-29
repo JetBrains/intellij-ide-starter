@@ -413,4 +413,9 @@ data class VMOptions(
   fun disableGotItTooltips() {
     addSystemProperty("ide.integration.test.disable.got.it.tooltips", true)
   }
+
+  fun disableNativeFileChooser() {
+    addSystemProperty("ide.mac.file.chooser.native", false)
+    addSystemProperty("ide.win.file.chooser.native", false)
+  }
 }
