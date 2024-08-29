@@ -123,7 +123,7 @@ object ErrorReporterToCI: ErrorReporter {
         ErrorType.ERROR -> {
           generateTestNameFromException(stackTraceContent, messageText)
         }
-        ErrorType.FREEZE -> {
+        ErrorType.FREEZE, ErrorType.TIMEOUT -> {
           messageText
         }
       }

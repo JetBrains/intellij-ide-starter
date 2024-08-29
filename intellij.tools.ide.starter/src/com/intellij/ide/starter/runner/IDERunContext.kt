@@ -22,6 +22,7 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.AllureHelper
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsOnCI
+import com.intellij.ide.starter.report.TimeoutAnalyzer
 import com.intellij.ide.starter.runner.events.*
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.telemetry.TestTelemetryService
@@ -271,7 +272,16 @@ data class IDERunContext(
       }
       else {
         isRunSuccessful = false
-        throw ExecTimeoutException("Timeout of IDE run '$contextName' for $runTimeout" + System.lineSeparator() + (ciFailureDetails ?: ""))
+
+        val error = TimeoutAnalyzer.analyzeTimeout(this)
+        if (error != null) {
+          throw ExecTimeoutException(
+            error.messageText + System.lineSeparator() +
+            error.stackTraceContent + System.lineSeparator() +
+            (ciFailureDetails ?: ""))
+        } else {
+          throw ExecTimeoutException("Timeout of IDE run '$contextName' for $runTimeout" + System.lineSeparator() + (ciFailureDetails ?: ""))
+        }
       }
     }
     catch (exception: Throwable) {
