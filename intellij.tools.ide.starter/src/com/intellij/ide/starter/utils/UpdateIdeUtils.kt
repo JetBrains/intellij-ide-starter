@@ -81,9 +81,8 @@ object UpdateIdeUtils {
   }
 
   fun applyPatch(idePath: String, patchPath: String, logsDir: Path) {
-    performUpdaterAction(listOf("batch-install",
+    performUpdaterAction(listOf("apply",
                                 idePath,
-                                patchPath,
-                                "--jar=$updaterJar"), logsDir)
+                                "--jar=$patchPath"), logsDir)
   }
 }
