@@ -10,6 +10,7 @@ import com.intellij.openapi.util.io.findOrCreateDirectory
 import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.updater.Runner
+import com.intellij.util.system.OS
 import java.nio.file.Path
 import kotlin.io.path.notExists
 import kotlin.time.Duration.Companion.minutes
@@ -27,14 +28,16 @@ object UpdateIdeUtils {
 
       TeamCityClient.downloadArtifact(buildId, jarName, jarPath.toFile())
 
-      ProcessExecutor(
-        "give-permissions-to-updater",
-        path,
-        1.minutes,
-        args = listOf("chmod", "a+rx", jarName),
-        stdoutRedirect = ExecOutputRedirect.ToString(),
-        stderrRedirect = ExecOutputRedirect.ToString()
-      ).start()
+      if (OS.CURRENT != OS.Windows) {
+        ProcessExecutor(
+          "give-permissions-to-updater",
+          path,
+          1.minutes,
+          args = listOf("chmod", "a+rx", jarName),
+          stdoutRedirect = ExecOutputRedirect.ToString(),
+          stderrRedirect = ExecOutputRedirect.ToString()
+        ).start()
+      }
     }
     return@lazy jarPath
   }
@@ -57,6 +60,7 @@ object UpdateIdeUtils {
     updaterLogsDir.resolve("idea_updater.log").findOrCreateFile()
     updaterLogsDir.resolve("idea_updater_error.log").findOrCreateFile()
     val args = mutableListOf("java",
+                             "-Xmx25000m",
                              "-Didea.updater.log=$updaterLogsDir",
                              "-cp", classpath,
                              Runner::class.java.name) + actionParams
