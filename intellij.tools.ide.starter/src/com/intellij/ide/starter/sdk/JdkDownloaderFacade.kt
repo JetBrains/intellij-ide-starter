@@ -85,7 +85,7 @@ object JdkDownloaderFacade {
 
   private fun determineTargetJdkHome(predicate: JdkPredicate, jdk: JdkItem): Path =
     if (isWSL(predicate)) {
-      Path.of(WslDistributionManager.getInstance().installedDistributions[0].getWindowsPath("/tmp/jdks/${jdk.installFolderName}"))
+      Path.of(WslDistributionManager.getInstance().installedDistributions[0].getWindowsPath("/root/.jdks/${jdk.installFolderName}"))
     }
     else {
       GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
