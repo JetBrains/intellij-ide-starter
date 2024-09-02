@@ -311,6 +311,10 @@ open class IDETestContext(
     addSystemProperty("llm.ai.assistant.toolwindow.activation.on.start", false)
   }
 
+  fun withKotlinPluginK2() = applyVMOptionsPatch {
+    addSystemProperty("idea.kotlin.plugin.use.k2", true)
+  }
+
   fun removeIdeaProjectDirectory(): IDETestContext {
     val ideaDirPath = resolvedProjectHome.resolve(".idea")
 
