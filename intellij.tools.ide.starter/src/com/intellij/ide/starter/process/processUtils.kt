@@ -175,7 +175,7 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
 
 fun collectJavaThreadDump(
   javaHome: Path,
-  workDir: Path,
+  workDir: Path?,
   javaProcessId: Long,
   dumpFile: Path,
 ) {
