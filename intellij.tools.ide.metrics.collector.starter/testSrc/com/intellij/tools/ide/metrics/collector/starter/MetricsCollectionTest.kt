@@ -86,7 +86,7 @@ class MetricsCollectionTest {
 
     val collectedMetrics = MetricsPublisher.newInstance
       // add span collector (from opentelemetry.json file that is located in the log directory)
-      .addSpanCollector(SpanFilter.containsNameIn(spanNames))
+      .addSpanCollector(SpanFilter.nameInList(spanNames))
       // add meters collector (from .csv files that is located in log directory)
       .addMeterCollector(MetricsSelectionStrategy.SUM) {
         metricPrefixes.any { prefix -> it.name.startsWith(prefix) }
