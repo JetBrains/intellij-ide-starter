@@ -4,7 +4,6 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.coroutine.testSuiteSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
-import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.job
@@ -22,10 +21,8 @@ import org.junit.platform.launcher.TestPlan
  *
  */
 open class TestCleanupListener : TestExecutionListener {
-
   override fun executionFinished(testIdentifier: TestIdentifier?, testExecutionResult: TestExecutionResult?) {
     val testIdentifierName = testIdentifier?.displayName ?: ""
-    logOutput("${this::class.simpleName} triggered on execution finished for `$testIdentifierName`")
 
     if (testIdentifier?.isTest == true) {
       @Suppress("SSBasedInspection")
@@ -42,7 +39,6 @@ open class TestCleanupListener : TestExecutionListener {
   }
 
   override fun testPlanExecutionFinished(testPlan: TestPlan?) {
-    logOutput("${this::class.simpleName} triggered on test plan finished")
     catchAll { testSuiteSupervisorScope.coroutineContext.cancelChildren(CancellationException("Test plan execution is finished")) }
     super.testPlanExecutionFinished(testPlan)
   }
