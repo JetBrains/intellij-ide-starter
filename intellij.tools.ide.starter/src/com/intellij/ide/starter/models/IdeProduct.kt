@@ -42,4 +42,7 @@ interface IdeProduct {
 
   /** RustRover */
   val RR: IdeInfo
+
+  /** Rider */
+  val RD: IdeInfo
 }

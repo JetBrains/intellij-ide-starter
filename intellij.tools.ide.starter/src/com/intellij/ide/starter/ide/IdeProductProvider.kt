@@ -50,6 +50,9 @@ object IdeProductProvider {
   /** RustRover */
   val RR: IdeInfo = di.direct.instance<IdeProduct>().RR
 
+  /** Rider */
+  val RD: IdeInfo = di.direct.instance<IdeProduct>().RD
+
   fun getProducts(): List<IdeInfo> = IdeProductProvider::class.declaredMemberProperties.map { it.get(IdeProductProvider) as IdeInfo }
 
   fun isProductSupported(productCode: String): Boolean = getProducts().any { it.productCode == productCode }

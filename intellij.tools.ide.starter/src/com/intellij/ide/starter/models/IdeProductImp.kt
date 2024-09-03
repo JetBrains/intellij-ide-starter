@@ -120,4 +120,12 @@ object IdeProductImp : IdeProduct {
     executableFileName = "rustrover",
     fullName = "RustRover"
   )
+
+  /** Rider */
+  override val RD = IdeInfo(
+    productCode = "RD",
+    platformPrefix = "Rider",
+    executableFileName = "rider",
+    fullName = "Rider"
+  )
 }

@@ -495,6 +495,7 @@ open class IDETestContext(
       IdeProductProvider.CL.productCode -> "clion.key"
       IdeProductProvider.QA.productCode -> "aqua.key"
       IdeProductProvider.RR.productCode -> "rustrover.key"
+      IdeProductProvider.RD.productCode -> "rider.key"
       else -> return this
     }
     val keyFile = paths.configDir.resolve(licenseKeyFileName).toFile()
