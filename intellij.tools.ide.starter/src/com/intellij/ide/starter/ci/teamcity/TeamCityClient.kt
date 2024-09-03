@@ -32,6 +32,7 @@ fun <T : HttpRequest> T.withAuth(): T = this.apply {
 
 // TODO: move on to use TeamCityRest client library or stick with Okhttp
 object TeamCityClient {
+  private val logger = com.intellij.openapi.diagnostic.logger<TeamCityClient>()
   private val teamCityURI by lazy { di.direct.instance<URI>(tag = "teamcity.uri") }
 
   // temporary directory, where artifact will be moved for preparation for publishing
@@ -47,7 +48,7 @@ object TeamCityClient {
       additionalRequestActions(this)
     }
 
-    logOutput("Request to TeamCity: $fullUrl")
+    logger.debug("Request to TeamCity: $fullUrl")
 
     val result = withRetryBlocking(messageOnFailure = "Failure during request to TeamCity") {
       HttpClient.sendRequest(request) {
@@ -83,7 +84,7 @@ object TeamCityClient {
   }
 
   private fun printTcArtifactsPublishMessage(spec: String) {
-    logOutput(" !!teamcity[publishArtifacts '$spec'] ") //we need this to see in the usual IDEA log
+    logger.debug(" !!teamcity[publishArtifacts '$spec'] ") //we need this to see in the usual IDEA log
     logOutput(" ##teamcity[publishArtifacts '$spec'] ")
   }
 
@@ -98,16 +99,14 @@ object TeamCityClient {
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
   ) {
-    logOutput("TeamCity publishTeamCityArtifacts ${source.fileName}")
+    logger.debug("TeamCity publishTeamCityArtifacts ${source.fileName}")
     val sanitizedArtifactPath = artifactPath.replaceSpecialCharactersWithHyphens()
     val sanitizedArtifactName = artifactName.replaceSpecialCharactersWithHyphens()
 
-    logOutput("TeamCity before check source.exists")
     if (!source.exists()) {
-      logOutput("TeamCity artifact $source does not exist")
+      logger.debug("TeamCity artifact $source does not exist")
       return
     }
-    logOutput("TeamCity after check source.exists")
     var suffix: String
     var nextSuffix = 0
     var artifactDir: Path
@@ -118,7 +117,7 @@ object TeamCityClient {
     }
     while (artifactDir.exists())
 
-    logOutput("Creating directories for artifact publishing ${artifactDir.toUri()}")
+    logger.debug("Creating directories for artifact publishing ${artifactDir.toUri()}")
     artifactDir.toFile().deleteRecursively()
     artifactDir.createDirectories()
 
