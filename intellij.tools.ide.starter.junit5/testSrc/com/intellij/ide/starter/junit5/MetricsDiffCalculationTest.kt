@@ -1,4 +1,4 @@
-package com.intellij.tools.ide.metrics.collector.starter
+package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDERunContext
@@ -48,7 +48,7 @@ class MetricsDiffCalculationTest {
   }
 
   private val logsResourceDir: Path by lazy {
-    Paths.get(this::class.java.classLoader.getResource("metrics/diff").toURI())
+    Paths.get(this::class.java.classLoader.getResource("diff").toURI())
   }
 
   private fun setupDataPaths(testInfo: TestInfo, relativePath: Path): Unit {

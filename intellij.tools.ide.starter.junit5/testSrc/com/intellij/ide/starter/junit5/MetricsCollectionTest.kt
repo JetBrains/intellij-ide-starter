@@ -1,64 +1,38 @@
-package com.intellij.tools.ide.metrics.collector.starter
+package com.intellij.ide.starter.junit5
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
-import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
-import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.metrics.CommonMetrics
-import com.intellij.tools.ide.metrics.collector.starter.metrics.GCLogAnalyzer
+import com.intellij.tools.ide.metrics.collector.starter.metricsPublisherDI
 import com.intellij.tools.ide.metrics.collector.starter.publishing.MetricsPublisher
 import com.intellij.tools.ide.metrics.collector.starter.publishing.addMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.publishing.addSpanCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
-import com.intellij.tools.ide.util.common.logOutput
+import examples.data.IdeaCommunityCases
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.kodein.di.DI
-import org.kodein.di.bindProvider
-import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.time.Duration.Companion.minutes
-
-class MetricsPublisherExample : MetricsPublisher<MetricsPublisherExample>() {
-  override val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { ideStartResult, metrics ->
-    val reportFile: Path = Files.createTempFile("metrics", ".json")
-
-    val metricsSortedByName =
-      (metrics
-       + CommonMetrics.getJvmMetrics(ideStartResult)
-       + CommonMetrics.getAwtMetrics(ideStartResult)
-       + GCLogAnalyzer(ideStartResult).getGCMetrics()
-       + CommonMetrics.getWriteActionMetrics(ideStartResult)
-      ).sortedBy { it.id.name }
-
-    logOutput("All collected metrics: " + metricsSortedByName.joinToString(separator = System.lineSeparator()) {
-      "${it.id.name} ${it.value}"
-    })
-
-    jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValue(reportFile.toFile(), metricsSortedByName)
-
-    // You can implement your own logic for CIServer and register it via Kodein DI
-    // more about that you can find in Starter readme
-    ideStartResult.context.publishArtifact(source = reportFile, artifactName = "metrics.performance.json")
-  }
-}
 
 fun initDI() {
   di = DI {
     extend(di)
     importAll(metricsPublisherDI)
 
-    // register your own metrics publisher
-    bindProvider<MetricsPublisher<*>>(overrides = true) { MetricsPublisherExample() }
+    // You also may register your own metrics publisher
+    //bindProvider<MetricsPublisher<*>>(overrides = true) {
+    //  object : MetricsPublisher<Any>() {
+    //    override val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit
+    //      get() = TODO("Not yet implemented")
+    //  }
+    //}
   }
 }
 
