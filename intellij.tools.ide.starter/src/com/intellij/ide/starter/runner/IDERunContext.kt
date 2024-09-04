@@ -41,6 +41,8 @@ import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -409,10 +411,16 @@ data class IDERunContext(
       delay(1.minutes)
       if (!process.isAlive) break
 
-      val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${System.currentTimeMillis()}.txt")
+      val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${getCurrentTimestamp()}.txt")
       logOutput("Dumping threads to $dumpFile")
       catchAll { collectJavaThreadDump(jdkHome, workDir, collectingProcessId, dumpFile) }
     }
+  }
+
+  private fun getCurrentTimestamp(): String {
+    val current = LocalDateTime.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+    return current.format(formatter)
   }
 
   private suspend fun resolveAndDownloadSameJDK(): Path {
