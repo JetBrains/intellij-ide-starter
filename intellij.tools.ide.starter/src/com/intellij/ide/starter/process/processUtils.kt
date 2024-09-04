@@ -194,7 +194,8 @@ fun collectJavaThreadDump(
       timeout = 1.minutes,
       args = command,
       stdoutRedirect = ExecOutputRedirect.ToFile(dumpFile.toFile()),
-      stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]")
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]"),
+      silent = true
     ).start()
   }
   catch (ise: IllegalStateException) {

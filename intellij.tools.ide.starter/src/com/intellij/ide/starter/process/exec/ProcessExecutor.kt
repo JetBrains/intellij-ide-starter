@@ -33,6 +33,7 @@ class ProcessExecutor(
   val stdInBytes: ByteArray = byteArrayOf(),
   val onlyEnrichExistedEnvVariables: Boolean = false,
   val expectedExitCode: Int = 0,
+  val silent: Boolean = false,
 ) {
 
   companion object {
@@ -145,7 +146,7 @@ class ProcessExecutor(
       error(message)
     }
 
-    logOutput("  ... successfully finished external process for `$presentableName` with exit code $expectedExitCode")
+    if(!silent) logOutput("  ... successfully finished external process for `$presentableName` with exit code $expectedExitCode")
   }
 
   @Throws(ExecTimeoutException::class)
@@ -171,25 +172,28 @@ class ProcessExecutor(
       .redirectError(ProcessBuilder.Redirect.PIPE)
       .actualizeEnvVariables(environmentVariables, onlyEnrichExistedEnvVariables)
 
-    logOutput(buildString {
-      appendLine("Starting external process for `$presentableName`")
-      appendLine("  Working directory: $workDir")
-      appendLine("  Arguments: [${args.joinToString(separator = " ")}]")
-      appendLine(
-        "  STDOUT will be redirected to: $stdoutRedirect. STDERR will be redirected to: $stderrRedirect. STDIN is empty: ${stdInBytes.isEmpty()}"
-      )
-      if (printEnvVariables) {
+    if(!silent) {
+      logOutput(buildString {
+        appendLine("Starting external process for `$presentableName`")
+        appendLine("  Working directory: $workDir")
+        appendLine("  Arguments: [${args.joinToString(separator = " ")}]")
         appendLine(
-          "  Environment variables: [${processBuilder.environment().entries.joinToString { "${it.key}=${it.value}" }}]"
+          "  STDOUT will be redirected to: $stdoutRedirect. STDERR will be redirected to: $stderrRedirect. STDIN is empty: ${stdInBytes.isEmpty()}"
         )
-      }
-    })
+        if (printEnvVariables) {
+          appendLine(
+            "  Environment variables: [${processBuilder.environment().entries.joinToString { "${it.key}=${it.value}" }}]"
+          )
+        }
+      })
+    }
+
 
     @Suppress("BlockingMethodInNonBlockingContext") val process = processBuilder.start()
 
     val processId = process.pid()
     val onProcessCreatedJob: Job = perTestSupervisorScope.launch {
-      logOutput("  ... started external process `$presentableName` with process ID = $processId")
+      if(!silent) logOutput("  ... started external process `$presentableName` with process ID = $processId")
       onProcessCreated(process, processId)
     }
 
