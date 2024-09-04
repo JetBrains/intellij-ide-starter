@@ -49,7 +49,7 @@ dependencies {
   implementation "org.kodein.di:kodein-di-jvm:7.20.2"
   implementation "org.rauschig:jarchivelib:1.2.0"
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
-  implementation "com.jetbrains.qodana:qodana-sarif:0.2.113"
+  implementation "com.jetbrains.qodana:qodana-sarif:0.2.100"
   implementation 'commons-io:commons-io:2.15.0'
   implementation 'com.github.stephenc.monte:monte-screen-recorder:0.7.7.0'
   implementation "io.opentelemetry:opentelemetry-api:$otel_version"
