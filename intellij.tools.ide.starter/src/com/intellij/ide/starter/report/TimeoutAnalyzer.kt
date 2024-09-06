@@ -16,7 +16,7 @@ object TimeoutAnalyzer {
   private const val DIALOG_METHOD_CALL: String = "com.intellij.openapi.ui.DialogWrapper.doShow"
 
   fun analyzeTimeout(runContext: IDERunContext ): Error? {
-    return detectDialog(runContext)
+    return detectIdeNotStarted(runContext) ?: detectDialog(runContext)
   }
 
   private fun detectDialog(runContext: IDERunContext): Error? {
@@ -31,16 +31,24 @@ object TimeoutAnalyzer {
       val lastCommandNote = getLastCommand(runContext)?.let { System.lineSeparator() + "Last executed command was: $it" } ?: ""
       val errorMessage = "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout} due to a dialog being shown.$lastCommandNote"
       val error = Error(errorMessage, edtThread.stackTrace, threadDump, ErrorType.TIMEOUT)
-      if (CIServer.instance.isBuildRunningOnCI) {
-        postLastScreenshots(runContext)
-      }
+      postLastScreenshots(runContext)
       return error
-    } else {
-      return null
-    }
+    } else return null
+  }
+
+  private fun detectIdeNotStarted(runContext: IDERunContext) : Error? {
+    if (!runContext.logsDir.resolve("idea.log").exists()) {
+      return Error(
+        "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout}. No idea.log file present in log directory",
+        "",
+        "",
+        ErrorType.TIMEOUT
+      )
+    } else return null
   }
 
   private fun postLastScreenshots(runContext: IDERunContext) {
+    if (!CIServer.instance.isBuildRunningOnCI) return
     val screenshotFolder = runContext.logsDir.resolve("screenshots").takeIf { it.exists() } ?: return
     val heartbeats = screenshotFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.last { it.listDirectoryEntries().isNotEmpty() }
 
