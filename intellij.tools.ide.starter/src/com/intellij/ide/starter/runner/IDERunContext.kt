@@ -2,7 +2,8 @@ package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
-import com.intellij.ide.starter.config.StarterConfigurationStorage
+import com.intellij.ide.starter.config.classFileVerification
+import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDEStartConfig
 import com.intellij.ide.starter.ide.IDETestContext
@@ -162,11 +163,11 @@ data class IDERunContext(
         addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, false)
       }
 
-      if (ConfigurationStorage.instance().getBoolean(StarterConfigurationStorage.ENV_ENABLE_CLASS_FILE_VERIFICATION)) {
+      if (ConfigurationStorage.classFileVerification()) {
         withClassFileVerification()
       }
 
-      if (StarterConfigurationStorage.shouldIncludeRuntimeModuleRepositoryInIde()) {
+      if (ConfigurationStorage.includeRuntimeModuleRepositoryInIde()) {
         setRuntimeModuleRepository(testContext.ide.installationPath)
       }
 

@@ -2,56 +2,56 @@ package com.intellij.ide.starter.config
 
 import com.intellij.ide.starter.ci.CIServer
 
-open class StarterConfigurationStorage : ConfigurationStorage() {
-  companion object {
-    const val ENV_ENABLE_CLASS_FILE_VERIFICATION = "ENABLE_CLASS_FILE_VERIFICATION"
+private const val SPLIT_MODE_ENABLED = "SPLIT_MODE_ENABLED"
+private const val ENV_ENABLE_CLASS_FILE_VERIFICATION = "ENABLE_CLASS_FILE_VERIFICATION"
+private const val ENV_USE_LATEST_DOWNLOADED_IDE_BUILD = "USE_LATEST_DOWNLOADED_IDE_BUILD"
+private const val ENV_JUNIT_RUNNER_USE_INSTALLER = "JUNIT_RUNNER_USE_INSTALLER"
+private const val INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY = "INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY"
+private const val ENV_LOG_ENVIRONMENT_VARIABLES = "LOG_ENVIRONMENT_VARIABLES"
+private const val IGNORED_TEST_FAILURE_PATTERN = "IGNORED_TEST_FAILURE_PATTERN"
 
-    const val ENV_USE_LATEST_DOWNLOADED_IDE_BUILD = "USE_LATEST_DOWNLOADED_IDE_BUILD"
-
-    private const val SPLIT_MODE_ENABLED = "SPLIT_MODE_ENABLED"
-
-    fun shouldUseLatestDownloadedIdeBuild() = instance().getBoolean(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD)
-
-    const val ENV_JUNIT_RUNNER_USE_INSTALLER = "JUNIT_RUNNER_USE_INSTALLER"
-
-    fun shouldRunOnInstaller(): Boolean = instance().getBoolean(ENV_JUNIT_RUNNER_USE_INSTALLER)
-
-    /**
-     * Starts locally build IDE instead of a downloaded installer
-     */
-    fun useLocalBuild() = instance().put(ENV_JUNIT_RUNNER_USE_INSTALLER, false)
-
-    /**
-     * Set to `true` if it's needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository)
-     * in the installed IDE. This is currently required to run JetBrains Client from an IDE installation.
-     * Works only when IDE is built from sources.
-     */
-    const val INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY = "INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY"
-
-    /**
-     *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
-     */
-    fun shouldIncludeRuntimeModuleRepositoryInIde(): Boolean = instance().getBoolean(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY)
-
-    const val ENV_LOG_ENVIRONMENT_VARIABLES = "LOG_ENVIRONMENT_VARIABLES"
-
-    /** Log env variables produced by [com.intellij.ide.starter.process.exec.ProcessExecutor] */
-    fun shouldLogEnvVariables() = instance().getBoolean(ENV_LOG_ENVIRONMENT_VARIABLES)
-
-    /**
-     * This flag is supposed to be used only from the test framework/command handlers, not from tests themselves.
-     * Tests should know nothing about the environment they are running in and only contain the test scenario.
-     */
-    fun isSplitMode(): Boolean = instance().getBoolean(SPLIT_MODE_ENABLED)
-    fun splitMode(value: Boolean) = instance().put(SPLIT_MODE_ENABLED, value)
-  }
-
-  override fun resetToDefault() {
-    put(ENV_ENABLE_CLASS_FILE_VERIFICATION, System.getenv(ENV_ENABLE_CLASS_FILE_VERIFICATION))
-    put(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, System.getenv(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD))
-    put(ENV_JUNIT_RUNNER_USE_INSTALLER, System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER))
-    put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, false)
-    put(ENV_LOG_ENVIRONMENT_VARIABLES, CIServer.instance.isBuildRunningOnCI)
-    splitMode(System.getenv().getOrDefault("REMOTE_DEV_RUN", "false").toBoolean())
-  }
+val starterConfigurationStorageDefaults = mapOf<String, String>(
+  ENV_ENABLE_CLASS_FILE_VERIFICATION to System.getenv(ENV_ENABLE_CLASS_FILE_VERIFICATION),
+  ENV_USE_LATEST_DOWNLOADED_IDE_BUILD to System.getenv(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD),
+  ENV_JUNIT_RUNNER_USE_INSTALLER to System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER),
+  INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY to "false",
+  IGNORED_TEST_FAILURE_PATTERN to System.getenv(IGNORED_TEST_FAILURE_PATTERN),
+  ENV_LOG_ENVIRONMENT_VARIABLES to CIServer.instance.isBuildRunningOnCI.toString(),
+  SPLIT_MODE_ENABLED to System.getenv().getOrDefault("REMOTE_DEV_RUN", "false")
+).filter { entry ->
+  @Suppress("SENSELESS_COMPARISON")
+  entry.value != null
 }
+
+fun ConfigurationStorage.Companion.useLatestDownloadedIdeBuild() = instance().getBoolean(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD)
+
+fun ConfigurationStorage.Companion.useInstaller(): Boolean = instance().getBoolean(ENV_JUNIT_RUNNER_USE_INSTALLER)
+fun ConfigurationStorage.Companion.useInstaller(value: Boolean) = instance().put(ENV_JUNIT_RUNNER_USE_INSTALLER, value)
+
+/**
+ *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
+ */
+fun ConfigurationStorage.Companion.includeRuntimeModuleRepositoryInIde(): Boolean = instance().getBoolean(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY)
+fun ConfigurationStorage.Companion.includeRuntimeModuleRepositoryInIde(value: Boolean) = instance().put(INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, value)
+
+/** Log env variables produced by [com.intellij.ide.starter.process.exec.ProcessExecutor] */
+fun ConfigurationStorage.Companion.logEnvVariables() = instance().getBoolean(ENV_LOG_ENVIRONMENT_VARIABLES)
+
+/**
+ * This flag is supposed to be used only from the test framework/command handlers, not from tests themselves.
+ * Tests should know nothing about the environment they are running in and only contain the test scenario.
+ */
+fun ConfigurationStorage.Companion.splitMode(): Boolean = instance().getBoolean(SPLIT_MODE_ENABLED)
+fun ConfigurationStorage.Companion.splitMode(value: Boolean) = instance().put(SPLIT_MODE_ENABLED, value)
+
+fun ConfigurationStorage.Companion.classFileVerification(): Boolean = instance().getBoolean(ENV_ENABLE_CLASS_FILE_VERIFICATION)
+fun ConfigurationStorage.Companion.classFileVerification(value: Boolean) = instance().put(ENV_ENABLE_CLASS_FILE_VERIFICATION, value)
+
+fun ConfigurationStorage.Companion.logEnvironmentVariables(): Boolean = instance().getBoolean(ENV_LOG_ENVIRONMENT_VARIABLES)
+fun ConfigurationStorage.Companion.logEnvironmentVariables(value: Boolean) = instance().put(ENV_LOG_ENVIRONMENT_VARIABLES, value)
+
+fun ConfigurationStorage.Companion.useLastDownloadedBuild(): Boolean = instance().getBoolean(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD)
+fun ConfigurationStorage.Companion.useLastDownloadedBuild(value: Boolean) = instance().put(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD, value)
+
+fun ConfigurationStorage.Companion.ignoredTestFailuresPattern(pattern: String) = instance().put(IGNORED_TEST_FAILURE_PATTERN, pattern)
+fun ConfigurationStorage.Companion.ignoredTestFailuresPattern(): String? = instance().get(IGNORED_TEST_FAILURE_PATTERN)

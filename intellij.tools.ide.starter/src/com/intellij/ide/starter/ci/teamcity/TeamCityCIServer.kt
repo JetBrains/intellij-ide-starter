@@ -1,6 +1,8 @@
 package com.intellij.ide.starter.ci.teamcity
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.ignoredTestFailuresPattern
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.tools.ide.util.common.logOutput
@@ -95,7 +97,7 @@ open class TeamCityCIServer(
   }
 
   private fun getListOfPatternsWhichShouldBeIgnored(): MutableList<Regex> {
-    val ignoredPattern = System.getenv("IGNORED_TEST_FAILURE_PATTERN")
+    val ignoredPattern = ConfigurationStorage.ignoredTestFailuresPattern()
     logOutput("DEBUG: ignored patterns from ENV $ignoredPattern")
     val patterns = mutableListOf(
       "No files have been downloaded for .+:.+".toRegex(),

@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.ide
 
-import com.intellij.ide.starter.config.StarterConfigurationStorage
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.useInstaller
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.IDEDataPaths
@@ -57,7 +58,7 @@ class IDERemDevTestContext(
 val IDETestContext.frontendTestCase: TestCase<out ProjectInfoSpec>
   get() {
     val executableFileName = when {
-      (SystemInfo.isLinux || SystemInfo.isWindows) && StarterConfigurationStorage.shouldRunOnInstaller() -> "jetbrains_client"
+      (SystemInfo.isLinux || SystemInfo.isWindows) && ConfigurationStorage.useInstaller() -> "jetbrains_client"
       else -> this.testCase.ideInfo.executableFileName
     }
 

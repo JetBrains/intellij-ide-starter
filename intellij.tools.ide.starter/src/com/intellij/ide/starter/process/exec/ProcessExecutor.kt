@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.process.exec
 
-import com.intellij.ide.starter.config.StarterConfigurationStorage
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.logEnvVariables
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.getThrowableText
@@ -12,6 +13,7 @@ import java.lang.Runnable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.Throws
 import kotlin.concurrent.thread
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -150,7 +152,7 @@ class ProcessExecutor(
   }
 
   @Throws(ExecTimeoutException::class)
-  fun start(printEnvVariables: Boolean = StarterConfigurationStorage.shouldLogEnvVariables()) {
+  fun start(printEnvVariables: Boolean = ConfigurationStorage.logEnvVariables()) {
     @Suppress("SSBasedInspection")
     runBlocking(Dispatchers.IO) {
       startCancellable(printEnvVariables)
@@ -161,7 +163,7 @@ class ProcessExecutor(
    * Creates new process and wait for it's completion
    */
   @Throws(ExecTimeoutException::class)
-  suspend fun startCancellable(printEnvVariables: Boolean = StarterConfigurationStorage.shouldLogEnvVariables()) {
+  suspend fun startCancellable(printEnvVariables: Boolean = ConfigurationStorage.logEnvVariables()) {
     require(args.isNotEmpty()) { "Arguments must be not empty to start external process `$presentableName`" }
 
     val processBuilder = ProcessBuilder()

@@ -1,17 +1,21 @@
 package com.intellij.ide.starter.config
 
+import com.intellij.ide.starter.config.ConfigurationStorage.Companion.instance
 import com.intellij.ide.starter.di.di
+import org.kodein.di.DirectDI
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Key-Value storage for parameters to tweak starter behavior
+ * This class is not supposed to be instantiated by any code except [DirectDI], so [di] argument here is more like intention marker, not a
+ * real argument. So, please, use [instance] method to get the object.
  */
-abstract class ConfigurationStorage {
-  companion object {
-    private val _map: ConcurrentHashMap<String, String> = ConcurrentHashMap<String, String>()
+class ConfigurationStorage(di: DirectDI, val defaults: Map<String, String> = emptyMap()) {
+  private val _map: ConcurrentHashMap<String, String> = ConcurrentHashMap<String, String>()
 
+  companion object {
     fun instance(): ConfigurationStorage = di.direct.instance<ConfigurationStorage>()
   }
 
@@ -45,7 +49,10 @@ abstract class ConfigurationStorage {
   /**
    * Reset to default values, that will be performed after each test
    */
-  abstract fun resetToDefault()
+  fun resetToDefault() {
+    _map.clear()
+    _map.putAll(defaults)
+  }
 
   init {
     resetToDefault()

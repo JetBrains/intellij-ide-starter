@@ -1,7 +1,8 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.ide.starter.config.ConfigurationStorage
-import com.intellij.ide.starter.config.StarterConfigurationStorage
+import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
+import com.intellij.ide.starter.config.useInstaller
 import com.intellij.ide.starter.driver.driver.remoteDev.RemoteDevDriverHandler.Companion.rdctVmOptions
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
@@ -23,8 +24,8 @@ class IDEBackendHandler(private val backendContext: IDETestContext, private val 
   }
 
   fun run(commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
-    if (StarterConfigurationStorage.shouldRunOnInstaller()) {
-      ConfigurationStorage.instance().put(StarterConfigurationStorage.INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY, true)
+    if (ConfigurationStorage.useInstaller()) {
+      ConfigurationStorage.includeRuntimeModuleRepositoryInIde(true)
     }
 
     applyHostVMOptionsPatch(options)
