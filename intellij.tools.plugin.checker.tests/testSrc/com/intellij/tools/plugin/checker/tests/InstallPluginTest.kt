@@ -147,7 +147,7 @@ class InstallPluginTest {
       }
 
       val versionNumber = params.event.productVersion.split("-")[1].split(".")[0].toInt()
-      if (versionNumber <= 200) {
+      if (versionNumber <= 203) {
         logOutput(RuntimeException("Version ${params.event.productVersion} is not supported."))
         return emptyList()
       }
