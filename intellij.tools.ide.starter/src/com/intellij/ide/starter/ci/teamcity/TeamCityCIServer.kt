@@ -106,7 +106,9 @@ open class TeamCityCIServer(
       "Invalid folding descriptor detected".toRegex(),
       "Non-idempotent computation: it returns different results when invoked multiple times".toRegex(),
       //RDCT-1508
-      "current modality=ModalityState:.+com.intellij.openapi.ui.impl.DialogWrapperPeerImpl".toRegex()
+      "current modality=ModalityState:.+com.intellij.openapi.ui.impl.DialogWrapperPeerImpl".toRegex(),
+      //GTW-6839
+      "Can't find project session for projectId: RdProjectId".toRegex()
     )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       val ignoredPatterns = ignoredPattern.split("\n")
