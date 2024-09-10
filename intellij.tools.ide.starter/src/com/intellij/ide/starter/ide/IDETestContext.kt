@@ -39,6 +39,7 @@ import org.kodein.di.factory
 import org.kodein.di.instance
 import org.kodein.di.newInstance
 import org.w3c.dom.Element
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -542,43 +543,51 @@ open class IDETestContext(
 
   fun addProjectToTrustedLocations(projectPath: Path? = null, addParentDir: Boolean = false): IDETestContext {
     if (this.testCase.projectInfo == NoProject && projectPath == null) return this
-
     val path = projectPath ?: this.resolvedProjectHome.normalize()
     val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
 
-    if (trustedXml.exists()) {
-      try {
-        val xmlDoc = XmlBuilder.parse(trustedXml)
-        val xp: XPath = XPathFactory.newInstance().newXPath()
+    if (!trustedXml.exists()) {
+      trustedXml.parent.createDirectories()
+      Files.write(trustedXml, this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText().toByteArray())
+    }
 
-        val map = xp.evaluate("//component[@name='Trusted.Paths']/option[@name='TRUSTED_PROJECT_PATHS']/map", xmlDoc,
-                              XPathConstants.NODE) as Element
-        val entry = xmlDoc.createElement("entry")
-        entry.setAttribute("key", "$path")
-        entry.setAttribute("value", "true")
-        map.appendChild(entry)
+    try {
+      val xmlDoc = XmlBuilder.parse(trustedXml)
+      val xp: XPath = XPathFactory.newInstance().newXPath()
 
-        XmlBuilder.writeDocument(xmlDoc, trustedXml)
+      val map = xp.evaluate("//component[@name='Trusted.Paths']/option[@name='TRUSTED_PROJECT_PATHS']/map", xmlDoc,
+                            XPathConstants.NODE) as Element
+      val entry = xmlDoc.createElement("entry").apply {
+        setAttribute("key", "$path")
+        setAttribute("value", "true")
       }
-      catch (e: Exception) {
-        logError(e)
+      map.appendChild(entry)
+
+      if (addParentDir) {
+        val list = xp.evaluate("//component[@name='Trusted.Paths.Settings']/option[@name='TRUSTED_PATHS']/list", xmlDoc,
+                               XPathConstants.NODE) as Element
+        val option = xmlDoc.createElement("option").apply { setAttribute("value", "${path.parent}") }
+        list.appendChild(option)
+      }
+
+      XmlBuilder.writeDocument(xmlDoc, trustedXml)
+
+      if (this.ide.productCode == IdeProductProvider.RD.productCode) {
+        val trustedSolutionsXml = paths.configDir.toAbsolutePath().resolve("options/trustedSolutions.xml")
+        if (!trustedSolutionsXml.exists()) {
+          Files.write(trustedSolutionsXml, this::class.java.classLoader.getResource("trustedSolutions.xml")!!.readText().toByteArray())
+        }
+        val solutionsXmlDoc = XmlBuilder.parse(trustedSolutionsXml)
+        val set = xp.evaluate("//component[@name='TrustedSolutionStore']/option[@name='trustedLocations']/set", solutionsXmlDoc,
+                               XPathConstants.NODE) as Element
+        val option = solutionsXmlDoc.createElement("option").apply { setAttribute("value", "${path}") }
+        set.appendChild(option)
+
+        XmlBuilder.writeDocument(solutionsXmlDoc, trustedSolutionsXml)
       }
     }
-    else {
-      trustedXml.parent.createDirectories()
-      if (addParentDir) {
-        val text = this::class.java.classLoader.getResource("trusted-paths-settings.xml")!!.readText()
-        trustedXml.writeText(
-          text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
-            .replace("""<option value="" />""", "<option value=\"${path.parent}\" />")
-        )
-      }
-      else {
-        val text = this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText()
-        trustedXml.writeText(
-          text.replace("""<entry key="" value="true" />""", "<entry key=\"$path\" value=\"true\" />")
-        )
-      }
+    catch (e: Exception) {
+      logError(e)
     }
     return this
   }
