@@ -11,6 +11,7 @@ import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
+import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
@@ -23,6 +24,7 @@ class RemDevDriverRunner : DriverRunner {
     require(context is IDERemDevTestContext) { "for split-mode context should be instance of ${IDERemDevTestContext::class.java.simpleName}" }
 
     val remoteDevDriverOptions = RemoteDevDriverOptions()
+    addRemoteDevSpecificTraces(context)
     val ideBackendHandler = IDEBackendHandler(context, remoteDevDriverOptions)
     val ideFrontendHandler = IDEFrontendHandler(context, remoteDevDriverOptions)
 
@@ -41,5 +43,11 @@ class RemDevDriverRunner : DriverRunner {
     val frontendRun = ideFrontendHandler.runInBackground(launchName)
 
     return RemoteDevBackgroundRun(frontendRun, backendRun.startResult, backendRun.driver, driverWithLogging, backendRun.process)
+  }
+
+  private fun addRemoteDevSpecificTraces(context: IDETestContext) {
+    context.applyVMOptionsPatch {
+      configureLoggers(LogLevel.TRACE, "jb.focus.requests")
+    }
   }
 }
