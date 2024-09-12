@@ -10,7 +10,6 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeBeforeLaunchEvent
-import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
@@ -33,10 +32,6 @@ class RemDevDriverRunner : DriverRunner {
       ideFrontendHandler.handleBackendBeforeLaunch(event.runContext)
     }
 
-    EventsBus.subscribe(ideFrontendHandler) { event: IdeLaunchEvent ->
-      logOutput("process IdeLaunchEvent: ${event.runContext}")
-      ideFrontendHandler.handleBackendContext(event.runContext)
-    }
     val backendRun = ideBackendHandler.run(commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
 
     val driverWithLogging = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.driverPort}")))

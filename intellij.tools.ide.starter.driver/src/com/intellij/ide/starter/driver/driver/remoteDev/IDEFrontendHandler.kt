@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
+import com.intellij.driver.sdk.waitNotNull
 import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.driver.waitForCondition
@@ -90,13 +91,11 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
     return result
   }
 
-  fun handleBackendContext(context: IDERunContext) {
-    backendRunContext = context
-  }
-
   fun handleBackendBeforeLaunch(context: IDERunContext) {
+    backendRunContext = context
     backendLogFile = context.logsDir / "idea.log"
     logLinesBeforeBackendStarted = Result.runCatching { Files.readAllLines(backendLogFile).size }.getOrDefault(0)
+    logOutput("Backend log file: $backendLogFile, lines before backend started: $logLinesBeforeBackendStarted")
   }
 
   private fun awaitForLogFile(logFile: Path) {
@@ -112,21 +111,16 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
 
   private fun awaitJoinLink(): String {
     awaitForLogFile(backendLogFile)
-    val linkEntryPrefix = "Join link: tcp"
-    var linkEntry: String? = null
-    waitForCondition(timeout = 14.seconds, pollInterval = 2.seconds) {
-      val logLines = Files.readAllLines(backendLogFile).drop(logLinesBeforeBackendStarted)
-      val joinLinkLines = logLines.filter { it.contains(linkEntryPrefix) }.distinct().also { logOutput("Found joinLinks: $it") }
-      linkEntry = joinLinkLines.lastOrNull()
-      linkEntry != null
-    }
-    val match = "tcp://.+".toRegex().find(linkEntry!!)
-    if (match?.value == null) {
-      error("Couldn't find link from entry: $linkEntry")
-    }
-    else {
-      logOutput("joinLink: ${match.value}")
-      return match.value
+    val joinLinkEntryPrefix = "Join link: tcp"
+    val joinLinkEntryRegex = "tcp://.+".toRegex()
+
+    return waitNotNull("Awaiting join link", timeout = 14.seconds, interval = 2.seconds) {
+      val matchingLogLines = Files.readAllLines(backendLogFile).drop(logLinesBeforeBackendStarted)
+        .filter { it.contains(joinLinkEntryPrefix) }
+        .also { logOutput("Found join links: $it") }
+
+      val links = matchingLogLines.mapNotNull { joinLinkEntryRegex.find(it) }.map { it.value }.distinct()
+      links.singleOrNull()
     }
   }
 }
