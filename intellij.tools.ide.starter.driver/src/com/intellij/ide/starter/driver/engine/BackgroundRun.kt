@@ -1,16 +1,14 @@
 package com.intellij.ide.starter.driver.engine
 
 import com.intellij.driver.client.Driver
-import com.intellij.ide.starter.driver.waitForCondition
+import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.process.exec.ProcessExecutor.Companion.killProcessGracefully
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -18,17 +16,12 @@ import kotlin.time.Duration.Companion.seconds
 open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: ProcessHandle? = null) {
 
   val driver: Driver by lazy {
-    @Suppress("SSBasedInspection")
-    runBlocking {
-      runCatching {
-        withTimeout(3.minutes) {
-          while (!driverWithoutAwaitedConnection.isConnected) {
-            delay(3.seconds)
-          }
-        }
-      }.onFailure {
-        driverWithoutAwaitedConnection.closeIdeAndWait(1.minutes)
+    runCatching {
+      waitFor("Driver is connected", 3.minutes, 3.seconds) {
+        driverWithoutAwaitedConnection.isConnected
       }
+    }.onFailure {
+      driverWithoutAwaitedConnection.closeIdeAndWait(1.minutes)
     }
     driverWithoutAwaitedConnection
   }
@@ -59,7 +52,7 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
           takeScreenshot("beforeIdeClosed")
         }
         exitApplication()
-        waitForCondition(closeIdeTimeout, 3.seconds) { !isConnected }
+        waitFor("Driver is not connected", closeIdeTimeout, 3.seconds) { !isConnected }
       }
     }
     catch (t: Throwable) {

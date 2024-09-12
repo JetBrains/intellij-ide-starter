@@ -1,9 +1,9 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
+import com.intellij.driver.sdk.waitFor
 import com.intellij.driver.sdk.waitNotNull
 import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
-import com.intellij.ide.starter.driver.waitForCondition
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
@@ -99,12 +99,13 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
   }
 
   private fun awaitForLogFile(logFile: Path) {
-    waitForCondition(30.seconds, 1.seconds) { logFile.exists() }
+    waitFor("Log file exists", 30.seconds, 1.seconds) {
+      logFile.exists()
+    }
   }
 
   private fun awaitBackendStart() {
-    waitForCondition(2.minutes, 1.seconds) {
-      logOutput("awaitBackendStart")
+    waitFor("Backend run context is intitialized", 2.minutes, 1.seconds) {
       this::backendRunContext.isInitialized
     }
   }
