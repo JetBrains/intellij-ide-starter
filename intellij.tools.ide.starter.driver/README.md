@@ -1,6 +1,10 @@
 # Integration Tests with Driver
 
-`Driver` API provides a generic interface to call code in a running IDE instance, such as service and utility methods. It connects to a process via JMX protocol and creates remote proxies for classes of the running IDE. The main purpose of this API is to execute IDE actions and observe the state of the process in end-to-end testing.
+This library provides integration between Starter Framework and Driver API.
+
+`Driver` API provides a generic interface to call code in a running IDE instance, such as service and utility methods.
+It connects to a process via JMX protocol and creates remote proxies for classes of the running IDE.
+The main purpose of this API is to execute IDE actions and observe the state of the process in end-to-end testing.
 
 ## Connecting to a Running IDE
 

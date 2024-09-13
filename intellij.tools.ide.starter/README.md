@@ -30,82 +30,7 @@ and [examples of tests based on JUnit5 can be found here](https://github.com/Jet
 
 ##### Short guide how to write your own command/extension of performanceTestingPlugin
 
-As earlier was said, the performanceTesting plugin does all the job to execute your commands in IDE.  
-To implement your own commands you need to create a plugin that extends performanceTestingPlugin.
-
-Basic setup should look something like this:
-
-Create a `resources/META-INF/plugin.xml`
-
-```
-<idea-plugin>
-  <name>Your plugin name</name>
-  <id>com.intellij.performancePlugin.myPlugin</id>
-
-  <description>My integration tests</description>
-  <depends>com.jetbrains.performancePlugin</depends>
-  <depends>com.intellij.modules.lang</depends>
-
-  <extensions defaultExtensionNs="com.jetbrains">
-    <performancePlugin.commandProvider implementation="com.intellij.myPlugin.performanceTesting.MyPluginCommandProvider"/>
-  </extensions>
-</idea-plugin>
-```
-
-Then create a command provider
-
-```
-package com.intellij.myPlugin.performanceTesting
-
-class MyPluginCommandProvider : CommandProvider {
-  override fun getCommands() = mapOf(
-      Pair(MyCommand.PREFIX, CreateCommand(::MyCommand)),
-    )
-}
-```
-
-And implementation of your own command
-
-```
-package com.intellij.myPlugin.performanceTesting.command
-
-import com.intellij.openapi.ui.playback.PlaybackContext
-import com.intellij.openapi.ui.playback.commands.PlaybackCommandCoroutineAdapter
-
-internal class MyCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
-  companion object {
-    const val PREFIX = CMD_PREFIX + "myCommandName"
-  }
-
-  override suspend fun doExecute(context: PlaybackContext) {
-    TODO("YOUR CODE HERE")
-  }
-}
-```
-
-Test implementation (that will use Starter and tell the plugin to invoke your command) will like this
-
-```
-fun <T : CommandChain> T.runMyCommand(): T {
-  addCommand(CMD_PREFIX + "myCommandName")
-  return this
-}
-
-class ExampleOfMyCommandTest {
-
-  @Test
-  fun invokeMyCommand() {
-    val context = Starter.newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = TestCases.IU.JitPackAndroidExample)
-      .skipIndicesInitialization() // skip indicies if indexing isn't necessary for test
-
-    context.runIDE(
-      commands = CommandChain()
-        .runMyCommand()
-        .exitApp()
-    )
-  }
-}
-```
+See [createCustomPerformanceCommand.md](documentation/createCustomPerformanceCommand.md)
 
 #### How to override/modify default starter behavior
 
@@ -184,10 +109,37 @@ They are located in configuration storage in `com.intellij.ide.starter.config.St
 
 ### Downloading custom releases
 
-Downloading Custom Releases
-
 By default, when useEAP or useRelease methods are called, IDE installers will be downloaded from JetBrains' public hosting. If no version is
 specified, the latest version will be used. However, you can specify a desired version if needed.
+
+### How to specify another URL for IDE downloading
+
+1. You need to override `IdeDownloader` from default downloader to downloader which looks into the `downloadURI` field in `IdeInfo`:
+
+```kotlin
+init {
+  di = DI {
+    extend(di)
+    bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
+  }
+}
+```
+
+2. You need to provide custom `IdeInfo` with the URL of your choice
+
+```kotlin
+Starter.newContext(
+  CurrentTestMethod.hyphenateWithClass(), TestCase(
+  IdeProductProvider.IU.copy(downloadURI = URI("www.example.com")), GitHubProject.fromGithub(
+  branchName = "master",
+  repoRelativeUrl = "jitpack/gradle-simple.git"
+)
+)
+)
+```
+
+`IdeProductProvider.IU.copy(downloadURI = URI("[www.example.com](http://www.example.com)"))` - this is the main part, we say that we will
+use `IU` (Idea Ultimate) so we copy all the properties except that we also provide URL from which it should be dowloaded.
 
 ### Modifying VM Options
 
