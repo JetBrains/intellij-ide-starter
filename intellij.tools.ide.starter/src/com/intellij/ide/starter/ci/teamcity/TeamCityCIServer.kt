@@ -108,7 +108,9 @@ open class TeamCityCIServer(
       //RDCT-1508
       "current modality=ModalityState:.+com.intellij.openapi.ui.impl.DialogWrapperPeerImpl".toRegex(),
       //GTW-6839
-      "Can't find project session for projectId: RdProjectId".toRegex()
+      "Can't find project session for projectId: RdProjectId".toRegex(),
+      //QD-9242
+      "Descriptions are missed for tools: DevContainerIdeSettings".toRegex(),
     )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       val ignoredPatterns = ignoredPattern.split("\n")
