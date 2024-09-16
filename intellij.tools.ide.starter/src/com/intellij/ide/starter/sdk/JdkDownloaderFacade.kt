@@ -9,6 +9,8 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetryBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.net.URL
@@ -38,7 +40,7 @@ object JdkDownloaderFacade {
         else -> "corretto"
       }
 
-    return jdks.singleOrNull{
+    return jdks.singleOrNull {
       it.jdk.sharedIndexAliases.contains("$jdkName-$version")
     } ?: throw DownloadJDKException()
   }
@@ -83,9 +85,14 @@ object JdkDownloaderFacade {
     return JdkItemPaths(homePath = javaHome.toPath(), installPath = targetJdkHome)
   }
 
+  @Suppress("SSBasedInspection")
   private fun determineTargetJdkHome(predicate: JdkPredicate, jdk: JdkItem): Path =
     if (isWSL(predicate)) {
-      Path.of(WslDistributionManager.getInstance().installedDistributions[0].getWindowsPath("/root/.jdks/${jdk.installFolderName}"))
+      runBlocking(Dispatchers.IO) {
+        val wslDistribution = WslDistributionManager.getInstance().installedDistributions.find { it.version == 2 }
+                              ?: throw SetupException("WSL 2 distribution is not found")
+        Path.of(wslDistribution.getWindowsPath("${wslDistribution.userHome}/.jdks/${jdk.installFolderName}"))
+      }
     }
     else {
       GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
