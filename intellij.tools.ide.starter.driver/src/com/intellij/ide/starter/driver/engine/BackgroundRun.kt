@@ -16,12 +16,14 @@ import kotlin.time.Duration.Companion.seconds
 open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: ProcessHandle? = null) {
 
   val driver: Driver by lazy {
-    runCatching {
-      waitFor("Driver is connected", 3.minutes, 3.seconds) {
-        driverWithoutAwaitedConnection.isConnected
+    if (!driverWithoutAwaitedConnection.isConnected) {
+      runCatching {
+        waitFor("Driver is connected", 3.minutes) {
+          driverWithoutAwaitedConnection.isConnected
+        }
+      }.onFailure {
+        driverWithoutAwaitedConnection.closeIdeAndWait(1.minutes)
       }
-    }.onFailure {
-      driverWithoutAwaitedConnection.closeIdeAndWait(1.minutes)
     }
     driverWithoutAwaitedConnection
   }

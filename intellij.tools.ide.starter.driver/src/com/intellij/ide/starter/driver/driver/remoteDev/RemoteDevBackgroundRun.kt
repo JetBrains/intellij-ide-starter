@@ -11,7 +11,10 @@ import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.utils.catchAll
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -25,13 +28,8 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
 ) : BackgroundRun(clientResult, remoteClientDriver, hostProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
-      @Suppress("SSBasedInspection")
-      runBlocking {
-        withTimeout(3.minutes) {
-          while (!hostDriver.isConnected) {
-            delay(3.seconds)
-          }
-        }
+      waitFor("Backend Driver is connected", 3.minutes) {
+        backendDriver.isConnected
       }
       if (hostDriver.isProjectOpened()) {
         projectOpenAwaitOnFrontend()
