@@ -10,7 +10,6 @@ import com.intellij.tools.ide.metrics.collector.starter.fus.filterByEventId
 import com.intellij.tools.ide.metrics.collector.starter.fus.getDataFromEvent
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
-import com.intellij.tools.ide.metrics.collector.telemetry.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.performanceTesting.commands.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
@@ -49,9 +48,7 @@ class PerformanceTests {
       .stopProfile().exitApp()
     val result = context.runIDE(commands = commandsOpenFile, launchName = "openFile")
 
-    val metrics = getMetricsFromSpanAndChildren(
-      (result.runContext.logsDir / "opentelemetry.json"), SpanFilter.nameEquals("firstCodeAnalysis")
-    )
+    val metrics = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("firstCodeAnalysis"))
     writeMetricsToCSV(result, metrics)
   }
 
@@ -63,11 +60,7 @@ class PerformanceTests {
       .searchEverywhere("symbol", "", "GooglePage", false, true)
       .stopProfile().exitApp()
     val result = context.runIDE(commands = commandsSearch, launchName = "searchEverywhere")
-    val metrics = getMetricsFromSpanAndChildren(
-      (result.runContext.logsDir / "opentelemetry.json"),
-      SpanFilter.nameEquals("searchEverywhere")
-    )
-
+    val metrics = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("searchEverywhere"))
     writeMetricsToCSV(result, metrics)
   }
 
@@ -91,11 +84,8 @@ class PerformanceTests {
     val totalImport = StatisticsEventsHarvester(context).getStatisticEventsByGroup("project.import")
       .filterByEventId("import_project.finished").sortedBy {
         it.time
-      }.sumOf { it.getDataFromEvent<Long>(EventFields.DurationMs.name) }
-    val testTime = getMetricsFromSpanAndChildren(
-      (result.runContext.logsDir / "opentelemetry.json"),
-      SpanFilter.nameEquals("performance_test")
-    )
+      }.sumOf { it.getDataFromEvent<Long>(EventFields.DurationMs.name) }.toInt()
+    val testTime = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("performance_test"))
     writeMetricsToCSV(result, listOf(Metric.newDuration("totalImport", totalImport))+ testTime)
   }
 
@@ -112,17 +102,14 @@ class PerformanceTests {
       .exitApp()
     val result = context.runIDE(commands = startRunConfiguration, launchName = "runConfiguration")
     // 2024.2+
-    val metricsFromOt = getMetricsFromSpanAndChildren(
-      (result.runContext.logsDir / "opentelemetry.json"),
-      SpanFilter.nameEquals("runRunConfiguration")
-    )
+    val metricsFromOt = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("runRunConfiguration"))
     val metrics = metricsFromOt.ifEmpty {
       //backward compatibility with 2024.1
       result.runContext.logsDir.forEachDirectoryEntry {
         if(it.isRegularFile()){
           it.forEachLine {
             if(it.contains("processTerminated in:")) {
-              return@ifEmpty listOf(Metric.newDuration("runConfiguration", it.split(":").last().trim().toLong()))
+              return@ifEmpty listOf(Metric.newDuration("runConfiguration", it.split(":").last().trim().toInt()))
             }
           }
         }
@@ -140,10 +127,7 @@ class PerformanceTests {
       .stopProfile()
       .exitApp()
     val result = context.runIDE(commands = startRunConfiguration, launchName = "build")
-    val metrics = getMetricsFromSpanAndChildren(
-      (result.runContext.logsDir / "opentelemetry.json"),
-      SpanFilter.nameEquals("build_compilation_duration")
-    )
+    val metrics = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("build_compilation_duration"))
     writeMetricsToCSV(result, metrics)
   }
 
@@ -156,10 +140,7 @@ class PerformanceTests {
       .startProfile("findUsage")
       .findUsages("").stopProfile().exitApp()
     val result = context.runIDE(commands = findUsageTest, launchName = "findUsages")
-    val metrics = getMetricsFromSpanAndChildren(
-      result.runContext.logsDir / "opentelemetry.json",
-      SpanFilter.nameEquals("findUsages")
-    )
+    val metrics = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("findUsages"))
     writeMetricsToCSV(result, metrics)
   }
 
@@ -172,10 +153,7 @@ class PerformanceTests {
       .delayType(150, "public void fooBar(String searchKey){}")
       .stopProfile().exitApp()
     val result = context.runIDE(commands = typingTest, launchName = "typing")
-    val metrics = getMetricsFromSpanAndChildren(
-      result.runContext.logsDir / "opentelemetry.json",
-      SpanFilter.nameEquals("typing")
-    )
+    val metrics = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("typing"))
     writeMetricsToCSV(result, metrics)
   }
 
@@ -189,10 +167,7 @@ class PerformanceTests {
       .stopProfile()
       .exitApp()
     val result = context.runIDE(commands = completion, launchName = "completion")
-    val metrics = getMetricsFromSpanAndChildren(
-      result.runContext.logsDir / "opentelemetry.json",
-      SpanFilter.nameEquals("completion")
-    )
+    val metrics = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("completion"))
     writeMetricsToCSV(result, metrics)
   }
 }

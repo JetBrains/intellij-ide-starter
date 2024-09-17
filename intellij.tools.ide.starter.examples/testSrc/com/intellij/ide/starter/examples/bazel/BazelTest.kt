@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.examples.bazel
 
+import com.intellij.ide.starter.examples.getMetricsFromSpanAndChildren
 import com.intellij.ide.starter.examples.writeMetricsToCSV
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
@@ -7,8 +8,8 @@ import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
-import com.intellij.tools.ide.metrics.collector.telemetry.getMetricsFromSpanAndChildren
-import com.intellij.tools.ide.performanceTesting.commands.*
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.util.io.createParentDirectories
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -36,9 +37,7 @@ directories:
 
     val results = context.runIDE(commands = CommandChain().exitApp())
 
-    val metrics = getMetricsFromSpanAndChildren(
-      (results.runContext.logsDir / "opentelemetry.json"), SpanFilter.nameContains("Progress: ")
-    )
+    val metrics = getMetricsFromSpanAndChildren(results, SpanFilter.nameContains("Progress: "))
     val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics()
 
     writeMetricsToCSV(results, metrics + indexingMetrics)

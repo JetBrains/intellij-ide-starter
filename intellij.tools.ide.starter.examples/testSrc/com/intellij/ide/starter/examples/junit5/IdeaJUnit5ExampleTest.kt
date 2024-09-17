@@ -1,17 +1,17 @@
 package com.intellij.ide.starter.examples.junit5
 
 import com.intellij.ide.starter.examples.data.TestCases
+import com.intellij.ide.starter.examples.getMetricsFromSpanAndChildren
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
-import com.intellij.tools.ide.metrics.collector.starter.collector.getMetricsFromSpanAndChildren
+import com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.inspectCode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
 class IdeaJUnit5ExampleTest {
   @Test
