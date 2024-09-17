@@ -12,7 +12,7 @@ data class IDEStartResult(
   val vmOptionsDiff: VMOptionsDiff? = null,
   val failureError: Throwable? = null,
   /** property is not null for split mode */
-  var clientResult: IDEStartResult? = null,
+  var frontendStartResult: IDEStartResult? = null,
 ) {
   val context: IDETestContext get() = runContext.testContext
 
@@ -23,7 +23,8 @@ data class IDEStartResult(
   /**
    * @return client result if run was in split mode, or receiver if we ran monolithic ide (when frontend and backend are the same)
    */
-  fun frontendResult(): IDEStartResult = clientResult ?: this
+  val frontendStartResultOrSelf: IDEStartResult
+    get() = frontendStartResult ?: this
 
   private fun logVmOptionDiff(vmOptionsDiff: VMOptionsDiff?) {
     if (vmOptionsDiff != null && !vmOptionsDiff.isEmpty) {

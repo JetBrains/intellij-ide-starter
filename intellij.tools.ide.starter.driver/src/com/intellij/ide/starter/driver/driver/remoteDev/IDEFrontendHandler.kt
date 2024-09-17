@@ -78,7 +78,7 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
             }
           })
           .also {
-            logOutput("Remote IDE client run ${ideRemDevTestContext.testName} completed")
+            logOutput("Remote IDE Frontend run ${ideRemDevTestContext.testName} completed")
           }
       }
       catch (e: Exception) {

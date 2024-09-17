@@ -20,18 +20,19 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
-                             private val hostResult: Deferred<IDEStartResult>,
-                             private val hostDriver: Driver,
-                             remoteClientDriver: Driver,
-                             hostProcess: ProcessHandle? = null
-) : BackgroundRun(clientResult, remoteClientDriver, hostProcess) {
+class RemoteDevBackgroundRun(
+  private val frontendStartResult: Deferred<IDEStartResult>,
+  private val backendStartResult: Deferred<IDEStartResult>,
+  private val backendDriver: Driver,
+  remoteFrontendDriver: Driver,
+  frontendProcess: ProcessHandle? = null,
+) : BackgroundRun(startResult = frontendStartResult, driverWithoutAwaitedConnection = remoteFrontendDriver, process = frontendProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
       waitFor("Backend Driver is connected", 3.minutes) {
         backendDriver.isConnected
       }
-      if (hostDriver.isProjectOpened()) {
+      if (backendDriver.isProjectOpened()) {
         projectOpenAwaitOnFrontend()
         toolbarIsShownAwaitOnFrontend()
       }
@@ -47,12 +48,12 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
           perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
         }
       }
-      hostDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
+      backendDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
     }
     @Suppress("SSBasedInspection")
     return runBlocking {
-      val clientResult = clientResult.await()
-      hostResult.await().apply { this.clientResult = clientResult }
+      backendStartResult.await()
+        .also { it.frontendStartResult = frontendStartResult.await() }
     }
   }
 
@@ -68,6 +69,6 @@ class RemoteDevBackgroundRun(private val clientResult: Deferred<IDEStartResult>,
   }
 
   override fun closeIdeAndWait(closeIdeTimeout: Duration) {
-    hostDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
+    backendDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
   }
 }

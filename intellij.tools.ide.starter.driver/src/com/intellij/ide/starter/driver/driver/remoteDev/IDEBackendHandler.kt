@@ -28,7 +28,7 @@ class IDEBackendHandler(private val backendContext: IDETestContext, private val 
       ConfigurationStorage.includeRuntimeModuleRepositoryInIde(true)
     }
 
-    applyHostVMOptionsPatch(options)
+    applyBackendVMOptionsPatch(options)
 
     return LocalDriverRunner().runIdeWithDriver(context = backendContext,
                                          commandLine = buildBackendCommandLine(),
@@ -43,17 +43,17 @@ class IDEBackendHandler(private val backendContext: IDETestContext, private val 
   }
 
 
-  private fun applyHostVMOptionsPatch(options: RemoteDevDriverOptions): IDETestContext {
+  private fun applyBackendVMOptionsPatch(options: RemoteDevDriverOptions): IDETestContext {
     val context = backendContext
     val vmOptions = context.ide.vmOptions
     vmOptions.configureLoggers(LogLevel.DEBUG, "#com.intellij.remoteDev.downloader.EmbeddedClientLauncher")
     vmOptions.addSystemProperty("rdct.embedded.client.use.custom.paths", true)
-    vmOptions.addSystemProperty("rpc.port", options.hostWebServerPort)
-    systemProperties(port = options.hostDriverPort).forEach(vmOptions::addSystemProperty)
+    vmOptions.addSystemProperty("rpc.port", options.backendWebServerPort)
+    systemProperties(port = options.backendDriverPort).forEach(vmOptions::addSystemProperty)
     rdctVmOptions(options).forEach(vmOptions::addSystemProperty)
-    options.hostSystemProperties.forEach(vmOptions::addSystemProperty)
+    options.backendSystemProperties.forEach(vmOptions::addSystemProperty)
     if (vmOptions.isUnderDebug()) {
-      vmOptions.debug(options.hostDebugPort, suspend = false)
+      vmOptions.debug(options.backendDebugPort, suspend = false)
     }
     else {
       vmOptions.dropDebug()

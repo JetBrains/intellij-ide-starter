@@ -5,16 +5,16 @@ import com.intellij.ide.starter.driver.engine.DriverOptions
 
 
 class RemoteDevDriverOptions : DriverOptions() {
-  var hostWebServerPort: Int = 63343
-  var hostDriverPort: Int = 7777
-  var hostDebugPort: Int = 5020
-  var hostSystemProperties: Map<String, String> = systemProperties
+  var backendWebServerPort: Int = 63343
+  var backendDriverPort: Int = 7777
+  var backendDebugPort: Int = 5020
+  var backendSystemProperties: Map<String, String> = systemProperties
 }
 
 class RemoteDevDriverHandler : DriverHandler() {
   companion object {
     fun rdctVmOptions(options: RemoteDevDriverOptions): Map<String, String> =
-      mapOf("rdct.tests.backendJmxPort" to options.hostDriverPort.toString(),
+      mapOf("rdct.tests.backendJmxPort" to options.backendDriverPort.toString(),
             "ide.mac.file.chooser.native" to "false",
             "apple.laf.useScreenMenuBar" to "false",
             "jbScreenMenuBar.enabled" to "false")
