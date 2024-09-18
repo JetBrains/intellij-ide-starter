@@ -133,8 +133,7 @@ object ErrorReporterToCI: ErrorReporter {
       val urlToLogs = failureDetailsProvider.getLinkToCIArtifacts(runContext).toString()
       if (CIServer.instance.isTestFailureShouldBeIgnored(messageText)) {
         CIServer.instance.ignoreTestFailure(testName = generifyErrorMessage(testName),
-                                            message = failureDetailsMessage,
-                                            details = stackTraceContent)
+                                            message = failureDetailsMessage)
       }
       else {
         CIServer.instance.reportTestFailure(testName = generifyErrorMessage(testName),

@@ -63,12 +63,12 @@ open class TeamCityCIServer(
     reportTest(testName, message, details, linkToLogs, isFailure = false)
   }
 
-  override fun ignoreTestFailure(testName: String, message: String, details: String) {
+  override fun ignoreTestFailure(testName: String, message: String) {
     val flowId = UUID.randomUUID().toString()
     val generifiedTestName = testName.processStringForTC()
     logOutput(String.format(
-      "##teamcity[testIgnored name='%s' message='%s' details='%s' flowId='%s']",
-      generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId
+      "##teamcity[testIgnored name='%s' message='%s' flowId='%s']",
+      generifiedTestName, message.processStringForTC(), flowId
     ))
   }
 

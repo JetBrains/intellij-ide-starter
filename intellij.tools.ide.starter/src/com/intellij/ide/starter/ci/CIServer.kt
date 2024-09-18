@@ -18,7 +18,7 @@ interface CIServer {
 
   fun reportTestFailure(testName: String, message: String, details: String, linkToLogs: String? = null)
 
-  fun ignoreTestFailure(testName: String, message: String, details: String)
+  fun ignoreTestFailure(testName: String, message: String)
 
   fun isTestFailureShouldBeIgnored(message: String): Boolean
 
