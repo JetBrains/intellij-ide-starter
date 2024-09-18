@@ -67,8 +67,8 @@ open class TeamCityCIServer(
     val flowId = UUID.randomUUID().toString()
     val generifiedTestName = testName.processStringForTC()
     logOutput(String.format(
-      "##teamcity[testIgnored name='%s' message='%s' flowId='%s']",
-      generifiedTestName, message.processStringForTC(), flowId
+      "##teamcity[testIgnored name='%s' message='%s' flowId='%s' nodeId='%s']",
+      generifiedTestName, message.processStringForTC(), flowId, generifiedTestName
     ))
   }
 
