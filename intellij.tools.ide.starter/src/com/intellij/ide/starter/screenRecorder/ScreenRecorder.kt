@@ -16,6 +16,8 @@ import java.awt.Rectangle
 import java.awt.Toolkit
 import java.io.File
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.io.path.createFile
 import kotlin.io.path.div
@@ -106,7 +108,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     val processVmOptions = ideRunContext.calculateVmOptions()
     val resolution = DEFAULT_DISPLAY_RESOLUTION
     val processDisplay = processVmOptions.environmentVariables["DISPLAY"] ?: System.getenv("DISPLAY") ?: ":$DEFAULT_DISPLAY_ID"
-    val recordingFile = ideRunContext.logsDir / "screen.mkv"
+    val recordingFile = ideRunContext.logsDir / "screen-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss_SSS"))}.mkv"
     val ffmpegLogFile = (ideRunContext.logsDir / "ffmpeg.log").also { it.createFile() }
     val args = listOf("/usr/bin/ffmpeg", "-f", "x11grab", "-video_size", resolution, "-framerate", "24", "-i",
                       processDisplay,
