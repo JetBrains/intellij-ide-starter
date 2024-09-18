@@ -66,10 +66,12 @@ open class TeamCityCIServer(
   override fun ignoreTestFailure(testName: String, message: String) {
     val flowId = UUID.randomUUID().toString()
     val generifiedTestName = testName.processStringForTC()
-    logOutput(String.format(
-      "##teamcity[testIgnored name='%s' message='%s' flowId='%s' nodeId='%s']",
-      generifiedTestName, message.processStringForTC(), flowId, generifiedTestName
-    ))
+    logOutput(String.format("##teamcity[testStarted name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
+                            generifiedTestName, flowId, generifiedTestName))
+    logOutput(String.format("##teamcity[testIgnored name='%s' message='%s' flowId='%s' nodeId='%s']",
+                            generifiedTestName, message.processStringForTC(), flowId, generifiedTestName))
+    logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
+                            generifiedTestName, flowId, generifiedTestName))
   }
 
   override fun isTestFailureShouldBeIgnored(message: String): Boolean {
