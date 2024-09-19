@@ -4,6 +4,7 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.useInstaller
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -36,6 +37,12 @@ class IDERemDevTestContext(
   isReportPublishingEnabled = isReportPublishingEnabled,
   preserveSystemDir = preserveSystemDir,
 ) {
+
+  fun applyVMOptionsPatchForBackAndFront(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
+    frontendIDEContext.applyVMOptionsPatch(patchVMOptions)
+    return super.applyVMOptionsPatch(patchVMOptions)
+  }
+
   companion object {
 
     fun from(backendContext: IDETestContext, frontendCtx: IDETestContext): IDERemDevTestContext {

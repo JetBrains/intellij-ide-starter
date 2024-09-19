@@ -29,7 +29,7 @@ class RemDevDriverRunner : DriverRunner {
     addConsoleAllAppender()
 
     val remoteDevDriverOptions = RemoteDevDriverOptions()
-    addRemoteDevSpecificTraces(context)
+    context.addRemoteDevSpecificTraces()
     val ideBackendHandler = IDEBackendHandler(context, remoteDevDriverOptions)
     val ideFrontendHandler = IDEFrontendHandler(context, remoteDevDriverOptions)
 
@@ -46,8 +46,8 @@ class RemDevDriverRunner : DriverRunner {
     return RemoteDevBackgroundRun(frontendRun, backendRun.startResult, backendRun.driver, driverWithLogging, backendRun.process)
   }
 
-  private fun addRemoteDevSpecificTraces(context: IDETestContext) {
-    context.applyVMOptionsPatch {
+  private fun IDERemDevTestContext.addRemoteDevSpecificTraces() {
+    applyVMOptionsPatchForBackAndFront {
       configureLoggers(LogLevel.TRACE, "jb.focus.requests")
     }
   }
