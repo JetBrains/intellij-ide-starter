@@ -109,7 +109,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     val resolution = DEFAULT_DISPLAY_RESOLUTION
     val processDisplay = processVmOptions.environmentVariables["DISPLAY"] ?: System.getenv("DISPLAY") ?: ":$DEFAULT_DISPLAY_ID"
     val recordingFile = ideRunContext.logsDir / "screen-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss_SSS"))}.mkv"
-    val ffmpegLogFile = (ideRunContext.logsDir / "ffmpeg.log").also { it.createFile() }
+    val ffmpegLogFile = (ideRunContext.logsDir / "ffmpeg-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss_SSS"))}.log").also { it.createFile() }
     val args = listOf("/usr/bin/ffmpeg", "-f", "x11grab", "-video_size", resolution, "-framerate", "24", "-i",
                       processDisplay,
                       "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString)
