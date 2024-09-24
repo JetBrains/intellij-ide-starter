@@ -194,6 +194,11 @@ class InstallPluginTest {
         return emptyList()
       }
 
+      if (params.event.productCode == IdeProductProvider.RD.productCode && versionNumber <= 241) {
+        logOutput(RuntimeException("${params.event.productCode} older than 2024.2 is not supported because of the wizard dialog blocking the execution."))
+        return emptyList()
+      }
+
       val link = params.event.productLink.substring(0, params.event.productLink.indexOf(".tar.gz"))
       val downloadLink: String = link + when (OS.CURRENT) {
         OS.Linux -> ".tar.gz"
