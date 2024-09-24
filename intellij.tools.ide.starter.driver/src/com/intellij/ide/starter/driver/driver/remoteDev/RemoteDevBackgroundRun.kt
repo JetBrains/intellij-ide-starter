@@ -1,10 +1,13 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.driver.client.Driver
+import com.intellij.driver.sdk.getOpenProjects
+import com.intellij.driver.sdk.hasIdeFrame
 import com.intellij.driver.sdk.isProjectOpened
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.ideFrame
 import com.intellij.driver.sdk.ui.components.mainToolbar
+import com.intellij.driver.sdk.ui.requestFocusFromIde
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
@@ -32,10 +35,8 @@ class RemoteDevBackgroundRun(
       waitFor("Backend Driver is connected", 3.minutes) {
         backendDriver.isConnected
       }
-      if (backendDriver.isProjectOpened()) {
-        projectOpenAwaitOnFrontend()
-        toolbarIsShownAwaitOnFrontend()
-      }
+      waitAndPrepareForTest()
+
       driver.withContext { block(this) }
     }
     finally {
@@ -57,11 +58,15 @@ class RemoteDevBackgroundRun(
     }
   }
 
-  private fun projectOpenAwaitOnFrontend() {
-    waitFor(message = "Project is opened on frontend", timeout = 30.seconds) {
-      driver.isProjectOpened()
+  private fun waitAndPrepareForTest() {
+    waitFor("Frontend has visible IDE frame", timeout = 30.seconds) { driver.hasIdeFrame() }
+    if (backendDriver.getOpenProjects().isNotEmpty()) {
+      waitFor(message = "Project is opened on frontend", timeout = 30.seconds) { driver.isProjectOpened() }
+      toolbarIsShownAwaitOnFrontend()
     }
+    driver.requestFocusFromIde(driver.getOpenProjects().singleOrNull())
   }
+
 
   private fun toolbarIsShownAwaitOnFrontend() {
     // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
