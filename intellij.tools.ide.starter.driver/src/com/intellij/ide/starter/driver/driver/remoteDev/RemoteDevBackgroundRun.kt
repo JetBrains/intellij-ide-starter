@@ -59,7 +59,7 @@ class RemoteDevBackgroundRun(
   }
 
   private fun waitAndPrepareForTest() {
-    waitFor("Frontend has visible IDE frame", timeout = 30.seconds) { driver.hasIdeFrame() }
+    waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasIdeFrame() }
     if (backendDriver.getOpenProjects().isNotEmpty()) {
       waitFor(message = "Project is opened on frontend", timeout = 30.seconds) { driver.isProjectOpened() }
       toolbarIsShownAwaitOnFrontend()
