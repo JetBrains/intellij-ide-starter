@@ -78,41 +78,14 @@ class LinuxIdeDistribution : IdeDistribution() {
 
       override val patchedVMOptionsFile = appHome.parent.resolve("${appHome.fileName}.vmoptions")
 
-      override fun startConfig(vmOptions: VMOptions, logsDir: Path) =
-        object : InstalledBackedIDEStartConfig(patchedVMOptionsFile, vmOptions) {
-
-          override val environmentVariables: Map<String, String>
-            get() = super.environmentVariables.filterKeys {
-              when {
-                it.startsWith("DESKTOP") -> false
-                it.startsWith("DBUS") -> false
-                it.startsWith("APPIMAGE") -> false
-                it.startsWith("DEFAULTS_PATH") -> false
-                it.startsWith("GDM") -> false
-                it.startsWith("GNOME") -> false
-                it.startsWith("GTK") -> false
-                it.startsWith("MANDATORY_PATH") -> false
-                it.startsWith("QT") -> false
-                it.startsWith("SESSION") -> false
-                it.startsWith("TOOLBOX_VERSION") -> false
-                it.startsWith("XAUTHORITY") -> false
-                it.startsWith("XDG") -> false
-                it.startsWith("XMODIFIERS") -> false
-                it.startsWith("GPG_") -> false
-                it.startsWith("CLUTTER_IM_MODULE") -> false
-                it.startsWith("APPDIR") -> false
-                it.startsWith("LC") -> false
-                it.startsWith("SSH") -> false
-                else -> true
-              }
-            } + ("LC_ALL" to "en_US.UTF-8")
-
-          val xvfbRunLog = createXvfbRunLog(logsDir)
-
+      override fun startConfig(vmOptions: VMOptions, logsDir: Path): IDEStartConfig {
+        val xvfbRunLog = createXvfbRunLog(logsDir)
+        return object : InstalledBackedIDEStartConfig(patchedVMOptionsFile, vmOptions) {
           override val errorDiagnosticFiles = listOf(xvfbRunLog)
           override val workDir = appHome
           override val commandLine: List<String> = linuxCommandLine(xvfbRunLog, vmOptions.environmentVariables) + executablePath.toAbsolutePath().toString()
         }
+      }
 
       override val build = build
       override val os = OS.Linux
