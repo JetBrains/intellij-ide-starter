@@ -120,7 +120,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
         }
       }
 
-      val stdout = ExecOutputRedirect.ToString()
+      val stdout = ExecOutputRedirect.ToStdOut("git-clone-android-plugin")
       val stderr = ExecOutputRedirect.ToString()
 
       ProcessExecutor(
