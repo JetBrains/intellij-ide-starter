@@ -61,6 +61,8 @@ tasks.test {
   testLogging {
     events "passed", "skipped", "failed", "standardOut", "standardError"
   }
+
+  filter.failOnNoMatchingTests = false
 }
 
 test.onlyIf { !project.hasProperty("dontRunTests") }
