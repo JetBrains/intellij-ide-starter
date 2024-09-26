@@ -131,6 +131,7 @@ object JdkDownloaderFacade {
   private fun JdkInstaller.installJdk(request: JdkInstallRequest, markerFile: Path) {
     val item = request.item
     val targetDir = request.installDir
+    // TODO Integrate EelApi here.
     val wslDistribution = wslDistributionFromPath(targetDir)
     if (wslDistribution != null && item.os != "linux") {
       error("Cannot install non-linux JDK into WSL environment to $targetDir from $item")
