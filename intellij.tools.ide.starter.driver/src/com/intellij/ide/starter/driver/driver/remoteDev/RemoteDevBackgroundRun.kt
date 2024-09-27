@@ -2,7 +2,7 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.getOpenProjects
-import com.intellij.driver.sdk.hasIdeFrame
+import com.intellij.driver.sdk.hasVisibleWindow
 import com.intellij.driver.sdk.isProjectOpened
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.ideFrame
@@ -59,7 +59,7 @@ class RemoteDevBackgroundRun(
   }
 
   private fun waitAndPrepareForTest() {
-    waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasIdeFrame() }
+    waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasVisibleWindow() }
     if (backendDriver.getOpenProjects().isNotEmpty()) {
       waitFor(message = "Project is opened on frontend", timeout = 30.seconds) { driver.isProjectOpened() }
       toolbarIsShownAwaitOnFrontend()
