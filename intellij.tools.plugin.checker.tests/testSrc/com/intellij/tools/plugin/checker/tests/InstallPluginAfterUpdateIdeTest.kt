@@ -1,10 +1,6 @@
 package com.intellij.tools.plugin.checker.tests
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.ci.teamcity.TeamCityClient
-import com.intellij.ide.starter.ci.teamcity.asTeamCity
-import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IdeProductProvider.IU
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.models.TestCase
@@ -36,20 +32,33 @@ class InstallPluginAfterUpdateIdeTest {
     }
 
     private fun getConfigurationData(): ConfigurationData {
-      val buildProperties = TeamCityClient.run {
-        get(
-          fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}/resulting-properties")
-        ) { it.withAuth() }
-      }
+      //val buildProperties = TeamCityClient.run {
+      //  get(
+      //    fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}/resulting-properties")
+      //  ) { it.withAuth() }
+      //}
 
-      val propertyNode = buildProperties.path("property")
+      //val propertyNode = buildProperties.path("property")
       initPluginCheckerDI()
 
+      println("All properties ${System.getProperties()}")
+
       return ConfigurationData(
-        propertyNode.getProperty("ide.type"),
-        propertyNode.getProperty("ide.version"),
-        propertyNode.getProperty("ide.download.url")
+        System.getProperty("ide.type"),
+        System.getProperty("ide.version"),
+        System.getProperty("ide.download.url")
       )
+    }
+
+
+    private fun <T> splitIntoBuckets(list: List<T>, bucketCount: Int): List<List<T>> {
+      val bucketSize = list.size / bucketCount
+      val remainder = list.size % bucketCount
+      return (0 until bucketCount).map { i ->
+        val start = i * bucketSize + minOf(i, remainder)
+        val end = (i + 1) * bucketSize + minOf(i + 1, remainder)
+        list.subList(start, end)
+      }
     }
 
     @JvmStatic
@@ -62,10 +71,18 @@ class InstallPluginAfterUpdateIdeTest {
             downloadURI = URI(configurationData.url)
           )
         )
-      val plugins = MarketplaceClient.getPluginsForBuild(configurationData.type, configurationData.version)
-      return plugins.map { Arguments.of(case to it, it.name) }
+      val plugins = MarketplaceClient.getPluginsForBuild(configurationData.type, configurationData.version).take(20)
+
+
+      val bucketIndex = (System.getProperty("teamcity.build.parallelTests.currentBatch")?.toInt() ?: 1) - 1
+      val bucketCount = System.getProperty("teamcity.build.parallelTests.totalBatches")?.toInt() ?: 1
+
+      val pluginsForThisBucket = splitIntoBuckets(plugins, bucketCount)[bucketIndex]
+
+      return pluginsForThisBucket.map { Arguments.of(case to it, it.name) }
     }
   }
+
 
   @ParameterizedTest(name = "Validate plugin {1}")
   @MethodSource("pluginsProvider")
