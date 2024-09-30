@@ -480,7 +480,12 @@ open class IDETestContext(
   }
 
   /**
-   * license is Base64 encoded string that contains key
+   * To get a license you need:
+   * 1. Go to [JetBrains Account](https://account.jetbrains.com/licenses)
+   * 2. "Download a code for offline activation"
+   * 3. Activate license in IDE (Help|Register)
+   * 4. `base64 -i <config_folder>/<ide>.key`
+   * 5. Provide the resulting string to the method (via ENV variable, for example)
    */
   fun setLicense(license: String?): IDETestContext {
     if (license == null) {
