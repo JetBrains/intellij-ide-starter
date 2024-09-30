@@ -1,6 +1,10 @@
 package com.intellij.tools.plugin.checker.tests
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityClient
+import com.intellij.ide.starter.ci.teamcity.asTeamCity
+import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IdeProductProvider.IU
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.models.TestCase
@@ -22,7 +26,7 @@ import kotlin.io.path.createFile
 
 @ExtendWith(KillOutdatedProcesses::class)
 class InstallPluginAfterUpdateIdeTest {
-  private data class ConfigurationData(val type: String, val version: String, val url: String)
+  private data class ConfigurationData(val type: String, val version: String, val url: String, val batchesCount: Int, val currentBatchIndex: Int)
   companion object {
     private fun JsonNode.getProperty(name: String): String {
       return this
@@ -32,21 +36,21 @@ class InstallPluginAfterUpdateIdeTest {
     }
 
     private fun getConfigurationData(): ConfigurationData {
-      //val buildProperties = TeamCityClient.run {
-      //  get(
-      //    fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}/resulting-properties")
-      //  ) { it.withAuth() }
-      //}
+      val buildProperties = TeamCityClient.run {
+        get(
+          fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}/resulting-properties")
+        ) { it.withAuth() }
+      }
 
-      //val propertyNode = buildProperties.path("property")
+      val propertyNode = buildProperties.path("property")
       initPluginCheckerDI()
 
-      println("All properties ${System.getProperties()}")
-
       return ConfigurationData(
-        System.getProperty("ide.type"),
-        System.getProperty("ide.version"),
-        System.getProperty("ide.download.url")
+        propertyNode.getProperty("ide.type"),
+        propertyNode.getProperty("ide.version"),
+        propertyNode.getProperty("ide.download.url"),
+        propertyNode.getProperty("teamcity.build.parallelTests.totalBatches").toInt(),
+        propertyNode.getProperty("teamcity.build.parallelTests.currentBatch").toInt() - 1,
       )
     }
 
@@ -74,10 +78,7 @@ class InstallPluginAfterUpdateIdeTest {
       val plugins = MarketplaceClient.getPluginsForBuild(configurationData.type, configurationData.version).take(20)
 
 
-      val bucketIndex = (System.getProperty("teamcity.build.parallelTests.currentBatch")?.toInt() ?: 1) - 1
-      val bucketCount = System.getProperty("teamcity.build.parallelTests.totalBatches")?.toInt() ?: 1
-
-      val pluginsForThisBucket = splitIntoBuckets(plugins, bucketCount)[bucketIndex]
+      val pluginsForThisBucket = splitIntoBuckets(plugins, configurationData.batchesCount)[configurationData.currentBatchIndex]
 
       return pluginsForThisBucket.map { Arguments.of(case to it, it.name) }
     }
