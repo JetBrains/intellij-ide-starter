@@ -316,7 +316,7 @@ open class IDETestContext(
     addSystemProperty("idea.kotlin.plugin.use.k2", true)
   }
 
-  fun enableHighlightingLog(logLevel: LogLevel = LogLevel.DEBUG) = applyVMOptionsPatch { configureLoggers(logLevel, "com.intellij.codeInsight") }
+  fun enableHighlightingLog(logLevel: LogLevel = LogLevel.DEBUG): IDETestContext = applyVMOptionsPatch { configureLoggers(logLevel, "com.intellij.codeInsight") }
 
   fun removeIdeaProjectDirectory(): IDETestContext {
     val ideaDirPath = resolvedProjectHome.resolve(".idea")
