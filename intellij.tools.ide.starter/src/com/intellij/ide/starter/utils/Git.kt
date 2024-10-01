@@ -307,6 +307,17 @@ object Git {
     return stdout.read()
   }
 
+  fun getDiff(pathToDir: Path, diffStart: String, diffEnd: String): String {
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      "git-diff",
+      workDir = pathToDir, timeout = 1.minutes,
+      args = listOf("git", "diff", diffStart, diffEnd, "--unified=0", "--no-renames"),
+      stdoutRedirect = stdout
+    ).start()
+    return stdout.read()
+  }
+
   /**
    * If commitHash is specified, only branches with this commit will be returned.
    * */
