@@ -13,7 +13,10 @@ import kotlin.io.path.name
 
 object TimeoutAnalyzer {
 
-  private const val DIALOG_METHOD_CALL: String = "com.intellij.openapi.ui.DialogWrapper.doShow"
+  private val dialogMethodCalls: List<String> = listOf(
+    "com.intellij.openapi.ui.DialogWrapper.doShow",
+    "java.awt.Dialog.show"
+  )
 
   fun analyzeTimeout(runContext: IDERunContext ): Error? {
     return detectIdeNotStarted(runContext) ?: detectDialog(runContext)
@@ -24,7 +27,7 @@ object TimeoutAnalyzer {
     val threadDumpParsed = ThreadDumpParser.parse(threadDump)
     val edtThread = threadDumpParsed.first() { it.isEDT() }
 
-    if (edtThread.getStackTrace().contains(DIALOG_METHOD_CALL)) {
+    if (dialogMethodCalls.any { call -> edtThread.getStackTrace().contains(call) }) {
       val lastCommandNote = getLastCommand(runContext)?.let { System.lineSeparator() + "Last executed command was: $it" } ?: ""
       val errorMessage = "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout} due to a dialog being shown.$lastCommandNote"
       val error = Error(errorMessage, edtThread.getStackTrace(), threadDump, ErrorType.TIMEOUT)
