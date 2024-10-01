@@ -34,6 +34,7 @@ import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.createDirectories
+import io.qameta.allure.Allure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -312,6 +313,7 @@ data class IDERunContext(
         computeWithSpan("runIde post-processing, allure and artifacts publishing") {
           kotlin.runCatching {
             publishArtifacts()
+            Allure.link("Link to CI artifacts", FailureDetailsOnCI.instance.getLinkToCIArtifacts(this))
             AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
             val ideaLog = logsDir / "idea.log"
             if (ideaLog.exists()) {
