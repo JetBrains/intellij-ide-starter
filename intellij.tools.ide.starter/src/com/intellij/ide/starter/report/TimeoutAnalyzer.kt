@@ -7,6 +7,7 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.ide.starter.utils.threadDumpParser.ThreadDumpParser
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
@@ -18,14 +19,16 @@ object TimeoutAnalyzer {
     "java.awt.Dialog.show"
   )
 
-  fun analyzeTimeout(runContext: IDERunContext ): Error? {
-    return detectIdeNotStarted(runContext) ?: detectDialog(runContext)
+  fun analyzeTimeout(runContext: IDERunContext): Error? {
+    return detectIdeNotStarted(runContext)
+           ?: detectDialog(runContext)
+           ?: detectIndicatorsNotFinished(runContext)
   }
 
   private fun detectDialog(runContext: IDERunContext): Error? {
     val threadDump = getLastThreadDump(runContext) ?: return null
     val threadDumpParsed = ThreadDumpParser.parse(threadDump)
-    val edtThread = threadDumpParsed.first() { it.isEDT() }
+    val edtThread = threadDumpParsed.first { it.isEDT() }
 
     if (dialogMethodCalls.any { call -> edtThread.getStackTrace().contains(call) }) {
       val lastCommandNote = getLastCommand(runContext)?.let { System.lineSeparator() + "Last executed command was: $it" } ?: ""
@@ -38,22 +41,50 @@ object TimeoutAnalyzer {
   }
 
   private fun detectIdeNotStarted(runContext: IDERunContext) : Error? {
-    if (!runContext.logsDir.resolve("idea.log").exists()) {
+    if (getIdeaLogs(runContext).isEmpty()) {
       return Error(
         "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout}. No idea.log file present in log directory",
         "",
         "",
         ErrorType.TIMEOUT
       )
-    } else return null
+    }
+    else return null
+  }
+
+  private fun detectIndicatorsNotFinished(runContext: IDERunContext): Error? {
+    val logs = getIdeaLogs(runContext)
+    val runningIndicators = mutableMapOf<String, Int>()
+    val indicatorMessagePattern = Regex("- Progress indicator:(started|finished):(.+)$")
+    logs.reversed().forEach { logFile ->
+      Files.readString(logFile)
+        .lineSequence()
+        .mapNotNull { line -> indicatorMessagePattern.find(line)?.destructured }
+        .forEach { (indicatorState, indicatorName) ->
+          when (indicatorState) {
+            "started" -> runningIndicators[indicatorName] = (runningIndicators[indicatorName] ?: 0) + 1
+            "finished" -> runningIndicators[indicatorName] = (runningIndicators[indicatorName] ?: 0) - 1
+          }
+        }
+    }
+    val remainingIndicators = runningIndicators.filter { it.value != 0 }
+    if (remainingIndicators.isNotEmpty()) {
+      return Error(
+        "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout} because some indicators haven't finished:",
+        remainingIndicators.keys.joinToString(separator = System.lineSeparator()),
+        "",
+        ErrorType.TIMEOUT
+      )
+    }
+    return null
   }
 
   private fun postLastScreenshots(runContext: IDERunContext) {
     if (!CIServer.instance.isBuildRunningOnCI) return
-    val screenshotFolder = runContext.logsDir.resolve("screenshots").takeIf { it.exists() } ?: return
-    val heartbeats = screenshotFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.last { it.listDirectoryEntries().isNotEmpty() }
+    val screenshotsFolder = runContext.logsDir.resolve("screenshots").takeIf { it.exists() } ?: return
+    val lastHeartbeat = screenshotsFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.last { it.listDirectoryEntries().isNotEmpty() }
 
-    val screenshots = heartbeats.listDirectoryEntries()
+    val screenshots = lastHeartbeat.listDirectoryEntries()
     screenshots.forEach { screenshot ->
 
       TeamCityClient.publishTeamCityArtifacts(
@@ -86,15 +117,19 @@ object TimeoutAnalyzer {
   }
 
   private fun getLastCommand(runContext: IDERunContext): String? {
-    val lastLog = runContext.logsDir.resolve("idea.log")
-    if (!lastLog.exists()) return null
-    val allLogs = listOf(lastLog) + runContext.logsDir.listDirectoryEntries("idea.*.log").sortedBy { it.name }
-    return allLogs.firstNotNullOfOrNull { logFile ->
+    return getIdeaLogs(runContext).firstNotNullOfOrNull { logFile ->
       Files.readString(logFile)
         .lineSequence()
         .filter { "CommandLogger - %" in it }
         .lastOrNull()
         ?.substringAfterLast("CommandLogger - %")
     }
+  }
+
+  private fun getIdeaLogs(runContext: IDERunContext): List<Path> {
+    val lastLog = runContext.logsDir.resolve("idea.log")
+    if (!lastLog.exists()) return listOf()
+    val allLogs = listOf(lastLog) + runContext.logsDir.listDirectoryEntries("idea.*.log").sortedBy { it.name }
+    return allLogs
   }
 }
