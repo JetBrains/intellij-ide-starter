@@ -29,7 +29,6 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
     if (SystemInfo.isLinux && System.getenv("DISPLAY") == null) {
       val displayNum = XorgWindowManagerHandler.provideDisplay()
       withEnv("DISPLAY", ":$displayNum")
-      withEnv(REQUIRE_FLUXBOX_VARIABLE, "true")
     }
   }
 
@@ -72,9 +71,9 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
           runTimeout = remoteDevDriverOptions.runTimeout,
           launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
           configure = {
-            if (frontendContext.ide.vmOptions.environmentVariables[REQUIRE_FLUXBOX_VARIABLE] != null) {
+            if (System.getenv("DISPLAY") == null && SystemInfo.isLinux) {
+              // It means the ide will be started on a new display, so we need to add win manager
               XorgWindowManagerHandler.startFluxBox(this)
-              XorgWindowManagerHandler.startRecording(this)
             }
           })
           .also {

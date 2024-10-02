@@ -20,8 +20,6 @@ import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import kotlin.time.Duration
 
-const val REQUIRE_FLUXBOX_VARIABLE = "REQUIRE_FLUXBOX"
-
 class RemDevDriverRunner : DriverRunner {
   override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
     require(context is IDERemDevTestContext) { "for split-mode context should be instance of ${IDERemDevTestContext::class.java.simpleName}" }
