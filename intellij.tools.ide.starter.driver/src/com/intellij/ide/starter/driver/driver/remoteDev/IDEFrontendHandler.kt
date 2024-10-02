@@ -71,10 +71,11 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
           runTimeout = remoteDevDriverOptions.runTimeout,
           launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
           configure = {
-            if (System.getenv("DISPLAY") == null && SystemInfo.isLinux) {
+            if (System.getenv("DISPLAY") == null && frontendContext.ide.vmOptions.environmentVariables["DISPLAY"] != null && SystemInfo.isLinux) {
               // It means the ide will be started on a new display, so we need to add win manager
               XorgWindowManagerHandler.startFluxBox(this)
             }
+            withScreenRecording()
           })
           .also {
             logOutput("Remote IDE Frontend run ${ideRemDevTestContext.testName} completed")
