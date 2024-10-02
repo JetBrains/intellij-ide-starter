@@ -69,8 +69,9 @@ object TimeoutAnalyzer {
     }
     val remainingIndicators = runningIndicators.filter { it.value != 0 }
     if (remainingIndicators.isNotEmpty()) {
+      val lastCommandNote = getLastCommand(runContext)?.let { System.lineSeparator() + " during `%$it` execution" } ?: ""
       return Error(
-        "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout} because some indicators haven't finished:",
+        "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout}${lastCommandNote} because some indicators haven't finished:",
         remainingIndicators.keys.joinToString(separator = System.lineSeparator()),
         "",
         ErrorType.TIMEOUT
