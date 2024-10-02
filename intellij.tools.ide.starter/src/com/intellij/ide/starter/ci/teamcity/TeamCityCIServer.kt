@@ -14,6 +14,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.bufferedReader
 
 fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
@@ -309,6 +310,10 @@ open class TeamCityCIServer(
 
     fun progressFinish(activityName: String) {
       println("##teamcity[progressFinish '${activityName.processStringForTC()}']")
+    }
+
+    fun streamFileToBuildLog(filePath: Path) {
+      println("##teamcity[importData type='streamToBuildLog' filepath='${filePath.absolutePathString()}' wrapFileContentInBlock='false']")
     }
   }
 
