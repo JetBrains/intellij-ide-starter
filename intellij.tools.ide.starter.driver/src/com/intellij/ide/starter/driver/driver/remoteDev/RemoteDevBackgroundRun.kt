@@ -1,9 +1,10 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.driver.client.Driver
+import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.getOpenProjects
 import com.intellij.driver.sdk.hasVisibleWindow
-import com.intellij.driver.sdk.isProjectOpened
+import com.intellij.driver.sdk.ui.IdeEventQueue
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.ideFrame
 import com.intellij.driver.sdk.ui.components.mainToolbar
@@ -63,6 +64,11 @@ class RemoteDevBackgroundRun(
     if (backendDriver.getOpenProjects().isNotEmpty()) {
       waitFor(message = "Project is opened on frontend", timeout = 30.seconds) { driver.isProjectOpened() }
       toolbarIsShownAwaitOnFrontend()
+    }
+
+    // FrontendToolWindowHost should finish it's work to avoid https://youtrack.jetbrains.com/issue/GTW-9730/Some-UI-tests-are-flaky-because-sometimes-actions-are-not-executed
+    driver.withContext(OnDispatcher.EDT) {
+      driver.utility(IdeEventQueue::class).getInstance().flushQueue()
     }
     driver.requestFocusFromIde(driver.getOpenProjects().singleOrNull())
   }
