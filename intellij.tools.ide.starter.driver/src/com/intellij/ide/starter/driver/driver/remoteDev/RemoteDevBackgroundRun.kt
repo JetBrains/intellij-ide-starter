@@ -60,23 +60,35 @@ class RemoteDevBackgroundRun(
   }
 
   private fun waitAndPrepareForTest() {
-    waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasVisibleWindow() }
-    if (backendDriver.getOpenProjects().isNotEmpty()) {
-      waitFor(message = "Project is opened on frontend", timeout = 30.seconds) { driver.isProjectOpened() }
-      toolbarIsShownAwaitOnFrontend()
+    awaitVisibleFrameFrontend()
+    val backendProjects = backendDriver.getOpenProjects()
+    if (backendProjects.isNotEmpty()) {
+      awaitProjectsAreOpenedOnFrontend(backendProjects.size)
+      awaitToolbarIsShownOnFrontend()
     }
+    flushEdtAndRequestFocus()
+  }
 
+
+  private fun awaitVisibleFrameFrontend() {
+    waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasVisibleWindow() }
+  }
+
+  private fun awaitToolbarIsShownOnFrontend() {
+    // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
+    driver.ui.ideFrame().mainToolbar.waitFound(100.seconds)
+  }
+
+  private fun awaitProjectsAreOpenedOnFrontend(projectsNumber: Int) {
+    waitFor("Projects are opened on frontend", 30.seconds, getter = { driver.getOpenProjects() }, checker = { it.size == projectsNumber })
+  }
+
+  private fun flushEdtAndRequestFocus() {
     // FrontendToolWindowHost should finish it's work to avoid https://youtrack.jetbrains.com/issue/GTW-9730/Some-UI-tests-are-flaky-because-sometimes-actions-are-not-executed
     driver.withContext(OnDispatcher.EDT) {
       driver.utility(IdeEventQueue::class).getInstance().flushQueue()
     }
     driver.requestFocusFromIde(driver.getOpenProjects().singleOrNull())
-  }
-
-
-  private fun toolbarIsShownAwaitOnFrontend() {
-    // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
-    driver.ui.ideFrame().mainToolbar.waitFound(100.seconds)
   }
 
   override fun closeIdeAndWait(closeIdeTimeout: Duration) {
