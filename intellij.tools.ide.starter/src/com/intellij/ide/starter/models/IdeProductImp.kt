@@ -128,4 +128,12 @@ object IdeProductImp : IdeProduct {
     executableFileName = "rider",
     fullName = "Rider"
   )
+
+  /** Writerside */
+  override val WRS = IdeInfo(
+    productCode = "WRS",
+    platformPrefix = "Writerside",
+    executableFileName = "writerside",
+    fullName = "Writerside"
+  )
 }
