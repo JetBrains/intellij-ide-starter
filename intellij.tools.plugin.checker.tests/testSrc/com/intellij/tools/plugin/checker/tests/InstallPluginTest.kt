@@ -227,6 +227,9 @@ class InstallPluginTest {
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
       .setLicense(System.getenv("LICENSE_KEY"))
+      .applyVMOptionsPatch {
+        addSystemProperty("performance.watcher.unresponsive.interval.ms", 10000)
+      }
 
     testContext.configurator()
 
