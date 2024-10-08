@@ -13,7 +13,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: ProcessHandle? = null) {
+open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: ProcessHandle) {
 
   val driver: Driver by lazy {
     if (!driverWithoutAwaitedConnection.isConnected) {
@@ -60,8 +60,8 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     catch (t: Throwable) {
       logError("Error on exit application via Driver", t)
       logOutput("Performing force kill")
-      process?.descendants()?.forEach { catchAll { killProcessGracefully(it) } }
-      catchAll { process?.let { killProcessGracefully(process) } }
+      process.descendants().forEach { catchAll { killProcessGracefully(it) } }
+      catchAll { killProcessGracefully(process) }
     }
     finally {
       try {

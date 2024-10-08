@@ -29,7 +29,7 @@ class RemoteDevBackgroundRun(
   private val backendStartResult: Deferred<IDEStartResult>,
   private val backendDriver: Driver,
   remoteFrontendDriver: Driver,
-  frontendProcess: ProcessHandle? = null,
+  frontendProcess: ProcessHandle,
 ) : BackgroundRun(startResult = frontendStartResult, driverWithoutAwaitedConnection = remoteFrontendDriver, process = frontendProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
