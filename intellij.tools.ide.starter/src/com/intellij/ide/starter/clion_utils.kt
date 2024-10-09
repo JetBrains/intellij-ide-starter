@@ -7,6 +7,9 @@ import com.intellij.ide.starter.runner.Starter
 fun IDETestContext.disableCLionTestIndexing() =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
 
+fun IDETestContext.disablePatchEngine() =
+  applyVMOptionsPatch { this.addSystemProperty("rdclient.patch.engine.enabled", false) }
+
 fun IDETestContext.setForcedTraceScenarios(vararg scenarios: String) = applyVMOptionsPatch {
   this.addSystemProperty("rd.forced.trace.scenarios", scenarios.joinToString(","))
 }
