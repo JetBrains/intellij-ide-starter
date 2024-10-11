@@ -71,7 +71,7 @@ object PublicIdeDownloader : IdeDownloader {
     val installerFile = installerDirectory.resolve("${ideInfo.installerFilePrefix}-${possibleBuild.build}${ideInfo.installerFileExt}")
 
     if (!installerFile.exists()) {
-      logOutput("Downloading $ideInfo ...")
+      logOutput("Downloading $ideInfo from $downloadLink...")
       HttpClient.download(downloadLink, installerFile)
     }
     else logOutput("Installer file $installerFile already exists. Skipping download.")
