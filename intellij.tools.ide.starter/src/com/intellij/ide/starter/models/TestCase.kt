@@ -58,7 +58,7 @@ data class TestCase<T : ProjectInfoSpec>(
   fun useEAP(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.EAP)
 
   /** E.g: "222.3244.1" */
-  private fun useEAP(buildNumber: String = ""): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(BuildType.EAP,
+  fun useEAP(buildNumber: String = ""): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(BuildType.EAP,
                                                                                                         buildNumber = buildNumber)
 
   fun useRelease(): TestCase<T> = copyWithPublicIdeDownloaderAndUpdatedInfo(buildType = BuildType.RELEASE)
