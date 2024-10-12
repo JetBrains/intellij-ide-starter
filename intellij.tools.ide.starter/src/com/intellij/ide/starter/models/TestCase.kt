@@ -49,7 +49,7 @@ data class TestCase<T : ProjectInfoSpec>(
         buildType = buildType?.type ?: "",
         buildNumber = buildNumber ?: "",
         version = version ?: ""
-      ).run { this.copy(getInstaller = { StandardInstaller(PublicIdeDownloader) }) }
+      ).run { this.copy(getInstaller = { StandardInstaller(PublicIdeDownloader()) }) }
     )
   }
 

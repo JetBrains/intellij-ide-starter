@@ -53,7 +53,7 @@ var di = DI {
   bindSingleton<ErrorReporter> { ErrorReporterToCI }
   bindSingleton<FailureDetailsOnCI> { object : FailureDetailsOnCI {} }
   bindFactory<IDETestContext, PluginConfigurator> { testContext: IDETestContext -> PluginConfigurator(testContext) }
-  bindSingleton<IdeDownloader> { PublicIdeDownloader }
+  bindSingleton<IdeDownloader> { PublicIdeDownloader() }
   bindSingleton<IdeInstallerFactory> { IdeInstallerFactory() }
 
   // you can extend DI with frameworks, specific to IDE language stack

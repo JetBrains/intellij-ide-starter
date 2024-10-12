@@ -14,7 +14,7 @@ import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.io.path.exists
 
-object PublicIdeDownloader : IdeDownloader {
+open class PublicIdeDownloader : IdeDownloader {
 
   /** Filter release map: <ProductCode, List of releases> */
   private fun findSpecificRelease(releaseInfoMap: Map<String, List<ReleaseInfo>>,
@@ -58,7 +58,7 @@ object PublicIdeDownloader : IdeDownloader {
     if (releaseInfoMap.size != 1) throw RuntimeException("Only one product can be downloaded at once. Found ${releaseInfoMap.keys}")
     val possibleBuild: ReleaseInfo = findSpecificRelease(releaseInfoMap, params)
 
-    val downloadLink: String = when (OS.CURRENT) {
+    val rawDownloadLink: String = when (OS.CURRENT) {
       OS.Linux -> possibleBuild.downloads.linux!!.link
       OS.macOS -> {
         if (SystemInfo.OS_ARCH == "aarch64") possibleBuild.downloads.macM1!!.link // macM1
@@ -68,14 +68,18 @@ object PublicIdeDownloader : IdeDownloader {
       else -> throw RuntimeException("Unsupported OS ${OS.CURRENT}")
     }
 
+    val mappedDownloadLink = mapDownloadLink(rawDownloadLink)
+
     val installerFile = installerDirectory.resolve("${ideInfo.installerFilePrefix}-${possibleBuild.build}${ideInfo.installerFileExt}")
 
     if (!installerFile.exists()) {
-      logOutput("Downloading $ideInfo from $downloadLink...")
-      HttpClient.download(downloadLink, installerFile)
+      logOutput("Downloading $ideInfo from $mappedDownloadLink...")
+      HttpClient.download(mappedDownloadLink, installerFile)
     }
     else logOutput("Installer file $installerFile already exists. Skipping download.")
 
     return IdeInstallerFile(installerFile, possibleBuild.build)
   }
+
+  protected open fun mapDownloadLink(downloadLink: String): String = downloadLink
 }

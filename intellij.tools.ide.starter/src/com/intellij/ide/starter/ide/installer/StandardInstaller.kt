@@ -7,17 +7,22 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
+import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 
 /** Prebuilt installer, distributed via archive (.tar.gz, .exe, .dmg) */
-class StandardInstaller(override val downloader: IdeDownloader = di.direct.instance<IdeDownloader>()) : IdeInstaller {
+class StandardInstaller(
+  override val downloader: IdeDownloader = di.direct.instance<IdeDownloader>(),
+  val customInstallersDownloadDirectory: Path? = null,
+) : IdeInstaller {
 
   override suspend fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val installersDirectory = (GlobalPaths.instance.installersDirectory / ideInfo.productCode).createDirectories()
+    val installersDownloadDirectory = customInstallersDownloadDirectory ?: installersDirectory
 
     //Download
-    val ideInstaller = downloader.downloadIdeInstaller(ideInfo, installersDirectory)
+    val ideInstaller = downloader.downloadIdeInstaller(ideInfo, installersDownloadDirectory)
     val installDir = GlobalPaths.instance.getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
 
     if (ideInstaller.buildNumber == "SNAPSHOT") {
