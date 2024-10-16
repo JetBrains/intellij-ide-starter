@@ -19,6 +19,7 @@ import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.setRegistry
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
@@ -227,9 +228,6 @@ class InstallPluginTest {
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
       .setLicense(System.getenv("LICENSE_KEY"))
-      .applyVMOptionsPatch {
-        addSystemProperty("performance.watcher.unresponsive.interval.ms", 10000)
-      }
 
     testContext.configurator()
 
@@ -246,7 +244,9 @@ class InstallPluginTest {
 
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
-      val ideRunContext = testContext.runIDE(commands = CommandChain().exitApp()).runContext
+      val ideRunContext = testContext.runIDE(
+        commands = CommandChain().setRegistry("performance.watcher.unresponsive.interval.ms", "10000").exitApp()
+      ).runContext
       val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
       val diff = subtract(errors, errorsWithoutPlugin).toList()
