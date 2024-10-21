@@ -121,7 +121,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
       }
 
       val stdout = ExecOutputRedirect.ToStdOut("git-clone-android-plugin")
-      val stderr = ExecOutputRedirect.ToString()
+      val stderr = ExecOutputRedirect.ToStdOut("git-clone-android-plugin")
 
       ProcessExecutor(
         "git-clone-android-plugin",
@@ -130,8 +130,6 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
         stdoutRedirect = stdout,
         stderrRedirect = stderr
       ).start()
-
-      logOutput(stdout.read().trim())
 
       logOutput("HEAD commit hash for the android repo is " +
                 Git.getLocalCurrentCommitHash(communityProjectHome / "android"))
