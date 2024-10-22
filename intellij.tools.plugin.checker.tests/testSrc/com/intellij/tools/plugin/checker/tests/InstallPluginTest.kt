@@ -15,11 +15,11 @@ import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.CurrentTestMethod
-import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.setRegistry
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
@@ -245,8 +245,7 @@ class InstallPluginTest {
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(
-        commandLine = { IDECommandLine.Args("-Dperformance.watcher.unresponsive.interval.ms=10000") },
-        commands = CommandChain().exitApp()
+        commands = CommandChain().setRegistry("performance.watcher.unresponsive.interval.ms", "10000").exitApp()
       ).runContext
       val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
