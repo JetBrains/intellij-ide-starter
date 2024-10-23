@@ -4,11 +4,11 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.utils.FileSystem
-import com.intellij.ide.starter.utils.Git
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.io.copyRecursively
 import org.gradle.internal.hash.Hashing
 import java.nio.file.Path
 import kotlin.io.path.div
@@ -106,38 +106,9 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
   }
 
   fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String, commit: String = "") {
+    val android = GitProjectInfo("ssh://git@git.jetbrains.team/ij/android.git", commit, intellijCommunityVersion, true).downloadAndUnpackProject()
     val communityProjectHome = testContext.resolvedProjectHome
-    if (communityProjectHome.toFile().name.startsWith("intellij-community") && !(communityProjectHome / "android").toFile().exists()) {
-      val commandLineArgs = listOf("git", "clone", "ssh://git@git.jetbrains.team/ij/android.git", "android")
-      val adjustedCommandLineArgs = when (intellijCommunityVersion) {
-        "master" -> commandLineArgs
-        else -> {
-          val listOfArgs = commandLineArgs.toMutableList()
-          listOfArgs.add(2, "-b")
-          listOfArgs.add(3, intellijCommunityVersion)
-          listOfArgs.add(4, "--single-branch")
-          listOfArgs
-        }
-      }
-
-      val stdout = ExecOutputRedirect.ToStdOut("git-clone-android-plugin")
-      val stderr = ExecOutputRedirect.ToString()
-
-      ProcessExecutor(
-        "git-clone-android-plugin",
-        workDir = communityProjectHome, timeout = 10.minutes,
-        args = adjustedCommandLineArgs,
-        stdoutRedirect = stdout,
-        stderrRedirect = stderr
-      ).start()
-
-      logOutput(stdout.read().trim())
-
-      logOutput("HEAD commit hash for the android repo is " +
-                Git.getLocalCurrentCommitHash(communityProjectHome / "android"))
-
-      if (commit != "") Git.reset(repositoryDirectory = communityProjectHome / "android", commitHash = commit)
-    }
+    android.copyRecursively(communityProjectHome / "android")
   }
 
   fun setupAndroidSdkToProject(androidSdkPath: Path) {
