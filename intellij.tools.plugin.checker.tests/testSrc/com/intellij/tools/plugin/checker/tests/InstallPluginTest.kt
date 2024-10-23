@@ -15,11 +15,11 @@ import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
-import com.intellij.tools.ide.performanceTesting.commands.setRegistry
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
@@ -195,8 +195,8 @@ class InstallPluginTest {
         return emptyList()
       }
 
-      if (params.event.productCode == IdeProductProvider.RD.productCode && versionNumber <= 241) {
-        logOutput(RuntimeException("${params.event.productCode} older than 2024.2 is not supported because of the wizard dialog blocking the execution."))
+      if (params.event.productCode == IdeProductProvider.RD.productCode && versionNumber < 243) {
+        logOutput(RuntimeException("${params.event.productCode} older than 2024.3 is not supported because it reports 1s freezes as failed tests."))
         return emptyList()
       }
 
@@ -245,7 +245,8 @@ class InstallPluginTest {
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(
-        commands = CommandChain().setRegistry("performance.watcher.unresponsive.interval.ms", "10000").exitApp()
+        commandLine = { IDECommandLine.OpenTestCaseProject(testContext, listOf("-Dperformance.watcher.unresponsive.interval.ms=10000")) },
+        commands = CommandChain().exitApp()
       ).runContext
       val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
