@@ -26,7 +26,7 @@ object ErrorReporterToCI: ErrorReporter {
     //client has structure log/2024-04-11_at_11-06-10/script-errors so we need to look deeeper
     val rootErrorsDir = Files.find(logsDir, 3, { path, _ -> path.name == ErrorReporter.ERRORS_DIR_NAME }).findFirst().getOrNull()
     if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
-    return collectExceptions(rootErrorsDir) + collectFreezes(logsDir)
+    return collectExceptions(rootErrorsDir)
   }
 
   /**
@@ -35,7 +35,7 @@ object ErrorReporterToCI: ErrorReporter {
   fun collectScriptErrors(logsDir: Path): List<Error> {
     val rootErrorsDir = Files.find(logsDir, 3, { path, _ -> path.name == "script-" + ErrorReporter.ERRORS_DIR_NAME }).findFirst().getOrNull()
     if (SystemProperties.getBooleanProperty("DO_NOT_REPORT_ERRORS", false)) return listOf()
-    return collectExceptions(rootErrorsDir) + collectFreezes(logsDir)
+    return collectExceptions(rootErrorsDir)
   }
 
   /**
@@ -59,27 +59,16 @@ object ErrorReporterToCI: ErrorReporter {
         if (!stacktraceFile.exists()) continue
         val stackTrace = stacktraceFile.readText().trimIndent().trim()
         errors.add(Error(messageText, stackTrace, "", errorType))
+      } else if (errorType == ErrorType.FREEZE) {
+          errorDir.listDirectoryEntries("dump*").firstOrNull()?.let { threadDump ->
+            val dumpContent = Files.readString(threadDump)
+            val fallbackName = "Not analyzed freeze: " + (inferClassMethodNamesFromFolderName(threadDump)
+                                                          ?: inferFallbackNameFromThreadDump(dumpContent))
+            errors.add(Error(fallbackName, "", dumpContent, ErrorType.FREEZE))
+          }
       }
     }
     return errors
-  }
-
-  private fun collectFreezes(logDir: Path): List<Error> {
-    if (!logDir.isDirectory()) {
-      return emptyList()
-    }
-    val freezes = mutableListOf<Error>()
-    logDir.listDirectoryEntries("threadDumps-freeze*").filter { path ->
-      Files.isDirectory(path)
-    }.forEach { path ->
-      path.listDirectoryEntries("threadDump*").firstOrNull()?.let { threadDump ->
-        val dumpContent = Files.readString(threadDump)
-        val fallbackName = "Not analyzed freeze: " + (inferClassMethodNamesFromFolderName(path)
-                                                      ?: inferFallbackNameFromThreadDump(dumpContent))
-        freezes.add(Error(fallbackName, "", dumpContent, ErrorType.FREEZE))
-      }
-    }
-    return freezes
   }
 
   /**
