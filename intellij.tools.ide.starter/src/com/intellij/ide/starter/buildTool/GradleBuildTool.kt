@@ -263,12 +263,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   fun enableOpenTelemetry(): GradleBuildTool {
-    logOutput("Gradle daemon telemetry will be collected to $daemonOpenTelemetryPath")
-    testContext.applyVMOptionsPatch {
-      addSystemProperty("gradle.daemon.opentelemetry.enabled", true)
-      addSystemProperty("gradle.daemon.opentelemetry.format", "JSON")
-      addSystemProperty("gradle.daemon.opentelemetry.folder", daemonOpenTelemetryPath)
-    }
+    // todo IDEA-349510
     return this
   }
 
