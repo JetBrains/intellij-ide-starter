@@ -26,7 +26,13 @@ open class PublicIdeDownloader : IdeDownloader {
         filteringParams.majorVersion.isNotBlank() -> sortedByDate.first { it.majorVersion == filteringParams.majorVersion}
         // find the latest release / eap, if no specific params were provided
         filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank() -> sortedByDate.first()
-        filteringParams.versionNumber.isNotBlank() -> sortedByDate.first { it.version == filteringParams.versionNumber }
+        filteringParams.versionNumber.isNotBlank() -> {
+          sortedByDate.first {
+            // Rider (RD) might have versions suffixes after "-". E.g., 2024.3-EAP5. So we take the part before '-'.
+            val version = it.version.substringBefore('-')
+            version == filteringParams.versionNumber
+          }
+        }
         filteringParams.buildNumber.isNotBlank() -> sortedByDate.first { it.build == filteringParams.buildNumber }
         else -> null
       }
