@@ -35,7 +35,10 @@ data class MarketplaceEvent(
   val pluginId: Int,
 
   /** Eg: FREE*/
-  val pricingModel: String
+  val pricingModel: String,
+
+  /** Eg: IDE_PERFORMANCE */
+  val verificationType: String
 ) {
   /** Removes product code from product version */
   fun getNumericProductVersion() = productVersion.split("-").last()

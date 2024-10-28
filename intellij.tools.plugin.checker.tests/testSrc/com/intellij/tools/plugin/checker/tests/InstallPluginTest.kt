@@ -13,6 +13,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
+import com.intellij.ide.starter.report.Error
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.IDECommandLine
@@ -21,6 +22,9 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.tools.plugin.checker.aws.SqsClientWrapper
+import com.intellij.tools.plugin.checker.aws.VerificationMessage
+import com.intellij.tools.plugin.checker.aws.VerificationResultType
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
@@ -33,6 +37,7 @@ import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import software.amazon.awssdk.regions.Region.EU_WEST_1
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -234,6 +239,28 @@ class InstallPluginTest {
     return testContext
   }
 
+  private fun reportErrorsToAwsSqs(errors: List<Error>) {
+    if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) return
+    val sqsClient = SqsClientWrapper("https://sqs.eu-west-1.amazonaws.com/662690535244/dev_performance-verifier_external-services", EU_WEST_1)
+    val buildUrl = System.getenv("BUILD_URL")
+    val marketplaceEvent = getMarketplaceEvent()
+
+    for (error in errors) {
+      val message = VerificationMessage(
+        error.messageText,
+        VerificationResultType.PROBLEMS,
+        buildUrl,
+        System.currentTimeMillis(),
+        marketplaceEvent.id,
+        marketplaceEvent.verificationType,
+        null
+      )
+      sqsClient.sendMessage(message)
+    }
+
+    sqsClient.closeClient()
+  }
+
   @ParameterizedTest
   @MethodSource("data")
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
@@ -254,6 +281,7 @@ class InstallPluginTest {
       val diff = subtract(errors, errorsWithoutPlugin).toList()
 
       ErrorReporterToCI.reportErrors(ideRunContext, diff)
+      reportErrorsToAwsSqs(errors)
     }
     catch (ex: Exception) {
       when (ex) {
