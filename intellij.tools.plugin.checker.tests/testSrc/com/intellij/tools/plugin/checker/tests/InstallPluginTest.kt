@@ -239,12 +239,13 @@ class InstallPluginTest {
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
     val testContextWithoutPlugin = createTestContext(params)
-    val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(commands = CommandChain().exitApp()).runContext
+    val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(launchName = "Run without plugin", commands = CommandChain().exitApp()).runContext
     val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
 
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(
+        launchName = "Run with plugin",
         commandLine = { IDECommandLine.OpenTestCaseProject(testContext, listOf("-Dperformance.watcher.unresponsive.interval.ms=10000")) },
         commands = CommandChain().exitApp()
       ).runContext
