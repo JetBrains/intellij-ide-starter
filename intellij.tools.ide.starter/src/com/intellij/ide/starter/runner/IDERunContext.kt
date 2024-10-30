@@ -226,6 +226,7 @@ data class IDERunContext(
       val finalArgs = startConfig.commandLine + commandLine(this).args
       File(finalArgs.first()).setExecutable(true)
       val span = TestTelemetryService.spanBuilder("ide process").startSpan()
+      EventsBus.postAndWaitProcessing(IdeBeforeRunIdeProcessEvent(runContext = this))
       val executionTime = measureTime {
         ProcessExecutor(
           presentableName = "run-ide-$contextName",

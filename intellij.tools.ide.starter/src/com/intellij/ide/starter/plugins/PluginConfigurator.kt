@@ -8,6 +8,7 @@ import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logOutput
 import org.apache.commons.io.FileUtils
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarFile
 import kotlin.io.path.*
@@ -57,13 +58,15 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     pluginId: String,
     ide: InstalledIde,
     channel: String? = null,
-  ) = installPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel))
+    pluginFileName: String? = null,
+  ) = installPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel, pluginFileName = pluginFileName))
 
   fun installPluginFromPluginManager(
     pluginId: String,
     pluginVersion: String,
     channel: String? = null,
-  ) = installPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel))
+    pluginFileName: String? = null,
+  ) = installPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel, pluginFileName = pluginFileName))
 
   fun installPluginFromPluginManager(
     plugin: PluginSourceDescriptor
@@ -72,7 +75,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     logOutput("Setting up plugin: $pluginId ...")
 
     val pluginsCacheDor = GlobalPaths.instance.getCacheDirectoryFor("plugins")
-    val fileName = pluginId.replace(".", "-") + ".zip"
+    val fileName = plugin.pluginFileName ?: (pluginId.replace(".", "-") + ".zip")
 
     val downloadedPlugin: Path = when (plugin) {
       is PluginLatestForIde ->
@@ -82,7 +85,12 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     }
 
     HttpClient.downloadIfMissing(plugin.downloadUrl(), downloadedPlugin, retries = 1)
-    FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
+    if (fileName.endsWith(".jar")) {
+      Files.copy(downloadedPlugin, testContext.paths.pluginsDir.resolve(fileName))
+    } else {
+      FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
+    }
+
 
     logOutput("Plugin $pluginId setup finished")
   }

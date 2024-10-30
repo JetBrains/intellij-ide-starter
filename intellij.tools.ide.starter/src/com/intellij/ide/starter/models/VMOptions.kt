@@ -19,7 +19,7 @@ import kotlin.time.Duration
 data class VMOptions(
   private val ide: InstalledIde,
   private var data: List<String>,
-  private var env: Map<String, String>
+  private var env: Map<String, String>,
 ) {
   companion object {
     const val ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION = "full.scanning.on.startup.can.be.skipped"
@@ -89,7 +89,7 @@ data class VMOptions(
 
   fun clearSystemProperty(key: String) {
     data = data.filterNot {
-     it.startsWith("-D${key}=")
+      it.startsWith("-D${key}=")
         .also { match -> if (match) logOutput("Removing system property: ${it.removePrefix("-D")}") }
     }
   }
@@ -223,7 +223,7 @@ data class VMOptions(
     addSystemProperty("ide.newUsersOnboarding", false)
   }
 
-  fun setFreezeReportingInterval(interval: Duration){
+  fun setFreezeReportingInterval(interval: Duration) {
     addSystemProperty("performance.watcher.unresponsive.interval.ms", interval.inWholeMilliseconds)
   }
 
@@ -254,6 +254,10 @@ data class VMOptions(
   }
 
   fun setFlagIntegrationTests() = addSystemProperty("idea.is.integration.test", true)
+
+  fun setIdeStartupDialogEnabled(value: Boolean = true) = addSystemProperty("show.wizard.in.test", value)
+
+  fun setNeverShowInitConfigModal() = addSystemProperty("idea.initially.ask.config", "never")
 
   fun setFatalErrorNotificationEnabled() = addSystemProperty("idea.fatal.error.notification", true)
 
@@ -371,7 +375,7 @@ data class VMOptions(
   fun hasOption(option: String): Boolean = data.any { it.contains(option) }
 
   fun getOptionValue(option: String): String {
-   data.forEach { line ->
+    data.forEach { line ->
       if (line.contains(option)) {
         return line.replace("-D$option=", "")
       }
@@ -401,7 +405,7 @@ data class VMOptions(
   }
 
 
-  fun setLockingMode(mode: Int){
+  fun setLockingMode(mode: Int) {
     addLine("-XX:+UnlockExperimentalVMOptions")
     addLine("-XX:LockingMode=$mode")
   }

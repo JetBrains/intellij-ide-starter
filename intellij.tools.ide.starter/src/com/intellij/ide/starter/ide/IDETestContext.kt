@@ -24,12 +24,14 @@ import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.io.findOrCreateFile
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ui.NewUiValue
+import com.intellij.util.io.write
 import com.intellij.util.system.OS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -441,9 +443,9 @@ open class IDETestContext(
     return this
   }
 
-  fun updateGeneralSettings(): IDETestContext {
+  fun updateGeneralSettings(configDir: Path = paths.configDir): IDETestContext {
     val patchedIdeGeneralXml = this::class.java.classLoader.getResourceAsStream("ide.general.xml")
-    val pathToGeneralXml = paths.configDir.toAbsolutePath().resolve("options/ide.general.xml")
+    val pathToGeneralXml = configDir.toAbsolutePath().resolve("options/ide.general.xml")
 
     if (!pathToGeneralXml.exists()) {
       pathToGeneralXml.parent.createDirectories()
@@ -525,8 +527,22 @@ open class IDETestContext(
   }
 
   fun disableMigrationNotification(): IDETestContext {
-    val migrationFile = paths.configDir.resolve("migrate.config").toFile()
-    migrationFile.writeText("properties intellij.first.ide.session")
+    createMigrateConfig("properties intellij.first.ide.session")
+    return this
+  }
+
+  fun createMigrateConfigWithMergeConfigsProperty(): IDETestContext {
+    createMigrateConfig("merge-configs")
+    return this
+  }
+
+  fun createMigrateConfigWithImportSettingsPath(path: Path): IDETestContext {
+    createMigrateConfig("import $path")
+    return this
+  }
+
+  fun createMigrateConfig(content: String = ""): IDETestContext {
+    paths.configDir.resolve("migrate.config").findOrCreateFile().write(content)
     return this
   }
 
@@ -548,10 +564,10 @@ open class IDETestContext(
     return this
   }
 
-  fun addProjectToTrustedLocations(projectPath: Path? = null, addParentDir: Boolean = false): IDETestContext {
+  fun addProjectToTrustedLocations(projectPath: Path? = null, addParentDir: Boolean = false, configPath: Path = paths.configDir): IDETestContext {
     if (this.testCase.projectInfo == NoProject && projectPath == null) return this
     val path = projectPath ?: this.resolvedProjectHome.normalize()
-    val trustedXml = paths.configDir.toAbsolutePath().resolve("options/trusted-paths.xml")
+    val trustedXml = configPath.toAbsolutePath().resolve("options/trusted-paths.xml")
 
     if (!trustedXml.exists()) {
       trustedXml.parent.createDirectories()
@@ -580,7 +596,7 @@ open class IDETestContext(
       XmlBuilder.writeDocument(xmlDoc, trustedXml)
 
       if (this.ide.productCode == IdeProductProvider.RD.productCode) {
-        val trustedSolutionsXml = paths.configDir.toAbsolutePath().resolve("options/trustedSolutions.xml")
+        val trustedSolutionsXml = configPath.toAbsolutePath().resolve("options/trustedSolutions.xml")
         if (!trustedSolutionsXml.exists()) {
           Files.write(trustedSolutionsXml, this::class.java.classLoader.getResource("trustedSolutions.xml")!!.readText().toByteArray())
         }
