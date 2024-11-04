@@ -87,4 +87,15 @@ data class IdeInfo(
       }
       else -> error("Unknown OS")
     }
+
+  val identity: String
+    get() {
+      val suffix = when {
+        version.contains("-EAP") -> ""
+        buildType == BuildType.EAP.type -> "-EAP"
+        else -> ""
+      }
+      return "$productCode-$platformPrefix-$version$suffix"
+    }
+
 }
