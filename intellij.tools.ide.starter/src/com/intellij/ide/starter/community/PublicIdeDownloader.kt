@@ -65,12 +65,16 @@ open class PublicIdeDownloader : IdeDownloader {
     val possibleBuild: ReleaseInfo = findSpecificRelease(releaseInfoMap, params)
 
     val rawDownloadLink: String = when (OS.CURRENT) {
-      OS.Linux -> possibleBuild.downloads.linux!!.link
+      OS.Linux -> possibleBuild.downloads.linux?.link ?: error("Linux download link is not specified")
       OS.macOS -> {
-        if (SystemInfo.OS_ARCH == "aarch64") possibleBuild.downloads.macM1!!.link // macM1
-        else possibleBuild.downloads.mac!!.link
+        if (SystemInfo.OS_ARCH == "aarch64") {
+          possibleBuild.downloads.macM1?.link ?: error("MacOS M1 download link is not specified")
+        }
+        else {
+          possibleBuild.downloads.mac?.link ?: error("MacOS x64 download link is not specified")
+        }
       }
-      OS.Windows -> possibleBuild.downloads.windowsZip!!.link
+      OS.Windows -> possibleBuild.downloads.windowsZip?.link ?: error("Windows download link is not specified")
       else -> throw RuntimeException("Unsupported OS ${OS.CURRENT}")
     }
 
