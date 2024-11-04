@@ -116,7 +116,12 @@ interface TestContainer<T> {
    * @param baseContext - optional base context. If passed, some set up steps for the new context are omitted and we are re-using base context information.
    *                      For example - project unpacking
    */
-  private fun newContext(testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, projectHome: Path?): IDETestContext {
+  fun newContext(
+    testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, projectHome: Path?,
+    ideDataPathsProvider: (testName: String, testDirectory: Path, useInMemoryFileSystem: Boolean) -> IDEDataPaths = { testName, testDirectory, useInMemoryFileSystem ->
+      IDEDataPaths.createPaths<IDEDataPaths>(testName, testDirectory, useInMemoryFileSystem)
+    },
+  ): IDETestContext {
     logOutput("Resolving IDE build for $testName...")
     val (buildNumber, ide) = @Suppress("SSBasedInspection")
     (runBlocking(Dispatchers.Default) {
@@ -137,7 +142,7 @@ interface TestContainer<T> {
       }
     }
 
-    val paths = IDEDataPaths.createPaths(testName, testDirectory, testCase.useInMemoryFileSystem)
+    val paths = ideDataPathsProvider(testName, testDirectory, testCase.useInMemoryFileSystem)
     logOutput("Using IDE paths for '$testName': $paths")
     logOutput("IDE to run for '$testName': $ide")
 

@@ -6,13 +6,15 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 
-class IDEDataPaths(
+@Suppress("unused")
+open class IDEDataPaths(
   val testHome: Path,
-  private val inMemoryRoot: Path?
+  private val inMemoryRoot: Path?,
+  private val isFromSources: Boolean,
 ) {
 
   companion object {
-    fun createPaths(testName: String, testHome: Path, useInMemoryFs: Boolean): IDEDataPaths {
+    inline fun <reified T> createPaths(testName: String, testHome: Path, useInMemoryFs: Boolean, isFromSources: Boolean = true): T where T : Any {
       testHome.toFile().walkBottomUp().fold(true) { res, it ->
         (it.absolutePath.startsWith((testHome / "system").toFile().absolutePath) || it.delete() || !it.exists()) && res
       }
@@ -23,7 +25,8 @@ class IDEDataPaths(
       else {
         null
       }
-      return IDEDataPaths(testHome = testHome, inMemoryRoot = inMemoryRoot)
+      return T::class.java.getConstructor(Path::class.java, Path::class.java, Boolean::class.java)
+        .newInstance(testHome, inMemoryRoot, isFromSources)
     }
   }
 
@@ -33,7 +36,8 @@ class IDEDataPaths(
   val systemDir = ((inMemoryRoot ?: testHome) / "system").createDirectories()
   val pluginsDir = (testHome / "plugins").createDirectories()
   val jbrDiagnostic = (testHome / "jbrDiagnostic").createDirectories()
-
+  open val eventLogMetadataDir = (configDir / "event-log-metadata").createDirectories()
+  open val eventLogDataDir = (systemDir / "event-log-data").createDirectories()
 
   protected fun finalize() {
     if (inMemoryRoot != null) {

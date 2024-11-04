@@ -32,7 +32,7 @@ class PluginsInjectionTest {
   @Test
   fun theSameIDETestContextShouldBeReferencedInPluginConfigurator() {
     val testName = object {}.javaClass.enclosingMethod.name.hyphenateTestName()
-    val paths = IDEDataPaths.createPaths(testName, testDirectory, useInMemoryFs = false)
+    val paths = IDEDataPaths.createPaths<IDEDataPaths>(testName, testDirectory, useInMemoryFs = false)
 
     val projectHome = testCase.projectInfo.downloadAndUnpackProject()
     val context = IDETestContext(paths = paths,

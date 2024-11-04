@@ -16,7 +16,7 @@ import kotlin.io.path.listDirectoryEntries
  */
 class StatisticsEventsHarvester(private val eventLogsDir: Path) {
 
-  constructor(testContext: IDETestContext, recorder: String = "FUS") : this(testContext.paths.systemDir.resolve("event-log-data/logs/$recorder"))
+  constructor(testContext: IDETestContext, recorder: String = "FUS") : this(testContext.paths.eventLogDataDir.resolve("logs/$recorder"))
 
   fun getStatisticEventsByGroup(groupId: String, failOnNoEventsWritten: Boolean = true): List<LogEvent> =
     getStatisticEvents(failOnNoEventsWritten) { it.group.id == groupId }

@@ -74,3 +74,23 @@ val IDETestContext.frontendTestCase: TestCase<out ProjectInfoSpec>
       executableFileName = executableFileName
     ))
   }
+
+/**
+ * Sets the directory for event log metadata in the frontend IDE context.
+ *
+ * NOTE: The frontend/client expects the directory with the meta-data to be inside per_client_config,
+ * but this directory is cleared when the frontend starts.
+ * Therefore, here we redefine the path to the directory with the frontend meta-data to the same folder in the backend,
+ * which is not cleared and contains the necessary data.
+ * Without calling this function, the frontend event log will contain values like `validation.unreachable_metadata`, `validation.undefined_rule`
+ *
+ * @param path The path to the event log metadata directory. Defaults to the same folder from the backend.
+ * @return The updated `IDERemDevTestContext` instance.
+ */
+fun IDERemDevTestContext.setFrontendEventLogsMetadataCustomPath(path: Path = paths.eventLogMetadataDir) : IDERemDevTestContext {
+  frontendIDEContext.applyVMOptionsPatch {
+    addSystemProperty("intellij.fus.custom.schema.dir", path.toString())
+  }
+  return this
+}
+
