@@ -310,6 +310,7 @@ open class IDETestContext(
 
   fun disableAIAssistantToolwindowActivationOnStart() = applyVMOptionsPatch {
     addSystemProperty("llm.ai.assistant.toolwindow.activation.on.start", false)
+    addSystemProperty("llm.show.ai.promotion.window.on.start", false)
   }
 
   fun withKotlinPluginK2() = applyVMOptionsPatch {
