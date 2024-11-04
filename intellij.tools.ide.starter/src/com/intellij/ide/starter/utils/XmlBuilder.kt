@@ -17,9 +17,9 @@ import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
 
 object XmlBuilder {
-  private val documentBuilder = createDocumentBuilder()
 
   fun parse(fileInputStream: FileInputStream): Document {
+    val documentBuilder = createDocumentBuilder()
     val xmlDoc = documentBuilder.parse(fileInputStream)
     xmlDoc.documentElement.normalize()
 
@@ -29,6 +29,7 @@ object XmlBuilder {
   }
 
   fun parse(path: Path): Document {
+    val documentBuilder = createDocumentBuilder()
     if (path.notExists()) throw FileNotFoundException(path.toString())
 
     val xmlDoc = documentBuilder.parse(path.toFile())
@@ -37,10 +38,6 @@ object XmlBuilder {
     requireNotNull(xmlDoc) { "Parsed xml document at $path is null" }
 
     return xmlDoc
-  }
-
-  fun createDocument(): Document {
-    return documentBuilder.newDocument()
   }
 
   fun writeDocument(xmlDoc: Document, outputPath: Path) {
