@@ -724,4 +724,15 @@ open class IDETestContext(
     """)
     return this
   }
+
+  fun enableProxyAutodetection(): IDETestContext {
+    writeConfigFile("options/proxy.settings.xml", """
+     <application>
+       <component name="HttpConfigurable">
+         <option name="USE_PROXY_PAC" value="true" />
+       </component>
+     </application> 
+    """)
+    return this
+  }
 }
