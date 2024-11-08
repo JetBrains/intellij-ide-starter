@@ -120,7 +120,7 @@ object ErrorReporterToCI: ErrorReporter {
       val failureDetailsProvider = FailureDetailsOnCI.instance
       val failureDetailsMessage = failureDetailsProvider.getFailureDetails(runContext)
       val urlToLogs = failureDetailsProvider.getLinkToCIArtifacts(runContext).toString()
-      if (CIServer.instance.isTestFailureShouldBeIgnored(messageText)) {
+      if (CIServer.instance.isTestFailureShouldBeIgnored(messageText) || CIServer.instance.isTestFailureShouldBeIgnored(stackTraceContent)) {
         CIServer.instance.ignoreTestFailure(testName = generifyErrorMessage(testName),
                                             message = failureDetailsMessage)
       }
