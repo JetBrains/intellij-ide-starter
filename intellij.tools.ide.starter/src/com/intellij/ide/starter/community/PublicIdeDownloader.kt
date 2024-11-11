@@ -33,7 +33,8 @@ open class PublicIdeDownloader : IdeDownloader {
             version == filteringParams.versionNumber
           }
         }
-        filteringParams.buildNumber.isNotBlank() -> sortedByDate.first { it.build == filteringParams.buildNumber }
+        filteringParams.buildNumber.isNotBlank() -> sortedByDate.firstOrNull() { it.build == filteringParams.buildNumber } ?:
+          error("Build not found for $filteringParams")
         else -> null
       }
 
