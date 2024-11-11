@@ -90,12 +90,17 @@ data class IdeInfo(
 
   val identity: String
     get() {
-      val suffix = when {
-        version.contains("-EAP") -> ""
-        buildType == BuildType.EAP.type -> "-EAP"
-        else -> ""
+      return when {
+        buildNumber.isNotBlank() -> "$productCode-$platformPrefix-$buildNumber"
+        else -> {
+          val suffix = when {
+            version.contains("-EAP") -> ""
+            buildType == BuildType.EAP.type -> "-EAP"
+            else -> ""
+          }
+          "$productCode-$platformPrefix-$version$suffix"
+        }
       }
-      return "$productCode-$platformPrefix-$version$suffix"
     }
 
 }
