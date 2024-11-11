@@ -1,0 +1,33 @@
+### auto-generated section `build intellij.tools.ide.starter.driver` start
+load("@rules_jvm//:compiler-options.bzl", "create_kotlinc_options")
+load("@rules_jvm//:rules.bzl", "jvm_library")
+
+create_kotlinc_options(
+  name = "custom",
+  jvm_target = "17",
+  opt_in = ["kotlin.time.ExperimentalTime"]
+)
+
+jvm_library(
+  name = "tools-ide-starter-driver",
+  module_name = "intellij.tools.ide.starter.driver",
+  visibility = ["//visibility:public"],
+  srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True, exclude = ["**/module-info.java"]),
+  javac_opts = "@rules_jvm//:j17",
+  kotlinc_opts = ":custom",
+  deps = [
+    "@community//platform/remote-driver/client:driver-client",
+    "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
+    "@lib//:kotlinx-coroutines-core",
+    "@lib//:kotlin-stdlib",
+    "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
+    "@ultimate_lib//:kodein-di-jvm",
+    "@lib//:junit5",
+    "@community//platform/remote-driver/test-sdk:driver-sdk",
+    "@ultimate_lib//:io_qameta_allure_java_commons",
+    "@community//tools/intellij.tools.ide.util.common:ide-util-common",
+    "@community//platform/util",
+    "@lib//:opentelemetry",
+  ]
+)
+### auto-generated section `build intellij.tools.ide.starter.driver` end

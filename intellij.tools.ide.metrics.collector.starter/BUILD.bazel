@@ -1,0 +1,29 @@
+### auto-generated section `build intellij.tools.ide.metrics.collector.starter` start
+load("@rules_jvm//:rules.bzl", "jvm_library")
+
+jvm_library(
+  name = "tools-ide-metrics-collector-starter",
+  module_name = "intellij.tools.ide.metrics.collector.starter",
+  visibility = ["//visibility:public"],
+  srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True, exclude = ["**/module-info.java"]),
+  javac_opts = "@rules_jvm//:j17",
+  kotlinc_opts = "@rules_jvm//:k17",
+  deps = [
+    "@lib//:kotlin-stdlib",
+    "@community//platform/lang-impl",
+    "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
+    "@community//platform/remote-driver/model:driver-model",
+    "@community//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector",
+    "@community//platform/diagnostic/telemetry",
+    "@lib//:opentelemetry",
+    "@lib//:opentelemetry-semconv",
+    "@community//tools/intellij.tools.ide.util.common:ide-util-common",
+    "@lib//:jackson",
+    "@lib//:jackson-databind",
+    "@lib//:jackson-module-kotlin",
+    "@community//platform/statistics",
+    "@community//platform/statistics/uploader",
+    "@ultimate_lib//:kodein-di-jvm.provided",
+  ]
+)
+### auto-generated section `build intellij.tools.ide.metrics.collector.starter` end

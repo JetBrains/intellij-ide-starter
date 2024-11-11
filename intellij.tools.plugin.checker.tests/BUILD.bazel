@@ -1,0 +1,43 @@
+### auto-generated section `build intellij.tools.plugin.checker.tests` start
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_jvm//:compiler-options.bzl", "create_kotlinc_options")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+
+create_kotlinc_options(
+  name = "custom",
+  jvm_target = "17",
+  opt_in = ["kotlin.time.ExperimentalTime"]
+)
+
+java_library(
+  name = "tools-plugin-checker-tests",
+  visibility = ["//visibility:public"]
+)
+
+kt_jvm_test(
+  name = "tools-plugin-checker-tests_test",
+  visibility = ["//visibility:public"],
+  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True, exclude = ["**/module-info.java"]),
+  javac_opts = "@rules_jvm//:j17",
+  kotlinc_opts = ":custom",
+  deps = [
+    "@lib//:kotlin-stdlib",
+    "@ultimate_lib//:kodein-di-jvm",
+    "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
+    "@lib//:junit5",
+    "@lib//:junit5Params",
+    "@lib//:kotlin-test-assertions-core-jvm",
+    "@community//platform/remote-driver/model:driver-model",
+    "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
+    "//tests/ideTestingFramework/intellij.tools.ide.starter.junit5:tools-ide-starter-junit5",
+    "//tests/ideTestingFramework/intellij.tools.ide.starter.junit5:tools-ide-starter-junit5_test",
+    "@community//platform/util",
+    "@lib//:jackson",
+    "@lib//:jackson-databind",
+    "@lib//:jackson-module-kotlin",
+    "@lib//:http-client",
+    "@community//tools/intellij.tools.ide.util.common:ide-util-common",
+    "@ultimate_lib//:software_amazon_awssdk_sqs",
+  ]
+)
+### auto-generated section `build intellij.tools.plugin.checker.tests` end
