@@ -10,6 +10,7 @@ import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.models.VMOptions.Companion.ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION
 import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.report.publisher.ReportPublisher
@@ -382,6 +383,7 @@ open class IDETestContext(
     expectedKill: Boolean = false,
     expectedExitCode: Int = 0,
     collectNativeThreads: Boolean = false,
+    stdOut: ExecOutputRedirect? = null,
     configure: IDERunContext.() -> Unit = {}
   ): IDEStartResult {
     val span = TestTelemetryService.spanBuilder("runIDE").setAttribute("launchName", launchName).startSpan()
@@ -396,6 +398,7 @@ open class IDETestContext(
         expectedKill = expectedKill,
         expectedExitCode = expectedExitCode,
         collectNativeThreads = collectNativeThreads,
+        stdOut = stdOut
       ).also(configure)
 
       try {

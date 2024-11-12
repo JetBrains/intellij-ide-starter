@@ -64,6 +64,7 @@ data class IDERunContext(
   val expectedKill: Boolean = false,
   val expectedExitCode: Int = 0,
   val collectNativeThreads: Boolean = false,
+  private val stdOut: ExecOutputRedirect? = null
 ) {
   val contextName: String
     get() = if (launchName.isNotEmpty()) {
@@ -332,8 +333,13 @@ data class IDERunContext(
 
   private fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
 
-  private fun getStdout() =
-    if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
+  private fun getStdout(): ExecOutputRedirect {
+    if (stdOut != null) {
+      return stdOut
+    }
+    return if (verboseOutput) ExecOutputRedirect.ToStdOut("[ide-${contextName}-out]") else ExecOutputRedirect.ToString()
+  }
+
 
   private fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
     val failureCauseFile = logsDir.resolve("failure_cause.txt")
@@ -497,5 +503,4 @@ data class IDERunContext(
       screenRecorder.stop()
     }
   }
-
 }
