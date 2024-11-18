@@ -6,11 +6,10 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.utils.FileSystem
-import com.intellij.ide.starter.utils.Git
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.copyRecursively
+import kotlin.io.path.exists
 import org.gradle.internal.hash.Hashing
 import java.nio.file.Path
 import kotlin.io.path.div
@@ -110,7 +109,9 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
   fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String, commit: String = "") {
     val android = GitProjectInfo("ssh://git@git.jetbrains.team/ij/android.git", commit, intellijCommunityVersion, true).downloadAndUnpackProject()
     val communityProjectHome = testContext.resolvedProjectHome
-    android.copyRecursively(communityProjectHome / "android")
+    val androidPluginPath = communityProjectHome / "android"
+    if (androidPluginPath.exists()) return // TODO find better solution
+    android.copyRecursively(androidPluginPath)
   }
 
   fun setupAndroidSdkToProject(androidSdkPath: Path) {
