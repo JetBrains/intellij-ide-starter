@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.util.SystemInfo
@@ -50,7 +51,7 @@ fun takeScreenshot(logsDir: Path) {
   takeScreenshot(logsDir, "screenshot_beforeKill.jpg")
 }
 
-fun takeScreenshot(logsDir: Path, screenshotName: String) {
+fun takeScreenshot(logsDir: Path, screenshotName: String, ignoreExceptions: Boolean = false) {
   val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName / "$toolName.jar"
@@ -62,14 +63,24 @@ fun takeScreenshot(logsDir: Path, screenshotName: String) {
   val screenshotFile = logsDir.resolve(screenshotName)
 
   val javaPath = ProcessHandle.current().info().command().orElseThrow().toString()
-  ProcessExecutor(
-    presentableName = "take-screenshot",
-    workDir = toolsDir,
-    timeout = 15.seconds,
-    args = mutableListOf(javaPath, "-jar", screenshotTool.absolutePathString(), screenshotFile.toString()),
-    environmentVariables = mapOf("DISPLAY" to ":88"),
-    onlyEnrichExistedEnvVariables = true
-  ).start()
+  val stdOut = ExecOutputRedirect.ToStdOut("[take-screenshot-out]")
+  val stdErr = ExecOutputRedirect.ToStdOut("[take-screenshot-err]")
+  try {
+    ProcessExecutor(
+      presentableName = "take-screenshot",
+      workDir = toolsDir,
+      timeout = 15.seconds,
+      stdoutRedirect = stdOut,
+      stderrRedirect = stdErr,
+      args = mutableListOf(javaPath, "-jar", screenshotTool.absolutePathString(), screenshotFile.toString()),
+      environmentVariables = mapOf("DISPLAY" to ":88"),
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+  }
+  catch (e: Exception) {
+    if (!ignoreExceptions) throw e
+    logOutput("Exception while taking screenshot: ${e.message}")
+  }
 
   if (screenshotFile.exists()) {
     logOutput("Screenshot saved in $screenshotFile")
@@ -148,5 +159,5 @@ private fun downloadAsyncProfilerIfNeeded(profiler: Path, toolsDir: Path) {
 
 fun pathInsideJarFile(
   jarFile: Path,
-  pathInsideJar: String
+  pathInsideJar: String,
 ): String = jarFile.toAbsolutePath().toString().trimEnd('/') + "!/" + pathInsideJar
