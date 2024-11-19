@@ -80,6 +80,7 @@ fun takeScreenshot(logsDir: Path, screenshotName: String, ignoreExceptions: Bool
   catch (e: Exception) {
     if (!ignoreExceptions) throw e
     logOutput("Exception while taking screenshot: ${e.message}")
+    return
   }
 
   if (screenshotFile.exists()) {
