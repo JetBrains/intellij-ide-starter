@@ -317,6 +317,12 @@ open class IDETestContext(
     addSystemProperty("idea.kotlin.plugin.use.k2", true)
   }
 
+  fun enableCloudRegistry(registryHost: String) = applyVMOptionsPatch {
+    addSystemProperty("ide.registry.refresh.debug", true)
+    addSystemProperty("ide.registry.refresh.delay.seconds", 0)
+    addSystemProperty("ide.registry.refresh.host", registryHost)
+  }
+
   fun enableHighlightingLog(logLevel: LogLevel = LogLevel.DEBUG): IDETestContext = applyVMOptionsPatch { configureLoggers(logLevel, "com.intellij.codeInsight") }
 
   fun removeIdeaProjectDirectory(): IDETestContext {
