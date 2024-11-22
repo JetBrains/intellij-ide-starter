@@ -18,13 +18,10 @@ interface FailureDetailsOnCI {
     }
   }
 
+  fun getFailureDetails(runContext: IDERunContext): String = getTestMethodName(runContext) + System.lineSeparator() +
+                                                             "You can find logs and other useful info in CI artifacts under the path ${runContext.contextName.replaceSpecialCharactersWithHyphens()}"
 
-  fun getFailureDetails(runContext: IDERunContext): String {
-    val testMethodName = getTestMethodName().ifEmpty { runContext.contextName }
-
-    return "Test: $testMethodName" + System.lineSeparator() +
-           "You can find logs and other useful info in CI artifacts under the path ${runContext.contextName.replaceSpecialCharactersWithHyphens()}"
-  }
+  fun getTestMethodName(runContext: IDERunContext) = "Test: ${getTestMethodName().ifEmpty { runContext.contextName }}"
 
   fun getLinkToCIArtifacts(runContext: IDERunContext): String? = null
 }
