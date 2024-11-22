@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 buildscript {
-  ext.kotlin_version = '1.9.20'
+  ext.kotlin_version = '2.0.20'
 
   repositories {
     maven { url = "https://cache-redirector.jetbrains.com/maven-central" }
