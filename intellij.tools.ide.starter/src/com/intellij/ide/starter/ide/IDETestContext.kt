@@ -328,6 +328,8 @@ open class IDETestContext(
 
   fun enableHighlightingLog(logLevel: LogLevel = LogLevel.DEBUG): IDETestContext = applyVMOptionsPatch { configureLoggers(logLevel, "com.intellij.codeInsight") }
 
+  fun enableCheckTrafficLight(enable: Boolean = true): IDETestContext = applyVMOptionsPatch { addSystemProperty("is.test.traffic.light", enable) }
+
   fun removeIdeaProjectDirectory(): IDETestContext {
     val ideaDirPath = resolvedProjectHome.resolve(".idea")
 
