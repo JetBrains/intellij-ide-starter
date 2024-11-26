@@ -11,11 +11,9 @@ import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
-import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.report.Error
 import com.intellij.ide.starter.report.ErrorReporterToCI
-import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
@@ -53,7 +51,7 @@ class InstallPluginTest {
                                        1800, 14015, 21624, 20158, 23046, 19470)
 
     private fun setDebugBuildParamsForLocalDebug(vararg buildProperties: Pair<String, String>): Path {
-      val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
+      @Suppress("SSBasedInspection") val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
 
       Properties().apply {
         buildProperties.forEach {
@@ -229,7 +227,7 @@ class InstallPluginTest {
 
   private fun createTestContext(params: EventToTestCaseParams, configurator: IDETestContext.()->Unit = {}): IDETestContext {
     val testContext = Starter
-      .newContext(testName = CurrentTestMethod.hyphenateWithClass(), testCase = params.testCase)
+      .newContext(testName = "install-plugin-test", testCase = params.testCase)
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
       .setLicense(System.getenv("LICENSE_KEY"))
@@ -266,13 +264,13 @@ class InstallPluginTest {
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
     val testContextWithoutPlugin = createTestContext(params)
-    val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(launchName = "Run without plugin", commands = CommandChain().exitApp()).runContext
+    val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp()).runContext
     val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
 
     try {
       val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(
-        launchName = "Run with plugin",
+        launchName = "with-plugin",
         commandLine = { IDECommandLine.OpenTestCaseProject(testContext, listOf("-Dperformance.watcher.unresponsive.interval.ms=10000")) },
         commands = CommandChain().exitApp()
       ).runContext
