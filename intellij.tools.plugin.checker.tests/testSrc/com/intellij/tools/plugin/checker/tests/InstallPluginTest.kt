@@ -231,6 +231,9 @@ class InstallPluginTest {
       .prepareProjectCleanImport()
       .setSharedIndexesDownload(enable = true)
       .setLicense(System.getenv("LICENSE_KEY"))
+      .applyVMOptionsPatch {
+        addSystemProperty("llm.show.ai.promotion.window.on.start", false)
+      }
 
     testContext.configurator()
 
