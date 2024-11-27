@@ -1,7 +1,7 @@
 ### auto-generated section `build intellij.tools.plugin.checker.tests` start
+load("@community//build:compiler-options.bzl", "create_kotlinc_options")
 load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_jvm//:compiler-options.bzl", "create_kotlinc_options")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+load("@rules_jvm//:jvm.bzl", "jvm_test")
 
 create_kotlinc_options(
   name = "custom",
@@ -9,16 +9,9 @@ create_kotlinc_options(
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
-java_library(
-  name = "tools-plugin-checker-tests",
-  visibility = ["//visibility:public"]
-)
-
-kt_jvm_test(
+jvm_test(
   name = "tools-plugin-checker-tests_test",
-  visibility = ["//visibility:public"],
-  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True, exclude = ["**/module-info.java"]),
-  javac_opts = "@rules_jvm//:j17",
+  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True),
   kotlinc_opts = ":custom",
   deps = [
     "@lib//:kotlin-stdlib",
@@ -30,7 +23,7 @@ kt_jvm_test(
     "@community//platform/remote-driver/model:driver-model",
     "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
     "//tests/ideTestingFramework/intellij.tools.ide.starter.junit5:tools-ide-starter-junit5",
-    "//tests/ideTestingFramework/intellij.tools.ide.starter.junit5:tools-ide-starter-junit5_test",
+    "//tests/ideTestingFramework/intellij.tools.ide.starter.junit5:tools-ide-starter-junit5_test_lib",
     "@community//platform/util",
     "@lib//:jackson",
     "@lib//:jackson-databind",

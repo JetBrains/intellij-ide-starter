@@ -1,8 +1,6 @@
 ### auto-generated section `build intellij.tools.ide.starter.junit5` start
-load("@rules_jvm//:compiler-options.bzl", "create_kotlinc_options")
-load("@rules_jvm//:jvm.bzl", "jvm_resources")
-load("@rules_jvm//:rules.bzl", "jvm_library")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+load("@community//build:compiler-options.bzl", "create_kotlinc_options")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources", "jvm_test")
 
 create_kotlinc_options(
   name = "custom",
@@ -20,30 +18,28 @@ jvm_library(
   name = "tools-ide-starter-junit5",
   module_name = "intellij.tools.ide.starter.junit5",
   visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True, exclude = ["**/module-info.java"]),
-  javac_opts = "@rules_jvm//:j17",
+  srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True),
   kotlinc_opts = ":custom",
   deps = [
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",
     "@lib//:kotlin-reflect",
     "@ultimate_lib//:kodein-di-jvm",
-    "@lib//:junit5.provided",
+    "@lib//:junit5-provided",
     "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
     "@community//platform/remote-driver/model:driver-model",
-    "@lib//:junit5Params.provided",
-    "@lib//:junit5Launcher.provided",
+    "@lib//:junit5Params-provided",
+    "@lib//:junit5Launcher-provided",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@lib//:opentelemetry",
   ],
   runtime_deps = [":tools-ide-starter-junit5_resources"]
 )
 
-kt_jvm_test(
-  name = "tools-ide-starter-junit5_test",
+jvm_library(
+  name = "tools-ide-starter-junit5_test_lib",
   visibility = ["//visibility:public"],
-  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True, exclude = ["**/module-info.java"]),
-  javac_opts = "@rules_jvm//:j17",
+  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True),
   kotlinc_opts = ":custom",
   associates = [":tools-ide-starter-junit5"],
   deps = [
@@ -51,18 +47,26 @@ kt_jvm_test(
     "@lib//:kotlin-stdlib",
     "@lib//:kotlin-reflect",
     "@ultimate_lib//:kodein-di-jvm",
+    "@lib//:junit5-provided",
     "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
     "@community//platform/remote-driver/model:driver-model",
     "@lib//:kotlin-test-assertions-core-jvm",
     "@lib//:mockito",
     "@lib//:mockito-junit-jupiter",
+    "@lib//:junit5Params-provided",
+    "@lib//:junit5Launcher-provided",
     "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@community//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector",
-    "@community//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector_test",
+    "@community//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector_test_lib",
     "//tests/ideTestingFramework/intellij.tools.ide.metrics.collector.starter:tools-ide-metrics-collector-starter",
     "@lib//:opentelemetry",
   ],
   runtime_deps = [":tools-ide-starter-junit5_resources"]
+)
+
+jvm_test(
+  name = "tools-ide-starter-junit5_test",
+  runtime_deps = [":tools-ide-starter-junit5_test_lib"]
 )
 ### auto-generated section `build intellij.tools.ide.starter.junit5` end
