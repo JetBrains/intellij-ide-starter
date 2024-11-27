@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.driver.client.Driver
+import com.intellij.driver.client.Remote
 import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.getOpenProjects
 import com.intellij.driver.sdk.hasVisibleWindow
@@ -61,6 +62,7 @@ class RemoteDevBackgroundRun(
 
   private fun waitAndPrepareForTest() {
     awaitVisibleFrameFrontend()
+    driver.awaitLuxInitialized()
     val backendProjects = backendDriver.getOpenProjects()
     if (backendProjects.isNotEmpty()) {
       awaitProjectsAreOpenedOnFrontend(backendProjects.size)
@@ -89,6 +91,15 @@ class RemoteDevBackgroundRun(
       driver.utility(IdeEventQueue::class).getInstance().flushQueue()
     }
     driver.requestFocusFromIde(driver.getOpenProjects().singleOrNull())
+  }
+
+  @Remote("com.jetbrains.thinclient.lux.LuxClientService")
+  interface LuxClientService {
+    fun getMaybeInstance(): LuxClientService?
+  }
+
+  fun Driver.awaitLuxInitialized() {
+    waitFor("Lux is initialized", timeout = 30.seconds) { utility(LuxClientService::class).getMaybeInstance() != null }
   }
 
   override fun closeIdeAndWait(closeIdeTimeout: Duration) {
