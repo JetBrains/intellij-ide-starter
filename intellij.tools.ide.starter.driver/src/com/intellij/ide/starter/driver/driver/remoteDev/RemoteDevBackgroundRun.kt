@@ -34,9 +34,6 @@ class RemoteDevBackgroundRun(
 ) : BackgroundRun(startResult = frontendStartResult, driverWithoutAwaitedConnection = remoteFrontendDriver, process = frontendProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
-      waitFor("Backend Driver is connected", 3.minutes) {
-        backendDriver.isConnected
-      }
       waitAndPrepareForTest()
 
       driver.withContext { block(this) }
@@ -61,6 +58,7 @@ class RemoteDevBackgroundRun(
   }
 
   private fun waitAndPrepareForTest() {
+    awaitBackendIsConnected()
     awaitVisibleFrameFrontend()
     driver.awaitLuxInitialized()
     val backendProjects = backendDriver.getOpenProjects()
@@ -71,6 +69,9 @@ class RemoteDevBackgroundRun(
     flushEdtAndRequestFocus()
   }
 
+  private fun awaitBackendIsConnected() {
+    waitFor("Backend Driver is connected", 3.minutes) { backendDriver.isConnected }
+  }
 
   private fun awaitVisibleFrameFrontend() {
     waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasVisibleWindow() }
