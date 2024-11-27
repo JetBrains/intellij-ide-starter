@@ -19,6 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -37,7 +38,7 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
   private lateinit var backendLogFile: Path
   private var logLinesBeforeBackendStarted = 0
 
-  fun runInBackground(launchName: String): Deferred<IDEStartResult> {
+  fun runInBackground(launchName: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Deferred<IDEStartResult> {
     awaitBackendStart()
     val joinLink = awaitJoinLink()
     frontendContext.ide.vmOptions.let {
@@ -68,7 +69,7 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
         frontendContext.runIDE(
           commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
           commands = CommandChain(),
-          runTimeout = remoteDevDriverOptions.runTimeout,
+          runTimeout = runTimeout,
           launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
           configure = {
             if (System.getenv("DISPLAY") == null && frontendContext.ide.vmOptions.environmentVariables["DISPLAY"] != null && SystemInfo.isLinux) {
