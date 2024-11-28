@@ -20,6 +20,7 @@ object TimeoutAnalyzer {
   )
 
   fun analyzeTimeout(runContext: IDERunContext): Error? {
+    postLastScreenshots(runContext)
     return detectIdeNotStarted(runContext)
            ?: detectDialog(runContext)
            ?: detectIndicatorsNotFinished(runContext)
@@ -34,7 +35,6 @@ object TimeoutAnalyzer {
       val lastCommandNote = getLastCommand(runContext)?.let { System.lineSeparator() + "Last executed command was: $it" } ?: ""
       val errorMessage = "Timeout of IDE run '${runContext.contextName}' for ${runContext.runTimeout} due to a dialog being shown.$lastCommandNote"
       val error = Error(errorMessage, edtThread.getStackTrace(), threadDump, ErrorType.TIMEOUT)
-      postLastScreenshots(runContext)
       return error
     }
     else return null
