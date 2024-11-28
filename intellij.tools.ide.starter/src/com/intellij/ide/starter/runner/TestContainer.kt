@@ -19,6 +19,8 @@ import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.reflect.jvm.isAccessible
 
+typealias IDEDataPathsProvider = (testName: String, testDirectory: Path, useInMemoryFileSystem: Boolean) -> IDEDataPaths
+
 interface TestContainer<T> {
   // TODO: Port setup hooks on using events
   // https://youtrack.jetbrains.com/issue/AT-18/Simplify-refactor-code-for-starting-IDE-in-IdeRunContext#focus=Comments-27-8300203.0-0
@@ -118,7 +120,7 @@ interface TestContainer<T> {
    */
   fun newContext(
     testName: String, testCase: TestCase<*>, preserveSystemDir: Boolean = false, projectHome: Path?,
-    ideDataPathsProvider: (testName: String, testDirectory: Path, useInMemoryFileSystem: Boolean) -> IDEDataPaths = { testName, testDirectory, useInMemoryFileSystem ->
+    ideDataPathsProvider: IDEDataPathsProvider = { testName, testDirectory, useInMemoryFileSystem ->
       IDEDataPaths.createPaths<IDEDataPaths>(testName, testDirectory, useInMemoryFileSystem)
     },
   ): IDETestContext {
