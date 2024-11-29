@@ -9,6 +9,8 @@ import kotlin.time.Duration.Companion.minutes
 /**
  * Project, that somehow already exist on filesystem.
  * So we cannot link it with any particular URL
+ *
+ * See [ReusableLocalProjectInfo]
  */
 data class LocalProjectInfo(
   val projectDir: Path,
