@@ -357,6 +357,20 @@ object Git {
     return commits[Random().nextInt(commits.size)]
   }
 
+  fun getRandomCommit(dir: Path, limit: Int, format: String = "--format=%h"): String {
+    val stdout = ExecOutputRedirect.ToString()
+
+    ProcessExecutor(
+      "git-get-random-commit",
+      workDir = dir, timeout = 1.minutes,
+      args = listOf("git", "log", "-n$limit", format),
+      stdoutRedirect = stdout
+    ).start()
+
+    val commits = stdout.read().split("\n")
+    return commits[Random().nextInt(commits.size)]
+  }
+
   fun getLastCommit(dir: Path, targetBranch: String = "", format: String = "--format=%h"): String {
     val stdout = ExecOutputRedirect.ToString()
     val arguments = mutableListOf("git", "log")
