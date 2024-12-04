@@ -11,9 +11,10 @@ import kotlin.io.path.listDirectoryEntries
 
 class WindowsIdeDistribution : IdeDistribution() {
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
-    val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(unpackDir.resolve("build.txt"))
+    val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir).toAbsolutePath()
+    val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(appHome.resolve("build.txt"))
 
-    val binDir = unpackDir / "bin"
+    val binDir = appHome / "bin"
 
     val allBinFiles = binDir.listDirectoryEntries()
 
@@ -22,7 +23,7 @@ class WindowsIdeDistribution : IdeDistribution() {
     } ?: error("Failed to detect executable ${executableFileName}64.exe:\n${allBinFiles.joinToString("\n")}")
 
     return object : InstalledIde {
-      override val bundledPluginsDir = unpackDir.resolve("plugins")
+      override val bundledPluginsDir = appHome.resolve("plugins")
 
       private val vmOptionsFinal: VMOptions = VMOptions(
         ide = this,
@@ -33,11 +34,11 @@ class WindowsIdeDistribution : IdeDistribution() {
       override val vmOptions: VMOptions
         get() = vmOptionsFinal
 
-      override val patchedVMOptionsFile = unpackDir.parent.resolve("${unpackDir.fileName}.vmoptions")
+      override val patchedVMOptionsFile = appHome.parent.resolve("${appHome.fileName}.vmoptions")
 
       override fun startConfig(vmOptions: VMOptions, logsDir: Path) = object : InstalledBackedIDEStartConfig(patchedVMOptionsFile,
                                                                                                              vmOptions) {
-        override val workDir = unpackDir
+        override val workDir = appHome
         override val commandLine = listOf(executablePath.toAbsolutePath().toString())
       }
 
@@ -45,12 +46,12 @@ class WindowsIdeDistribution : IdeDistribution() {
       override val os = OS.Windows
       override val productCode = productCode
       override val isFromSources = false
-      override val installationPath: Path = unpackDir.toAbsolutePath()
+      override val installationPath: Path = appHome.toAbsolutePath()
 
       override fun toString() = "IDE{$productCode, $build, $os, home=$unpackDir}"
 
       override suspend fun resolveAndDownloadTheSameJDK(): Path {
-        val jbrHome = unpackDir / "jbr"
+        val jbrHome = appHome / "jbr"
         require(jbrHome.isDirectory()) {
           "JbrHome is not found under $jbrHome"
         }
