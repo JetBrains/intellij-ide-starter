@@ -26,12 +26,14 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class RemoteDevBackgroundRun(
-  private val frontendStartResult: Deferred<IDEStartResult>,
-  private val backendStartResult: Deferred<IDEStartResult>,
   private val backendDriver: Driver,
-  remoteFrontendDriver: Driver,
-  frontendProcess: ProcessHandle,
-) : BackgroundRun(startResult = frontendStartResult, driverWithoutAwaitedConnection = remoteFrontendDriver, process = frontendProcess) {
+  private val backendStartResult: Deferred<IDEStartResult>,
+  backendProcess: ProcessHandle,
+  frontendDriver: Driver,
+  private val frontendStartResult: Deferred<IDEStartResult>,
+) : BackgroundRun(startResult = frontendStartResult,
+                  driverWithoutAwaitedConnection = frontendDriver,
+                  process = backendProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
       waitAndPrepareForTest()
