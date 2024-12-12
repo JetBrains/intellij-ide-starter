@@ -9,6 +9,7 @@ import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -66,6 +67,14 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     finally {
       try {
         if (isConnected) close()
+        if (process.isAlive) {
+          logError("Process is still alive after waiting for Driver to close IDE, will wait 10 more seconds for its termination")
+          process.onExit().get(10, TimeUnit.SECONDS)
+          if (process.isAlive) {
+            logError("Process is still alive after 10 seconds, will kill it")
+            process.destroyForcibly()
+          }
+        }
       }
       catch (e: Throwable) {
         logError("Error during closing Driver resources: ${e.message}")
