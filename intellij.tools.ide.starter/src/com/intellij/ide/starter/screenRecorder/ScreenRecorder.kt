@@ -88,6 +88,11 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   }
 
   fun start() {
+    if (SystemInfo.isWayland) {
+      logOutput("Screen recording is disabled because on Wayland it triggers system dialog about granting permissions each time, and it can't be disabled.")
+      return
+    }
+
     if (javaScreenRecorder != null) {
       javaScreenRecorder?.start()
     }
