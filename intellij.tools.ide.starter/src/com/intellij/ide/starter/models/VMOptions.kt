@@ -182,6 +182,10 @@ data class VMOptions(
     }
   }
 
+  fun configureLoggers(logLevel: String, vararg categories: String) {
+    configureLoggers(LogLevel.valueOf(logLevel), *categories)
+  }
+
   fun dropDebug() {
     data = data.filterNot { it.matches("-agentlib:jdwp=transport=dt_socket,server=y,suspend=.,address=.*".toRegex()) }
   }
