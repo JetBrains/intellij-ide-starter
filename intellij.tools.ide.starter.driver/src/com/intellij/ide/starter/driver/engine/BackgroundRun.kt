@@ -71,8 +71,8 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
           logError("Process is still alive after waiting for Driver to close IDE, will wait 10 more seconds for its termination")
           process.onExit().get(10, TimeUnit.SECONDS)
           if (process.isAlive) {
-            logError("Process is still alive after 10 seconds, will kill it")
             process.destroyForcibly()
+            throw IllegalStateException("Process didn't die after waiting for Driver to close IDE")
           }
         }
       }
