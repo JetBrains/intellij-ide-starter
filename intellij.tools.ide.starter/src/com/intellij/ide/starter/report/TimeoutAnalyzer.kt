@@ -83,7 +83,7 @@ object TimeoutAnalyzer {
   private fun postLastScreenshots(runContext: IDERunContext) {
     if (!CIServer.instance.isBuildRunningOnCI) return
     val screenshotsFolder = runContext.logsDir.resolve("screenshots").takeIf { it.exists() } ?: return
-    val lastHeartbeat = screenshotsFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.last { it.listDirectoryEntries().isNotEmpty() }
+    val lastHeartbeat = screenshotsFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.lastOrNull { it.listDirectoryEntries().isNotEmpty() } ?: return
 
     val screenshots = lastHeartbeat.listDirectoryEntries()
     screenshots.forEach { screenshot ->
