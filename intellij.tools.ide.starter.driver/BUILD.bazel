@@ -4,7 +4,7 @@ load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 create_kotlinc_options(
   name = "custom",
-  jvm_target = "17",
+  jvm_target = 17,
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
@@ -23,7 +23,7 @@ jvm_library(
     "@ultimate_lib//:kodein-di-jvm",
     "@lib//:junit5",
     "@community//platform/remote-driver/test-sdk:driver-sdk",
-    "@ultimate_lib//:io_qameta_allure_java_commons",
+    "@ultimate_lib//:io-qameta-allure-java-commons",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@community//platform/util",
     "@lib//:opentelemetry",

@@ -15,6 +15,7 @@ jvm_library(
     "@community//platform/diagnostic/telemetry",
     "@lib//:opentelemetry",
     "@lib//:opentelemetry-semconv",
+    "@community//platform/indexing-impl",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@lib//:jackson",
     "@lib//:jackson-databind",

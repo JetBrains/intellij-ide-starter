@@ -5,7 +5,7 @@ load("@rules_jvm//:jvm.bzl", "jvm_test")
 
 create_kotlinc_options(
   name = "custom",
-  jvm_target = "17",
+  jvm_target = 17,
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
@@ -30,7 +30,7 @@ jvm_test(
     "@lib//:jackson-module-kotlin",
     "@lib//:http-client",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
-    "@ultimate_lib//:software_amazon_awssdk_sqs",
+    "@ultimate_lib//:software-amazon-awssdk-sqs",
   ]
 )
 ### auto-generated section `build intellij.tools.plugin.checker.tests` end

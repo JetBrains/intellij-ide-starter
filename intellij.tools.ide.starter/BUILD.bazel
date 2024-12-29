@@ -4,7 +4,7 @@ load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources")
 
 create_kotlinc_options(
   name = "custom",
-  jvm_target = "17",
+  jvm_target = 17,
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
@@ -28,21 +28,22 @@ jvm_library(
     "@lib//:jackson-databind",
     "@lib//:jackson-module-kotlin",
     "@lib//:http-client",
+    "@community//platform/platform-impl:ide-impl",
     "@lib//:gradle",
     "@ultimate_lib//:kodein-di-jvm",
-    "@ultimate_lib//:tools_ide_starter_rauschig_jarchivelib",
+    "@ultimate_lib//:tools-ide-starter-rauschig-jarchivelib",
     "@ultimate_lib//:qodana-sarif",
     "@community//platform/lang-impl",
     "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
     "@lib//:jetbrains-annotations",
     "@lib//:commons-io",
     "@ultimate_lib//:jackson-datatype-jsr310",
-    "@ultimate_lib//:tools_ide_starter_github_stephenc_monte_screen_recorder",
-    "@ultimate_lib//:io_qameta_allure_java_commons",
+    "@ultimate_lib//:tools-ide-starter-github-stephenc-monte-screen-recorder",
+    "@ultimate_lib//:io-qameta-allure-java-commons",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@community//plugins/performanceTesting/event-bus:tools-ide-starter-bus",
     "@lib//:opentelemetry",
-    "@ultimate_lib//:tools_ide_starter_github_oshi_core",
+    "@ultimate_lib//:tools-ide-starter-github-oshi-core",
   ],
   exports = [
     "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
