@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.junit5.config.UseLatestDownloadedIdeBuild
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
@@ -17,7 +16,6 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.kodein.di.DI
 import kotlin.time.Duration.Companion.minutes
 
@@ -36,7 +34,6 @@ fun initDI() {
   }
 }
 
-@ExtendWith(UseLatestDownloadedIdeBuild::class)
 class MetricsCollectionTest {
   companion object {
     // You can make that also as a JUnit5 TestListener that will enable it for all tests
