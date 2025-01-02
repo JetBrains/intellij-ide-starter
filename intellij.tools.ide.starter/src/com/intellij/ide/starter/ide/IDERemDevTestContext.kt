@@ -38,7 +38,7 @@ class IDERemDevTestContext(
   preserveSystemDir = preserveSystemDir,
 ) {
 
-  fun applyVMOptionsPatchForBackAndFront(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
+  override fun applyVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
     frontendIDEContext.applyVMOptionsPatch(patchVMOptions)
     return super.applyVMOptionsPatch(patchVMOptions)
   }

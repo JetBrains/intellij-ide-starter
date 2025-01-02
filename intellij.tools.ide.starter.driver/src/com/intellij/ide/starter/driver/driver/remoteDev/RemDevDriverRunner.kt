@@ -49,7 +49,7 @@ class RemDevDriverRunner : DriverRunner {
   }
 
   private fun IDERemDevTestContext.addRemoteDevSpecificTraces() {
-    applyVMOptionsPatchForBackAndFront {
+    applyVMOptionsPatch {
       configureLoggers(LogLevel.TRACE, "jb.focus.requests")
     }
   }
