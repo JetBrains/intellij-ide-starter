@@ -132,7 +132,7 @@ interface TestContainer<T> {
       }
     })
 
-    require(ide.productCode == testCase.ideInfo.productCode) { "Product code of $ide must be the same as for $testCase" }
+    require(ide.productCode == testCase.ideInfo.productCode) { "Product code ${ide.productCode} must be the same as ${testCase.ideInfo.productCode}. IDE: $ide . TestCase: $testCase" }
 
     val testDirectory = run {
       val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName

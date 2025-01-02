@@ -77,7 +77,7 @@ open class IDETestContext(
   }
 
   val resolvedProjectHome: Path
-    get() = checkNotNull(_resolvedProjectHome) { "Project directory is not specified for the test '$testName'" }
+    get() = checkNotNull(_resolvedProjectHome) { "Project directory is not specified for the test '$testName' in ${IDETestContext::class.java.name}" }
 
   val pluginConfigurator: PluginConfigurator by di.newInstance { factory<IDETestContext, PluginConfigurator>().invoke(this@IDETestContext) }
 
