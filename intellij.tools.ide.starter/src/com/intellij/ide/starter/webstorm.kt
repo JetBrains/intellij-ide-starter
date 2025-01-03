@@ -6,7 +6,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
-import com.intellij.ide.starter.utils.getUpdateEnvVarsWithAddedPath
+import com.intellij.ide.starter.utils.getUpdateEnvVarsWithPrependedPath
 import com.intellij.ide.starter.utils.updatePathEnvVariable
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
@@ -51,7 +51,7 @@ fun downloadAndConfigureNodejs(version: String): Path {
 }
 
 fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: String, noFrozenLockFile: Boolean = false) {
-  if(projectDir.resolve("node_modules").exists()) {
+  if (projectDir.resolve("node_modules").exists()) {
     logOutput("node_modules folder already exists")
     return
   }
@@ -66,8 +66,9 @@ fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: St
                   projectDir,
                   timeout = 10.minutes,
                   args = args,
-                  environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot),
-                  stdoutRedirect = stdout
+                  environmentVariables = getUpdateEnvVarsWithPrependedPath(nodejsRoot),
+                  stdoutRedirect = stdout,
+                  stderrRedirect = ExecOutputRedirect.ToStdOut("${packageManager} install")
   ).start()
 }
 
@@ -79,7 +80,7 @@ fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
                   projectDir,
                   timeout = 5.minutes,
                   args = listOf("$packageManagerPath", "build"),
-                  environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot)
+                  environmentVariables = getUpdateEnvVarsWithPrependedPath(nodejsRoot)
   ).start()
 }
 
@@ -106,7 +107,7 @@ private fun enableCorepack(nodejsRoot: Path) {
                   nodejsRoot,
                   timeout = 1.minutes,
                   args = listOf("$corePackPath", "--install-directory", ".", "enable"),
-                  environmentVariables = getUpdateEnvVarsWithAddedPath(nodejsRoot)
+                  environmentVariables = getUpdateEnvVarsWithPrependedPath(nodejsRoot)
   ).start()
 }
 
