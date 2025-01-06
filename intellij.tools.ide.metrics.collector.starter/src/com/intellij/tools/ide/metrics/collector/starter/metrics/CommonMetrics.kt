@@ -48,7 +48,11 @@ object CommonMetrics {
   fun getJvmMetrics(
     startResult: IDEStartResult,
     metricsStrategies: Map<String, MetricsSelectionStrategy>
-    = mapOf("JVM.GC.collections" to MetricsSelectionStrategy.SUM,
+    = mapOf("MEM.avgRamBytes" to MetricsSelectionStrategy.LATEST,
+            "MEM.avgRamMinusFileMappingsBytes" to MetricsSelectionStrategy.LATEST,
+            "MEM.avgRamPlusSwapMinusFileMappingsBytes" to MetricsSelectionStrategy.LATEST,
+            "MEM.avgFileMappingsRamBytes" to MetricsSelectionStrategy.LATEST,
+            "JVM.GC.collections" to MetricsSelectionStrategy.SUM,
             "JVM.GC.collectionTimesMs" to MetricsSelectionStrategy.SUM,
             "JVM.totalCpuTimeMs" to MetricsSelectionStrategy.SUM,
             "JVM.maxHeapBytes" to MetricsSelectionStrategy.MAXIMUM,
