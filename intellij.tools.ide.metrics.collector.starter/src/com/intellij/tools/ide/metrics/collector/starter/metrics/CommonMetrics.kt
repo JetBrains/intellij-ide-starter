@@ -59,7 +59,7 @@ object CommonMetrics {
       return metricsStrategies.flatMap { (metricName, strategy) ->
         StarterTelemetryJsonMeterCollector(strategy) { it.name.startsWith(metricName) }.collect(startResult.runContext){ name, value ->
           if (name.contains("Bytes")){
-            return@collect name.replace("Bytes", "Megabytes") to (value / 1_000_000).toInt()
+            return@collect name.replace("Bytes", "Megabytes") to (value / 1024 / 1024).toInt()
           } else {
             name to value.toInt()
           }
