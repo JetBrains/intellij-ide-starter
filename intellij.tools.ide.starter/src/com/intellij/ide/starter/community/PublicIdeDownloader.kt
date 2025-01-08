@@ -8,8 +8,8 @@ import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
-import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.io.path.exists
@@ -17,13 +17,15 @@ import kotlin.io.path.exists
 open class PublicIdeDownloader : IdeDownloader {
 
   /** Filter release map: <ProductCode, List of releases> */
-  private fun findSpecificRelease(releaseInfoMap: Map<String, List<ReleaseInfo>>,
-                                  filteringParams: ProductInfoRequestParameters): ReleaseInfo {
+  private fun findSpecificRelease(
+    releaseInfoMap: Map<String, List<ReleaseInfo>>,
+    filteringParams: ProductInfoRequestParameters,
+  ): ReleaseInfo {
     try {
       val sortedByDate = releaseInfoMap.values.first().sortedByDescending { it.date }
 
       val build = when {
-        filteringParams.majorVersion.isNotBlank() -> sortedByDate.first { it.majorVersion == filteringParams.majorVersion}
+        filteringParams.majorVersion.isNotBlank() -> sortedByDate.first { it.majorVersion == filteringParams.majorVersion }
         // find the latest release / eap, if no specific params were provided
         filteringParams.versionNumber.isBlank() && filteringParams.buildNumber.isBlank() -> sortedByDate.first()
         filteringParams.versionNumber.isNotBlank() -> {
@@ -33,8 +35,8 @@ open class PublicIdeDownloader : IdeDownloader {
             version == filteringParams.versionNumber
           }
         }
-        filteringParams.buildNumber.isNotBlank() -> sortedByDate.firstOrNull() { it.build == filteringParams.buildNumber } ?:
-          error("Build not found for $filteringParams")
+        filteringParams.buildNumber.isNotBlank() -> sortedByDate.firstOrNull() { it.build == filteringParams.buildNumber }
+                                                    ?: error("Build not found for $filteringParams")
         else -> null
       }
 
@@ -66,9 +68,16 @@ open class PublicIdeDownloader : IdeDownloader {
     val possibleBuild: ReleaseInfo = findSpecificRelease(releaseInfoMap, params)
 
     val rawDownloadLink: String = when (OS.CURRENT) {
-      OS.Linux -> possibleBuild.downloads.linux?.link ?: error("Linux download link is not specified")
+      OS.Linux -> {
+        if (CpuArch.CURRENT == CpuArch.ARM64) {
+          possibleBuild.downloads.linuxArm?.link ?: error("LinuxARM download link is not specified")
+        }
+        else {
+          possibleBuild.downloads.linux?.link ?: error("Linux download link is not specified")
+        }
+      }
       OS.macOS -> {
-        if (SystemInfo.OS_ARCH == "aarch64") {
+        if (CpuArch.CURRENT == CpuArch.ARM64) {
           possibleBuild.downloads.macM1?.link ?: error("MacOS M1 download link is not specified")
         }
         else {

@@ -27,7 +27,7 @@ object JetBrainsDataServiceClient {
 
   fun getReleases(request: ProductInfoRequestParameters): Map<String, List<ReleaseInfo>> {
     val getUrlToJbDataServices = "$DATA_SERVICE_URL/products/releases${request.toUriQuery()}"
-    logOutput("Requesting products by url: $getUrlToJbDataServices")
+    logOutput("Requesting JetBrains products by url: $getUrlToJbDataServices")
 
     return HttpClient.sendRequest(
       HttpGet(getUrlToJbDataServices).apply {
