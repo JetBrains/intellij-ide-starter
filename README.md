@@ -44,7 +44,7 @@ the [Examples](https://github.com/JetBrains/intellij-ide-starter/tree/master/int
 ##### Available commands
 
 The available commands can be found in
-the [performance-testing-commands package](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.performanceTesting.commands/src/com/jetbrains/performancePlugin/commands/chain/generalCommandChain.kt)
+the [performance-testing-commands package](https://github.com/JetBrains/intellij-community/blob/9f011b378a6fffe4859f76966d70a63910e3e1c8/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt)
 which includes performance-intensive operations and IDE configuration commands.
 
 Examples of included commands:

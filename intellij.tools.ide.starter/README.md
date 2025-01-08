@@ -20,7 +20,7 @@ via [performanceTestingPlugin](https://github.com/JetBrains/intellij-community/t
 or it's extension points.
 
 List of basic out-of-the-box commands that goes with performanceTestingPlugin is
-available [here](https://github.com/JetBrains/intellij-community/blob/1bf43101d9e285b23906c9952ebc37077a9e9dc9/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt#L4)
+available [here](https://github.com/JetBrains/intellij-community/blob/9f011b378a6fffe4859f76966d70a63910e3e1c8/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt)
 
 ##### Run with JUnit5
 
