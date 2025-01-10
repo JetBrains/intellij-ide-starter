@@ -56,6 +56,7 @@ object CommonMetrics {
             "JVM.GC.collectionTimesMs" to MetricsSelectionStrategy.SUM,
             "JVM.totalCpuTimeMs" to MetricsSelectionStrategy.SUM,
             "JVM.maxHeapBytes" to MetricsSelectionStrategy.MAXIMUM,
+            "JVM.committedHeapBytes" to MetricsSelectionStrategy.LATEST,
             "JVM.maxThreadCount" to MetricsSelectionStrategy.MAXIMUM,
             "JVM.totalTimeToSafepointsMs" to MetricsSelectionStrategy.SUM),
   ): List<PerformanceMetrics.Metric> {
