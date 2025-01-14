@@ -162,7 +162,7 @@ open class TeamCityCIServer(
   }
 
   /**
-   * @return String or Null if parameters isn't found
+   * @return String or Null if parameters aren't found
    */
   private fun getBuildParam(name: String, impreciseNameMatch: Boolean = false): String? {
     val totalParams = systemProperties.plus(buildParams)

@@ -90,12 +90,14 @@ object TeamCityClient {
    * [source] - source path of artifact
    * [artifactPath] - new path (relative, where artifact will be present)
    * [artifactName] - name of artifact
+   * [artifactForPublishingDir] - path to the directory, where artifacts will be stored on CI
    */
   fun publishTeamCityArtifacts(
     source: Path,
     artifactPath: String,
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
+    artifactForPublishingDir: Path = TeamCityClient.artifactForPublishingDir
   ) {
     logger.debug("TeamCity publishTeamCityArtifacts ${source.fileName}")
     val sanitizedArtifactPath = artifactPath.replaceSpecialCharactersWithHyphens()
