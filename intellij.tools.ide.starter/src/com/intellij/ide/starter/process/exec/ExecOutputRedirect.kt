@@ -1,9 +1,10 @@
 package com.intellij.ide.starter.process.exec
 
-import com.intellij.ide.starter.process.exec.ExecOutputRedirect.*
 import com.intellij.tools.ide.util.common.logOutput
 import java.io.File
 import java.io.PrintWriter
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
 /**
@@ -45,23 +46,47 @@ sealed class ExecOutputRedirect {
 
     private var writer: PrintWriter? = null
 
+    //Todo instead of scheduling once a second,
+    // we can add some other ExecOutputRedirect, which will be a stream (possibly a Kotlin flow).
+    // The process will write to it, and it will be possible to read from the other side on demand.
+    private var hasChanges: Boolean = false
+    private val scheduler = Executors.newScheduledThreadPool(1)
+
     override fun close() {
       writer?.apply {
-        flush()
+        flushPendingChanges()
+        scheduler.shutdown()
         close()
       }
     }
 
     override fun redirectLine(line: String) {
       reportOnStdoutIfNecessary(line)
-      if (writer == null) {
+
+      initializeWriterIfNotInitialized().let {
+        it.println(line)
+        hasChanges = true
+      }
+    }
+
+    private fun initializeWriterIfNotInitialized(): PrintWriter {
+      return writer ?: run {
         outputFile.apply {
           toPath().parent.createDirectories()
           createNewFile()
         }
-        writer = outputFile.printWriter()
+        outputFile.printWriter().also {
+          writer = it
+          scheduler.scheduleAtFixedRate({ it.flushPendingChanges() }, 1, 1, TimeUnit.SECONDS)
+        }
       }
-      writer?.println(line)
+    }
+
+    private fun PrintWriter.flushPendingChanges() {
+      if (hasChanges) {
+        flush()
+        hasChanges = false
+      }
     }
 
     override fun read(): String {
