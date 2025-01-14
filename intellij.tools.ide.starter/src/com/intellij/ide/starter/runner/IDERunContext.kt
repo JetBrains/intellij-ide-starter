@@ -30,6 +30,7 @@ import com.intellij.ide.starter.telemetry.TestTelemetryService
 import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
+import com.intellij.openapi.util.io.NioFiles
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
@@ -42,7 +43,6 @@ import kotlinx.coroutines.runBlocking
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.Closeable
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -52,7 +52,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
-
 
 data class IDERunContext(
   val testContext: IDETestContext,
@@ -68,19 +67,14 @@ data class IDERunContext(
   private val stdOut: ExecOutputRedirect? = null
 ) {
   val contextName: String
-    get() = if (launchName.isNotEmpty()) {
-      "${testContext.testName}/$launchName"
-    }
-    else {
-      testContext.testName
-    }
+    get() = (if (launchName.isNotEmpty()) "${testContext.testName}/${launchName}" else testContext.testName)
 
   private val jvmCrashLogDirectory by lazy { logsDir.resolve("jvm-crash").createDirectories() }
   private val heapDumpOnOomDirectory by lazy { logsDir.resolve("heap-dump").createDirectories() }
-  val reportsDir = (testContext.paths.testHome / launchName / "reports").createDirectoriesIfNotExist()
-  val snapshotsDir = (testContext.paths.testHome / launchName / "snapshots").createDirectoriesIfNotExist()
-  val launchDir = (testContext.paths.testHome / launchName).createDirectoriesIfNotExist()
-  val logsDir = (testContext.paths.testHome / launchName / "log").createDirectoriesIfNotExist()
+  val reportsDir: Path = testContext.paths.testHome.resolve(launchName).resolve("reports").createDirectoriesIfNotExist()
+  val snapshotsDir: Path = testContext.paths.testHome.resolve(launchName).resolve("snapshots").createDirectoriesIfNotExist()
+  val launchDir: Path = testContext.paths.testHome.resolve(launchName).createDirectoriesIfNotExist()
+  val logsDir: Path = testContext.paths.testHome.resolve(launchName).resolve("log").createDirectoriesIfNotExist()
 
   private val patchesForVMOptions: MutableList<VMOptions.() -> Unit> = mutableListOf()
 
@@ -94,10 +88,9 @@ data class IDERunContext(
   }
 
   private fun deleteJVMCrashes() {
-    listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory).filter { dir ->
-      if (!dir.exists()) false
-      else dir.listDirectoryEntries().isEmpty()
-    }.forEach { it.toFile().deleteRecursively() }
+    listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory)
+      .filter { dir -> dir.exists() && dir.listDirectoryEntries().isNotEmpty() }
+      .forEach { NioFiles.deleteRecursively(it) }
   }
 
   private fun publishArtifacts() {
@@ -123,10 +116,10 @@ data class IDERunContext(
     )
   }
 
-  fun verbose() = copy(verboseOutput = true)
+  fun verbose(): IDERunContext = copy(verboseOutput = true)
 
   @Suppress("unused")
-  fun withVMOptions(patchVMOptions: VMOptions.() -> Unit) = addVMOptionsPatch(patchVMOptions)
+  fun withVMOptions(patchVMOptions: VMOptions.() -> Unit): IDERunContext = addVMOptionsPatch(patchVMOptions)
 
   /**
    * Method applies a patch to the current run, and the patch will be disregarded for the next run.
@@ -137,6 +130,7 @@ data class IDERunContext(
   }
 
   private fun installProfiler(): IDERunContext {
+    @Suppress("DEPRECATION")
     return when (val profilerType = testContext.profilerType) {
       ProfilerType.ASYNC_ON_START, ProfilerType.YOURKIT, ProfilerType.ASYNC -> {
         val profiler = di.direct.instance<ProfilerInjector>(tag = profilerType)
@@ -161,7 +155,7 @@ data class IDERunContext(
       takeScreenshotsPeriodically()
       withJvmCrashLogDirectory(jvmCrashLogDirectory)
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
-      withGCLogs(reportsDir / "gcLog.log")
+      withGCLogs(reportsDir.resolve("gcLog.log"))
       setOpenTelemetryMaxFilesNumber()
       if (!hasOption(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION)) {
         addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, false)
@@ -226,7 +220,9 @@ data class IDERunContext(
       logStartupInfo(vmOptions)
 
       val finalArgs = startConfig.commandLine + commandLine(this).args
-      File(finalArgs.first()).setExecutable(true)
+      Path.of(finalArgs.first()).takeIf { it.isAbsolute }?.let {
+        NioFiles.setExecutable(it)
+      }
       val span = TestTelemetryService.spanBuilder("ide process").startSpan()
       EventsBus.postAndWaitProcessing(IdeBeforeRunIdeProcessEvent(runContext = this))
       val executionTime = measureTime {
@@ -269,7 +265,7 @@ data class IDERunContext(
 
       return IDEStartResult(runContext = this, executionTime = executionTime, vmOptionsDiff = startConfig.vmOptionsDiff())
     }
-    catch (timeoutException: ExecTimeoutException) {
+    catch (_: ExecTimeoutException) {
       if (expectedKill) {
         logOutput("IDE run for $contextName has been expected to be killed after $runTimeout")
         return IDEStartResult(runContext = this, executionTime = runTimeout)
@@ -321,9 +317,9 @@ data class IDERunContext(
             publishArtifacts()
             Allure.link("Link to CI artifacts", FailureDetailsOnCI.instance.getLinkToCIArtifacts(this))
             AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
-            val ideaLog = logsDir / "idea.log"
+            val ideaLog = logsDir.resolve("idea.log")
             if (ideaLog.exists()) {
-              AllureHelper.attachFile("idea.log", logsDir / "idea.log")
+              AllureHelper.attachFile("idea.log", ideaLog)
             }
           }.onFailure {
             logError("Fail to execute publishArtifacts run for $contextName", it)
@@ -362,8 +358,8 @@ data class IDERunContext(
 
   private fun logDisabledPlugins(paths: IDEDataPaths) {
     val disabledPlugins = paths.configDir.resolve("disabled_plugins.txt")
-    if (disabledPlugins.toFile().exists()) {
-      logOutput("The list of disabled plugins: " + disabledPlugins.toFile().readText())
+    if (disabledPlugins.exists()) {
+      logOutput("The list of disabled plugins: " + disabledPlugins.readText())
     }
   }
 
@@ -375,7 +371,6 @@ data class IDERunContext(
     process: Process,
     snapshotsDir: Path,
   ) {
-
     catchAll {
       takeScreenshot(logsDir)
     }
@@ -391,7 +386,7 @@ data class IDERunContext(
           originalProcess = process,
         )
       }
-      return javaProcessId!!
+      return javaProcessId
     }
 
     if (collectNativeThreads) {
@@ -413,7 +408,7 @@ data class IDERunContext(
   }
 
   private fun isLowMemorySignalPresent(logsDir: Path): Boolean {
-    return (logsDir / "idea.log").bufferedReader().useLines { lines ->
+    return logsDir.resolve("idea.log").bufferedReader().useLines { lines ->
       lines.any { line ->
         line.contains("Low memory signal received: afterGc=true")
       }
@@ -476,7 +471,7 @@ data class IDERunContext(
         "com.jetbrains.${testContext.testCase.ideInfo.installerProductName}.savedState"
       )
       val home = System.getProperty("user.home")
-      val savedAppStateDir = Path.of(home).resolve("Library").resolve("Saved Application State")
+      val savedAppStateDir = Path.of(home).resolve("Library/Saved Application State")
       savedAppStateDir.toFile()
         .walkTopDown().maxDepth(1)
         .filter { file -> filesToBeDeleted.any { fileToBeDeleted -> file.name == fileToBeDeleted } }
@@ -490,11 +485,11 @@ data class IDERunContext(
     }
   }
 
-  fun collectOpenTelemetry() = addVMOptionsPatch {
+  fun collectOpenTelemetry(): IDERunContext = addVMOptionsPatch {
     addSystemProperty("idea.diagnostic.opentelemetry.file", logsDir.resolve(IDETestContext.OPENTELEMETRY_FILE))
   }
 
-  fun setupLogDir() = addVMOptionsPatch {
+  fun setupLogDir(): IDERunContext = addVMOptionsPatch {
     addSystemProperty("idea.log.path", logsDir)
   }
 

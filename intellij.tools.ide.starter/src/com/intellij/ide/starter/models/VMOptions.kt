@@ -10,7 +10,6 @@ import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logOutput
 import org.jetbrains.annotations.ApiStatus.Experimental
-import java.io.File
 import java.lang.management.ManagementFactory
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -22,7 +21,7 @@ data class VMOptions(
   private var env: Map<String, String>,
 ) {
   companion object {
-    const val ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION = "full.scanning.on.startup.can.be.skipped"
+    const val ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION: String = "full.scanning.on.startup.can.be.skipped"
 
     fun readIdeVMOptions(ide: InstalledIde, file: Path): VMOptions {
       return VMOptions(
@@ -33,7 +32,7 @@ data class VMOptions(
     }
   }
 
-  override fun toString() = buildString {
+  override fun toString(): String = buildString {
     appendLine("VMOptions{")
     appendLine("  env=$env")
     for (line in data) {
@@ -45,16 +44,16 @@ data class VMOptions(
   val environmentVariables: Map<String, String>
     get() = env
 
-  fun addSystemProperty(key: String, value: Boolean) = addSystemProperty(key, value.toString())
+  fun addSystemProperty(key: String, value: Boolean): Unit = addSystemProperty(key, value.toString())
 
-  fun addSystemProperty(key: String, value: Int) = addSystemProperty(key, value.toString())
+  fun addSystemProperty(key: String, value: Int): Unit = addSystemProperty(key, value.toString())
 
-  fun addSystemProperty(key: String, value: Long) = addSystemProperty(key, value.toString())
+  fun addSystemProperty(key: String, value: Long): Unit = addSystemProperty(key, value.toString())
 
-  fun addSystemProperty(key: String, value: Path) = addSystemProperty(key, value.toAbsolutePath().toString())
+  fun addSystemProperty(key: String, value: Path): Unit = addSystemProperty(key, value.toAbsolutePath().toString())
 
   /**
-   * This method adds a property to the IDE VM options. If such property already exists, it will be replaced by a new one.
+   * This method adds a property to the IDE VM options. If the property already exists, it will be replaced by a new one.
    */
   fun addSystemProperty(key: String, value: String) {
     logOutput("Setting IDE system property: [${key}=${value}]")
@@ -62,8 +61,8 @@ data class VMOptions(
   }
 
   /**
-   * This method updates a property in the IDE VM options with a new value (old value + new value separated by a comma).
-   * If such property does not exist, the property with a given value will be added.
+   * This method updates a property in the IDE VM options with a new value (old value and new value separated by a comma).
+   * If the property does not exist, the property with a given value will be added.
    */
   private fun addSystemPropertyValue(key: String, value: String) {
     if (data.filter { it.contains("-D${key}") }.size == 1) {
@@ -122,7 +121,7 @@ data class VMOptions(
     data = data.filterNot(toRemove)
   }
 
-  fun setJavaHome(sdkObject: SdkObject) = apply {
+  fun setJavaHome(sdkObject: SdkObject): VMOptions = apply {
     withEnv("JAVA_HOME", sdkObject.sdkPath.toString())
   }
 
@@ -140,7 +139,7 @@ data class VMOptions(
     return VMOptionsDiff(originalLines = this.data, actualLines = loadedOptions)
   }
 
-  fun writeJavaArgsFile(theFile: Path) = JvmUtils.writeJvmArgsFile(theFile, this.data)
+  fun writeJavaArgsFile(theFile: Path): Unit = JvmUtils.writeJvmArgsFile(theFile, this.data)
 
   fun overrideDirectories(paths: IDEDataPaths) {
     addSystemProperty(PathManager.PROPERTY_CONFIG_PATH, paths.configDir)
@@ -148,7 +147,7 @@ data class VMOptions(
     addSystemProperty(PathManager.PROPERTY_PLUGINS_PATH, paths.pluginsDir)
   }
 
-  fun enableStartupPerformanceLog(perf: IDEStartupReports) = addSystemProperty("idea.log.perf.stats.file", perf.statsJSON)
+  fun enableStartupPerformanceLog(perf: IDEStartupReports): Unit = addSystemProperty("idea.log.perf.stats.file", perf.statsJSON)
 
   fun enableClassLoadingReport(filePath: Path) {
     addSystemProperty("idea.log.class.list.file", filePath)
@@ -164,11 +163,11 @@ data class VMOptions(
     addLine("-agentpath:${vmTraceFile.toAbsolutePath()}=${filePath.toAbsolutePath()}")
   }
 
-  fun enableExitMetrics(filePath: Path) = addSystemProperty("idea.log.exit.metrics.file", filePath)
+  fun enableExitMetrics(filePath: Path): Unit = addSystemProperty("idea.log.exit.metrics.file", filePath)
 
-  fun enableVerboseOpenTelemetry() = addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
+  fun enableVerboseOpenTelemetry(): Unit = addSystemProperty("idea.diagnostic.opentelemetry.verbose", true)
 
-  fun allowSkippingFullScanning() = addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, true)
+  fun allowSkippingFullScanning(): Unit = addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, true)
 
   /**
    * [categories] - Could be packages, classes ...
@@ -214,7 +213,7 @@ data class VMOptions(
     addSystemProperty("test.build_tool.daemon.threads_dump", true)
   }
 
-  fun inHeadlessMode() = addSystemProperty("java.awt.headless", true)
+  fun inHeadlessMode(): Unit = addSystemProperty("java.awt.headless", true)
 
   fun disableStartupDialogs() {
     addSystemProperty("jb.consents.confirmation.enabled", false)
@@ -253,33 +252,33 @@ data class VMOptions(
     scriptFile.writeText(scriptText)
 
     addSystemProperty("testscript.filename", scriptFile)
-    // Use non-success status code 1 when running IDE as command line tool.
+    // Use non-success status code 1 when running IDE as a command line tool.
     addSystemProperty("testscript.must.exist.process.with.non.success.code.on.ide.error", "true")
   }
 
-  fun setFlagIntegrationTests() = addSystemProperty("idea.is.integration.test", true)
+  fun setFlagIntegrationTests(): Unit = addSystemProperty("idea.is.integration.test", true)
 
-  fun setIdeStartupDialogEnabled(value: Boolean = true) = addSystemProperty("show.wizard.in.test", value)
+  fun setIdeStartupDialogEnabled(value: Boolean = true): Unit = addSystemProperty("show.wizard.in.test", value)
 
-  fun setNeverShowInitConfigModal() = addSystemProperty("idea.initially.ask.config", "never")
+  fun setNeverShowInitConfigModal(): Unit = addSystemProperty("idea.initially.ask.config", "never")
 
-  fun setFatalErrorNotificationEnabled() = addSystemProperty("idea.fatal.error.notification", true)
+  fun setFatalErrorNotificationEnabled(): Unit = addSystemProperty("idea.fatal.error.notification", true)
 
   fun setSnapshotPath(snapshotsDir: Path) {
     addSystemProperty("snapshots.path", snapshotsDir)
   }
 
-  fun withJvmCrashLogDirectory(jvmCrashLogDirectory: Path) {
-    addLine("-XX:ErrorFile=${jvmCrashLogDirectory.toAbsolutePath()}${File.separator}java_error_in_idea_%p.log", "-XX:ErrorFile=")
+  fun withJvmCrashLogDirectory(directory: Path) {
+    addLine("-XX:ErrorFile=${directory.toAbsolutePath().resolve("java_error_in_idea_%p.log")}", "-XX:ErrorFile=")
   }
 
   fun withHeapDumpOnOutOfMemoryDirectory(directory: Path) {
-    addLine("-XX:HeapDumpPath=${directory.toAbsolutePath()}${File.separator}heap-dump.hprof", "-XX:HeapDumpPath=")
+    addLine("-XX:HeapDumpPath=${directory.toAbsolutePath().resolve("heap-dump.hprof")}", "-XX:HeapDumpPath=")
   }
 
-  fun withXmx(sizeMb: Int) = addLine("-Xmx" + sizeMb + "m", "-Xmx")
+  fun withXmx(sizeMb: Int): Unit = addLine("-Xmx" + sizeMb + "m", "-Xmx")
 
-  fun withActiveProcessorCount(count: Int) = addLine("-XX:ActiveProcessorCount=$count", "-XX:ActiveProcessorCount")
+  fun withActiveProcessorCount(count: Int): Unit = addLine("-XX:ActiveProcessorCount=$count", "-XX:ActiveProcessorCount")
 
   fun withClassFileVerification() {
     addLine("-XX:+UnlockDiagnosticVMOptions")
@@ -293,7 +292,7 @@ data class VMOptions(
   }
 
   @Suppress("SpellCheckingInspection")
-  fun withGCLogs(gcLogFile: Path) = addLine("-Xlog:gc*:file=${gcLogFile.toAbsolutePath()}")
+  fun withGCLogs(gcLogFile: Path): Unit = addLine("-Xlog:gc*:file=${gcLogFile.toAbsolutePath()}")
 
   /** see [JEP 318](https://openjdk.org/jeps/318) **/
   fun withEpsilonGC() {
@@ -334,7 +333,7 @@ data class VMOptions(
   }
 
   /**
-   * Only for specific JRE builds. Name is "/foo/bar/Baz method".
+   * Only for specific JRE builds. The name is "/foo/bar/Baz method".
    */
   @Experimental
   @Suppress("unused")
@@ -356,17 +355,17 @@ data class VMOptions(
     addSystemProperty("idea.diagnostic.opentelemetry.metrics.max-files-to-keep", maxFilesNumber)
   }
 
-  fun disableAutoImport(disabled: Boolean = true) = addSystemProperty("external.system.auto.import.disabled", disabled)
+  fun disableAutoImport(disabled: Boolean = true): Unit = addSystemProperty("external.system.auto.import.disabled", disabled)
 
-  fun disableLoadShellEnv(disabled: Boolean = true) = addSystemProperty("ij.load.shell.env", !disabled)
+  fun disableLoadShellEnv(disabled: Boolean = true): Unit = addSystemProperty("ij.load.shell.env", !disabled)
 
   fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) {
     addSystemProperty("performance.execute.script.right.after.ide.opened", executeRightAfterIdeOpened)
   }
 
-  fun skipIndicesInitialization(value: Boolean = true) = addSystemProperty("idea.skip.indices.initialization", value)
+  fun skipIndicesInitialization(value: Boolean = true): Unit = addSystemProperty("idea.skip.indices.initialization", value)
 
-  fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true) = addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
+  fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true): Unit = addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
 
   /**
    * Include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE.
@@ -395,7 +394,7 @@ data class VMOptions(
   }
 
   @Suppress("SpellCheckingInspection")
-  fun enforceNoSplash() = addLine("-Dnosplash=true")
+  fun enforceNoSplash(): Unit = addLine("-Dnosplash=true")
 
   fun removeSystemClassLoader() {
     removeLine("-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader")
@@ -408,7 +407,7 @@ data class VMOptions(
     addLine(line.replace("SharedArchiveFile", "ArchiveClassesAtExit"))
   }
 
-
+  @Suppress("unused")
   fun setLockingMode(mode: Int) {
     addLine("-XX:+UnlockExperimentalVMOptions")
     addLine("-XX:LockingMode=$mode")
