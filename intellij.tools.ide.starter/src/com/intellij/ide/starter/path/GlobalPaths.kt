@@ -33,10 +33,9 @@ abstract class GlobalPaths(val checkoutDir: Path) {
 
   val testsDirectory = (testHomePath / "tests").createDirectories()
 
-  private val cacheDirectory: Path = if (CIServer.instance.isBuildRunningOnCI &&
-                                         !System.getProperty("agent.persistent.cache").isNullOrEmpty()
-  ) {
-    (Paths.get(System.getProperty("agent.persistent.cache"), "perf-tests-cache")).createDirectories()
+  open val cacheDirectory: Path = if (CIServer.instance.isBuildRunningOnCI &&
+                                      !System.getProperty("agent.persistent.cache").isNullOrEmpty()) {
+    (Paths.get(System.getProperty("agent.persistent.cache"), "test-data-cache")).createDirectories()
   }
   else {
     (testHomePath / "cache").createDirectories()

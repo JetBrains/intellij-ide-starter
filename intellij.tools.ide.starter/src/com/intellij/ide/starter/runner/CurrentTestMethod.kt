@@ -7,7 +7,8 @@ data class TestMethod(val name: String, val clazz: String, val clazzSimpleName: 
 }
 
 /**
- * Container that contains current test method reference
+ * Container that contains the current test method reference.
+ * Method is provided by [com.intellij.ide.starter.junit5.CurrentTestMethodProvider]
  */
 object CurrentTestMethod {
   @Volatile

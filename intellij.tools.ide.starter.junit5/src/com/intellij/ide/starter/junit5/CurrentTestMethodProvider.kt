@@ -10,7 +10,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 
 /**
- * The listener do provides [CurrentTestMethod] to DI
+ * The listener that provides [CurrentTestMethod] to DI
  */
 open class CurrentTestMethodProvider : TestExecutionListener {
 
