@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.runner
 
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.classFileVerification
@@ -304,6 +305,9 @@ data class IDERunContext(
           deleteJVMCrashes()
           val link = FailureDetailsOnCI.instance.getLinkToCIArtifacts(this)
           TeamCityCIServer.addTestMetadata(testName = null, TeamCityCIServer.TeamCityMetadataType.LINK, flowId = null, name = "Link to Logs and artifacts", value = link.toString())
+          (CIServer.instance as? TeamCityCIServer)?.buildId?.let {
+            TeamCityCIServer.addTestMetadata(testName = null, TeamCityCIServer.TeamCityMetadataType.LINK, flowId = null, name = "Start bisect", value = "https://ij-perf.labs.jb.gg/bisect/launcher?buildId=${it}")
+          }
           ErrorReporter.instance.reportErrorsAsFailedTests(this)
         }
       }
