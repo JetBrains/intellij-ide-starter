@@ -25,20 +25,27 @@ object JetBrainsDataServiceClient {
   }
 
 
-  fun getReleases(request: ProductInfoRequestParameters): Map<String, List<ReleaseInfo>> {
-    val getUrlToJbDataServices = "$DATA_SERVICE_URL/products/releases${request.toUriQuery()}"
-    logOutput("Requesting JetBrains products by url: $getUrlToJbDataServices")
+  fun getReleases(request: ProductInfoRequestParameters): Map<String, List<ReleaseInfo>> =
+    request.toUriQueries()
+      .map { uriQuery -> "$DATA_SERVICE_URL/products/releases$uriQuery" }
+      .map { url ->
+        logOutput("Requesting JetBrains products by URL: $url")
+        fetchReleaseInfo(url)
+      }.reduce { acc, map ->
+        acc + map.mapValues { (key, value) ->
+          acc.getOrDefault(key, emptyList()) + value
+        }
+      }
 
-    return HttpClient.sendRequest(
-      HttpGet(getUrlToJbDataServices).apply {
-        addHeader("Content-Type", "application/json")
-        addHeader("Accept", "application/json")
-      }) {
-      jacksonObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(JavaTimeModule())
-        .readValue(it.entity.content, object : TypeReference<Map<String, List<ReleaseInfo>>>() {})
-    }
+  private fun fetchReleaseInfo(getUrlToJbDataServices: String): Map<String, List<ReleaseInfo>> = HttpClient.sendRequest(
+    HttpGet(getUrlToJbDataServices).apply {
+      addHeader("Content-Type", "application/json")
+      addHeader("Accept", "application/json")
+    }) {
+    jacksonObjectMapper()
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      .registerModule(JavaTimeModule())
+      .readValue(it.entity.content, object : TypeReference<Map<String, List<ReleaseInfo>>>() {})
   }
 
   fun getLatestPublicReleases(productType: String,
