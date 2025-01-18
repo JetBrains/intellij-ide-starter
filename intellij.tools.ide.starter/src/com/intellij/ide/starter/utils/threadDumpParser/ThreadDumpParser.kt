@@ -5,12 +5,10 @@ import com.intellij.diagnostic.EventCountDumper
 import com.intellij.diagnostic.isCoroutineDumpHeader
 import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.annotations.NonNls
-import java.lang.StringBuilder
-import java.util.ArrayList
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-object ThreadDumpParser {
+internal object ThreadDumpParser {
   private val ourThreadStartPattern: Pattern = Pattern.compile(
     "^\"(.+)\".+(prio=\\d+ (?:os_prio=[^\\s]+ )?.*tid=[^\\s]+ nid=[^\\s]+|[Ii][Dd]=\\d+) ([^\\[]+)")
   private val ourForcedThreadStartPattern: Pattern = Pattern.compile("^Thread (\\d+): \\(state = (.+)\\)")
