@@ -29,7 +29,12 @@ internal class AndroidInstaller : IdeInstaller {
       else -> error("Not supported OS")
     }
 
-    val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/install/$buildNumber/android-studio-$buildNumber$ext"
+    val path = when {
+      SystemInfo.isMac -> "install"
+      else ->  "ide-zips"
+    }
+
+    val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/$path/$buildNumber/android-studio-$buildNumber$ext"
     val asFileName = downloadUrl.split("/").last()
     val globalPaths by di.instance<GlobalPaths>()
     val zipFile = globalPaths.getCacheDirectoryFor("android-studio").resolve(asFileName)
