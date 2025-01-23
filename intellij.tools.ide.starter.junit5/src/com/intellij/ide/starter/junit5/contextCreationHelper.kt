@@ -13,6 +13,11 @@ class IDETestContextConfig {
   var systemProperties: Map<String, String> = mapOf()
 }
 
+/*
+ A method helper that simplifies creating a new context for an integration UI test
+ This method has one disadvantage:
+ it is not possible to run a test on any IDE's version locally (release, EAP and so on)
+ */
 fun Starter.newContext(ideInfo: IdeInfo, testName: String = CurrentTestMethod.displayName(), configure: IDETestContextConfig.() -> Unit = {}): IDETestContext {
   val config = IDETestContextConfig().apply(configure)
   return newTestContainer().newContext(testName = testName, testCase = TestCase(ideInfo, config.project)).applyVMOptionsPatch {
