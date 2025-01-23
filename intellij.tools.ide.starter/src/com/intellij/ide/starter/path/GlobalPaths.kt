@@ -2,11 +2,8 @@ package com.intellij.ide.starter.path
 
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.utils.FileSystem.getDirectoryTreePresentableSizes
-import com.intellij.ide.starter.utils.getDiskInfo
 import org.kodein.di.direct
 import org.kodein.di.instance
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.createDirectories
@@ -42,23 +39,6 @@ abstract class GlobalPaths(val checkoutDir: Path) {
   }
 
   fun getCacheDirectoryFor(entity: String): Path = (cacheDirectory / entity).createDirectories()
-
-  //TODO: Move it to [FileSystem] class
-  fun getDiskUsageDiagnostics(): String {
-    return buildString {
-      appendLine("Disk usage by integration tests (home $testHomePath)")
-      appendLine(Files.getFileStore(testHomePath).getDiskInfo())
-      appendLine()
-      appendLine(testHomePath.getDirectoryTreePresentableSizes(3))
-      if (cacheDirectory != testHomePath / "cache") {
-        appendLine("Agent persistent cache directory disk usage $cacheDirectory")
-        appendLine(cacheDirectory.getDirectoryTreePresentableSizes(2))
-      }
-      appendLine()
-      appendLine("Directories' size from $devServerDirectory")
-      appendLine(devServerDirectory.getDirectoryTreePresentableSizes())
-    }
-  }
 
   companion object {
     val instance: GlobalPaths

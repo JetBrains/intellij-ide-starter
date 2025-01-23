@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.withIndent
 import com.intellij.tools.ide.util.common.logOutput
 import org.junit.platform.launcher.TestExecutionListener
@@ -20,7 +20,7 @@ open class FreeSpacePrinter : TestExecutionListener {
     if (CIServer.instance.isBuildRunningOnCI) {
       logOutput(buildString {
         appendLine("Disk usage diagnostics before test ${testIdentifier.displayName}")
-        appendLine(GlobalPaths.instance.getDiskUsageDiagnostics().withIndent("  "))
+        appendLine(FileSystem.getDiskUsageDiagnostics().withIndent("  "))
       })
     }
   }

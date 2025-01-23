@@ -1,12 +1,10 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
-import org.kodein.di.instance
 import org.rauschig.jarchivelib.ArchiveFormat
 import org.rauschig.jarchivelib.ArchiverFactory
 import org.rauschig.jarchivelib.CompressionType
@@ -105,13 +103,10 @@ object FileSystem {
     }
     catch (e: IOException) {
       if (e.message?.contains("No space left on device") == true) {
-        val paths by di.instance<GlobalPaths>()
-        paths.getDiskUsageDiagnostics()
-
         throw IOException(buildString {
           appendLine("No space left while extracting $archive to $targetDir")
           appendLine(Files.getFileStore(targetDir).getDiskInfo())
-          appendLine(paths.getDiskUsageDiagnostics())
+          appendLine(getDiskUsageDiagnostics())
         })
       }
 
@@ -216,6 +211,24 @@ object FileSystem {
           }
         }
       }
+    }
+  }
+
+  fun getDiskUsageDiagnostics(): String {
+    val paths = GlobalPaths.instance
+
+    return buildString {
+      appendLine("Disk usage by integration tests (home ${paths.testHomePath})")
+      appendLine(Files.getFileStore(paths.testHomePath).getDiskInfo())
+      appendLine()
+      appendLine(paths.testHomePath.getDirectoryTreePresentableSizes(3))
+      if (paths.cacheDirectory != paths.testHomePath / "cache") {
+        appendLine("Agent persistent cache directory disk usage ${paths.cacheDirectory}")
+        appendLine(paths.cacheDirectory.getDirectoryTreePresentableSizes(2))
+      }
+      appendLine()
+      appendLine("Directories' size from ${paths.devServerDirectory}")
+      appendLine(paths.devServerDirectory.getDirectoryTreePresentableSizes())
     }
   }
 
