@@ -8,10 +8,10 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.FileSystem.isDirUpToDate
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.io.zip.JBZipFile
 import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Path
-import java.util.zip.ZipFile
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
@@ -19,8 +19,11 @@ import kotlin.io.path.isRegularFile
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
+// TODO: will not work with remote targets com.intellij.ide.starter.extended.targets.Target
+//  without either fixes in JBR (rerouting java.io.File to java.nio.file.Path) JBR-7700 JBR-8080
+//  or rewriting the code either using java.nio.file.Path or com.intellij.platform.eel.EelApi.getArchive
 /**
- * Project stored on remote server as an archive
+ * Project stored on a remote server as an archive
  */
 data class RemoteArchiveProjectInfo(
   val projectURL: String,
@@ -34,7 +37,7 @@ data class RemoteArchiveProjectInfo(
   private val description: String = "",
 ) : ProjectInfoSpec {
 
-  private fun getTopMostFolderFromZip(zipFile: File): String = ZipFile(zipFile).entries().nextElement().name.split("/").first()
+  private fun getTopMostFolderFromZip(zipFile: File): String = JBZipFile(zipFile).entries.first().name.split("/").first()
 
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()

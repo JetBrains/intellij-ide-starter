@@ -7,9 +7,7 @@ import com.intellij.ide.starter.utils.Git
 import com.intellij.tools.ide.util.common.logError
 import org.kodein.di.instance
 import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -82,20 +80,21 @@ data class GitProjectInfo(
 
   private fun isGitMetadataExist(repoRoot: Path) = repoRoot.listDirectoryEntries(".git").isNotEmpty()
 
+  @OptIn(ExperimentalPathApi::class)
   private fun projectRootDirectorySetup(repoRoot: Path) = when {
     !repoRoot.exists() -> cloneRepo(repoRoot)
 
     repoRoot.exists() -> {
       when {
-        // for some reason repository is corrupted => delete directory with repo completely for clean checkout
+        // for some reason the repository is corrupted => delete directory with repo completely for clean checkout
         !isGitMetadataExist(repoRoot) -> {
-          repoRoot.toFile().deleteRecursively()
+          repoRoot.deleteRecursively()
           Unit
         }
 
-        // simple remove everything, except .git directory - it will speed up subsequent git clean / reset (no need to redownload repo)
+        // simple remove everything, except the.git directory - it will speed up subsequent git clean / reset (no need to redownload repo)
         !isReusable -> repoRoot.listDirectoryEntries().filterNot { it.endsWith(".git") }
-          .forEach { it.toFile().deleteRecursively() }
+          .forEach { it.deleteRecursively() }
 
         else -> Unit
       }
