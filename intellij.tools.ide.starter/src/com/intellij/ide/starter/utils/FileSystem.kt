@@ -5,6 +5,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.io.zip.JBZipFile
 import org.rauschig.jarchivelib.ArchiveFormat
 import org.rauschig.jarchivelib.ArchiverFactory
 import org.rauschig.jarchivelib.CompressionType
@@ -14,8 +15,8 @@ import java.io.OutputStream
 import java.nio.file.FileStore
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.FileTime
 import java.util.zip.GZIPOutputStream
-import java.util.zip.ZipFile
 import kotlin.io.path.*
 import kotlin.time.Duration.Companion.minutes
 
@@ -57,16 +58,18 @@ object FileSystem {
     try {
       targetDir.createDirectories()
 
-      ZipFile(zipFile.toFile()).use { zip ->
-        for (entry in zip.entries()) {
+      JBZipFile(zipFile.toFile()).use { zip ->
+        for (entry in zip.entries) {
           if (entry.isDirectory) {
             targetDir.resolve(entry.name).toFile().mkdirs()
             continue
           }
           val file = targetDir.resolve((map(entry.name) ?: continue))
           file.parent.createDirectories()
-          file.outputStream().use { zip.getInputStream(entry).use { entryStream -> entryStream.copyTo(it) } }
-          file.toFile().setLastModified(entry.lastModifiedTime.toMillis())
+          file.outputStream().use {
+            entry.inputStream.use { entryStream -> entryStream.copyTo(it) }
+          }
+          file.setLastModifiedTime(FileTime.fromMillis(entry.time))
         }
       }
     }
@@ -127,6 +130,7 @@ object FileSystem {
     unpackTarGz(tarFile.toPath(), targetDir.toPath())
   }
 
+  // TODO: use com.intellij.platform.eel.EelApi.getArchive when it's ready?
   private fun unpackTarGz(tarFile: Path, targetDir: Path) {
     require(tarFile.fileName.toString().endsWith(".tar.gz")) { "File $tarFile must be tar.gz archive" }
 
