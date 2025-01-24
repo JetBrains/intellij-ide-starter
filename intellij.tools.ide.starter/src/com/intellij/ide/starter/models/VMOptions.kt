@@ -347,6 +347,11 @@ data class VMOptions(
     addLine("-XX:+LogCompilation")
   }
 
+  @Suppress("unused")
+  fun enableMultiRoutingFileSystem() {
+    addSystemProperty("java.nio.file.spi.DefaultFileSystemProvider", "com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider")
+  }
+
   /**
    * One file will be produced each minute (depends on the configuration in OpenTelemetry).
    * Thus, by default, it's better to set it to a high number, so long-running tests will not report invalid metrics.
