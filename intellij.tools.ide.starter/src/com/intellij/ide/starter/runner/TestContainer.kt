@@ -91,6 +91,9 @@ interface TestContainer<T> {
     setupHooks += hook
   } as T
 
+  /** Any customization to the project path necessary before using the project */
+  fun customizeProjectPath(projectPath: Path?): Path? = projectPath
+
   /**
    * @return <Build Number, InstalledIde>
    */
@@ -148,7 +151,7 @@ interface TestContainer<T> {
     logOutput("Using IDE paths for '$testName': $paths")
     logOutput("IDE to run for '$testName': $ide")
 
-    var testContext = IDETestContext(paths, ide, testCase, testName, projectHome, preserveSystemDir = preserveSystemDir)
+    var testContext = IDETestContext(paths, ide, testCase, testName, customizeProjectPath(projectHome), preserveSystemDir = preserveSystemDir)
     testContext.wipeSystemDir()
 
     testContext = applyDefaultVMOptions(testContext)
