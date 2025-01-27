@@ -8,9 +8,11 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.FileSystem.isDirUpToDate
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.ThreeState
 import com.intellij.util.io.zip.JBZipFile
 import org.kodein.di.instance
 import java.io.File
+import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
@@ -34,7 +36,7 @@ data class RemoteArchiveProjectInfo(
   private val description: String = "",
 ) : ProjectInfoSpec {
 
-  private fun getTopMostFolderFromZip(zipFile: File): String = JBZipFile(zipFile).entries.first().name.split("/").first()
+  private fun getTopMostFolderFromZip(zipFile: File): String = JBZipFile(zipFile, StandardCharsets.UTF_8, false, ThreeState.UNSURE).entries.first().name.split("/").first()
 
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()

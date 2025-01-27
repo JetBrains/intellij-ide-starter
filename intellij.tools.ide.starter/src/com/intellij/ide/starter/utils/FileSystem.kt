@@ -5,6 +5,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.ThreeState
 import com.intellij.util.io.zip.JBZipFile
 import org.rauschig.jarchivelib.ArchiveFormat
 import org.rauschig.jarchivelib.ArchiverFactory
@@ -12,6 +13,7 @@ import org.rauschig.jarchivelib.CompressionType
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
+import java.nio.charset.StandardCharsets
 import java.nio.file.FileStore
 import java.nio.file.Files
 import java.nio.file.Path
@@ -58,7 +60,7 @@ object FileSystem {
     try {
       targetDir.createDirectories()
 
-      JBZipFile(zipFile.toFile()).use { zip ->
+      JBZipFile(zipFile.toFile(), StandardCharsets.UTF_8, false, ThreeState.UNSURE).use { zip ->
         for (entry in zip.entries) {
           if (entry.isDirectory) {
             targetDir.resolve(entry.name).toFile().mkdirs()
