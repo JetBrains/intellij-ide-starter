@@ -19,9 +19,6 @@ import kotlin.io.path.isRegularFile
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-// TODO: will not work with remote targets com.intellij.ide.starter.extended.targets.Target
-//  without either fixes in JBR (rerouting java.io.File to java.nio.file.Path) JBR-7700 JBR-8080
-//  or rewriting the code either using java.nio.file.Path or com.intellij.platform.eel.EelApi.getArchive
 /**
  * Project stored on a remote server as an archive
  */
