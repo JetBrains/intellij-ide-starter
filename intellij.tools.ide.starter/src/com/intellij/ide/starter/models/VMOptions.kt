@@ -347,8 +347,14 @@ data class VMOptions(
     addLine("-XX:+LogCompilation")
   }
 
+  /** Option should be removed when https://youtrack.jetbrains.com/issue/IJPL-160621/Enable-MultiRoutingFileSystem-for-all-OS-and-all-IDEs is completed */
   @Suppress("unused")
   fun enableMultiRoutingFileSystem() {
+    // temporary hack: only specific tests which are ready, should enable it
+    if (System.getenv("ENABLE_MULTI_ROUTING_FILE_SYSTEM") != "true") {
+      logOutput("Multi-routing file system is disabled in tests")
+      return
+    }
     addSystemProperty("java.nio.file.spi.DefaultFileSystemProvider", "com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider")
   }
 
