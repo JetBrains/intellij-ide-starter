@@ -139,7 +139,7 @@ interface TestContainer<T> {
 
     val testDirectory = run {
       val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
-      if (testCase.ideInfo.platformPrefix == "JetBrainsClient") {
+      if (testCase.ideInfo.platformPrefix.contains("JetBrainsClient")) {
         commonPath / "embedded-client"
       }
       else {
