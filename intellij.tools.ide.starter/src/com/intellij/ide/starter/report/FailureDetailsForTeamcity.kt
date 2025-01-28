@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.report.FailureDetailsOnCI.Companion.getTestMethodName
 import com.intellij.ide.starter.runner.IDERunContext
@@ -20,9 +21,11 @@ object FailureDetailsForTeamcity : FailureDetailsOnCI {
   private fun getFailureDetailsForCI(runContext: IDERunContext): String {
     val testMethodName = getTestMethodName().ifEmpty { runContext.contextName }
     val uri = getLinkToCIArtifacts(runContext)
+    val buildId = (CIServer.instance as? TeamCityCIServer)?.buildId.takeIf { it != TeamCityCIServer.LOCAL_RUN_ID }
     return "Test: $testMethodName" + System.lineSeparator() +
            "You can find logs and other info in CI artifacts under the path ${runContext.contextName}" + System.lineSeparator() +
-           "Link on TC artifacts $uri"
+           "Link on TC artifacts $uri" +
+           (buildId?.let { System.lineSeparator() + "Link to bisect: https://ij-perf.labs.jb.gg/bisect/launcher?buildId=" } ?: "")
   }
 
   override fun getLinkToCIArtifacts(runContext: IDERunContext): String {
