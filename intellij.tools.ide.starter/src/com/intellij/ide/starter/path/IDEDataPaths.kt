@@ -10,11 +10,10 @@ import kotlin.io.path.div
 open class IDEDataPaths(
   val testHome: Path,
   private val inMemoryRoot: Path?,
-  private val isFromSources: Boolean,
 ) {
 
   companion object {
-    inline fun <reified T> createPaths(testName: String, testHome: Path, useInMemoryFs: Boolean, isFromSources: Boolean = true): T where T : Any {
+    inline fun <reified T> createPaths(testName: String, testHome: Path, useInMemoryFs: Boolean): T where T : Any {
       testHome.toFile().walkBottomUp().fold(true) { res, it ->
         (it.absolutePath.startsWith((testHome / "system").toFile().absolutePath) || it.delete() || !it.exists()) && res
       }
@@ -25,8 +24,8 @@ open class IDEDataPaths(
       else {
         null
       }
-      return T::class.java.getConstructor(Path::class.java, Path::class.java, Boolean::class.java)
-        .newInstance(testHome, inMemoryRoot, isFromSources)
+      return T::class.java.getConstructor(Path::class.java, Path::class.java)
+        .newInstance(testHome, inMemoryRoot)
     }
   }
 
