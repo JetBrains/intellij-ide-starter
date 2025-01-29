@@ -25,7 +25,7 @@ object FailureDetailsForTeamcity : FailureDetailsOnCI {
     return "Test: $testMethodName" + System.lineSeparator() +
            "You can find logs and other info in CI artifacts under the path ${runContext.contextName}" + System.lineSeparator() +
            "Link on TC artifacts $uri" +
-           (buildId?.let { System.lineSeparator() + "Link to bisect: https://ij-perf.labs.jb.gg/bisect/launcher?buildId=" } ?: "")
+           (buildId?.let { System.lineSeparator() + "Link to bisect: https://ij-perf.labs.jb.gg/bisect/launcher?buildId=$it" } ?: "")
   }
 
   override fun getLinkToCIArtifacts(runContext: IDERunContext): String {
