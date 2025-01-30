@@ -7,8 +7,8 @@ import com.intellij.driver.sdk.getOpenProjects
 import com.intellij.driver.sdk.hasVisibleWindow
 import com.intellij.driver.sdk.ui.IdeEventQueue
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
-import com.intellij.driver.sdk.ui.components.ideFrame
-import com.intellij.driver.sdk.ui.components.mainToolbar
+import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.mainToolbar
 import com.intellij.driver.sdk.ui.requestFocusFromIde
 import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
