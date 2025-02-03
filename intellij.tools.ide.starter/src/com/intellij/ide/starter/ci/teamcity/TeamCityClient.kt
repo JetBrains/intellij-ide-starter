@@ -76,6 +76,14 @@ object TeamCityClient {
     return Pair(buildId, buildNumber)
   }
 
+  /**
+   * @return the major version of the master branch by accessing the build number Teamcity configuration
+   */
+  fun getMasterMajorVersion(): String {
+    val url = guestAuthUri.resolve("builds?locator=buildType:ijplatform_master_IdeaInstallersBuildNumber,branch:master,status:SUCCESS,state:(finished:true),count:1")
+    return get(url).findValue("number").asText().split(".")[0]
+  }
+
   fun downloadArtifact(buildId: String, artifactName: String, outFile: File) {
     val artifactUrl = guestAuthUri.resolve("builds/id:$buildId/artifacts/content/$artifactName")
     HttpClient.download(artifactUrl.toString(), outFile)
