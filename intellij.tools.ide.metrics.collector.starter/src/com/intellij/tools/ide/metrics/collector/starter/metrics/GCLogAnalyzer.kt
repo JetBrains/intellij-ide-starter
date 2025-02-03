@@ -8,6 +8,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.text.NumberFormat
@@ -23,10 +24,11 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
   }
 
   fun getGCMetrics(
-    requestedMetrics: Array<String> = arrayOf("gcPause", "fullGCPause", "gcPauseCount", "totalHeapUsedMax", "freedMemoryByGC", "freedMemoryByFullGC", "freedMemory")
+    requestedMetrics: Array<String> = arrayOf("gcPause", "fullGCPause", "gcPauseCount", "totalHeapUsedMax", "freedMemoryByGC", "freedMemoryByFullGC", "freedMemory"),
   ): Iterable<PerformanceMetrics.Metric> {
-    return if ((ideStartResult.runContext.reportsDir / "gcLog.log").toFile().exists()) {
-      processGCSummary(findExistingSummary() ?: generateGCSummaryFile(), requestedMetrics)
+    val gcLogFile = (ideStartResult.runContext.reportsDir / "gcLog.log").toFile()
+    return if (gcLogFile.exists()) {
+      processGCSummary(findExistingSummary() ?: generateGCSummaryFile(), requestedMetrics) + extractAdditionalGcMetrics(gcLogFile)
     }
     else listOf()
   }
@@ -124,4 +126,71 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
     }
     return gcMetrics
   }
+
+  /**
+   * Extracts more GC metrics, in addition to [generateGCSummaryFile]/[processGCSummary].
+   *
+   * `g1gcConcurrentMarkCycles` - the number of G1GC concurrent mark cycles
+   *
+   * `g1gcConcurrentMarkTimeMs` - the total time spent in G1GC concurrent mark cycles.
+   * This is not a GC pause, but a time spent in concurrent GC activity.
+   * This is not a "CPU time" because the concurrent mark cycle uses multiple CPU cores
+   * while this metric accounts only for the total time regardless of how many cores are involved.
+   *
+   * `g1gcHeapShrinkageCount` - the number of events when GC shrinks the size of the heap.
+   *
+   * `g1gcHeapShrinkageMegabytes` - the total amount of memory (in MB) reduced by heap shrinkage.
+   * Note that GC can change the heap size many times: grow and shrink, grow and shrink, and so on.
+   * So the number can be way bigger than the heap size.
+   */
+  private fun extractAdditionalGcMetrics(gcLogFile: File): List<PerformanceMetrics.Metric> {
+    var concurrentMarkCycleCount = 0
+    var concurrentMarkCycleTimeMicrosecondsSum = 0
+    var heapShrinkageCount = 0
+    var heapShrinkageMegabytes = 0
+    var lastHeapSize = -1
+    gcLogFile.forEachLine { line ->
+      extractConcurrentMarkCycleTimeMicroseconds(line)?.let { concurrentMarkCycleTimeMicroseconds ->
+        concurrentMarkCycleCount++
+        concurrentMarkCycleTimeMicrosecondsSum += concurrentMarkCycleTimeMicroseconds
+      }
+      extractHeapSizeMegabytes(line)?.let { heapSize ->
+        if (lastHeapSize != -1) {
+          if (heapSize < lastHeapSize) {
+            heapShrinkageCount++
+            heapShrinkageMegabytes += lastHeapSize - heapSize
+          }
+        }
+        lastHeapSize = heapSize
+      }
+    }
+
+    return listOf(
+      PerformanceMetrics.Metric.newCounter("g1gcConcurrentMarkCycles", concurrentMarkCycleCount),
+      PerformanceMetrics.Metric.newDuration("g1gcConcurrentMarkTimeMs", concurrentMarkCycleTimeMicrosecondsSum / 1000),
+      PerformanceMetrics.Metric.newCounter("g1gcHeapShrinkageCount", heapShrinkageCount),
+      PerformanceMetrics.Metric.newCounter("g1gcHeapShrinkageMegabytes", heapShrinkageMegabytes),
+    )
+  }
+
+  private fun extractConcurrentMarkCycleTimeMicroseconds(line: String): Int? {
+    val matchResult = CONCURRENT_MARK_CYCLE_REGEX.find(line)
+    return matchResult?.groupValues?.get(1)
+      ?.replace(",", "")
+      ?.toIntOrNull()
+  }
+
+  private fun extractHeapSizeMegabytes(line: String): Int? {
+    val matchResult = HEAP_SIZE_REGEX.find(line)
+    return matchResult?.groupValues?.get(1)
+      ?.replace(",", "")
+      ?.toIntOrNull()
+  }
 }
+
+// Example: [0,444s][info][gc          ] GC(4) Concurrent Mark Cycle 13,954ms
+private val CONCURRENT_MARK_CYCLE_REGEX = """Concurrent Mark Cycle (\d+,\d\d\d)ms$""".toRegex()
+
+// Example: [12,136s][info][gc          ] GC(38) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 625M->405M(702M) 7,220ms
+// Example: [11,619s][info][gc          ] GC(37) Pause Remark 443M->435M(702M) 34,541ms
+private val HEAP_SIZE_REGEX = """ Pause .* \d+M->\d+M\((\d+)M\) """.toRegex()
