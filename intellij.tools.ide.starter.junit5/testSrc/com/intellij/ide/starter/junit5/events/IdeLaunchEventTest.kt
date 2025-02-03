@@ -15,7 +15,6 @@ import com.intellij.tools.ide.starter.bus.events.Event
 import examples.data.TestCases
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.timing.eventually
-import io.kotest.inspectors.shouldForAtLeastOne
 import io.kotest.matchers.collections.shouldHaveSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
