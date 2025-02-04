@@ -4,6 +4,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.SetupException
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.diagnostic.getOrLogException
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import java.io.File
@@ -11,7 +12,9 @@ import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
+import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
+import kotlin.io.path.deleteRecursively
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -93,6 +96,7 @@ object Git {
     return Path(stdout.read().split("\n").first().trim()).toAbsolutePath()
   }
 
+  @OptIn(ExperimentalPathApi::class)
   fun clone(repoUrl: String, destinationDir: Path, branchName: String = "", shallow: Boolean, timeout: Duration = 10.minutes) {
     val cmdName = "git-clone"
 
@@ -101,8 +105,8 @@ object Git {
     if (shallow) arguments.addAll(listOf("--depth", "1"))
 
     withRetryBlocking("Git clone $repoUrl failed", rollback = {
-      logOutput("Deleting $destinationDir")
-      destinationDir.toFile().deleteRecursively()
+      logOutput("Deleting $destinationDir ...")
+      runCatching { destinationDir.deleteRecursively() }.getOrLogException { logError("Failed to delete $destinationDir", it) }
     }) {
       ProcessExecutor(
         presentableName = cmdName,

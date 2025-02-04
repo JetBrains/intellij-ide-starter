@@ -50,6 +50,19 @@ data class GitProjectInfo(
   val repositoryRootDir: Path
     get() {
       val globalPaths by di.instance<GlobalPaths>()
+
+      // TODO: https://youtrack.jetbrains.com/issue/AT-2013/Eel-in-Starter-Make-GitProjectInfo-and-Git-aware-of-target-eel
+      // as of now just use local cache directory for git project
+      val projectsUnpacked = globalPaths.localCacheDirectory.resolve("projects").resolve("unpacked").createDirectories()
+
+      return projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
+    }
+
+  // TODO: Remove this after https://youtrack.jetbrains.com/issue/AT-2013/Eel-in-Starter-Make-GitProjectInfo-and-Git-aware-of-target-eel
+  // after setting up project we should return "real" directory path (not local) to use in remote target (Docker, WSL, etc)
+  private val remoteRepositoryRootDir: Path
+    get() {
+      val globalPaths by di.instance<GlobalPaths>()
       val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
       return projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
     }
@@ -103,6 +116,7 @@ data class GitProjectInfo(
     else -> Unit
   }
 
+  @OptIn(ExperimentalPathApi::class)
   override fun downloadAndUnpackProject(): Path {
     try {
       projectRootDirectorySetup(repositoryRootDir)
@@ -114,13 +128,14 @@ data class GitProjectInfo(
         appendLine("Trying one more time from clean checkout")
       }, ex)
 
-      repositoryRootDir.toFile().deleteRecursively()
+      repositoryRootDir.deleteRecursively()
 
       cloneRepo(repositoryRootDir)
       setupRepositoryState(repositoryRootDir)
     }
 
-    return repositoryRootDir.let(projectHomeRelativePath)
+    // checkout directory locally, but start
+    return remoteRepositoryRootDir.let(projectHomeRelativePath)
   }
 
   fun onCommit(commitHash: String): GitProjectInfo = copy(commitHash = commitHash)
