@@ -177,19 +177,19 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
     val matchResult = CONCURRENT_MARK_CYCLE_REGEX.find(line)
     return matchResult?.groupValues?.get(1)
       ?.replace(",", "")
+      ?.replace(".", "")
       ?.toIntOrNull()
   }
 
   private fun extractHeapSizeMegabytes(line: String): Int? {
     val matchResult = HEAP_SIZE_REGEX.find(line)
     return matchResult?.groupValues?.get(1)
-      ?.replace(",", "")
       ?.toIntOrNull()
   }
 }
 
 // Example: [0,444s][info][gc          ] GC(4) Concurrent Mark Cycle 13,954ms
-private val CONCURRENT_MARK_CYCLE_REGEX = """Concurrent Mark Cycle (\d+,\d\d\d)ms$""".toRegex()
+private val CONCURRENT_MARK_CYCLE_REGEX = """Concurrent Mark Cycle (\d+[.,]\d\d\d)ms$""".toRegex()
 
 // Example: [12,136s][info][gc          ] GC(38) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 625M->405M(702M) 7,220ms
 // Example: [11,619s][info][gc          ] GC(37) Pause Remark 443M->435M(702M) 34,541ms
