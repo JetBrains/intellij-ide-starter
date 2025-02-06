@@ -1,8 +1,16 @@
 package com.intellij.ide.starter.runner
 
-data class TestMethod(val name: String, val clazz: String, val clazzSimpleName: String, val displayName: String) {
+data class TestMethod(
+  val name: String,
+  val clazz: String,
+  val clazzSimpleName: String,
+  val displayName: String,
+  var arguments: List<Any> = emptyList(),
+) {
+  fun argsString(): String = arguments.takeIf { it.isNotEmpty() }?.joinToString(prefix = "(", postfix = ")", separator = " ") ?: ""
+
   fun fullName(): String {
-    return "$clazz.$name"
+    return "$clazz.$name${argsString()}"
   }
 }
 
@@ -15,7 +23,7 @@ object CurrentTestMethod {
   private var testMethod: TestMethod? = null
 
   fun set(method: TestMethod?) {
-      testMethod = method
+    testMethod = method
   }
 
   fun get(): TestMethod? {

@@ -1,1 +1,2 @@
 com.intellij.ide.starter.junit5.StarterBusEachTestCallback
+com.intellij.ide.starter.junit5.CurrentTestMethodArgumentsProvider

@@ -45,14 +45,14 @@ fun CurrentTestMethod.hyphenateWithClass(): String = qualifiedName().hyphenateTe
 /**
  * @return Hyphenated test class and display method name which can be provided by @DisplayName or @ParameterizedTest(name = ) or default just a method name
  */
-fun CurrentTestMethod.displayName(): String = (CurrentTestMethod.className() + "/" +  (get()?.displayName ?: "")).hyphenateTestName()
+fun CurrentTestMethod.displayName(): String = (CurrentTestMethod.className() + "/" + (get()?.displayName ?: "")).hyphenateTestName()
 
 /**
  * Returns the qualified name of the current test method. Eg: `com.intellij.xyz.tests.ClassTest.testMethod`
  */
 fun CurrentTestMethod.qualifiedName(): String {
   val method: TestMethod = checkTestMethodIsNotNull(this.get())
-  return "${method.clazzSimpleName}/${method.name}"
+  return "${method.clazzSimpleName}/${method.name}${method.argsString()}"
 }
 
 /**

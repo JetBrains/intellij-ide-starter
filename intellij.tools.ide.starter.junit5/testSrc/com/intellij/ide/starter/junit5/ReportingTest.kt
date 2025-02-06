@@ -9,12 +9,14 @@ import com.intellij.ide.starter.utils.formatSize
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
@@ -28,6 +30,7 @@ import kotlin.random.Random
 @ExtendWith(MockitoExtension::class)
 @ExtendWith(KillOutdatedProcesses::class)
 class ReportingTest {
+  private lateinit var currentTestInfo: TestInfo
 
   companion object {
     @JvmStatic
@@ -44,6 +47,11 @@ class ReportingTest {
         Arguments.of("Library 'org.jetbrains.kotlin:kotlin-tooling-core:1.9.20-dev-6566' resolution failed", "Library 'org.jetbrains.kotlin:kotlin-tooling-core:<NUM>.<NUM>.<NUM>-dev-<NUM>' resolution failed"),
       )
     }
+  }
+
+  @BeforeEach
+  fun beforeEach(testInfo: TestInfo) {
+    currentTestInfo = testInfo
   }
 
   @ParameterizedTest
@@ -116,10 +124,11 @@ class ReportingTest {
 
   @Mock
   private lateinit var runContextMock: IDERunContext
+  private val ciMessagePrefix = "You can find logs and other useful info in CI artifacts under the path"
 
   @Test
-  fun `validate default error failure details generation`(testInfo: TestInfo) {
-    val testName = testInfo.run {
+  fun `validate default error failure details generation`() {
+    val testName = currentTestInfo.run {
       testClass.get().name + "." + testMethod.get().name
     }
     Mockito.doReturn(testName).`when`(runContextMock).contextName
@@ -127,7 +136,21 @@ class ReportingTest {
     val failureDetails = FailureDetailsOnCI.instance.getFailureDetails(runContext = runContextMock)
     failureDetails.shouldBe("""
       Test: $testName
-      You can find logs and other useful info in CI artifacts under the path ${testName.replaceSpecialCharactersWithHyphens()}
+      $ciMessagePrefix ${testName.replaceSpecialCharactersWithHyphens()}
+    """.trimIndent())
+  }
+
+  @ValueSource(strings = ["param 1", "param 2"])
+  fun `validate parametrized tests error message generation`(param: String) {
+    val testName = currentTestInfo.run {
+      testClass.get().name + "." + testMethod.get().name + "($param)"
+    }
+    Mockito.doReturn(testName).`when`(runContextMock).contextName
+
+    val failureDetails = FailureDetailsOnCI.instance.getFailureDetails(runContext = runContextMock)
+    failureDetails.shouldBe("""
+      Test: $testName
+      $ciMessagePrefix ${testName.replaceSpecialCharactersWithHyphens()}
     """.trimIndent())
   }
 }

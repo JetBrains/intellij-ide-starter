@@ -10,7 +10,7 @@ import org.kodein.di.direct
 import org.kodein.di.instance
 
 /**
- * The listener that provides [CurrentTestMethod] to DI
+ * Provides [CurrentTestMethod] to DI
  */
 open class CurrentTestMethodProvider : TestExecutionListener {
 
@@ -22,11 +22,13 @@ open class CurrentTestMethodProvider : TestExecutionListener {
     val methodSource = testIdentifier.source.get() as MethodSource
 
     // TODO: include here current argument (for test template, dynamic tests, parametrized tests)
-    di.direct.instance<CurrentTestMethod>().set(TestMethod(
-      name = methodSource.methodName,
-      clazz = methodSource.javaClass.name,
-      clazzSimpleName = methodSource.javaClass.simpleName,
-      displayName = testIdentifier.displayName)
+    di.direct.instance<CurrentTestMethod>().set(
+      TestMethod(
+        name = methodSource.methodName,
+        clazz = methodSource.javaClass.name,
+        clazzSimpleName = methodSource.javaClass.simpleName,
+        displayName = testIdentifier.displayName
+      )
     )
   }
 }
