@@ -16,7 +16,7 @@ fun TestInfo.hyphenateWithClass(): String {
   return "$className/$methodName".hyphenateTestName()
 }
 
-fun TestInfo.hyphenate(): String {
+fun TestInfo.hyphenateName(): String {
   return testMethod.get().name.hyphenateTestName()
 }
 
@@ -34,7 +34,7 @@ fun CurrentTestMethod.getName(): String = checkTestMethodIsNotNull(this.get()).n
 /**
  * @return Hyphenated test name from the current test method as testMethodName => test-method-name
  */
-fun CurrentTestMethod.hyphenate(): String = checkTestMethodIsNotNull(this.get()).name.hyphenateTestName()
+fun CurrentTestMethod.hyphenateName(): String = checkTestMethodIsNotNull(this.get()).name.hyphenateTestName()
 
 /**
  * @return Hyphenated test class and test method name from the current test method as ClassName/testMethodName => class-name/test-method-name
