@@ -251,7 +251,6 @@ class InstallPluginTest {
         error.messageText,
         VerificationResultType.PROBLEMS,
         buildUrl,
-        System.currentTimeMillis(),
         marketplaceEvent.id,
         marketplaceEvent.verificationType,
         null
