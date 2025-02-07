@@ -41,9 +41,9 @@ data class RemoteArchiveProjectInfo(
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
 
-    val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
+    val projectsUnpacked = globalPaths.cacheDirForProjects.resolve("unpacked").createDirectories()
 
-    val zipFile = globalPaths.getCacheDirectoryFor("projects").resolve("zip").resolve(projectURL.transformUrlToZipName())
+    val zipFile = globalPaths.cacheDirForProjects.resolve("zip").resolve(projectURL.transformUrlToZipName())
 
     HttpClient.downloadIfMissing(url = projectURL, targetFile = zipFile, timeout = downloadTimeout)
     val imagePath: Path = zipFile

@@ -64,7 +64,7 @@ data class GitProjectInfo(
   private val remoteRepositoryRootDir: Path
     get() {
       val globalPaths by di.instance<GlobalPaths>()
-      val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
+      val projectsUnpacked = globalPaths.cacheDirForProjects.resolve("unpacked").createDirectories()
       return projectsUnpacked.resolve(repositoryUrl.split("/").last().split(".git").first())
     }
 

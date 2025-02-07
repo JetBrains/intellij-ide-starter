@@ -29,6 +29,6 @@ class GitProjectDownloadingTest {
     projectPath.shouldExist()
 
     val globalPaths by di.instance<GlobalPaths>()
-    projectPath.parent.shouldBe(globalPaths.getCacheDirectoryFor("projects").resolve("unpacked"))
+    projectPath.parent.shouldBe(globalPaths.cacheDirForProjects.resolve("unpacked"))
   }
 }

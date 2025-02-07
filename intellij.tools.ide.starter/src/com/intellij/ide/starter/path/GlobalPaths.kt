@@ -41,10 +41,14 @@ abstract class GlobalPaths(val checkoutDir: Path) {
     (testHomePath / "cache").createDirectories()
   }
 
-  /** Cache directory on local or remote machine/target/environment */
+  /**
+   * Cache directory on local or remote machine/target/environment (depends on the configuration of the test)
+   */
   open val cacheDirectory = localCacheDirectory
 
   fun getCacheDirectoryFor(entity: String): Path = (cacheDirectory / entity).createDirectories()
+
+  val cacheDirForProjects: Path get() = getCacheDirectoryFor("projects")
 
   companion object {
     val instance: GlobalPaths

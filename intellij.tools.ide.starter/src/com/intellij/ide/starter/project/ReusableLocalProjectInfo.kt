@@ -38,7 +38,7 @@ class ReusableLocalProjectInfo(
       return null
     }
 
-    val projectsUnpacked = globalPaths.getCacheDirectoryFor("projects").resolve("unpacked").createDirectories()
+    val projectsUnpacked = globalPaths.cacheDirForProjects.resolve("unpacked").createDirectories()
     val projectHome = projectsUnpacked / projectDir.last().name
 
     val isDeleted = projectHome.toFile().deleteRecursively()
