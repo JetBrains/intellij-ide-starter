@@ -228,9 +228,9 @@ object FileSystem {
       appendLine(Files.getFileStore(paths.testHomePath).getDiskInfo())
       appendLine()
       appendLine(paths.testHomePath.getDirectoryTreePresentableSizes(3))
-      if (paths.cacheDirectory != paths.testHomePath / "cache") {
-        appendLine("Agent persistent cache directory disk usage ${paths.cacheDirectory}")
-        appendLine(paths.cacheDirectory.getDirectoryTreePresentableSizes(2))
+      if (paths.localCacheDirectory != paths.testHomePath / "cache") {
+        appendLine("Agent persistent cache directory disk usage ${paths.localCacheDirectory}")
+        appendLine(paths.localCacheDirectory.getDirectoryTreePresentableSizes(2))
       }
       appendLine()
       appendLine("Directories' size from ${paths.devServerDirectory}")
