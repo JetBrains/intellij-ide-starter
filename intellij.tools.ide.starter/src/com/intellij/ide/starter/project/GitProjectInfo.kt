@@ -4,8 +4,8 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.Git
-import com.intellij.openapi.diagnostic.getOrLogException
 import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.withRetryBlocking
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -129,7 +129,7 @@ data class GitProjectInfo(
         appendLine("Trying one more time from clean checkout")
       }, ex)
 
-      runCatching { repositoryRootDir.deleteRecursively() }.getOrLogException { logError("Failed to delete $repositoryRootDir", it) }
+      withRetryBlocking("Failed to delete $repositoryRootDir", retries = 5) { repositoryRootDir.deleteRecursively() }
 
       cloneRepo(repositoryRootDir)
       setupRepositoryState(repositoryRootDir)
