@@ -2,7 +2,6 @@ package com.intellij.ide.starter.report
 
 import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.util.text.HtmlChunk.span
 import com.intellij.tools.ide.util.common.logError
 import io.qameta.allure.Allure
 import io.qameta.allure.model.Status
@@ -40,6 +39,10 @@ object AllureHelper {
   fun <T> step(name: String, action: () -> T): T {
     LOG.info("Step: $name")
     return Allure.step(name, Allure.ThrowableContextRunnable { action.invoke() })
+  }
+
+  fun step(name: String) {
+    Allure.step(name)
   }
 
   fun skippedStep(name: String) {
