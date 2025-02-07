@@ -24,7 +24,7 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
-import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.time.Duration
@@ -95,16 +95,21 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
     return this
   }
 
+  @OptIn(ExperimentalPathApi::class)
   fun removeGradleConfigFiles(): GradleBuildTool {
     logOutput("Removing Gradle config files in ${testContext.resolvedProjectHome} ...")
 
-    testContext.resolvedProjectHome.toFile().walkTopDown()
-      .forEach {
-        if (it.isFile && (it.extension in listOf("gradle", "kts") || (it.name in listOf("gradlew", "gradlew.bat", "gradle.properties")))) {
-          it.delete()
-          logOutput("File ${it.path} is deleted")
+    val output = buildString {
+      testContext.resolvedProjectHome.walk()
+        .forEach {
+          if (it.isRegularFile() && (it.extension in listOf("gradle", "kts") || (it.name in listOf("gradlew", "gradlew.bat", "gradle.properties")))) {
+            it.deleteIfExists()
+            appendLine("File $it is deleted")
+          }
         }
-      }
+    }
+
+    logOutput(output)
 
     return this
   }
@@ -126,11 +131,11 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
 
       val prevValue = lineWithTheSameProperty.substringAfter("$property=")
       val newValue = (if (!replacePrevValue) prevValue else "") + " $value"
-      val tempFile = File.createTempFile("newContent", ".txt").toPath()
+      val tempFile = Files.createTempFile("newContent", ".txt")
       gradleProperties.forEachLine { line ->
         tempFile.appendText(when {
-                              line.contains(property) -> "$property=${newValue.trim()}" + System.getProperty("line.separator")
-                              else -> line + System.getProperty("line.separator")
+                              line.contains(property) -> "$property=${newValue.trim()}" + System.lineSeparator()
+                              else -> line + System.lineSeparator()
                             })
       }
       gradleProperties.writeText(tempFile.readText())
