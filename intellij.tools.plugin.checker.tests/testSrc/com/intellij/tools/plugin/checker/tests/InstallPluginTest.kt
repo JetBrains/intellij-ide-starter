@@ -242,7 +242,7 @@ class InstallPluginTest {
 
   private fun reportErrorsToAwsSqs(errors: List<Error>) {
     if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) return
-    val sqsClient = SqsClientWrapper("https://sqs.eu-west-1.amazonaws.com/662690535244/dev_performance-verifier_external-services", EU_WEST_1)
+    val sqsClient = SqsClientWrapper("https://sqs.eu-west-1.amazonaws.com/046864285642/production__external-services", EU_WEST_1)
     val buildUrl = System.getenv("BUILD_URL")
     val marketplaceEvent = getMarketplaceEvent()
 
