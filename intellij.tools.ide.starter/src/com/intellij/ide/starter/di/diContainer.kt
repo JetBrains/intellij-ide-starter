@@ -56,11 +56,11 @@ var di = DI {
   bindSingleton<IdeDownloader> { PublicIdeDownloader() }
   bindSingleton<IdeInstallerFactory> { IdeInstallerFactory() }
 
-  // you can extend DI with frameworks, specific to IDE language stack
+  // you can extend DI with frameworks, specific to the IDE language stack
   bindArgSet<IDETestContext, Framework>()
   importAll(ideaFrameworksDI)
 
-  // you can extend DI with build tools, specific to IDE language stack
+  // you can extend DI with build tools, specific to the IDE language stack
   bindArgSet<IDETestContext, BuildTool>()
   importAll(ideaBuildToolsDI)
 
