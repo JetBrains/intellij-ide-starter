@@ -9,10 +9,10 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.copyRecursively
-import kotlin.io.path.exists
 import org.gradle.internal.hash.Hashing
 import java.nio.file.Path
 import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.time.Duration.Companion.minutes
 
@@ -107,11 +107,18 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
   }
 
   fun downloadAndroidPluginProjectForIJCommunity(intellijCommunityVersion: String, commit: String = "") {
-    val android = GitProjectInfo("ssh://git@git.jetbrains.team/ij/android.git", commit, intellijCommunityVersion, true).downloadAndUnpackProject()
-    val communityProjectHome = testContext.resolvedProjectHome
+    val androidProject = GitProjectInfo("ssh://git@git.jetbrains.team/ij/android.git", commit, intellijCommunityVersion, true)
+      .apply { downloadAndUnpackProject() }
+
+    // TODO: Hack because of https://youtrack.jetbrains.com/issue/AT-2013/Eel-in-Starter-Make-GitProjectInfo-and-Git-aware-of-target-eel
+    val communityProjectHome = if (testContext.testCase.projectInfo is GitProjectInfo) {
+      testContext.testCase.projectInfo.repositoryRootDir
+    }
+    else testContext.resolvedProjectHome
+
     val androidPluginPath = communityProjectHome / "android"
     if (androidPluginPath.exists()) return // TODO find better solution
-    android.copyRecursively(androidPluginPath)
+    androidProject.repositoryRootDir.copyRecursively(androidPluginPath)
   }
 
   fun setupAndroidSdkToProject(androidSdkPath: Path) {
