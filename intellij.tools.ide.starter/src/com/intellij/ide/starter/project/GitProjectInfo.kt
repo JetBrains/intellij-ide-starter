@@ -3,9 +3,13 @@ package com.intellij.ide.starter.project
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
+import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.Git
+import com.intellij.ide.starter.utils.withRetryBlocking
 import com.intellij.tools.ide.util.common.logError
-import com.intellij.tools.ide.util.common.withRetryBlocking
+import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.system.OS
 import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -94,6 +98,32 @@ data class GitProjectInfo(
 
   private fun isGitMetadataExist(repoRoot: Path) = repoRoot.listDirectoryEntries(".git").isNotEmpty()
 
+  private fun execHardRemove(dir: Path) {
+    logOutput("Trying to remove the directory $dir with OS command line ...")
+    val workDir = dir.parent
+
+    if (OS.CURRENT == OS.Windows) {
+      ProcessExecutor(
+        "rmdir",
+        workDir = workDir,
+        timeout = 1.minutes,
+        args = listOf("cmd.exe", "/c", "rmdir", "/s", "/q", dir.absolutePathString()),
+        stdoutRedirect = ExecOutputRedirect.ToStdOut("rmdir"),
+        stderrRedirect = ExecOutputRedirect.ToStdOut("rmdir")
+      ).start()
+    }
+    else {
+      ProcessExecutor(
+        "rm",
+        workDir = workDir,
+        timeout = 1.minutes,
+        args = listOf("rm", "-rf", dir.absolutePathString()),
+        stdoutRedirect = ExecOutputRedirect.ToStdOut("rm"),
+        stderrRedirect = ExecOutputRedirect.ToStdOut("rm")
+      ).start()
+    }
+  }
+
   @OptIn(ExperimentalPathApi::class)
   private fun projectRootDirectorySetup(repoRoot: Path) = when {
     !repoRoot.exists() -> cloneRepo(repoRoot)
@@ -108,7 +138,17 @@ data class GitProjectInfo(
 
         // simple remove everything, except the.git directory - it will speed up subsequent git clean / reset (no need to redownload repo)
         !isReusable -> repoRoot.listDirectoryEntries().filterNot { it.endsWith(".git") }
-          .forEach { it.deleteRecursively() }
+          .forEach {
+            try {
+              it.deleteRecursively()
+            }
+            catch (e: Exception) {
+              logError("Failed to delete directory with git metadata. " +
+                       "Trying to remove it via OS commands. $it", e)
+
+              execHardRemove(it)
+            }
+          }
 
         else -> Unit
       }
@@ -129,7 +169,8 @@ data class GitProjectInfo(
         appendLine("Trying one more time from clean checkout")
       }, ex)
 
-      withRetryBlocking("Failed to delete $repositoryRootDir", retries = 5) { repositoryRootDir.deleteRecursively() }
+      withRetryBlocking("Failed to delete $repositoryRootDir", retries = 3,
+                        rollback = { execHardRemove(repositoryRootDir) }) { repositoryRootDir.deleteRecursively() }
 
       cloneRepo(repositoryRootDir)
       setupRepositoryState(repositoryRootDir)
