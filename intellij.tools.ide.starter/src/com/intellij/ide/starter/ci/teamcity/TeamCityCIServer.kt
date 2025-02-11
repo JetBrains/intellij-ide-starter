@@ -69,11 +69,7 @@ open class TeamCityCIServer(
     val generifiedTestName = testName.processStringForTC()
     logOutput(String.format("##teamcity[testStarted name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
                             generifiedTestName, flowId, generifiedTestName))
-    logOutput(String.format("teamcity[testStarted name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
-                            generifiedTestName, flowId, generifiedTestName))
     logOutput(String.format("##teamcity[testIgnored name='%s' message='%s' flowId='%s' nodeId='%s']",
-                            generifiedTestName, message.processStringForTC(), flowId, generifiedTestName))
-    logOutput(String.format("teamcity[testIgnored name='%s' message='%s' flowId='%s' nodeId='%s']",
                             generifiedTestName, message.processStringForTC(), flowId, generifiedTestName))
     details?.let {
       addTestMetadataWithoutStringProcessing(
@@ -85,8 +81,6 @@ open class TeamCityCIServer(
       )
     }
     logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
-                            generifiedTestName, flowId, generifiedTestName))
-    logOutput(String.format("teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
                             generifiedTestName, flowId, generifiedTestName))
   }
 
@@ -324,7 +318,6 @@ open class TeamCityCIServer(
       val flow = flowId?.let { "flowId='$it'" } ?: ""
       val testName = testName?.let { "testName='${it}'" } ?: ""
       println("##teamcity[testMetadata $testName type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' ${flow}]")
-      println("teamcity[testMetadata $testName type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' ${flow}]")
     }
 
     fun progressStart(activityName: String) {
