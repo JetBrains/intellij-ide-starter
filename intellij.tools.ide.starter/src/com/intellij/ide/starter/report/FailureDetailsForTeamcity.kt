@@ -14,18 +14,26 @@ object FailureDetailsForTeamcity : FailureDetailsOnCI {
   override fun getFailureDetails(runContext: IDERunContext): String {
 
     return if (CIServer.instance.isBuildRunningOnCI)
-      getFailureDetailsForCI(runContext)
+      getFailureDetailsWithBisectLinkForCI(runContext)
     else getFailureDetailsForLocalRun(runContext)
+  }
+
+  fun getFailureDetailsForIgnoredTest(runContext: IDERunContext): String {
+    return getFailureDetailsForCI(runContext)
+  }
+
+  private fun getFailureDetailsWithBisectLinkForCI(runContext: IDERunContext): String {
+    val buildId = (CIServer.instance as? TeamCityCIServer)?.buildId.takeIf { it != TeamCityCIServer.LOCAL_RUN_ID }
+    return getFailureDetailsForCI(runContext) +
+           (buildId?.let { System.lineSeparator() + "Link to bisect: https://ij-perf.labs.jb.gg/bisect/launcher?buildId=$it" } ?: "")
   }
 
   private fun getFailureDetailsForCI(runContext: IDERunContext): String {
     val testMethodName = getTestMethodName().ifEmpty { runContext.contextName }
     val uri = getLinkToCIArtifacts(runContext)
-    val buildId = (CIServer.instance as? TeamCityCIServer)?.buildId.takeIf { it != TeamCityCIServer.LOCAL_RUN_ID }
     return "Test: $testMethodName" + System.lineSeparator() +
            "You can find logs and other info in CI artifacts under the path ${runContext.contextName}" + System.lineSeparator() +
-           "Link on TC artifacts $uri" +
-           (buildId?.let { System.lineSeparator() + "Link to bisect: https://ij-perf.labs.jb.gg/bisect/launcher?buildId=$it" } ?: "")
+           "Link on TC artifacts $uri"
   }
 
   override fun getLinkToCIArtifacts(runContext: IDERunContext): String {
