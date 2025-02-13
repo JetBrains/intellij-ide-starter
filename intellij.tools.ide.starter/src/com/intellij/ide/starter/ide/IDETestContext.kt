@@ -176,7 +176,6 @@ open class IDETestContext(
 
   fun withVerboseIndexingDiagnostics(dumpPaths: Boolean = false): IDETestContext =
     applyVMOptionsPatch {
-      addSystemProperty("intellij.indexes.diagnostics.should.dump.for.interrupted.index.updaters", true)
       addSystemProperty("intellij.indexes.diagnostics.limit.of.files", 10000)
       addSystemProperty("intellij.indexes.diagnostics.should.dump.paths.of.indexed.files", dumpPaths)
       // Dumping of lists of indexed file paths may require a lot of memory.
