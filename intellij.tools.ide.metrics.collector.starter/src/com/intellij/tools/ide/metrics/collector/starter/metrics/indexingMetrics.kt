@@ -122,11 +122,11 @@ data class IndexingMetrics(
       return indexedFiles
     }
 
-  val scanningStatisticsByProviders: Map<String, ScanningStatistics>
+  val scanningStatisticsByProviders: Map<String, AggregatedScanningStatistics>
     get() {
-      val indexedFiles = mutableMapOf<String /* Provider name */, ScanningStatistics>()
+      val indexedFiles = mutableMapOf<String /* Provider name */, AggregatedScanningStatistics>()
       scanningStatistics.forEach { stats ->
-        val value: ScanningStatistics = indexedFiles.getOrDefault(stats.providerName, ScanningStatistics())
+        val value: AggregatedScanningStatistics = indexedFiles.getOrDefault(stats.providerName, AggregatedScanningStatistics())
         indexedFiles[stats.providerName] = value.merge(stats)
       }
       return indexedFiles
@@ -316,9 +316,9 @@ private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Long>
     PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value.toLong()).toInt())
   }
 
-data class ScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val totalSumOfThreadTimesWithPauses: Int = 0) {
-  fun merge(scanningStatistics: JsonScanningStatistics): ScanningStatistics {
-    return ScanningStatistics(
+data class AggregatedScanningStatistics(val numberOfScannedFiles: Int = 0, val numberOfSkippedFiles: Int = 0, val totalSumOfThreadTimesWithPauses: Int = 0) {
+  fun merge(scanningStatistics: JsonScanningStatistics): AggregatedScanningStatistics {
+    return AggregatedScanningStatistics(
       numberOfScannedFiles = numberOfScannedFiles + scanningStatistics.numberOfScannedFiles,
       numberOfSkippedFiles = numberOfSkippedFiles + scanningStatistics.numberOfSkippedFiles,
       totalSumOfThreadTimesWithPauses = totalSumOfThreadTimesWithPauses + scanningStatistics.totalOneThreadTimeWithPauses.milliseconds.toInt()
