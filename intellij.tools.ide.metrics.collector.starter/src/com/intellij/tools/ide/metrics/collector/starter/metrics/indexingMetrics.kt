@@ -5,34 +5,23 @@ import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.util.indexing.diagnostic.IndexDiagnosticDumper
+import com.intellij.util.indexing.diagnostic.dto.IndexingMetric
 import com.intellij.util.indexing.diagnostic.dto.IndexingMetrics
+import com.intellij.util.indexing.diagnostic.dto.getListOfIndexingMetrics
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
-fun IndexingMetrics.getListOfIndexingMetrics(ideStartResult: IDEStartResult): List<PerformanceMetrics.Metric> {
-  val numberOfIndexedFiles = totalNumberOfIndexedFiles
-  val numberOfFilesFullyIndexedByExtensions = totalNumberOfFilesFullyIndexedByExtensions
-  return listOf(
-    PerformanceMetrics.newDuration("indexingTimeWithoutPauses", durationMillis = totalIndexingTimeWithoutPauses.toInt()),
-    PerformanceMetrics.newDuration("scanningTimeWithoutPauses", durationMillis = totalScanFilesTimeWithoutPauses.toInt()),
-    PerformanceMetrics.newDuration("pausedTimeInIndexingOrScanning", durationMillis = totalPausedTime.toInt()),
-    PerformanceMetrics.newDuration("dumbModeTimeWithPauses", durationMillis = totalDumbModeTimeWithPauses.toInt()),
-    PerformanceMetrics.newCounter("numberOfIndexedFiles", value = numberOfIndexedFiles),
-    PerformanceMetrics.newCounter("numberOfIndexedFilesWritingIndexValue", value = totalNumberOfIndexedFilesWritingIndexValues),
-    PerformanceMetrics.newCounter("numberOfIndexedFilesWithNothingToWrite", value = totalNumberOfIndexedFilesWithNothingToWrite),
-    PerformanceMetrics.newCounter("numberOfFilesIndexedByExtensions", value = numberOfFilesFullyIndexedByExtensions),
-    PerformanceMetrics.newCounter("numberOfFilesIndexedWithoutExtensions",
-                                  value = (numberOfIndexedFiles - numberOfFilesFullyIndexedByExtensions)),
-    PerformanceMetrics.newCounter("numberOfRunsOfScannning", value = totalNumberOfRunsOfScanning),
-    PerformanceMetrics.newCounter("numberOfRunsOfIndexing", value = totalNumberOfRunsOfIndexing)
-  ) + getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeAvg, "Avg") +
-         getProcessingSpeedOfFileTypes(processingSpeedPerFileTypeWorst, "Worst") +
-         getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguageAvg, "Avg") +
-         getProcessingSpeedOfBaseLanguages(processingSpeedPerBaseLanguageWorst, "Worst") +
-         getProcessingTimeOfFileType(processingTimePerFileType) +
+fun IndexingMetrics.getListOfIndexingAndIdeMetrics(ideStartResult: IDEStartResult): List<PerformanceMetrics.Metric> {
+  val indexingMetrics = getListOfIndexingMetrics().map {
+    when (it) {
+      is IndexingMetric.Duration -> PerformanceMetrics.newDuration(it.name, it.durationMillis)
+      is IndexingMetric.Counter -> PerformanceMetrics.newCounter(it.name, it.value)
+    }
+  }
+  return indexingMetrics +
          collectPerformanceMetricsFromCSV(ideStartResult, "lexer", "lexing") +
          collectPerformanceMetricsFromCSV(ideStartResult, "parser", "parsing")
 }
@@ -82,19 +71,4 @@ fun extractIndexingMetrics(startResult: IDEStartResult, projectName: String? = n
     .mapNotNull { IndexDiagnosticDumper.readJsonIndexingActivityDiagnostic(it) }
   return IndexingMetrics(jsonIndexDiagnostics)
 }
-
-private fun getProcessingSpeedOfFileTypes(mapFileTypeToSpeed: Map<String, Int>, suffix: String): List<PerformanceMetrics.Metric> =
-  mapFileTypeToSpeed.map {
-    PerformanceMetrics.newCounter("processingSpeed$suffix#${it.key}", value = it.value)
-  }
-
-private fun getProcessingSpeedOfBaseLanguages(mapBaseLanguageToSpeed: Map<String, Int>, suffix: String): List<PerformanceMetrics.Metric> =
-  mapBaseLanguageToSpeed.map {
-    PerformanceMetrics.newCounter("processingSpeedOfBaseLanguage$suffix#${it.key}", value = it.value)
-  }
-
-private fun getProcessingTimeOfFileType(mapFileTypeToDuration: Map<String, Long>): List<PerformanceMetrics.Metric> =
-  mapFileTypeToDuration.map {
-    PerformanceMetrics.newDuration("processingTime#${it.key}", durationMillis = TimeUnit.NANOSECONDS.toMillis(it.value.toLong()).toInt())
-  }
 
