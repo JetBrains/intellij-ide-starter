@@ -3,6 +3,10 @@ package com.intellij.ide.starter
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.Starter
+import com.intellij.openapi.application.PathManager
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.exists
 
 fun IDETestContext.disableCLionTestIndexing() =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
@@ -24,6 +28,12 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
     .setMemorySize(4096)
     .applyVMOptionsPatch {
       if (isRadler) {
+        // Required for local runs
+        val backendPath = Path(PathManager.getHomePath(), "dotnet", "Bin.RiderBackend")
+        if (backendPath.exists()) {
+          withEnv("RESHARPER_HOST_BIN", backendPath.absolutePathString())
+        }
+
         // Enable performance watcher for backend
         addSystemProperty("rider.backend.performance.watcher.isEnabled", "true")
 
