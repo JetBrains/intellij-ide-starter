@@ -3,6 +3,7 @@ package com.intellij.ide.starter.screenRecorder
 import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_ID
 import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_RESOLUTION
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.openapi.diagnostic.getOrLogException
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import org.monte.media.Format
@@ -83,7 +84,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   init {
     //on Linux, we run xvfb and test process is headless, so we need external tool to record screen
     if (!SystemInfo.isLinux) {
-      javaScreenRecorder = runCatching { getScreenRecorder((runContext.logsDir / "screenRecording").toFile()) }.getOrNull()
+      javaScreenRecorder = runCatching { getScreenRecorder((runContext.logsDir / "screenRecording").toFile()) }.getOrLogException { logOutput("Can't create screen recorder: ${it.message}") }
     }
   }
 
@@ -109,6 +110,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   }
 
   fun stop() {
+    if (javaScreenRecorder == null && ffmpegProcess == null) {logOutput("Screen recorder was not started")}
     javaScreenRecorder?.stop()
     ffmpegProcess?.destroy()
   }
