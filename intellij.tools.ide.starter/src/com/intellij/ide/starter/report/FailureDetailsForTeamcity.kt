@@ -13,8 +13,10 @@ import java.net.URLEncoder
 object FailureDetailsForTeamcity : FailureDetailsOnCI {
   override fun getFailureDetails(runContext: IDERunContext): String {
 
-    return if (CIServer.instance.isBuildRunningOnCI)
-      getFailureDetailsWithBisectLinkForCI(runContext)
+    return if (CIServer.instance.isBuildRunningOnCI) {
+      if (CIServer.instance.asTeamCity().isJetbrainsBuildserver) getFailureDetailsWithBisectLinkForCI(runContext)
+      else getFailureDetailsForCI(runContext)
+    }
     else getFailureDetailsForLocalRun(runContext)
   }
 

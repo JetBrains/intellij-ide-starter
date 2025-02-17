@@ -41,7 +41,9 @@ open class TeamCityCIServer(
         "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
         generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId, generifiedTestName
       ))
-      addTestMetadata(testName = generifiedTestName, TeamCityMetadataType.LINK, flowId = flowId, name = "Start bisect", value = "https://ij-perf.labs.jb.gg/bisect/launcher?buildId=$buildId")
+      if (CIServer.instance.asTeamCity().isJetbrainsBuildserver) {
+        addTestMetadata(testName = generifiedTestName, TeamCityMetadataType.LINK, flowId = flowId, name = "Start bisect", value = "https://ij-perf.labs.jb.gg/bisect/launcher?buildId=$buildId")
+      }
     }
     linkToLogs?.let { addTestMetadata(testName = generifiedTestName, TeamCityMetadataType.LINK, flowId = flowId, name = "Link to Logs and artifacts", value = it) }
     CurrentTestMethod.get()?.let {
@@ -181,6 +183,7 @@ open class TeamCityCIServer(
   override val buildNumber by lazy { System.getenv("BUILD_NUMBER") ?: "" }
   override val branchName by lazy { buildParams["teamcity.build.branch"] ?: "" }
 
+  val isJetbrainsBuildserver by lazy { getBuildParam("teamcity.serverUrl")?.contains("buildserver.labs.intellij.net") == true }
   val configurationName by lazy { getBuildParam("teamcity.buildConfName") }
   val buildVcsNumber by lazy { getBuildParam("build.vcs.number") ?: "Unknown" }
   val buildConfigName: String? by lazy { getBuildParam("teamcity.buildConfName") }
