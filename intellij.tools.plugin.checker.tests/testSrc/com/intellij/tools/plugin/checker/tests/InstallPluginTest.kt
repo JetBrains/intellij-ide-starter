@@ -248,7 +248,7 @@ class InstallPluginTest {
 
     for (error in errors) {
       val message = VerificationMessage(
-        error.messageText,
+        error.messageText.let { it.take(256) + if (it.length > 256) "..." else "" },
         VerificationResultType.PROBLEMS,
         buildUrl,
         marketplaceEvent.id,
