@@ -1,5 +1,7 @@
 package com.intellij.ide.starter
 
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.useInstaller
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.Starter
@@ -28,9 +30,13 @@ fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
     .setMemorySize(4096)
     .applyVMOptionsPatch {
       if (isRadler) {
-        // Required for local runs
-        val backendPath = Path(PathManager.getHomePath(), "dotnet", "Bin.RiderBackend")
-        if (backendPath.exists()) {
+        if (!ConfigurationStorage.useInstaller()) {
+          val backendPath = Path(PathManager.getHomePath(), "dotnet", "Bin.RiderBackend")
+          require(backendPath.exists()) {
+            "ReSharper backend not found: $backendPath doesn't exist.\n" +
+            "Please run 'Compile CLion Backend (Radler)' configuration before running tests"
+          }
+
           withEnv("RESHARPER_HOST_BIN", backendPath.absolutePathString())
         }
 
