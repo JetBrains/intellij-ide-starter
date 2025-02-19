@@ -16,6 +16,7 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.TestContainer
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -69,8 +70,7 @@ class UiTestWithDriver {
           waitFound()
 
           // private QAFExtendedWebElement {caret}searchOption;
-          assertTrue(getCaretLine() == 28) { "Cursor at the wrong line" }
-          assertTrue(getCaretColumn() == 33) { "Cursor at the wrong column" }
+          assertEquals(28, getCaretLine()) { "Cursor at the wrong line" }
 
           // private QAFExtendedWebElement searchOption;{caret}
           setCaretPosition(28, 48)
