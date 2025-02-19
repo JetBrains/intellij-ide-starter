@@ -16,6 +16,6 @@ class EapLicenseHelper : TestExecutionExceptionHandler {
       } else {
         throw throwable
       }
-    }
+    } else throwable?.let { throw it }
   }
 }
