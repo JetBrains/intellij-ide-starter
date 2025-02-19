@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.examples.driver
 
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
-import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitVisible
 import com.intellij.driver.sdk.ui.components.common.editor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.structureToolWindow
@@ -64,7 +63,7 @@ class UiTestWithDriver {
         leftToolWindowToolbar.structureButton
           .click()
         structureToolWindow()
-          .waitVisible()
+          .waitFound()
           .waitOneContainsText("searchOption: QAFExtendedWebElement")
           .click()
 
