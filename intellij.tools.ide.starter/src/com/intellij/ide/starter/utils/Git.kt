@@ -97,12 +97,13 @@ object Git {
   }
 
   @OptIn(ExperimentalPathApi::class)
-  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "", shallow: Boolean, timeout: Duration = 10.minutes) {
+  fun clone(repoUrl: String, destinationDir: Path, branchName: String = "", shallow: Boolean, withSubmodules: Boolean = false, timeout: Duration = 10.minutes) {
     val cmdName = "git-clone"
 
     val arguments = mutableListOf("git", "clone", repoUrl, destinationDir.toString())
     if (branchName.isNotEmpty()) arguments.addAll(listOf("-b", branchName))
     if (shallow) arguments.addAll(listOf("--depth", "1"))
+    if (withSubmodules) arguments.add("--recurse-submodules")
 
     withRetryBlocking("Git clone $repoUrl failed", rollback = {
       logOutput("Deleting $destinationDir ...")

@@ -45,6 +45,11 @@ data class GitProjectInfo(
   val shallow: Boolean = false,
 
   /**
+   * Set to true if you want to include submodules. The option: `--recurse-submodules` will be added.
+   */
+  val withSubmodules: Boolean = false,
+
+  /**
    * Relative path inside Image file, where project home is located
    */
   val projectHomeRelativePath: (Path) -> Path = { it },
@@ -76,7 +81,7 @@ data class GitProjectInfo(
     get() = repositoryRootDir.let(projectHomeRelativePath)
 
   private fun cloneRepo(projectHome: Path) {
-    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, shallow = shallow, timeout = downloadTimeout)
+    Git.clone(repoUrl = repositoryUrl, destinationDir = projectHome, branchName = branchName, shallow = shallow, withSubmodules = withSubmodules, timeout = downloadTimeout)
   }
 
   private fun setupRepositoryState(projectHome: Path) {
