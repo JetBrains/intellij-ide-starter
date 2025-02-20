@@ -5,6 +5,7 @@ import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitVisible
 import com.intellij.driver.sdk.ui.components.common.editor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.structureToolWindow
+import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.driver.remoteDev.RemDevDriverRunner
@@ -55,10 +56,11 @@ class UiTestWithDriver {
         leftToolWindowToolbar.projectButton
           .open()
 
-        projectViewTree
-          .waitFound()
-          .doubleClickPath("Quantum-Starter-Kit", "src", "main", "java", "com.quantum", "pages", "GooglePage", fullMatch = false)
-
+        projectView {
+          projectViewTree
+            .waitFound()
+            .doubleClickPath("Quantum-Starter-Kit", "src", "main", "java", "com.quantum", "pages", "GooglePage", fullMatch = false)
+        }
         leftToolWindowToolbar.structureButton
           .click()
         structureToolWindow()
@@ -73,10 +75,10 @@ class UiTestWithDriver {
           assertEquals(28, getCaretLine()) { "Cursor at the wrong line" }
 
           // private QAFExtendedWebElement searchOption;{caret}
-          setCaretPosition(28, 48)
+          goToPosition(28, 48)
           keyboard {
             enter()
-            enterText("// comment line 123")
+            typeText("// comment line 123")
           }
 
           assertTrue(text.contains("// comment line 123")) { "Editor doesn't contain the entered text" }
