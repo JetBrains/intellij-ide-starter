@@ -13,6 +13,12 @@ jvm_resources(
   strip_prefix = "resources"
 )
 
+jvm_resources(
+  name = "tools-ide-starter-junit5_test_resources",
+  files = glob(["testResources/**/*"]),
+  strip_prefix = "testResources"
+)
+
 jvm_library(
   name = "tools-ide-starter-junit5",
   module_name = "intellij.tools.ide.starter.junit5",
@@ -61,7 +67,10 @@ jvm_library(
     "//tests/ideTestingFramework/intellij.tools.ide.metrics.collector.starter:tools-ide-metrics-collector-starter",
     "@lib//:opentelemetry",
   ],
-  runtime_deps = [":tools-ide-starter-junit5_resources"]
+  runtime_deps = [
+    ":tools-ide-starter-junit5_resources",
+    ":tools-ide-starter-junit5_test_resources",
+  ]
 )
 
 jvm_test(
