@@ -41,7 +41,7 @@ open class TeamCityCIServer(
         "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
         generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId, generifiedTestName
       ))
-      if (CIServer.instance.asTeamCity().isJetbrainsBuildserver) {
+      if (isJetbrainsBuildserver) {
         addTestMetadata(testName = generifiedTestName, TeamCityMetadataType.LINK, flowId = flowId, name = "Start bisect", value = "https://ij-perf.labs.jb.gg/bisect/launcher?buildId=$buildId")
       }
     }
