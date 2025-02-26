@@ -45,9 +45,9 @@ fun <T> DriverTestLogger.run(text: String, action: () -> T): T = try {
   val time = System.currentTimeMillis() - actionStarted
   val finishedText = "$text finished in ${time}ms"
   logOutput(finishedText.color(LogColor.GREEN))
-  info(finishedText)
+  runCatching { info(finishedText) }
   result
 } catch (e: Throwable) {
-  warn("$text failed with '${e.message}'")
+  runCatching { warn("$text failed with '${e.message}'") }
   throw e
 }
