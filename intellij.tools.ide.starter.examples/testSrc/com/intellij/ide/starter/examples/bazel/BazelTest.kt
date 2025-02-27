@@ -38,7 +38,12 @@ directories:
     val results = context.runIDE(commands = CommandChain().exitApp())
 
     val metrics = getMetricsFromSpanAndChildren(results, SpanFilter.nameContains("Progress: "))
-    val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics()
+    val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics().map {
+      when (it) {
+        is IndexingMetric.Duration -> PerformanceMetrics.newDuration(it.name, it.durationMillis)
+        is IndexingMetric.Counter -> PerformanceMetrics.newCounter(it.name, it.value)
+      }
+    }
 
     writeMetricsToCSV(results, metrics + indexingMetrics)
   }

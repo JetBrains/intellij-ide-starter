@@ -14,6 +14,17 @@
 * Fix Rider downloading 
 * Freezes are reported only from errors folder to avoid false positives
 
+### Breaking changes
+* `getListOfIndexingMetrics()` now returns `IndexingMetric`. Please use the following code to convert to standard `Metric`.
+```kotlin
+val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics().map {
+      when (it) {
+        is IndexingMetric.Duration -> PerformanceMetrics.newDuration(it.name, it.durationMillis)
+        is IndexingMetric.Counter -> PerformanceMetrics.newCounter(it.name, it.value)
+      }
+    }
+```
+
 ## 2024.3
 
 ### Improvements

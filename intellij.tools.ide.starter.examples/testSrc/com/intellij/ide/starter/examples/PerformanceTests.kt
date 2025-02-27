@@ -35,7 +35,12 @@ class PerformanceTests {
     val commands = CommandChain().startProfile("indexing").waitForSmartMode().stopProfile().exitApp()
     val contextForIndexing = context.copy().executeDuringIndexing()
     val results = contextForIndexing.runIDE(commands = commands, launchName = "indexing")
-    val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics()
+    val indexingMetrics = extractIndexingMetrics(results).getListOfIndexingMetrics().map {
+      when (it) {
+        is IndexingMetric.Duration -> PerformanceMetrics.newDuration(it.name, it.durationMillis)
+        is IndexingMetric.Counter -> PerformanceMetrics.newCounter(it.name, it.value)
+      }
+    }
     writeMetricsToCSV(results, indexingMetrics)
   }
 
