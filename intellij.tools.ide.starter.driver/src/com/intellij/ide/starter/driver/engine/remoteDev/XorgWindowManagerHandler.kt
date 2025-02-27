@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.driver.engine.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
-import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_RESOLUTION
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
@@ -18,28 +17,6 @@ object XorgWindowManagerHandler {
   fun provideDisplay(): Int {
     return getRunningDisplays().firstOrNull() ?: throw IllegalStateException("No display found")
   }
-
-  // region ffmpeg
-
-  fun startRecording(ideRunContext: IDERunContext) {
-    val ffmpegName = "ffmpeg"
-    perClientSupervisorScope.async {
-      val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
-      val recordingFile = ideRunContext.logsDir / "screen.mkv"
-      val ffmpegLogFile = ideRunContext.logsDir / "$ffmpegName.log"
-      ProcessExecutor(
-        presentableName = "Start screen recording",
-        timeout = 2.hours,
-        args = listOf("/usr/bin/$ffmpegName", "-f", "x11grab", "-video_size", DEFAULT_DISPLAY_RESOLUTION, "-framerate", "3", "-i",
-                      displayWithColumn,
-                      "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString),
-        workDir = null,
-        stdoutRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile()),
-        stderrRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile())
-      ).startCancellable()
-    }
-  }
-  // endregion ffmpeg
 
   // region Fluxbox
   private val fluxboxName = "fluxbox"
