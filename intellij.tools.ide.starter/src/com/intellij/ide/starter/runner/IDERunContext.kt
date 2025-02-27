@@ -6,6 +6,7 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.classFileVerification
 import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDEStartConfig
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
@@ -495,6 +496,10 @@ data class IDERunContext(
   }
 
   fun withScreenRecording() {
+    if (testContext is IDERemDevTestContext && testContext != testContext.frontendIDEContext) {
+      logOutput("Will not record screen for a backend of remote dev")
+      return
+    }
     val screenRecorder = IDEScreenRecorder(this)
     EventsBus.subscribe(IDERunContext::javaClass) { _: IdeLaunchEvent ->
       screenRecorder.start()
