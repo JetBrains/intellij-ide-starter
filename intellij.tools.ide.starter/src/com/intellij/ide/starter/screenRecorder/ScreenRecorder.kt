@@ -1,7 +1,8 @@
 package com.intellij.ide.starter.screenRecorder
 
 import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_ID
-import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_RESOLUTION
+import com.intellij.ide.starter.process.exec.ExecOutputRedirect
+import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.diagnostic.getOrLogException
 import com.intellij.openapi.util.SystemInfo
@@ -110,18 +111,40 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   }
 
   fun stop() {
-    if (javaScreenRecorder == null && ffmpegProcess == null) {logOutput("Screen recorder was not started")}
+    if (javaScreenRecorder == null && ffmpegProcess == null) {
+      logOutput("Screen recorder was not started")
+    }
     javaScreenRecorder?.stop()
     ffmpegProcess?.destroy()
   }
 
+  private fun getDisplaySize(displayWithColumn: String): Pair<Int, Int> {
+    val commandName = "xdpyinfo"
+    logOutput("Getting a size for a display $displayWithColumn")
+    val stdout = ExecOutputRedirect.ToString()
+    ProcessExecutor(
+      presentableName = "$commandName -display $displayWithColumn",
+      args = listOf(commandName, "-display", displayWithColumn),
+      workDir = null,
+      expectedExitCode = 0,
+      stdoutRedirect = stdout,
+      stderrRedirect = ExecOutputRedirect.ToStdOut("[$commandName-err]"),
+    ).start()
+
+    val screenDataOutput = stdout.read().trim()
+    val regex = """dimensions:\s*(\d+)x(\d+)\s*pixels""".toRegex()
+    val matchResult = regex.find(screenDataOutput)
+    val (width, height) = matchResult?.groupValues?.let { Pair(it[1].toInt(), it[2].toInt()) } ?: error("Could not determine screen data")
+    logOutput("Getting a size for a display $displayWithColumn finished with $width x $height")
+    return width to height
+  }
+
   private fun startFFMpegRecording(ideRunContext: IDERunContext): Process? {
     val processVmOptions = ideRunContext.calculateVmOptions()
-    val resolution = DEFAULT_DISPLAY_RESOLUTION
     val processDisplay = processVmOptions.environmentVariables["DISPLAY"] ?: System.getenv("DISPLAY") ?: ":$DEFAULT_DISPLAY_ID"
     val recordingFile = ideRunContext.logsDir / "screen-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss_SSS"))}.mkv"
     val ffmpegLogFile = (ideRunContext.logsDir / "ffmpeg-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss_SSS"))}.log").also { it.createFile() }
-    val args = listOf("/usr/bin/ffmpeg", "-f", "x11grab", "-video_size", resolution, "-framerate", "24", "-i",
+    val args = listOf("/usr/bin/ffmpeg", "-f", "x11grab", "-video_size", getDisplaySize(processDisplay).let { "${it.first}x${it.second}" }, "-framerate", "24", "-i",
                       processDisplay,
                       "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString)
     logOutput("Start screen recording to $recordingFile\nArgs: ${args.joinToString(" ")}")

@@ -13,11 +13,10 @@ import kotlin.io.path.*
 import kotlin.time.Duration.Companion.seconds
 
 const val DEFAULT_DISPLAY_ID = "88"
-const val DEFAULT_DISPLAY_RESOLUTION = "1920x1080"
 
 class LinuxIdeDistribution : IdeDistribution() {
   companion object {
-
+    private const val DEFAULT_DISPLAY_RESOLUTION = "1920x1080"
     private val xvfbRunTool by lazy {
       val toolName = "xvfb-run"
 
