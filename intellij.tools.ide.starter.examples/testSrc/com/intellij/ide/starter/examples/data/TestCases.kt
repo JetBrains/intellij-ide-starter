@@ -6,7 +6,6 @@ package com.intellij.ide.starter.examples.data
 object TestCases {
   /** IntelliJ Community cases */
   val IC = IdeaCommunityCases
-  val IU = IdeaUltimateCases
   val PY = PyCharmCases
   val GO = GoLandCases
 }

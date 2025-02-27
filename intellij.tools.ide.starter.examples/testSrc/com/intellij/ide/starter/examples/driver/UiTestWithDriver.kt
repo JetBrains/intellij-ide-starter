@@ -46,7 +46,7 @@ class UiTestWithDriver {
     }
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.GradleQuantumSimple)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleQuantumSimple)
       .prepareProjectCleanImport()
 
     testContext.runIdeWithDriver().useDriverAndCloseIde {
