@@ -6,10 +6,13 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.Starter
+import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.util.indexing.diagnostic.dto.IndexingMetric
+import com.intellij.util.indexing.diagnostic.dto.getListOfIndexingMetrics
 import com.intellij.util.io.createParentDirectories
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
