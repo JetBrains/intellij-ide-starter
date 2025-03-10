@@ -15,9 +15,9 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.absolutePathString
-import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.exists
+import kotlin.io.path.outputStream
 import kotlin.time.Duration.Companion.seconds
 
 fun formatArtifactName(artifactType: String, testName: String): String {
@@ -55,10 +55,9 @@ fun takeScreenshot(logsDir: Path, screenshotName: String, ignoreExceptions: Bool
   val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName / "$toolName.jar"
-  if (!File(screenshotTool.toString()).exists()) {
-    screenshotTool.createParentDirectories().createFile()
-    val screenshotJar = File(IDERunContext::class.java.classLoader.getResource("tools/$toolName.jar")!!.toURI())
-    screenshotJar.copyTo(screenshotTool.toFile(), true)
+  if (!screenshotTool.exists()) {
+    val screenshotJar = IDERunContext::class.java.classLoader.getResourceAsStream("tools/$toolName.jar")!!
+    screenshotJar.copyTo(screenshotTool.createParentDirectories().outputStream())
   }
   val screenshotFile = logsDir.resolve(screenshotName)
 
