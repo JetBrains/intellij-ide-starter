@@ -136,4 +136,12 @@ object IdeProductImp : IdeProduct {
     executableFileName = "writerside",
     fullName = "Writerside"
   )
+
+  /** Gateway */
+  override val GW = IdeInfo(
+    productCode = "GW",
+    platformPrefix = "Gateway",
+    executableFileName = "gateway",
+    fullName = "Gateway"
+  )
 }

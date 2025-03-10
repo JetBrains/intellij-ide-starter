@@ -1,0 +1,5 @@
+<idea-plugin>
+  <dependencies>
+    <module name="intellij.tools.ide.util.common" />
+  </dependencies>
+</idea-plugin>

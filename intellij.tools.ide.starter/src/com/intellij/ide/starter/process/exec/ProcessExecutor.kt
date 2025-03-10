@@ -35,6 +35,7 @@ class ProcessExecutor(
   val stdInBytes: ByteArray = byteArrayOf(),
   val onlyEnrichExistedEnvVariables: Boolean = false,
   val expectedExitCode: Int = 0,
+  val analyzeProcessExit: Boolean = true,
   val silent: Boolean = false,
 ) {
 
@@ -279,6 +280,8 @@ class ProcessExecutor(
 
     ioThreads.forEach { catchAll { it.join() } }
 
-    analyzeProcessExit(process)
+    if (analyzeProcessExit) {
+      analyzeProcessExit(process)
+    }
   }
 }

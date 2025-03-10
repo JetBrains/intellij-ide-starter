@@ -48,4 +48,7 @@ interface IdeProduct {
 
   /** Writerside */
   val WRS: IdeInfo
+
+  /** Gateway */
+  val GW: IdeInfo
 }
