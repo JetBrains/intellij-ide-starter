@@ -14,11 +14,13 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.tools.ide.starter.bus.EventsBus
+import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.io.path.Path
 import kotlin.io.path.div
+import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -83,10 +85,13 @@ internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by
         append("\tat $it\n")
       }
       screenshotPath?.let {
-        if (!CIServer.instance.isBuildRunningOnCI) {
+        if (!Path(screenshotPath).isRegularFile()) {
+          logError("screenshot should be a regular file, but it is not: $screenshotPath")
+        }
+        else if (!CIServer.instance.isBuildRunningOnCI) {
           append("Screenshot: file://$screenshotPath\n".color(LogColor.BLUE))
         }
-        if (CIServer.instance.isBuildRunningOnCI) {
+        else {
           runContext?.let { context ->
             logOutput("Adding screenshot to metadata")
             TeamCityClient.publishTeamCityArtifacts(Path(screenshotPath), context.contextName.replaceSpecialCharactersWithHyphens(), "driverError.png", false)
