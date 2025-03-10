@@ -1,10 +1,10 @@
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.openFile
-import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.common.welcomeScreen
-import com.intellij.driver.sdk.ui.components.elements.button
-import com.intellij.driver.sdk.ui.components.elements.dialog
-import com.intellij.driver.sdk.ui.components.elements.waitForNoOpenedDialogs
+import com.intellij.driver.sdk.ui.components.button
+import com.intellij.driver.sdk.ui.components.dialog
+import com.intellij.driver.sdk.ui.components.ideFrame
+import com.intellij.driver.sdk.ui.components.waitForNoOpenedDialogs
+import com.intellij.driver.sdk.ui.components.welcomeScreen
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.di.di
@@ -26,6 +26,7 @@ import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 import org.kodein.di.DI
 import org.kodein.di.bindProvider
+import java.io.File
 import kotlin.booleanArrayOf
 import kotlin.time.Duration.Companion.seconds
 
@@ -43,9 +44,9 @@ class PluginTest {
    */
   @Test
   fun simpleTest() {
-    Starter.newContext("testExample", TestCase(IdeProductProvider.IC, NoProject).withVersion("2024.2")).apply {
+    Starter.newContext("testExample", TestCase(IdeProductProvider.IC, NoProject).withVersion("2024.3")).apply {
       val pathToPlugin = System.getProperty("path.to.build.plugin")
-      PluginConfigurator(this).installPluginFromPath(Path(pathToPlugin))
+      PluginConfigurator(this).installPluginFromFolder(File(pathToPlugin))
     }.runIdeWithDriver().useDriverAndCloseIde {
       welcomeScreen {
         clickPlugins()
@@ -94,7 +95,7 @@ class PluginTest {
     ).apply {
       setLicense(System.getenv("LICENSE_KEY"))
       val pathToPlugin = System.getProperty("path.to.build.plugin")
-      PluginConfigurator(this).installPluginFromPath(Path(pathToPlugin))
+      PluginConfigurator(this).installPluginFromFolder(File(pathToPlugin))
     }.runIdeWithDriver().useDriverAndCloseIde {
       waitForIndicators(5.minutes)
       openFile("package.json")
@@ -106,7 +107,7 @@ class PluginTest {
           button("OK").click()
         }
 
-        waitForNoOpenedDialogs(5.seconds)
+        waitForNoOpenedDialogs()
       }
     }
   }
