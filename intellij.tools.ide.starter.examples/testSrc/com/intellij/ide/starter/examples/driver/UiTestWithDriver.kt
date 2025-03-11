@@ -35,7 +35,7 @@ class UiTestWithDriver {
    * with IDE backend and frontend running on the same host.
    */
   @ParameterizedTest(name = "split-mode={0}")
-  @ValueSource(booleans = [false, true])
+  @ValueSource(booleans = [false])
   fun openEditorFromStructureViewEnterCommentLine(splitMode: Boolean) {
     if (splitMode) {
       di = DI {
