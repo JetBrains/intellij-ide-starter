@@ -1,10 +1,16 @@
 ### auto-generated section `build intellij.tools.ide.starter.driver` start
 load("@community//build:compiler-options.bzl", "create_kotlinc_options")
-load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources")
 
 create_kotlinc_options(
   name = "custom",
   opt_in = ["kotlin.time.ExperimentalTime"]
+)
+
+jvm_resources(
+  name = "tools-ide-starter-driver_resources",
+  files = glob(["resources/**/*"]),
+  strip_prefix = "resources"
 )
 
 jvm_library(
@@ -26,6 +32,7 @@ jvm_library(
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@community//platform/util",
     "@lib//:opentelemetry",
-  ]
+  ],
+  runtime_deps = [":tools-ide-starter-driver_resources"]
 )
 ### auto-generated section `build intellij.tools.ide.starter.driver` end
