@@ -10,8 +10,10 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.driver.remoteDev.RemDevDriverRunner
 import com.intellij.ide.starter.driver.engine.DriverRunner
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.examples.data.TestCases
+import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.Starter
@@ -35,7 +37,7 @@ class UiTestWithDriver {
    * with IDE backend and frontend running on the same host.
    */
   @ParameterizedTest(name = "split-mode={0}")
-  @ValueSource(booleans = [false])
+  @ValueSource(booleans = [false, true])
   fun openEditorFromStructureViewEnterCommentLine(splitMode: Boolean) {
     if (splitMode) {
       di = DI {
@@ -46,7 +48,12 @@ class UiTestWithDriver {
     }
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleQuantumSimple)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, GitHubProject.fromGithub(
+        branchName = "master",
+        repoRelativeUrl = "Perfecto-Quantum/Quantum-Starter-Kit.git",
+        commitHash = "1dc6128c115cb41fc442c088174e81f63406fad5"
+      )))
+      .setLicense(System.getenv("LICENSE_KEY"))
       .prepareProjectCleanImport()
 
     testContext.runIdeWithDriver().useDriverAndCloseIde {
