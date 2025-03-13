@@ -9,11 +9,9 @@ import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
 import java.io.IOException
-import java.lang.Runnable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import kotlin.Throws
 import kotlin.concurrent.thread
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -194,7 +192,7 @@ class ProcessExecutor(
     @Suppress("BlockingMethodInNonBlockingContext") val process = processBuilder.start()
 
     val processId = process.pid()
-    val onProcessCreatedJob: Job = perTestSupervisorScope.launch {
+    val onProcessCreatedJob: Job = perTestSupervisorScope.launch(Dispatchers.IO) {
       if(!silent) logOutput("  ... started external process `$presentableName` with process ID = $processId")
       onProcessCreated(process, processId)
     }
