@@ -41,7 +41,7 @@ class RemoteDevBackgroundRun(
       driver.withContext { block(this) }
     }
     finally {
-      driver.closeIdeAndWait(closeIdeTimeout, false)
+      driver.closeIdeAndWait(closeIdeTimeout)
 
       @Suppress("SSBasedInspection")
       runBlocking {
