@@ -57,11 +57,9 @@ class LinuxIdeDistribution : IdeDistribution() {
     val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir).toAbsolutePath()
     val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(appHome.resolve("build.txt"))
 
-    val binDir = appHome / "bin"
-    val allBinFiles = binDir.listDirectoryEntries()
-    val executablePath = allBinFiles.singleOrNull { file ->
-      file.fileName.toString() == "$executableFileName.sh"
-    } ?: error("Failed to detect IDE executable .sh in:\n${allBinFiles.joinToString("\n")}")
+    val executablePath = appHome / "bin" / executableFileName
+    if (!executablePath.exists()) error("$executablePath doesn't exists")
+    if (!executablePath.isExecutable()) error("$executablePath is not executable")
 
     return object : InstalledIde {
       override val bundledPluginsDir = appHome.resolve("plugins")
