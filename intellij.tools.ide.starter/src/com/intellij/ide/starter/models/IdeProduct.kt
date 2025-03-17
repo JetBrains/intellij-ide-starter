@@ -25,7 +25,7 @@ interface IdeProduct {
   /** RubyMine */
   val RM: IdeInfo
 
-  /** PyCharm Professional */
+  /** PyCharm */
   val PY: IdeInfo
 
   /** CLion */
