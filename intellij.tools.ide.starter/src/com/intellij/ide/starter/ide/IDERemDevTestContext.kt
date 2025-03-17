@@ -64,8 +64,10 @@ class IDERemDevTestContext(
 
 val IDETestContext.frontendTestCase: TestCase<out ProjectInfoSpec>
   get() {
+    // This path is used in resolveIDE -> com.intellij.ide.starter.ide.LinuxIdeDistribution.installIde
     val executableFileName = when {
-      (SystemInfo.isLinux || SystemInfo.isWindows) && ConfigurationStorage.useInstaller() -> "jetbrains_client"
+      SystemInfo.isLinux && ConfigurationStorage.useInstaller() -> "jetbrains_client.sh"
+      SystemInfo.isWindows && ConfigurationStorage.useInstaller() -> "jetbrains_client.exe"
       else -> this.testCase.ideInfo.executableFileName
     }
 
