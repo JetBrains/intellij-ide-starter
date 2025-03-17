@@ -70,7 +70,7 @@ object IdeProductImp : IdeProduct {
     fullName = "RubyMine"
   )
 
-  /** PyCharm Professional */
+  /** PyCharm */
   override val PY = IdeInfo(
     productCode = "PY",
     platformPrefix = "Python",

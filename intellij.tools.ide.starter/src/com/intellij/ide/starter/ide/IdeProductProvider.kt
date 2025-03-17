@@ -32,7 +32,7 @@ object IdeProductProvider {
   /** RubyMine */
   val RM: IdeInfo = di.direct.instance<IdeProduct>().RM
 
-  /** PyCharm Professional */
+  /** PyCharm */
   val PY: IdeInfo = di.direct.instance<IdeProduct>().PY
 
   /** CLion */
