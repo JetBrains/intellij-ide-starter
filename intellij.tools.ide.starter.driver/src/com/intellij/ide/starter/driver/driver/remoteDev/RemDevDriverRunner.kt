@@ -41,10 +41,11 @@ class RemDevDriverRunner : DriverRunner {
     val driverWithLogging = DriverWithDetailedLogging(RemDevDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.driverPort}")))
     val frontendRun = ideFrontendHandler.runInBackground(launchName, runTimeout = runTimeout)
 
-    return RemoteDevBackgroundRun(backendRun = backendRun,
-                                  frontendProcess = frontendRun.second,
+    return RemoteDevBackgroundRun(backendDriver = backendRun.driver,
+                                  backendStartResult = backendRun.startResult,
+                                  backendProcess = backendRun.process,
                                   frontendDriver = driverWithLogging,
-                                  frontendStartResult = frontendRun.first)
+                                  frontendStartResult = frontendRun)
   }
 
   private fun IDERemDevTestContext.addRemoteDevSpecificTraces() {

@@ -38,7 +38,7 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
   private lateinit var backendLogFile: Path
   private var logLinesBeforeBackendStarted = 0
 
-  fun runInBackground(launchName: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Pair<Deferred<IDEStartResult>, ProcessHandle> {
+  fun runInBackground(launchName: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Deferred<IDEStartResult> {
     awaitBackendStart()
     val joinLink = awaitJoinLink()
     frontendContext.ide.vmOptions.let {
@@ -88,7 +88,8 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
         throw e
       }
     }
-    return Pair(result, runBlocking { process.await() })
+    runBlocking { process.await() }
+    return result
   }
 
   fun handleBackendBeforeLaunch(context: IDERunContext) {

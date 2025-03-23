@@ -26,13 +26,14 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 class RemoteDevBackgroundRun(
-  private val backendRun: BackgroundRun,
-  frontendProcess: ProcessHandle,
+  private val backendDriver: Driver,
+  private val backendStartResult: Deferred<IDEStartResult>,
+  backendProcess: ProcessHandle,
   frontendDriver: Driver,
   private val frontendStartResult: Deferred<IDEStartResult>,
 ) : BackgroundRun(startResult = frontendStartResult,
                   driverWithoutAwaitedConnection = frontendDriver,
-                  process = frontendProcess) {
+                  process = backendProcess) {
   override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
     try {
       waitAndPrepareForTest()
@@ -40,23 +41,20 @@ class RemoteDevBackgroundRun(
       driver.withContext { block(this) }
     }
     finally {
-      try {
-        driver.closeIdeAndWait(closeIdeTimeout)
-      }
-      finally {
-        @Suppress("SSBasedInspection")
-        runBlocking {
-          catchAll {
-            perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run execution is finished"))
-            perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
-          }
+      driver.closeIdeAndWait(closeIdeTimeout)
+
+      @Suppress("SSBasedInspection")
+      runBlocking {
+        catchAll {
+          perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run execution is finished"))
+          perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
         }
-        backendRun.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
       }
+      backendDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
     }
     @Suppress("SSBasedInspection")
     return runBlocking {
-      backendRun.startResult.await()
+      backendStartResult.await()
         .also { it.frontendStartResult = frontendStartResult.await() }
     }
   }
@@ -65,7 +63,7 @@ class RemoteDevBackgroundRun(
     awaitBackendIsConnected()
     awaitVisibleFrameFrontend()
     driver.awaitLuxInitialized()
-    val backendProjects = backendRun.driver.getOpenProjects()
+    val backendProjects = backendDriver.getOpenProjects()
     if (backendProjects.isNotEmpty()) {
       awaitProjectsAreOpenedOnFrontend(backendProjects.size)
       awaitToolbarIsShownOnFrontend()
@@ -74,7 +72,7 @@ class RemoteDevBackgroundRun(
   }
 
   private fun awaitBackendIsConnected() {
-    waitFor("Backend Driver is connected", 3.minutes) { backendRun.driver.isConnected }
+    waitFor("Backend Driver is connected", 3.minutes) { backendDriver.isConnected }
   }
 
   private fun awaitVisibleFrameFrontend() {
@@ -107,7 +105,7 @@ class RemoteDevBackgroundRun(
     waitFor("Lux is initialized", timeout = 30.seconds) { utility(LuxClientService::class).getMaybeInstance() != null }
   }
 
-  override fun closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean) {
-    backendRun.driver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
+  override fun closeIdeAndWait(closeIdeTimeout: Duration) {
+    backendDriver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
   }
 }

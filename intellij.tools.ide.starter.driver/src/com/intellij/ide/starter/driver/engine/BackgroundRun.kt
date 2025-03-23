@@ -44,8 +44,8 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     return runBlocking { return@runBlocking startResult.await() }
   }
 
-  open fun closeIdeAndWait(closeIdeTimeout: Duration = 1.minutes, takeScreenshot: Boolean = true) {
-    driver.closeIdeAndWait(closeIdeTimeout, takeScreenshot)
+  open fun closeIdeAndWait(closeIdeTimeout: Duration = 1.minutes) {
+    driver.closeIdeAndWait(closeIdeTimeout)
   }
 
   protected fun Driver.closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean = true) {
@@ -70,13 +70,14 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
         if (process.isAlive) {
           logError("Process is still alive after waiting for Driver to close IDE, will wait 10 more seconds for its termination")
           process.onExit().get(10, TimeUnit.SECONDS)
+          if (process.isAlive) {
+            process.destroyForcibly()
+            throw IllegalStateException("Process didn't die after waiting for Driver to close IDE")
+          }
         }
       }
       catch (e: Throwable) {
-        logError("Error during closing Driver resources: ${e.message}: ${e.stackTraceToString()}", e)
-        process.descendants().forEach { catchAll { killProcessGracefully(it) } }
-        catchAll { killProcessGracefully(process) }
-        throw IllegalStateException("Process didn't die after waiting for Driver to close IDE")
+        logError("Error during closing Driver resources: ${e.message}")
       }
     }
   }
