@@ -9,7 +9,6 @@ import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -60,24 +59,24 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     }
     catch (t: Throwable) {
       logError("Error on exit application via Driver", t)
-      logOutput("Performing force kill")
-      process.descendants().forEach { catchAll { killProcessGracefully(it) } }
-      catchAll { killProcessGracefully(process) }
+      forceKill()
     }
     finally {
       try {
         if (isConnected) close()
-        if (process.isAlive) {
-          logError("Process is still alive after waiting for Driver to close IDE, will wait 10 more seconds for its termination")
-          process.onExit().get(10, TimeUnit.SECONDS)
-        }
+        waitFor("Process is closed", closeIdeTimeout, 3.seconds) { !process.isAlive }
       }
       catch (e: Throwable) {
-        logError("Error during closing Driver resources: ${e.message}: ${e.stackTraceToString()}", e)
-        process.descendants().forEach { catchAll { killProcessGracefully(it) } }
-        catchAll { killProcessGracefully(process) }
+        logError("Error waiting IDE is closed: ${e.message}: ${e.stackTraceToString()}", e)
+        forceKill()
         throw IllegalStateException("Process didn't die after waiting for Driver to close IDE")
       }
     }
+  }
+
+  private fun forceKill() {
+    logOutput("Performing force kill")
+    process.descendants().forEach { catchAll { killProcessGracefully(it) } }
+    catchAll { killProcessGracefully(process) }
   }
 }
