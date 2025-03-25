@@ -1,27 +1,18 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
-import com.intellij.driver.sdk.waitFor
-import com.intellij.driver.sdk.waitNotNull
 import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.runner.IDECommandLine
-import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.div
-import kotlin.io.path.exists
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 
 class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext, private val remoteDevDriverOptions: RemoteDevDriverOptions) {
   private val frontendContext = ideRemDevTestContext.frontendIDEContext
@@ -33,14 +24,7 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
     }
   }
 
-  private lateinit var backendRunContext: IDERunContext
-
-  private lateinit var backendLogFile: Path
-  private var logLinesBeforeBackendStarted = 0
-
-  fun runInBackground(launchName: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Pair<Deferred<IDEStartResult>, ProcessHandle> {
-    awaitBackendStart()
-    val joinLink = awaitJoinLink()
+  fun runInBackground(launchName: String, joinLink: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Pair<Deferred<IDEStartResult>, ProcessHandle> {
     frontendContext.ide.vmOptions.let {
       //setup xDisplay
       it.addDisplayIfNecessary()
@@ -89,39 +73,5 @@ class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext,
       }
     }
     return Pair(result, runBlocking { process.await() })
-  }
-
-  fun handleBackendBeforeLaunch(context: IDERunContext) {
-    backendRunContext = context
-    backendLogFile = context.logsDir / "idea.log"
-    logLinesBeforeBackendStarted = Result.runCatching { Files.readAllLines(backendLogFile).size }.getOrDefault(0)
-    logOutput("Backend log file: $backendLogFile, lines before backend started: $logLinesBeforeBackendStarted")
-  }
-
-  private fun awaitForLogFile(logFile: Path) {
-    waitFor("Log file exists", 30.seconds, 1.seconds) {
-      logFile.exists()
-    }
-  }
-
-  private fun awaitBackendStart() {
-    waitFor("Backend run context is intitialized", 2.minutes, 1.seconds) {
-      this::backendRunContext.isInitialized
-    }
-  }
-
-  private fun awaitJoinLink(): String {
-    awaitForLogFile(backendLogFile)
-    val joinLinkEntryPrefix = "Join link: tcp"
-    val joinLinkEntryRegex = "tcp://.+".toRegex()
-
-    return waitNotNull("Awaiting join link", timeout = 14.seconds, interval = 2.seconds) {
-      val matchingLogLines = Files.readAllLines(backendLogFile).drop(logLinesBeforeBackendStarted)
-        .filter { it.contains(joinLinkEntryPrefix) }
-        .also { logOutput("Found join links: $it") }
-
-      val links = matchingLogLines.mapNotNull { joinLinkEntryRegex.find(it) }.map { it.value }.distinct()
-      links.singleOrNull()
-    }
   }
 }
