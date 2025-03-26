@@ -19,10 +19,16 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     if (!driverWithoutAwaitedConnection.isConnected) {
       runCatching {
         waitFor("Driver is connected", 3.minutes) {
+          if (!process.isAlive) {
+            val message = "Couldn't wait for the driver to connect, it has already exited pid[${process.pid()}]"
+            logError(message)
+            throw IllegalStateException(message)
+          }
           driverWithoutAwaitedConnection.isConnected
         }
-      }.onFailure {
+      }.onFailure { t ->
         driverWithoutAwaitedConnection.closeIdeAndWait(1.minutes)
+        throw t
       }
     }
     driverWithoutAwaitedConnection
