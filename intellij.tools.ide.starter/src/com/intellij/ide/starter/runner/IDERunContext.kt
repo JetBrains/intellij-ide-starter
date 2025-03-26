@@ -158,7 +158,6 @@ data class IDERunContext(
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)
       withGCLogs(reportsDir.resolve("gcLog.log"))
       setOpenTelemetryMaxFilesNumber()
-      enableMultiRoutingFileSystem()
       if (!hasOption(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION)) {
         addSystemProperty(ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION, false)
       }

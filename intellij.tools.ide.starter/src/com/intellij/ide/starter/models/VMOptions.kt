@@ -347,16 +347,6 @@ data class VMOptions(
     addLine("-XX:+LogCompilation")
   }
 
-  /** Option should be removed when https://youtrack.jetbrains.com/issue/IJPL-160621/Enable-MultiRoutingFileSystem-for-all-OS-and-all-IDEs is completed */
-  @Suppress("unused")
-  fun enableMultiRoutingFileSystem(force: Boolean = false) {
-    // if tests were starter with multi-routing FS flag - just propagate it to the IDE
-    if (force || System.getProperty("java.nio.file.spi.DefaultFileSystemProvider")?.trim() == "com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider") {
-      addSystemProperty("java.nio.file.spi.DefaultFileSystemProvider", "com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider")
-    }
-    else logOutput("Multi-routing file system is disabled in tests")
-  }
-
   /**
    * One file will be produced each minute (depends on the configuration in OpenTelemetry).
    * Thus, by default, it's better to set it to a high number, so long-running tests will not report invalid metrics.

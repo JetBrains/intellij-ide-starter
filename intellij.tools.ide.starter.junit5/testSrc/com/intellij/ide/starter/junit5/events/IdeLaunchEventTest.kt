@@ -49,25 +49,13 @@ class IdeLaunchEventTest {
       commands = CommandChain().exitApp(),
       runTimeout = 5.seconds,
       expectedKill = true
-    ) {
-      withVMOptions {
-        if (!context.ide.isMajorBuildVersionAtLeast(251)) {
-          removeLine("-Djava.nio.file.spi.DefaultFileSystemProvider=com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider")
-        }
-      }
-    }
+    )
 
     context.runIDE(
       commands = CommandChain().exitApp(),
       runTimeout = 5.seconds,
       expectedKill = true
-    ) {
-      withVMOptions {
-        if (!context.ide.isMajorBuildVersionAtLeast(251)) {
-          removeLine("-Djava.nio.file.spi.DefaultFileSystemProvider=com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider")
-        }
-      }
-    }
+    )
 
     runBlocking(Dispatchers.IO) {
       eventually(duration = 2.seconds, poll = 100.milliseconds) {
