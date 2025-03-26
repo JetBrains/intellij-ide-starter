@@ -6,6 +6,10 @@ import com.intellij.tools.ide.util.common.logOutput
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
+/**
+ * Represents the result of an IDE run, holding related metadata and states. Only constructed for IDE finished its' run.
+ * A more truthful name would be IDERunResult.
+ */
 data class IDEStartResult(
   val runContext: IDERunContext,
   val executionTime: Duration = 0.minutes,
