@@ -17,11 +17,11 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   val disabledPluginsPath: Path
     get() = testContext.paths.configDir / "disabled_plugins.txt"
 
-  fun installPluginFromPath(pathToPluginArchive: Path) = apply {
+  fun installPluginFromPath(pathToPluginArchive: Path): PluginConfigurator = apply {
     FileSystem.unpack(pathToPluginArchive, testContext.paths.pluginsDir)
   }
 
-  fun installPluginFromURL(urlToPluginZipFile: String) = apply {
+  fun installPluginFromURL(urlToPluginZipFile: String): PluginConfigurator = apply {
     val pluginRootDir = GlobalPaths.instance.getCacheDirectoryFor("plugins")
     val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
     logOutput("Downloading $urlToPluginZipFile")
@@ -41,18 +41,18 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     ide: InstalledIde,
     channel: String? = null,
     pluginFileName: String? = null,
-  ) = installPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel, pluginFileName = pluginFileName))
+  ): PluginConfigurator = installPluginFromPluginManager(PluginLatestForIde(pluginId, ide, channel, pluginFileName))
 
   fun installPluginFromPluginManager(
     pluginId: String,
     pluginVersion: String,
     channel: String? = null,
     pluginFileName: String? = null,
-  ) = installPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel, pluginFileName = pluginFileName))
+  ): PluginConfigurator = installPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel, pluginFileName))
 
   fun installPluginFromPluginManager(
     plugin: PluginSourceDescriptor
-  ) = apply {
+  ): PluginConfigurator = apply {
     val pluginId = plugin.pluginId
     logOutput("Setting up plugin: $pluginId ...")
 
@@ -77,13 +77,13 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     logOutput("Plugin $pluginId setup finished")
   }
 
-  fun disablePlugins(vararg pluginIds: String) = disablePlugins(pluginIds.toSet())
+  fun disablePlugins(vararg pluginIds: String): PluginConfigurator = disablePlugins(pluginIds.toSet())
 
-  fun disablePlugins(pluginIds: Set<String>) = also {
+  fun disablePlugins(pluginIds: Set<String>): PluginConfigurator = also {
     disabledPluginsPath.writeLines(disabledPluginIds + pluginIds)
   }
 
-  fun enablePlugins(vararg pluginIds: String) = enablePlugins(pluginIds.toSet())
+  fun enablePlugins(vararg pluginIds: String): PluginConfigurator = enablePlugins(pluginIds.toSet())
 
   private fun enablePlugins(pluginIds: Set<String>) = also {
     disabledPluginsPath.writeLines(disabledPluginIds - pluginIds)

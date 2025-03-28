@@ -21,15 +21,15 @@ class DownloadJDKException() : SetupException("JDK list is empty")
 
 object JdkDownloaderFacade {
 
-  val jdk8 get() = jdkDownloader(JdkVersion.JDK_8.toString())
-  val jdk11 get() = jdkDownloader(JdkVersion.JDK_11.toString())
-  val jdk17 get() = jdkDownloader(JdkVersion.JDK_17.toString())
-  val jbrJcef17 get() = jdkDownloader(JdkVersion.JDK_17.toString(), jbr = true)
-  val jdk20 get() = jdkDownloader(JdkVersion.JDK_20.toString())
-  val jdk21 get() = jdkDownloader(JdkVersion.JDK_21.toString())
-  val jbr21 get() = jdkDownloader(JdkVersion.JDK_21.toString(), jbr = true)
+  val jdk8: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_8.toString())
+  val jdk11: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_11.toString())
+  val jdk17: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_17.toString())
+  val jbrJcef17: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_17.toString(), jbr = true)
+  val jdk20: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_20.toString())
+  val jdk21: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_21.toString())
+  val jbr21: JdkDownloadItem get() = jdkDownloader(JdkVersion.JDK_21.toString(), jbr = true)
 
-  const val MINIMUM_JDK_FILES_COUNT = 42
+  const val MINIMUM_JDK_FILES_COUNT: Int = 42
 
   fun jdkDownloader(version: String, jdks: Iterable<JdkDownloadItem> = allJdks, jbr: Boolean = false): JdkDownloadItem {
     val jdkName =
@@ -43,11 +43,11 @@ object JdkDownloaderFacade {
     } ?: throw DownloadJDKException()
   }
 
-  val allJdks by lazy {
+  val allJdks: List<JdkDownloadItem> by lazy {
     listJDKs(JdkPredicate.forCurrentProcess())
   }
 
-  val allJdksForWSL by lazy {
+  val allJdksForWSL: List<JdkDownloadItem> by lazy {
     listJDKs(JdkPredicate.forWSL(null))
   }
 

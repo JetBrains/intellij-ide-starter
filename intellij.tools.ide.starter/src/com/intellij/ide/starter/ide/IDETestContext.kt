@@ -57,21 +57,18 @@ open class IDETestContext(
   val ide: InstalledIde,
   val testCase: TestCase<*>,
   val testName: String,
-  val _resolvedProjectHome: Path?,
+  @Suppress("PropertyName") val _resolvedProjectHome: Path?,
   var profilerType: ProfilerType = ProfilerType.NONE,
   val publishers: List<ReportPublisher> = di.direct.instance(),
   var isReportPublishingEnabled: Boolean = true,
   var preserveSystemDir: Boolean = false,
 ) {
   companion object {
-    const val OPENTELEMETRY_FILE = "opentelemetry.json"
-
-    fun appCdsAwareTestName(testName: String, currentRepetition: Int): String =
-      "$testName${if (currentRepetition % 2 == 0) "-appcds" else ""}_${(currentRepetition + 1) / 2}"
+    const val OPENTELEMETRY_FILE: String = "opentelemetry.json"
   }
 
-  fun copy(ide: InstalledIde? = null, _resolvedProjectHome: Path? = null): IDETestContext {
-    return IDETestContext(paths, ide ?: this.ide, testCase, testName, _resolvedProjectHome ?: this._resolvedProjectHome, profilerType,
+  fun copy(ide: InstalledIde? = null, resolvedProjectHome: Path? = null): IDETestContext {
+    return IDETestContext(paths, ide ?: this.ide, testCase, testName, resolvedProjectHome ?: this._resolvedProjectHome, profilerType,
                           publishers, isReportPublishingEnabled, preserveSystemDir)
   }
 
@@ -98,11 +95,6 @@ open class IDETestContext(
     return this
   }
 
-  fun addLockFileForUITest(fileName: String): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty("uiLockTempFile", paths.tempDir / fileName)
-    }
-
   fun disableLinuxNativeMenuForce(): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("linux.native.menu.force.disable", true)
@@ -123,7 +115,7 @@ open class IDETestContext(
       addSystemProperty("vcs.log.index.enable", !value)
     }
 
-  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true) = applyVMOptionsPatch {
+  fun executeRightAfterIdeOpened(executeRightAfterIdeOpened: Boolean = true): IDETestContext = applyVMOptionsPatch {
     executeRightAfterIdeOpened(executeRightAfterIdeOpened)
   }
 
@@ -147,6 +139,7 @@ open class IDETestContext(
 
   fun useOldUIInTests(): IDETestContext =
     applyVMOptionsPatch {
+      @Suppress("DEPRECATION")
       removeSystemProperty(NewUiValue.KEY, true)
     }
 
@@ -160,16 +153,17 @@ open class IDETestContext(
    * On Windows that forked process may prevent some files from removing.
    * See [com.intellij.internal.statistic.EventLogApplicationLifecycleListener]
    */
+  @Suppress("KDocUnresolvedReference")
   fun disableFusSendingOnIdeClose(): IDETestContext =
     applyVMOptionsPatch {
       addSystemProperty("feature.usage.event.log.send.on.ide.close", false)
     }
 
-  fun disableReportingStatisticsToProduction(disabled: Boolean = true) = applyVMOptionsPatch {
+  fun disableReportingStatisticsToProduction(disabled: Boolean = true): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.local.statistics.without.report", disabled)
   }
 
-  fun disableReportingStatisticToJetStat() = applyVMOptionsPatch {
+  fun disableReportingStatisticToJetStat(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.updates.url", "http://127.0.0.1")
   }
 
@@ -199,60 +193,54 @@ open class IDETestContext(
       addSystemProperty("ide.plugins.per.project", true)
     }
 
-  fun disableAutoImport(disabled: Boolean = true) = applyVMOptionsPatch {
+  fun disableAutoImport(disabled: Boolean = true): IDETestContext = applyVMOptionsPatch {
     disableAutoImport(disabled)
   }
 
-  fun disableLoadShellEnv(disabled: Boolean = true) = applyVMOptionsPatch {
+  fun disableLoadShellEnv(disabled: Boolean = true): IDETestContext = applyVMOptionsPatch {
     disableLoadShellEnv(disabled)
   }
 
-  fun setJdkDownloaderHome(path: Path) = applyVMOptionsPatch {
+  fun setJdkDownloaderHome(path: Path): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("jdk.downloader.home", path)
   }
 
-  fun disableOrdinaryIndexes() = applyVMOptionsPatch {
+  fun disableOrdinaryIndexes(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.use.only.index.infrastructure.extension", true)
   }
 
-  fun setSharedIndexesDownload(enable: Boolean = true) = applyVMOptionsPatch {
+  fun setSharedIndexesDownload(enable: Boolean = true): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("shared.indexes.bundled", enable)
     addSystemProperty("shared.indexes.download", enable)
     addSystemProperty("shared.indexes.download.auto.consent", enable)
   }
 
-  fun skipIndicesInitialization(value: Boolean = true) = applyVMOptionsPatch {
+  fun skipIndicesInitialization(value: Boolean = true): IDETestContext = applyVMOptionsPatch {
     skipIndicesInitialization(value)
   }
 
-  fun enableAsyncProfiler() = applyVMOptionsPatch {
+  fun enableAsyncProfiler(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "async")
   }
 
-  fun enableYourKitProfiler() = applyVMOptionsPatch {
+  fun enableYourKitProfiler(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "yourkit")
   }
 
-
-  fun collectImportProjectPerfMetrics() = applyVMOptionsPatch {
-    addSystemProperty("idea.collect.project.import.performance", true)
-  }
-
-
-  fun enableWorkspaceModelVerboseLogs() = applyVMOptionsPatch {
+  fun enableWorkspaceModelVerboseLogs(): IDETestContext = applyVMOptionsPatch {
     configureLoggers(LogLevel.TRACE, "com.intellij.workspaceModel")
     configureLoggers(LogLevel.TRACE, "com.intellij.platform.workspace")
   }
 
-  fun enableEventBusDebugLogs() = applyVMOptionsPatch {
+  fun enableEventBusDebugLogs(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("eventbus.debug", true)
   }
 
-  fun enableExternalSystemVerboseLogs() = applyVMOptionsPatch {
+  fun enableExternalSystemVerboseLogs(): IDETestContext = applyVMOptionsPatch {
     configureLoggers(LogLevel.TRACE, "com.intellij.openapi.externalSystem")
   }
 
-  fun wipeSystemDir() = apply {
+  fun wipeSystemDir(): IDETestContext = apply {
     if (!preserveSystemDir) {
       //TODO: it would be better to allocate a new context instead of wiping the folder
       logOutput("Cleaning system dir for $this at $paths")
@@ -263,19 +251,19 @@ open class IDETestContext(
     }
   }
 
-  fun wipeProjectsDir() = apply {
+  fun wipeProjectsDir(): IDETestContext = apply {
     val path = paths.systemDir / "projects"
     logOutput("Cleaning project cache dir for $this at $path")
     path.toFile().deleteRecursively()
   }
 
-  fun wipeEventLogDataDir() = apply {
+  fun wipeEventLogDataDir(): IDETestContext = apply {
     val path = paths.systemDir / "event-log-data"
     logOutput("Cleaning event-log-data dir for $this at $path")
     path.toFile().deleteRecursively()
   }
 
-  fun wipeWorkspaceState() = apply {
+  fun wipeWorkspaceState(): IDETestContext = apply {
     val path = paths.configDir.resolve("workspace")
     logOutput("Cleaning workspace dir in config dir for $this at $path")
     path.toFile().deleteRecursively()
@@ -292,7 +280,7 @@ open class IDETestContext(
     return this
   }
 
-  fun internalMode(value: Boolean = true) = applyVMOptionsPatch { addSystemProperty("idea.is.internal", value) }
+  fun internalMode(value: Boolean = true): IDETestContext = applyVMOptionsPatch { addSystemProperty("idea.is.internal", value) }
 
   /**
    * Cleans .idea and removes all the .iml files for project
@@ -301,24 +289,24 @@ open class IDETestContext(
     return removeIdeaProjectDirectory().removeAllImlFilesInProject()
   }
 
-  fun disableAutoSetupJavaProject() = applyVMOptionsPatch {
+  fun disableAutoSetupJavaProject(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.java.project.setup.disabled", true)
   }
 
-  fun disablePackageSearchBuildFiles() = applyVMOptionsPatch {
+  fun disablePackageSearchBuildFiles(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.pkgs.disableLoading", true)
   }
 
-  fun disableAIAssistantToolwindowActivationOnStart() = applyVMOptionsPatch {
+  fun disableAIAssistantToolwindowActivationOnStart(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("llm.ai.assistant.toolwindow.activation.on.start", false)
     addSystemProperty("llm.show.ai.promotion.window.on.start", false)
   }
 
-  fun withKotlinPluginK2() = applyVMOptionsPatch {
+  fun withKotlinPluginK2(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.kotlin.plugin.use.k2", true)
   }
 
-  fun enableCloudRegistry(registryHost: String) = applyVMOptionsPatch {
+  fun enableCloudRegistry(registryHost: String): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("ide.registry.refresh.debug", true)
     addSystemProperty("ide.registry.refresh.delay.seconds", 0)
     addSystemProperty("ide.registry.refresh.host", registryHost)
@@ -342,7 +330,7 @@ open class IDETestContext(
     return this
   }
 
-  fun wipeWorkspaceXml() = apply {
+  fun wipeWorkspaceXml(): IDETestContext = apply {
     val workspaceXml = resolvedProjectHome / ".idea" / "workspace.xml"
 
     logOutput("Removing $workspaceXml ...")
@@ -372,7 +360,7 @@ open class IDETestContext(
     return this
   }
 
-  fun determineDefaultCommandLineArguments() =
+  fun determineDefaultCommandLineArguments(): (IDERunContext) -> IDECommandLine =
     if (this.testCase.projectInfo == NoProject) ::startIdeWithoutProject
     else ::openTestCaseProject
 
@@ -525,27 +513,18 @@ open class IDETestContext(
     return this
   }
 
-  fun setLightTheme(): IDETestContext {
-    writeConfigFile("options/laf.xml", """
-      <application>
-          <component name="LafManager" autodetect="false">
-            <laf class-name="com.intellij.ide.ui.laf.IntelliJLaf" themeId="JetBrainsLightTheme" />
-          </component>
-      </application>
-    """)
-    return this
-  }
-
   fun disableMigrationNotification(): IDETestContext {
     createMigrateConfig("properties intellij.first.ide.session")
     return this
   }
 
+  @Suppress("unused")
   fun createMigrateConfigWithMergeConfigsProperty(): IDETestContext {
     createMigrateConfig("merge-configs")
     return this
   }
 
+  @Suppress("unused")
   fun createMigrateConfigWithImportSettingsPath(path: Path): IDETestContext {
     createMigrateConfig("import $path")
     return this
@@ -556,15 +535,15 @@ open class IDETestContext(
     return this
   }
 
-  fun publishArtifact(source: Path,
-                      artifactPath: String = testName,
-                      artifactName: String = source.fileName.toString()) {
+  fun publishArtifact(
+    source: Path,
+    artifactPath: String = testName,
+    artifactName: String = source.fileName.toString(),
+  ) {
     computeWithSpan("publish artifacts") { span ->
       span.setAttribute("artifactPath", artifactPath)
       span.setAttribute("artifactName", artifactName)
-      CIServer.instance.publishArtifact(source = source,
-                                        artifactPath = artifactPath.replaceSpecialCharactersWithHyphens(),
-                                        artifactName = artifactName.replaceSpecialCharactersWithHyphens())
+      CIServer.instance.publishArtifact(source, artifactPath.replaceSpecialCharactersWithHyphens(), artifactName.replaceSpecialCharactersWithHyphens())
     }
   }
 
@@ -699,6 +678,7 @@ open class IDETestContext(
         JvmUtils.execJavaCmd(jbrDistroPath, listOf("-Xshare:dump"))
       }
       else {
+        @Suppress("RAW_RUN_BLOCKING")
         JvmUtils.execJavaCmd(runBlocking(Dispatchers.Default) { ide.resolveAndDownloadTheSameJDK() }, listOf("-Xshare:dump"))
       }
       applyVMOptionsPatch {
@@ -738,6 +718,7 @@ open class IDETestContext(
     return this
   }
 
+  @Suppress("unused")
   fun enableProxyAutodetection(): IDETestContext {
     writeConfigFile("options/proxy.settings.xml", """
      <application>
