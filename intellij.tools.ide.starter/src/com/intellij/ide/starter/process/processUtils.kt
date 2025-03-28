@@ -12,6 +12,7 @@ import com.intellij.tools.ide.util.common.withRetry
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -179,6 +180,7 @@ fun collectJavaThreadDump(
   javaProcessId: Long,
   dumpFile: Path,
 ) {
+  logOutput("Collecting thread dump to ${dumpFile.pathString}")
   val ext = if (SystemInfo.isWindows) ".exe" else ""
   val jstackPath = listOf(
     javaHome.resolve("bin/jstack$ext"),
@@ -197,6 +199,7 @@ fun collectJavaThreadDump(
       stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]"),
       silent = true
     ).start()
+    logOutput("Collected thread dump to ${dumpFile.pathString}")
   }
   catch (ise: IllegalStateException) {
     val message = ise.message ?: ""
@@ -216,6 +219,7 @@ fun collectMemoryDump(
   javaProcessId: Long,
   dumpFile: Path,
 ) {
+  logOutput("Collecting memory dump to $dumpFile")
   val command = listOf("GC.heap_dump", "-gz=4", dumpFile.toString())
   jcmd(javaHome, workDir, javaProcessId, command)
 }

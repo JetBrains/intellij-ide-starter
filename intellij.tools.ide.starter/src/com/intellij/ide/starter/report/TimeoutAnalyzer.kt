@@ -4,13 +4,16 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.ide.starter.utils.beforeKillScreenshotName
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.ide.starter.utils.threadDumpParser.ThreadDumpParser
+import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
+import kotlin.io.path.pathString
 
 object TimeoutAnalyzer {
 
@@ -82,11 +85,9 @@ object TimeoutAnalyzer {
 
   private fun postLastScreenshots(runContext: IDERunContext) {
     if (!CIServer.instance.isBuildRunningOnCI) return
-    val screenshotsFolder = runContext.logsDir.resolve("screenshots").takeIf { it.exists() } ?: return
-    val lastHeartbeat = screenshotsFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.lastOrNull { it.listDirectoryEntries().isNotEmpty() } ?: return
 
-    val screenshots = lastHeartbeat.listDirectoryEntries()
-    screenshots.forEach { screenshot ->
+    getLastScreenshots(runContext).forEach { screenshot ->
+      logOutput("Adding screenshot to metadata: ${screenshot.pathString}")
 
       TeamCityClient.publishTeamCityArtifacts(
         screenshot,
@@ -103,6 +104,31 @@ object TimeoutAnalyzer {
         value = runContext.contextName.replaceSpecialCharactersWithHyphens() + "/timeout-screenshots/${screenshot.name}"
       )
     }
+  }
+
+  private fun getLastScreenshots(runContext: IDERunContext): List<Path> {
+    logOutput("Try to find the latest screenshot at ${runContext.logsDir.pathString}")
+
+    val beforeKillScreenshot = Files.find(runContext.logsDir, 10, { path, _ -> path.name == beforeKillScreenshotName }).findFirst().orElse(null)
+    if (beforeKillScreenshot != null) {
+      return listOf(beforeKillScreenshot)
+    }
+
+    val beforeIdeClosedScreenshotDir = Files.find(runContext.logsDir, 10, { path, _ -> path.name == "beforeIdeClosed" }).findFirst().orElse(null)
+    beforeIdeClosedScreenshotDir?.let {
+      it.listDirectoryEntries("*").maxByOrNull { it.name }?.let {
+        return listOf(it)
+      }
+    }
+
+    logOutput("Try to find latest screenshot from heartbit")
+    val screenshotsFolder = runContext.logsDir.resolve("screenshots").takeIf { it.exists() }
+                            ?: return emptyList()
+
+    val lastHeartbeat = screenshotsFolder.listDirectoryEntries("heartbeat*").sortedBy { it.name }.lastOrNull { it.listDirectoryEntries().isNotEmpty() }
+                        ?: return emptyList()
+
+    return lastHeartbeat.listDirectoryEntries()
   }
 
   private fun getLastThreadDump(runContext: IDERunContext): String? {

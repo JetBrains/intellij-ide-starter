@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.utils
 
+import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_ID
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -18,7 +19,10 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.outputStream
+import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.seconds
+
+const val beforeKillScreenshotName: String = "screenshotBeforeKill.jpg"
 
 fun formatArtifactName(artifactType: String, testName: String): String {
   val testNameFormatted = testName.replace("/", "-").replace(" ", "")
@@ -48,10 +52,12 @@ catch (t: Throwable) {
 fun String.withIndent(indent: String = "  "): String = lineSequence().map { "$indent$it" }.joinToString(System.lineSeparator())
 
 fun takeScreenshot(logsDir: Path) {
-  takeScreenshot(logsDir, "screenshot_beforeKill.jpg")
+  takeScreenshot(logsDir, beforeKillScreenshotName)
 }
 
 fun takeScreenshot(logsDir: Path, screenshotName: String, ignoreExceptions: Boolean = false) {
+  val screenshotFile = logsDir.resolve(screenshotName)
+  logOutput("Taking screenshot into ${screenshotFile.pathString}")
   val toolsDir = GlobalPaths.instance.getCacheDirectoryFor("tools")
   val toolName = "TakeScreenshot"
   val screenshotTool = toolsDir / toolName / "$toolName.jar"
@@ -59,7 +65,6 @@ fun takeScreenshot(logsDir: Path, screenshotName: String, ignoreExceptions: Bool
     val screenshotJar = IDERunContext::class.java.classLoader.getResourceAsStream("tools/$toolName.jar")!!
     screenshotJar.copyTo(screenshotTool.createParentDirectories().outputStream())
   }
-  val screenshotFile = logsDir.resolve(screenshotName)
 
   val javaPath = ProcessHandle.current().info().command().orElseThrow().toString()
   val stdOut = ExecOutputRedirect.ToStdOut("[take-screenshot-out]")
@@ -72,7 +77,7 @@ fun takeScreenshot(logsDir: Path, screenshotName: String, ignoreExceptions: Bool
       stdoutRedirect = stdOut,
       stderrRedirect = stdErr,
       args = mutableListOf(javaPath, "-jar", screenshotTool.absolutePathString(), screenshotFile.toString()),
-      environmentVariables = mapOf("DISPLAY" to ":88"),
+      environmentVariables = mapOf("DISPLAY" to (System.getenv("DISPLAY") ?: ":$DEFAULT_DISPLAY_ID")),
       onlyEnrichExistedEnvVariables = true
     ).start()
   }

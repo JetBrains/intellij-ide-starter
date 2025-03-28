@@ -226,9 +226,10 @@ data class IDERunContext(
       }
       val span = TestTelemetryService.spanBuilder("ide process").startSpan()
       EventsBus.postAndWaitProcessing(IdeBeforeRunIdeProcessEvent(runContext = this))
+      val processPresentableName = "run-ide-$contextName"
       val executionTime = measureTime {
         ProcessExecutor(
-          presentableName = "run-ide-$contextName",
+          presentableName = processPresentableName,
           workDir = startConfig.workDir,
           environmentVariables = mergedEnvVariables,
           timeout = runTimeout,
@@ -251,6 +252,7 @@ data class IDERunContext(
           onBeforeKilled = { process, pid ->
             span.end()
             computeWithSpan("runIde post-processing before killed") {
+              logOutput("BeforeKilled: $processPresentableName")
               captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
               EventsBus.postAndWaitProcessing(IdeBeforeKillEvent(this, process, pid))
               if (testContext.profilerType != ProfilerType.NONE) {
