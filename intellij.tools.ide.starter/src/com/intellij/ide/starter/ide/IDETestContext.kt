@@ -36,7 +36,6 @@ import com.intellij.util.io.write
 import com.intellij.util.system.OS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.io.FileUtils
 import org.kodein.di.direct
 import org.kodein.di.factory
 import org.kodein.di.instance
@@ -623,18 +622,6 @@ open class IDETestContext(
     catch (e: Exception) {
       logError(e)
     }
-    return this
-  }
-
-  @Suppress("unused")
-  fun copyExistingConfig(configPath: Path): IDETestContext {
-    FileUtils.copyDirectory(configPath.toFile(), paths.configDir.toFile())
-    return this
-  }
-
-  @Suppress("unused")
-  fun copyExistingPlugins(pluginPath: Path): IDETestContext {
-    FileUtils.copyDirectory(pluginPath.toFile(), paths.pluginsDir.toFile())
     return this
   }
 

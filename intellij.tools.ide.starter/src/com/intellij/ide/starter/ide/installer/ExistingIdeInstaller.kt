@@ -7,36 +7,34 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
-import org.apache.commons.io.FileUtils
 import java.nio.file.Path
-import kotlin.io.path.div
-import kotlin.io.path.name
+import kotlin.io.path.*
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * Use existing installed IDE instead of downloading one.
+ * Use an existing installed IDE instead of downloading one.
  * Set it as:
  * `bindSingleton<IdeInstallerFactory>(overrides = true) {
  *    object : IdeInstallerFactory() {
- *       override fun createInstaller(ideInfo: IdeInfo, downloader: IdeDownloader): IdeInstaller {
- *         return ExistingIdeInstaller(Paths.get(pathToInstalledIDE))
- *       }
+ *       override fun createInstaller(ideInfo: IdeInfo, downloader: IdeDownloader): IdeInstaller =
+ *         ExistingIdeInstaller(Paths.get(pathToInstalledIDE))
  *     }
  * }`
  */
+@Suppress("unused")
 class ExistingIdeInstaller(private val installedIdePath: Path) : IdeInstaller {
   override suspend fun install(ideInfo: IdeInfo): Pair<String, InstalledIde> {
     val ideInstaller = IdeInstallerFile(installedIdePath, "locally-installed-ide")
-    val installDir = GlobalPaths.instance
-                       .getCacheDirectoryFor("builds") / "${ideInfo.productCode}-${ideInstaller.buildNumber}"
-    installDir.toFile().deleteRecursively()
-    val installedIde = installedIdePath.toFile()
-    val destDir = installDir.resolve(installedIdePath.name).toFile()
+    val installDir = GlobalPaths.instance.getCacheDirectoryFor("builds").resolve("${ideInfo.productCode}-${ideInstaller.buildNumber}")
+    @OptIn(ExperimentalPathApi::class)
+    installDir.deleteRecursively()
+    val destDir = installDir.resolve(installedIdePath.name)
     if (SystemInfo.isMac) {
-      ProcessExecutor("copy app", null, 5.minutes, emptyMap(), listOf("ditto", installedIde.absolutePath, destDir.absolutePath)).start()
+      ProcessExecutor("copy app", null, 5.minutes, emptyMap(), listOf("ditto", installedIdePath.absolute().toString(), destDir.absolute().toString())).start()
     }
     else {
-      FileUtils.copyDirectory(installedIde, destDir)
+      @OptIn(ExperimentalPathApi::class)
+      installedIdePath.copyToRecursively(destDir.createDirectories(), followLinks = false, overwrite = true)
     }
     return Pair(
       ideInstaller.buildNumber,

@@ -6,8 +6,6 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logOutput
-import org.apache.commons.io.FileUtils
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.jar.JarFile
@@ -21,22 +19,6 @@ open class PluginConfigurator(val testContext: IDETestContext) {
 
   fun installPluginFromPath(pathToPluginArchive: Path) = apply {
     FileSystem.unpack(pathToPluginArchive, testContext.paths.pluginsDir)
-  }
-
-  /**
-   * @param pathToPluginFolder example: ~/Desktop/dev/scala-plugin-ultimate/target/Scala
-   */
-  fun installPluginFromFolder(pathToPluginFolder: File) = apply {
-    val targetPluginsDir = testContext.paths.pluginsDir.toFile()
-    val targetPluginDir = targetPluginsDir.resolve(pathToPluginFolder.name)
-    logOutput("Copy plugin folder from $pathToPluginFolder to $targetPluginDir")
-
-    if (targetPluginDir.exists()) {
-      logOutput("Deleting old plugin folder from previous rungs: $targetPluginDir")
-      targetPluginDir.deleteRecursively()
-    }
-    targetPluginDir.mkdirs()
-    FileUtils.copyDirectory(pathToPluginFolder, targetPluginDir, false)
   }
 
   fun installPluginFromURL(urlToPluginZipFile: String) = apply {

@@ -54,7 +54,6 @@
     <orderEntry type="module" module-name="intellij.platform.lang.impl" />
     <orderEntry type="module" module-name="intellij.tools.ide.performanceTesting.commands" exported="" />
     <orderEntry type="library" name="jetbrains-annotations" level="project" />
-    <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="library" name="jackson-datatype-jsr310" level="project" />
     <orderEntry type="module-library">
       <library name="github.stephenc.monte.screen.recorder" type="repository">

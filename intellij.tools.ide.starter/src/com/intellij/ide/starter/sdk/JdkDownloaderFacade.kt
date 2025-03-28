@@ -11,13 +11,11 @@ import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetryBlocking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.io.FileUtils
-import java.io.File
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import kotlin.io.path.*
 
 class DownloadJDKException() : SetupException("JDK list is empty")
 
@@ -76,13 +74,14 @@ object JdkDownloaderFacade {
       downloadAndInstallJdk(jdk, targetJdkHome, targetHomeMarker)
     }
 
-    val javaHome = File(Files.readString(targetHomeMarker))
-    require(javaHome.resolve(getJavaBin(predicate)).isFile) {
-      FileUtils.deleteQuietly(targetJdkHome.toFile())
+    val javaHome = Path.of(Files.readString(targetHomeMarker))
+    require(javaHome.resolve(getJavaBin(predicate)).isRegularFile()) {
+      @OptIn(ExperimentalPathApi::class)
+      targetJdkHome.deleteRecursively()
       "corrupted JDK home: $targetJdkHome (now deleted)"
     }
 
-    return JdkItemPaths(homePath = javaHome.toPath(), installPath = targetJdkHome)
+    return JdkItemPaths(homePath = javaHome, installPath = targetJdkHome)
   }
 
   @Suppress("SSBasedInspection")
@@ -104,14 +103,14 @@ object JdkDownloaderFacade {
             WslDistributionManager.getInstance().installedDistributions.isNotEmpty())
   }
 
-  private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean {
-    return !Files.isRegularFile(targetHomeMarker) || FileUtils.listFiles(targetJdkHome.toFile(), null, true).size < MINIMUM_JDK_FILES_COUNT
-  }
+  private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean =
+    !Files.isRegularFile(targetHomeMarker) || @OptIn(ExperimentalPathApi::class) targetJdkHome.walk().count() < MINIMUM_JDK_FILES_COUNT
 
   private fun downloadAndInstallJdk(jdk: JdkItem, targetJdkHome: Path, targetHomeMarker: Path) {
     withRetryBlocking(messageOnFailure = "Failure on downloading/installing JDK", retries = 5) {
       logOutput("Downloading JDK at $targetJdkHome")
-      FileUtils.deleteQuietly(targetJdkHome.toFile())
+      @OptIn(ExperimentalPathApi::class)
+      targetJdkHome.deleteRecursively()
 
       val jdkInstaller = JdkInstaller()
       val request = jdkInstaller.prepareJdkInstallationDirect(jdk, targetPath = targetJdkHome)
@@ -122,8 +121,8 @@ object JdkDownloaderFacade {
   }
 
   private fun downloadFileFromUrl(urlString: String, destinationPath: Path) {
-    FileUtils.createParentDirectories(destinationPath.toFile())
-    URL(urlString).openConnection().getInputStream().use { inputStream ->
+    destinationPath.createParentDirectories()
+    URL(urlString).openStream().use { inputStream ->
       Files.copy(inputStream, destinationPath, StandardCopyOption.REPLACE_EXISTING)
     }
   }
@@ -137,11 +136,11 @@ object JdkDownloaderFacade {
       error("Cannot install non-linux JDK into WSL environment to $targetDir from $item")
     }
     val temp = GlobalPaths.instance.testHomePath.resolve("tmp/jdk").toAbsolutePath().toString()
-    val downloadFile = Paths.get(temp, "jdk-${System.nanoTime()}-${item.archiveFileName}")
+    val downloadFile = Path.of(temp, "jdk-${System.nanoTime()}-${item.archiveFileName}")
     try {
       try {
         downloadFileFromUrl(item.url, downloadFile)
-        if (!downloadFile.toFile().isFile) {
+        if (!downloadFile.isRegularFile()) {
           throw RuntimeException("Downloaded file does not exist: $downloadFile")
         }
       }
@@ -166,7 +165,7 @@ object JdkDownloaderFacade {
       Files.writeString(markerFile, request.javaHome.toRealPath().toString(), Charsets.UTF_8)
     }
     finally {
-      FileUtils.deleteQuietly(downloadFile.toFile())
+      downloadFile.deleteIfExists()
     }
   }
 
