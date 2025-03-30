@@ -508,6 +508,17 @@ open class IDETestContext(
     return setLicense(String(Base64.getEncoder().encode(pathToFileWithLicense.toFile().readBytes())))
   }
 
+  fun disableAutoCompletion(): IDETestContext {
+    writeConfigFile("options/editor.xml", """
+      <application>
+        <component name="CodeInsightSettings">
+          <option name="AUTO_POPUP_COMPLETION_LOOKUP" value="false" />
+        </component>
+      </application>
+    """)
+    return this
+  }
+
   /**
    * To get a license you need:
    * 1. Go to [JetBrains Account](https://account.jetbrains.com/licenses)
