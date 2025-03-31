@@ -14,7 +14,7 @@ import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
 import kotlin.time.Duration
 
-class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext, private val remoteDevDriverOptions: RemoteDevDriverOptions) {
+internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTestContext, private val remoteDevDriverOptions: RemoteDevDriverOptions) {
   private val frontendContext = ideRemDevTestContext.frontendIDEContext
 
   private fun VMOptions.addDisplayIfNecessary() {

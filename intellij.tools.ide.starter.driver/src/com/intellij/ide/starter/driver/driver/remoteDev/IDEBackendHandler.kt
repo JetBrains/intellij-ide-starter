@@ -24,7 +24,7 @@ import kotlin.io.path.exists
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class IDEBackendHandler(private val backendContext: IDETestContext, private val options: RemoteDevDriverOptions) {
+internal class IDEBackendHandler(private val backendContext: IDETestContext, private val options: RemoteDevDriverOptions) {
   private fun buildBackendCommandLine(): (IDERunContext) -> IDECommandLine {
     return { _: IDERunContext ->
       if (backendContext.testCase.projectInfo == NoProject) IDECommandLine.Args(listOf("remoteDevHost"))
