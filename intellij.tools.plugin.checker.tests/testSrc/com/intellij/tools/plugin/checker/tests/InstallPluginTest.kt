@@ -14,9 +14,12 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.plugins.PluginNotFoundException
+import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.report.Error
 import com.intellij.ide.starter.report.ErrorReporterToCI
+import com.intellij.ide.starter.report.TimeoutAnalyzer
 import com.intellij.ide.starter.runner.IDECommandLine
+import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -248,17 +251,21 @@ class InstallPluginTest {
     val buildUrl = System.getenv("BUILD_URL")
     val marketplaceEvent = getMarketplaceEvent()
 
-    for (error in errors) {
-      val message = VerificationMessage(
-        error.messageText.let { it.take(256) + if (it.length > 256) "..." else "" },
-        VerificationResultType.PROBLEMS,
-        "$buildUrl?guest=1",
-        marketplaceEvent.id,
-        marketplaceEvent.verificationType,
-        null
-      )
-      sqsClient.sendMessage(message)
+    val verificationResult = when {
+      errors.isEmpty() -> VerificationResultType.OK
+      errors.size == 1 && errors.first().messageText.contains("due to a dialog being shown") -> VerificationResultType.WARNINGS
+      else -> VerificationResultType.PROBLEMS
     }
+
+    val message = VerificationMessage(
+      "${errors.size} ${if (errors.size == 1) "issue" else "issues"} occurred during the IDE run with the plugin installed",
+      verificationResult,
+      "$buildUrl?guest=1",
+      marketplaceEvent.id,
+      marketplaceEvent.verificationType,
+      null
+    )
+    sqsClient.sendMessage(message)
 
     sqsClient.closeClient()
   }
@@ -311,6 +318,18 @@ class InstallPluginTest {
     )
   }
 
+  private fun handleTimeout(ex: ExecTimeoutException, params: EventToTestCaseParams, testContext: IDETestContext, errorsWithoutPlugin: List<Error>) {
+    val runContext = IDERunContext(testContext, launchName = "with-plugin")
+    val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
+    val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
+    TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
+
+    reportErrorsToAwsSqs(pluginErrors)
+    generateSarifReport(pluginErrors, params)
+
+    throw ex
+  }
+
   @ParameterizedTest
   @MethodSource("data")
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
@@ -318,9 +337,9 @@ class InstallPluginTest {
     val testContextWithoutPlugin = createTestContext(params)
     val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp()).runContext
     val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
+    val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
 
     try {
-      val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
       val ideRunContext = testContext.runIDE(
         launchName = "with-plugin",
         commandLine = { IDECommandLine.OpenTestCaseProject(testContext, listOf("-Dperformance.watcher.unresponsive.interval.ms=10000")) },
@@ -328,14 +347,15 @@ class InstallPluginTest {
       ).runContext
       val errors = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
-      val diff = subtract(errors, errorsWithoutPlugin).toList()
+      val pluginErrors = subtract(errors, errorsWithoutPlugin).toList()
 
-      ErrorReporterToCI.reportErrors(ideRunContext, diff)
-      reportErrorsToAwsSqs(errors)
-      generateSarifReport(errors, params)
+      ErrorReporterToCI.reportErrors(ideRunContext, pluginErrors)
+      reportErrorsToAwsSqs(pluginErrors)
+      generateSarifReport(pluginErrors, params)
     }
     catch (ex: Exception) {
       when (ex) {
+        is ExecTimeoutException -> handleTimeout(ex, params, testContext, errorsWithoutPlugin)
         is IOException, //plugin is in removal state and not available
         is PluginNotFoundException -> return //don't run the test if plugin was removed by author
         else -> throw ex
