@@ -6,13 +6,12 @@ import com.intellij.driver.model.RdTarget
 import com.intellij.driver.sdk.remoteDev.BeControlAdapter
 import com.intellij.driver.sdk.remoteDev.BeControlClass
 import com.intellij.driver.sdk.remoteDev.BeControlComponentBase
-import java.lang.IllegalArgumentException
-import kotlin.collections.any
-import kotlin.collections.filterIsInstance
-import kotlin.collections.firstOrNull
 import kotlin.reflect.KClass
 
-class RemDevDriver(host: JmxHost?) : DriverImpl(host, true) {
+/**
+ * Driver with BeControl elements support to ensure BeControl element have the same parameters as in monolith.
+ */
+class RemDevFrontendDriver(host: JmxHost?) : DriverImpl(host, true) {
   override val polymorphRegistry: PolymorphRegistryImpl = PolymorphRegistryImpl(this)
   override fun <T : Any> cast(instance: Any, clazz: KClass<T>): T {
     if (instance is BeControlComponentBase) {
