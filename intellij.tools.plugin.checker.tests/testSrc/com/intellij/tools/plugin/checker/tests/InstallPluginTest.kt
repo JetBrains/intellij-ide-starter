@@ -1,9 +1,11 @@
 package com.intellij.tools.plugin.checker.tests
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.intellij.tools.plugin.checker.sarif.*
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
@@ -261,6 +263,54 @@ class InstallPluginTest {
     sqsClient.closeClient()
   }
 
+  private fun generateSarifReport(errors: List<Error>, params: EventToTestCaseParams) {
+    val artifactsLocation = "${System.getenv("BUILD_URL")}?buildTab=artifacts#%2Finstall-plugin-test%2Fwith-plugin"
+
+    val sarifReport = SarifReport(
+      runs = listOf(
+        Run(
+          tool = Tool(
+            driver = Driver(
+              name = "IntellijIdeStarter",
+              informationUri = "https://github.com/JetBrains/intellij-ide-starter",
+              semanticVersion = params.event.productVersion
+            )
+          ),
+          artifacts = listOf(
+            Artifact(
+              location = Location(
+                uri = artifactsLocation
+              )
+            )
+          ),
+          results = errors.map { error ->
+            Result(
+              ruleId = error.messageText,
+              message = Message(
+                text = error.stackTraceContent
+              )
+            )
+          }
+        )
+      )
+    )
+
+    val mapper = jsonMapper {
+      addModule(kotlinModule())
+      enable(SerializationFeature.INDENT_OUTPUT)
+    }
+
+    val reportFile = File("report.sarif.json")
+    mapper.writeValue(reportFile, sarifReport)
+
+    TeamCityClient.publishTeamCityArtifacts(
+      source = reportFile.toPath(),
+      artifactPath = "install-plugin-test",
+      artifactName = "report.sarif.json",
+      zipContent = false
+    )
+  }
+
   @ParameterizedTest
   @MethodSource("data")
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
@@ -282,6 +332,7 @@ class InstallPluginTest {
 
       ErrorReporterToCI.reportErrors(ideRunContext, diff)
       reportErrorsToAwsSqs(errors)
+      generateSarifReport(errors, params)
     }
     catch (ex: Exception) {
       when (ex) {
