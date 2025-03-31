@@ -2,6 +2,7 @@ package com.intellij.ide.starter.driver.engine
 
 import com.intellij.driver.client.Driver
 import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
+import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
@@ -16,7 +17,7 @@ import kotlin.time.Duration
 
 class LocalDriverRunner : DriverRunner {
   override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
-    val driver = DriverWithDetailedLogging(Driver.create())
+    val driver = DriverWithDetailedLogging(Driver.create(), logUiHierarchy = context !is IDERemDevTestContext)
     val currentStep = Allure.getLifecycle().currentTestCaseOrStep
     val process = CompletableDeferred<ProcessHandle>()
     EventsBus.subscribe(process) { event: IdeLaunchEvent ->

@@ -24,7 +24,7 @@ import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by driver {
+internal class DriverWithDetailedLogging(private val driver: Driver, logUiHierarchy: Boolean = true) : Driver by driver {
   private var runContext: IDERunContext? = null
 
   init {
@@ -35,9 +35,11 @@ internal class DriverWithDetailedLogging(private val driver: Driver) : Driver by
           while (!driver.isConnected) {
             delay(3.seconds)
           }
-          driver.withContext {
-            val webserverPort = utility(BuiltInServerOptions::class).getInstance().getEffectiveBuiltInServerPort()
-            logOutput("UI Hierarchy: http://localhost:$webserverPort/api/remote-driver/".color(LogColor.PURPLE))
+          if (logUiHierarchy) {
+            driver.withContext {
+              val webserverPort = utility(BuiltInServerOptions::class).getInstance().getEffectiveBuiltInServerPort()
+              logOutput("UI Hierarchy: http://localhost:$webserverPort/api/remote-driver/".color(LogColor.PURPLE))
+            }
           }
         }
       }
