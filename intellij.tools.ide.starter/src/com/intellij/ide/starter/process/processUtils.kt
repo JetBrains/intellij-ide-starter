@@ -12,7 +12,6 @@ import com.intellij.tools.ide.util.common.withRetry
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -174,13 +173,15 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
   }
 }
 
+/**
+ * DON'T ADD ANY LOGGING OTHERWISE IF STDOUT IS BLOCKED THERE WILL BE NO DUMPS
+ */
 fun collectJavaThreadDump(
   javaHome: Path,
   workDir: Path?,
   javaProcessId: Long,
   dumpFile: Path,
 ) {
-  logOutput("Collecting thread dump to ${dumpFile.pathString}")
   val ext = if (SystemInfo.isWindows) ".exe" else ""
   val jstackPath = listOf(
     javaHome.resolve("bin/jstack$ext"),
@@ -199,7 +200,6 @@ fun collectJavaThreadDump(
       stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]"),
       silent = true
     ).start()
-    logOutput("Collected thread dump to ${dumpFile.pathString}")
   }
   catch (ise: IllegalStateException) {
     val message = ise.message ?: ""
