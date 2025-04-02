@@ -32,6 +32,7 @@ jvm_library(
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@community//platform/util",
     "@lib//:opentelemetry",
+    "@community//platform/platform-util-io:ide-util-io",
   ],
   runtime_deps = [":tools-ide-starter-driver_resources"]
 )
