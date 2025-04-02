@@ -20,6 +20,11 @@ val testSuiteSupervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 val perTestSupervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 /**
+ * Lifespan is limited to duration of the test class. By the end of the test class whole coroutines tree will be cancelled.
+ */
+val perClassSupervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+/**
  * Lifespan is limited to the duration of a single thin client execution. When the client is shut down, the whole coroutines tree is going
  * to be canceled.
  */
