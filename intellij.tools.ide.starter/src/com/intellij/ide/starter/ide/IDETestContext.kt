@@ -377,11 +377,27 @@ open class IDETestContext(
     if (this.testCase.projectInfo == NoProject) ::startIdeWithoutProject
     else ::openTestCaseProject
 
+  fun runIDE(
+    commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
+    commands: Iterable<MarshallableCommand> = CommandChain(),
+    runTimeout: Duration = 10.minutes,
+    useStartupScript: Boolean = true,
+    launchName: String = "",
+    expectedKill: Boolean = false,
+    expectedExitCode: Int = 0,
+    collectNativeThreads: Boolean = false,
+    stdOut: ExecOutputRedirect? = null,
+    configure: IDERunContext.() -> Unit = {},
+  ) =
+    runBlocking {
+      runIdeSuspending(commandLine, commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, stdOut, configure)
+    }
+
   /**
    * Entry point to run IDE.
    * If you want to run IDE without any project on start use [com.intellij.ide.starter.runner.IDECommandLine.StartIdeWithoutProject]
    */
-  fun runIDE(
+  suspend fun runIdeSuspending(
     commandLine: (IDERunContext) -> IDECommandLine = determineDefaultCommandLineArguments(),
     commands: Iterable<MarshallableCommand> = CommandChain(),
     runTimeout: Duration = 10.minutes,
@@ -409,7 +425,7 @@ open class IDETestContext(
       ).also(configure)
 
       try {
-        val ideRunResult = runContext.runIDE()
+        val ideRunResult = runContext.runIdeSuspending()
         if (isReportPublishingEnabled) {
           computeWithSpan("publisher") {
             for (it in publishers) {

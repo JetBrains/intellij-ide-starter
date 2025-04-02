@@ -188,6 +188,10 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
+    return runBlocking { runIdeSuspending() }
+  }
+
+  suspend fun runIdeSuspending(): IDEStartResult {
     EventsBus.postAndWaitProcessing(IdeBeforeLaunchEvent(this))
 
     deleteSavedAppStateOnMac()
@@ -260,7 +264,7 @@ data class IDERunContext(
             }
           },
           expectedExitCode = expectedExitCode,
-        ).start()
+        ).startCancellable()
       }
       span.end()
       logOutput("IDE run $contextName completed in $executionTime")
