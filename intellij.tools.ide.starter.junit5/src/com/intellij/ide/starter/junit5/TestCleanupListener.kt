@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.coroutine.perTestSupervisorScope
 import com.intellij.ide.starter.coroutine.testSuiteSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
@@ -23,6 +24,15 @@ import org.junit.platform.launcher.TestPlan
 open class TestCleanupListener : TestExecutionListener {
   override fun executionFinished(testIdentifier: TestIdentifier?, testExecutionResult: TestExecutionResult?) {
     val testIdentifierName = testIdentifier?.displayName ?: ""
+    if (testIdentifier?.isContainer == true) {
+      @Suppress("SSBasedInspection")
+      runBlocking {
+        catchAll {
+          perClassSupervisorScope.coroutineContext.cancelChildren(CancellationException("Test class `$testIdentifierName` execution is finished"))
+          perClassSupervisorScope.coroutineContext.job.children.forEach { it.join() }
+        }
+      }
+    }
 
     if (testIdentifier?.isTest == true) {
       @Suppress("SSBasedInspection")
