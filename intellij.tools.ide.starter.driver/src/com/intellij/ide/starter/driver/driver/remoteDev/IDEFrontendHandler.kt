@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
+import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.ide.IDERemDevTestContext
@@ -48,9 +49,9 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
     EventsBus.subscribe(process) { event: IdeLaunchEvent ->
       process.complete(event.ideProcess.toHandle())
     }
-    val result = GlobalScope.async {
+    val result = perClassSupervisorScope.async {
       try {
-        frontendContext.runIDE(
+        frontendContext.runIdeSuspending (
           commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
           commands = CommandChain(),
           runTimeout = runTimeout,

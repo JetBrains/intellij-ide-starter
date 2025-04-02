@@ -2,6 +2,7 @@ package com.intellij.ide.starter.driver.engine
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.impl.JmxHost
+import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDETestContext
@@ -25,10 +26,10 @@ class LocalDriverRunner : DriverRunner {
     EventsBus.subscribe(process) { event: IdeLaunchEvent ->
       process.complete(event.ideProcess.toHandle())
     }
-    val runResult = GlobalScope.async {
+    val runResult = perClassSupervisorScope.async {
       Allure.getLifecycle().setCurrentTestCase(currentStep.orElse(UUID.randomUUID().toString()))
       try {
-        context.runIDE(commandLine,
+        context.runIdeSuspending(commandLine,
                        commands,
                        runTimeout,
                        useStartupScript,
