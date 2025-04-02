@@ -2,6 +2,7 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.driver.client.impl.JmxHost
 import com.intellij.ide.starter.driver.engine.BackgroundRun
+import com.intellij.ide.starter.driver.engine.DriverOptions
 import com.intellij.ide.starter.driver.engine.DriverRunner
 import com.intellij.ide.starter.driver.engine.DriverWithDetailedLogging
 import com.intellij.ide.starter.driver.engine.remoteDev.RemDevFrontendDriver
@@ -18,19 +19,20 @@ import java.util.logging.Level
 import kotlin.time.Duration
 
 class RemDevDriverRunner : DriverRunner {
-  override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
+  override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, driverOptions: DriverOptions, configure: IDERunContext.() -> Unit): BackgroundRun {
     require(context is IDERemDevTestContext) { "for split-mode context should be instance of ${IDERemDevTestContext::class.java.simpleName}" }
+    require(driverOptions is RemoteDevDriverOptions) { "for split-mode context should be instance of ${RemoteDevDriverOptions::class.java.simpleName}" }
 
     addConsoleAllAppender()
 
-    val remoteDevDriverOptions = RemoteDevDriverOptions()
+    val remoteDevDriverOptions = driverOptions
     context.addRemoteDevSpecificTraces()
     val ideBackendHandler = IDEBackendHandler(context, remoteDevDriverOptions)
     val ideFrontendHandler = IDEFrontendHandler(context, remoteDevDriverOptions)
 
     val (backendRun, joinLink) = ideBackendHandler.run(commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
 
-    val frontendDriverWithLogging = DriverWithDetailedLogging(RemDevFrontendDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.driverPort}")))
+    val frontendDriverWithLogging = DriverWithDetailedLogging(RemDevFrontendDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.frontendDriverPort}")))
     val (frontendStartResult, frontendProcess) = ideFrontendHandler.runInBackground(launchName, joinLink = joinLink, runTimeout = runTimeout)
 
     return RemoteDevBackgroundRun(backendRun = backendRun,

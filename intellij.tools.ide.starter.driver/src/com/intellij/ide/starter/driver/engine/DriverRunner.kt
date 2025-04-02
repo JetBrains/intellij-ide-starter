@@ -15,5 +15,6 @@ interface DriverRunner {
                        expectedKill: Boolean,
                        expectedExitCode: Int,
                        collectNativeThreads: Boolean,
+                       driverOptions: DriverOptions,
                        configure: IDERunContext.() -> Unit): BackgroundRun
 }

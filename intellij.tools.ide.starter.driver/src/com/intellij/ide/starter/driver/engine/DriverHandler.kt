@@ -1,15 +1,16 @@
 package com.intellij.ide.starter.driver.engine
 
+import com.intellij.util.net.NetUtils
 import java.net.InetAddress
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlin.to
 
 open class DriverOptions {
   var systemProperties: Map<String, String> = mapOf()
   var runTimeout: Duration = 10.minutes
-  var driverPort: Int = 8889
-  var webServerPort: Int = 7778
+  var driverPort: Int = NetUtils.findAvailableSocketPort()
+  var webServerPort: Int = NetUtils.findAvailableSocketPort()
+
   var debugPort: Int = 5010
 }
 
