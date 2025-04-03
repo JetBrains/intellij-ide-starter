@@ -13,6 +13,7 @@ import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
+import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.report.Error
@@ -47,6 +48,7 @@ import java.net.URI
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.createDirectories
 
 
 @ExtendWith(KillOutdatedProcesses::class)
@@ -307,7 +309,8 @@ class InstallPluginTest {
       enable(SerializationFeature.INDENT_OUTPUT)
     }
 
-    val reportFile = File("report.sarif.json")
+    val artifactsDir = GlobalPaths.instance.artifactsDirectory.createDirectories()
+    val reportFile = File(artifactsDir.resolve("report.sarif.json").toString())
     mapper.writeValue(reportFile, sarifReport)
 
     TeamCityClient.publishTeamCityArtifacts(
