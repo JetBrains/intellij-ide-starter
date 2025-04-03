@@ -21,6 +21,5 @@ fun IDETestContext.runIdeWithDriver(commandLine: (IDERunContext) -> IDECommandLi
                                     collectNativeThreads: Boolean = false,
                                     configure: IDERunContext.() -> Unit = {}): BackgroundRun {
   val driverRunner = di.direct.instanceOrNull<DriverRunner>() ?: LocalDriverRunner()
-  val driverOptions = di.direct.instanceOrNull<DriverOptions>() ?: DriverOptions()
-  return driverRunner.runIdeWithDriver(this, commandLine, commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, driverOptions, configure)
+  return driverRunner.runIdeWithDriver(this, commandLine, commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
 }

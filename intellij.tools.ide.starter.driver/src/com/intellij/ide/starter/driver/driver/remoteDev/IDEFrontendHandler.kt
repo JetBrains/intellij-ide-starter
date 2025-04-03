@@ -31,13 +31,13 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
       it.addDisplayIfNecessary()
 
       //add driver related vmOptions
-      DriverHandler.systemProperties(port = remoteDevDriverOptions.frontendDriverPort).forEach(it::addSystemProperty)
+      DriverHandler.systemProperties(port = remoteDevDriverOptions.driverPort).forEach(it::addSystemProperty)
       RemoteDevDriverHandler.rdctVmOptions(remoteDevDriverOptions).forEach(it::addSystemProperty)
 
       //add system properties from test
       remoteDevDriverOptions.systemProperties.forEach(it::addSystemProperty)
 
-      it.addSystemProperty("rpc.port", remoteDevDriverOptions.frontendWebServerPort)
+      it.addSystemProperty("rpc.port", remoteDevDriverOptions.webServerPort)
       if (it.isUnderDebug()) {
         it.debug(remoteDevDriverOptions.debugPort, suspend = false)
       }

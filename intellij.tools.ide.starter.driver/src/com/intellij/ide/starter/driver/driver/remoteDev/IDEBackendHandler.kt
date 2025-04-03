@@ -68,8 +68,7 @@ internal class IDEBackendHandler(private val backendContext: IDETestContext, pri
                                                              launchName = launchName,
                                                              expectedKill = expectedKill,
                                                              expectedExitCode = expectedExitCode,
-                                                             collectNativeThreads = collectNativeThreads,
-                                                             driverOptions = options) {
+                                                             collectNativeThreads = collectNativeThreads) {
       configure(this)
       logFile = logsDir.resolve("idea.log")
       logLinesBeforeBackendStarted = Result.runCatching { Files.readAllLines(logFile).size }.getOrDefault(0)

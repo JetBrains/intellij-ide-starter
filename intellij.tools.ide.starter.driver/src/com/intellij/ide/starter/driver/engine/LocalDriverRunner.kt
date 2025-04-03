@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.driver.engine
 
 import com.intellij.driver.client.Driver
-import com.intellij.driver.client.impl.JmxHost
 import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
 import com.intellij.ide.starter.ide.IDERemDevTestContext
@@ -18,9 +17,8 @@ import java.util.*
 import kotlin.time.Duration
 
 class LocalDriverRunner : DriverRunner {
-  override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, driverOptions: DriverOptions, configure: IDERunContext.() -> Unit): BackgroundRun {
-    val jmxHost = JmxHost(user = null, password = null, address = "localhost:${driverOptions.driverPort}")
-    val driver = DriverWithDetailedLogging(Driver.create(jmxHost), logUiHierarchy = context !is IDERemDevTestContext)
+  override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
+    val driver = DriverWithDetailedLogging(Driver.create(), logUiHierarchy = context !is IDERemDevTestContext)
     val currentStep = Allure.getLifecycle().currentTestCaseOrStep
     val process = CompletableDeferred<ProcessHandle>()
     EventsBus.subscribe(process) { event: IdeLaunchEvent ->
@@ -37,7 +35,7 @@ class LocalDriverRunner : DriverRunner {
                        expectedKill,
                        expectedExitCode,
                        collectNativeThreads) {
-          provideDriverProperties(driverOptions)
+          provideDriverProperties()
           configure()
         }
       }
@@ -50,9 +48,9 @@ class LocalDriverRunner : DriverRunner {
     return runBlocking { BackgroundRun (runResult, driver, process.await()) }
   }
 
-  private fun IDERunContext.provideDriverProperties(driverOptions: DriverOptions) {
+  private fun IDERunContext.provideDriverProperties() {
     addVMOptionsPatch {
-      for (entry in systemProperties(port = driverOptions.driverPort)) {
+      for (entry in systemProperties(port = 7777)) {
         addSystemProperty(entry.key, entry.value)
       }
     }
