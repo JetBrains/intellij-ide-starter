@@ -17,6 +17,7 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.diagnostic.LogLevel
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.util.common.logError
+import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -43,9 +44,10 @@ internal class IDEBackendHandler(private val backendContext: IDETestContext, pri
     val joinLinkEntryPrefix = "Join link: tcp"
     val joinLinkEntryRegex = "tcp://.+".toRegex()
 
-    return waitNotNull(timeout = 14.seconds, interval = 2.seconds, errorMessage = { "Awaiting join link failed on timeout" }) {
+    return waitNotNull("Awaiting join link", timeout = 14.seconds, interval = 2.seconds) {
       val matchingLogLines = Files.readAllLines(logFile).drop(logLinesBeforeBackendStarted)
         .filter { it.contains(joinLinkEntryPrefix) }
+        .also { logOutput("Found join links: $it") }
 
       val links = matchingLogLines.mapNotNull { joinLinkEntryRegex.find(it) }.map { it.value }.distinct()
       links.singleOrNull()
