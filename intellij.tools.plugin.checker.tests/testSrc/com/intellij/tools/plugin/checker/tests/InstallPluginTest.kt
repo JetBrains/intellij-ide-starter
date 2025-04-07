@@ -309,14 +309,14 @@ class InstallPluginTest {
       enable(SerializationFeature.INDENT_OUTPUT)
     }
 
-    val artifactsDir = GlobalPaths.instance.artifactsDirectory.createDirectories()
-    val reportFile = File(artifactsDir.resolve("report.sarif.json").toString())
-    mapper.writeValue(reportFile, sarifReport)
+    val artifactsDir = GlobalPaths.instance.artifactsDirectory
+    val sarifPath = artifactsDir.resolve("${params.event.pluginId}/${params.event.id}").createDirectories().resolve("sarif.json")
+    mapper.writeValue(File(sarifPath.toString()), sarifReport)
 
     TeamCityClient.publishTeamCityArtifacts(
-      source = reportFile.toPath(),
+      source = sarifPath,
       artifactPath = "install-plugin-test",
-      artifactName = "report.sarif.json",
+      artifactName = "sarif.json",
       zipContent = false
     )
   }
@@ -327,8 +327,8 @@ class InstallPluginTest {
     val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
     TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
 
-    reportErrorsToAwsSqs(pluginErrors)
     generateSarifReport(pluginErrors, params)
+    reportErrorsToAwsSqs(pluginErrors)
 
     throw ex
   }
@@ -353,8 +353,8 @@ class InstallPluginTest {
       val pluginErrors = subtract(errors, errorsWithoutPlugin).toList()
 
       ErrorReporterToCI.reportErrors(ideRunContext, pluginErrors)
-      reportErrorsToAwsSqs(pluginErrors)
       generateSarifReport(pluginErrors, params)
+      reportErrorsToAwsSqs(pluginErrors)
     }
     catch (ex: Exception) {
       when (ex) {
