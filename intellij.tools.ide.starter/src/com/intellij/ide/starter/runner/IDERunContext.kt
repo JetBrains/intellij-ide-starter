@@ -101,7 +101,7 @@ data class IDERunContext(
       artifactName = formatArtifactName("logs", testContext.testName)
     )
     testContext.publishArtifact(
-      source = testContext.paths.systemDir.resolve("event-log-data/logs/FUS"),
+      source = testContext.paths.eventLogDataDir,
       artifactPath = contextName,
       artifactName = formatArtifactName("event-log-data", testContext.testName)
     )
