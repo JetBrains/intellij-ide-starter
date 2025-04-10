@@ -34,13 +34,12 @@ object JBRResolver {
   }
 
   private fun getJBRVersionFromSources(jbrFullVersion: String): JBRVersion {
-    val jbrVersion = jbrFullVersion.split(".")[0].toInt()
     var majorVersion = jbrFullVersion.split("b").firstOrNull()
+    requireNotNull(majorVersion) { { "majorVersion is: $majorVersion" } }
+    val jbrVersion = jbrFullVersion.split(".")[0].toIntOrNull() ?: majorVersion.toIntOrNull()
+    requireNotNull(jbrVersion) { "Cannot parse JBR version from: $jbrFullVersion" }
     if (jbrVersion < 17) {
-      majorVersion = majorVersion?.replace(".", "_")
-    }
-    requireNotNull(majorVersion) {
-      { "majorVersion is: $majorVersion" }
+      majorVersion = majorVersion.replace(".", "_")
     }
     val buildNumber = jbrFullVersion.split("b").drop(1).singleOrNull()
     requireNotNull(buildNumber) {
@@ -58,7 +57,7 @@ object JBRResolver {
     return catchAll { downloadAndUnpackJbrIfNeeded(getJBRVersionFromSources(jbrFullVersion)) } ?: throw JBRDownloadException(jbrFullVersion)
   }
 
-  private suspend fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path = computeWithSpan("download and unpack JBR") {
+  public suspend fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path = computeWithSpan("download and unpack JBR") {
     val (majorVersion, buildNumber) = listOf(jbrVersion.majorVersion, jbrVersion.buildNumber)
 
     val os = when {
