@@ -112,6 +112,20 @@ sealed class ExecOutputRedirect {
     override fun toString() = "stdout"
   }
 
+  data class ToStdOutAndString(val prefix: String) : ExecOutputRedirect() {
+    private val stringBuilder = StringBuilder()
+
+    override fun redirectLine(line: String) {
+      reportOnStdoutIfNecessary(line)
+      logOutput("  $prefix $line")
+      stringBuilder.appendLine("$prefix $line")
+    }
+
+    override fun read() = stringBuilder.toString()
+
+    override fun toString() = "stdout"
+  }
+
   class ToString : ExecOutputRedirect() {
 
     private val stringBuilder = StringBuilder()
