@@ -22,11 +22,8 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
-import kotlin.io.path.copyToRecursively
-import kotlin.io.path.div
 
 @ExperimentalPathApi
 @ExtendWith(MockitoExtension::class)
@@ -47,15 +44,10 @@ class MetricsDiffCalculationTest {
     override val publishAction: (IDEStartResult, List<PerformanceMetrics.Metric>) -> Unit = { _, _ -> }
   }
 
-  private val logsResourceDir: Path by lazy {
-    Paths.get(this::class.java.classLoader.getResource("diff").toURI())
-  }
-
   private fun setupDataPaths(testInfo: TestInfo, relativePath: Path): Unit {
-    val logDir = testDirectory / "logs"
-    logDir.toFile().mkdirs()
+    val resourceBasePath = "diff/${relativePath}"
 
-    logsResourceDir.resolve(relativePath).copyToRecursively(target = logDir, overwrite = true, followLinks = false)
+    val logDir = JarUtils.extractResource(resourceBasePath, testDirectory)
     Mockito.lenient().doReturn(logDir).`when`(runContextMock).logsDir
   }
 
