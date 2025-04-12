@@ -63,6 +63,7 @@ data class IdeInfo(
         "JBC" -> "JetBrainsClient"
         "RD" -> "rider"
         "WRS" -> "writerside"
+        "GW" -> "gateway"
         else -> error("Unknown product code: $productCode")
       }
 
