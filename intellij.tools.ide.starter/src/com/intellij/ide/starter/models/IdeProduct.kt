@@ -51,4 +51,7 @@ interface IdeProduct {
 
   /** Gateway */
   val GW: IdeInfo
+
+  /** Git Client */
+  val GIG: IdeInfo
 }

@@ -64,6 +64,7 @@ data class IdeInfo(
         "RD" -> "rider"
         "WRS" -> "writerside"
         "GW" -> "gateway"
+        "GIG" -> "GitClient"
         else -> error("Unknown product code: $productCode")
       }
 
