@@ -344,7 +344,18 @@ class InstallPluginTest {
     val testContextWithoutPlugin = createTestContext(params)
     val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp()).runContext
     val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
-    val testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
+
+    val testContext: IDETestContext
+    try {
+      testContext = createTestContext(params) { pluginConfigurator.installPluginFromURL(params.event.file) }
+    }
+    catch (ex: Exception) {
+      when (ex) {
+        is IOException, //plugin is in removal state and not available
+        is PluginNotFoundException -> return //don't run the test if plugin was removed by author
+        else -> throw ex
+      }
+    }
 
     try {
       val ideRunContext = testContext.runIDE(
@@ -363,8 +374,6 @@ class InstallPluginTest {
     catch (ex: Exception) {
       when (ex) {
         is ExecTimeoutException -> handleTimeout(ex, params, testContext, errorsWithoutPlugin)
-        is IOException, //plugin is in removal state and not available
-        is PluginNotFoundException -> return //don't run the test if plugin was removed by author
         else -> throw ex
       }
     }
