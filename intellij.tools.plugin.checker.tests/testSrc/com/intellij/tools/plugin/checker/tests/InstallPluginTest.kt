@@ -141,7 +141,10 @@ class InstallPluginTest {
         testCase = testCase
       )
 
-      return modifyTestCaseForIdeVersion(draftParams)
+      val resultingTestCase = modifyTestCaseForIdeVersion(draftParams)
+      if (resultingTestCase.isEmpty()) logOutput("##teamcity[setParameter name='starter.test.case.empty' value='true']")
+
+      return resultingTestCase
     }
 
     private fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
@@ -311,6 +314,7 @@ class InstallPluginTest {
 
     val artifactsDir = GlobalPaths.instance.artifactsDirectory
     val sarifPath = artifactsDir.resolve("sarif-reports/${params.event.pluginId}/${params.event.id}").createDirectories().resolve("sarif.json")
+    logOutput("##teamcity[progressMessage 'Writing SARIF report to $sarifPath']")
     mapper.writeValue(File(sarifPath.toString()), sarifReport)
 
     TeamCityClient.publishTeamCityArtifacts(
