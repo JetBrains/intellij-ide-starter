@@ -1,2 +1,3 @@
 com.intellij.ide.starter.junit5.StarterBusEachTestCallback
 com.intellij.ide.starter.junit5.CurrentTestMethodArgumentsProvider
+com.intellij.ide.starter.junit5.ShutdownListener
