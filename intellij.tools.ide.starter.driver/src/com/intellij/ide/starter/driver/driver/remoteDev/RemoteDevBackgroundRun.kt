@@ -6,11 +6,7 @@ import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.getOpenProjects
 import com.intellij.driver.sdk.hasVisibleWindow
 import com.intellij.driver.sdk.ui.IdeEventQueue
-import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
-import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.common.mainToolbar
 import com.intellij.driver.sdk.ui.requestFocusFromIde
-import com.intellij.driver.sdk.ui.ui
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
@@ -63,11 +59,6 @@ class RemoteDevBackgroundRun(
     awaitBackendIsConnected()
     awaitVisibleFrameFrontend()
     driver.awaitLuxInitialized()
-    val backendProjects = backendDriver.getOpenProjects()
-    if (backendProjects.isNotEmpty()) {
-      awaitProjectsAreOpenedOnFrontend(backendProjects.size)
-      awaitToolbarIsShownOnFrontend()
-    }
     flushEdtAndRequestFocus()
   }
 
@@ -77,15 +68,6 @@ class RemoteDevBackgroundRun(
 
   private fun awaitVisibleFrameFrontend() {
     waitFor("Frontend has a visible IDE frame", timeout = 100.seconds) { driver.hasVisibleWindow() }
-  }
-
-  private fun awaitToolbarIsShownOnFrontend() {
-    // toolbar won't be shown until the window manager is initialized properly, there is no other way for us to check it has happened
-    driver.ui.ideFrame().mainToolbar.waitFound(100.seconds)
-  }
-
-  private fun awaitProjectsAreOpenedOnFrontend(projectsNumber: Int) {
-    waitFor("Projects are opened on frontend", 30.seconds, getter = { driver.getOpenProjects() }, checker = { it.size == projectsNumber })
   }
 
   private fun flushEdtAndRequestFocus() {
