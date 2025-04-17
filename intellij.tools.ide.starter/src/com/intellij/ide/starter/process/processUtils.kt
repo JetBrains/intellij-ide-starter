@@ -21,6 +21,21 @@ fun getProcessList(): List<ProcessMetaInfo> {
   }
 }
 
+fun getProcessesPids(
+  processesToSearch: Set<String> = setOf("chrome", "Chrome.exe", "Chrome.app", "Google Chrome"),
+): List<Int> {
+  val systemInfo = oshi.SystemInfo()
+  val processes = systemInfo.operatingSystem.processes
+
+  return processes
+    .parallelStream()
+    .filter { process ->
+      processesToSearch.any { it in process.commandLine }
+    }
+    .map { it.processID }
+    .toList()
+}
+
 /**
  * CI may not kill processes started during the build (for TeamCity: TW-69045).
  * They stay alive and consume resources after tests.
