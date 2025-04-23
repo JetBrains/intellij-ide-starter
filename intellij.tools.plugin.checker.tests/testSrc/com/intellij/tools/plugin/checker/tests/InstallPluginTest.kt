@@ -142,7 +142,7 @@ class InstallPluginTest {
       )
 
       val resultingTestCase = modifyTestCaseForIdeVersion(draftParams)
-      if (resultingTestCase.isEmpty()) logOutput("##teamcity[setParameter name='starter.test.case.empty' value='true']")
+      if (resultingTestCase.isEmpty()) markTestCaseEmptyOnTc()
 
       return resultingTestCase
     }
@@ -352,7 +352,10 @@ class InstallPluginTest {
     catch (ex: Exception) {
       when (ex) {
         is IOException, //plugin is in removal state and not available
-        is PluginNotFoundException -> return //don't run the test if plugin was removed by author
+        is PluginNotFoundException -> { //don't run the test if plugin was removed by author
+          markTestCaseEmptyOnTc()
+          return
+        }
         else -> throw ex
       }
     }
@@ -378,4 +381,8 @@ class InstallPluginTest {
       }
     }
   }
+}
+
+private fun markTestCaseEmptyOnTc() {
+  logOutput("##teamcity[setParameter name='starter.test.case.empty' value='true']")
 }
