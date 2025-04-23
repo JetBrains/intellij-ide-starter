@@ -44,18 +44,22 @@ object JarUtils {
   }
 
   private fun extractFromJar(resourceUrl: URL, resourcePath: String, targetDir: Path) {
-    val jarUri = URI.create("jar:${resourceUrl.toURI()}")
+    val externalForm = resourceUrl.toExternalForm()
+    val bangIndex = externalForm.indexOf("!/")
 
-    FileSystems.newFileSystem(jarUri, mapOf<String, Any>()).use { fs ->
-      val basePath = fs.getPath(resourcePath)
+    val fsUri = URI.create(externalForm.take(bangIndex + 2))
+
+    FileSystems.newFileSystem(fsUri, emptyMap<String, Any>()).use { fs ->
+      val entryPath = resourcePath.trimStart('/')
+      val basePath = fs.getPath(entryPath)
 
       Files.walk(basePath)
         .filter { Files.isRegularFile(it) }
-        .forEach { filePath ->
-          val relativePath = basePath.relativize(filePath)
-          val targetFile = targetDir.resolve(relativePath)
-          Files.createDirectories(targetFile.parent)
-          Files.copy(filePath, targetFile, StandardCopyOption.REPLACE_EXISTING)
+        .forEach { pathInJar ->
+          val relative = basePath.relativize(pathInJar)
+          val target = targetDir.resolve(relative.toString())
+          Files.createDirectories(target.parent)
+          Files.copy(pathInJar, target, StandardCopyOption.REPLACE_EXISTING)
         }
     }
   }
