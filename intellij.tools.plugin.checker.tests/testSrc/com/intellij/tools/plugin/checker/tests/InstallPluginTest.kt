@@ -314,6 +314,7 @@ class InstallPluginTest {
 
     val artifactsDir = GlobalPaths.instance.artifactsDirectory
     val sarifPath = artifactsDir.resolve("sarif-reports/${params.event.pluginId}/${params.event.id}").createDirectories().resolve("sarif.json")
+    logOutput("##teamcity[setParameter name='starter.sarif.reports.path' value='$artifactsDir/sarif-reports']")
     logOutput("##teamcity[progressMessage 'Writing SARIF report to $sarifPath']")
     mapper.writeValue(File(sarifPath.toString()), sarifReport)
 
