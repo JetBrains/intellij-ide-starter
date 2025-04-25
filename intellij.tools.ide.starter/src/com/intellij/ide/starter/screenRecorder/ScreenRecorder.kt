@@ -118,25 +118,30 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     ffmpegProcess?.destroy()
   }
 
-  private fun getDisplaySize(displayWithColumn: String): Pair<Int, Int> {
-    val commandName = "xdpyinfo"
-    logOutput("Getting a size for a display $displayWithColumn")
-    val stdout = ExecOutputRedirect.ToString()
-    ProcessExecutor(
-      presentableName = "$commandName -display $displayWithColumn",
-      args = listOf(commandName, "-display", displayWithColumn),
-      workDir = null,
-      expectedExitCode = 0,
-      stdoutRedirect = stdout,
-      stderrRedirect = ExecOutputRedirect.ToStdOut("[$commandName-err]"),
-    ).start()
+  private fun getDisplaySize(displayWithColumn: String, defaultValue: Pair<Int, Int> = 1920 to 1080): Pair<Int, Int> {
+    try {
+      val commandName = "xdpyinfo"
+      logOutput("Getting a size for a display $displayWithColumn")
+      val stdout = ExecOutputRedirect.ToString()
+      ProcessExecutor(
+        presentableName = "$commandName -display $displayWithColumn",
+        args = listOf(commandName, "-display", displayWithColumn),
+        workDir = null,
+        expectedExitCode = 0,
+        stdoutRedirect = stdout,
+        stderrRedirect = ExecOutputRedirect.ToStdOut("[$commandName-err]"),
+      ).start()
 
-    val screenDataOutput = stdout.read().trim()
-    val regex = """dimensions:\s*(\d+)x(\d+)\s*pixels""".toRegex()
-    val matchResult = regex.find(screenDataOutput)
-    val (width, height) = matchResult?.groupValues?.let { Pair(it[1].toInt(), it[2].toInt()) } ?: error("Could not determine screen data")
-    logOutput("Getting a size for a display $displayWithColumn finished with $width x $height")
-    return width to height
+      val screenDataOutput = stdout.read().trim()
+      val regex = """dimensions:\s*(\d+)x(\d+)\s*pixels""".toRegex()
+      val matchResult = regex.find(screenDataOutput)
+      val (width, height) = matchResult?.groupValues?.let { Pair(it[1].toInt(), it[2].toInt()) } ?: error("Could not determine screen data")
+      logOutput("Getting a size for a display $displayWithColumn finished with $width x $height")
+      return width to height
+    } catch (e: Exception) {
+      logOutput("Failed to get a size for a display $displayWithColumn: ${e.message}")
+      return defaultValue
+    }
   }
 
   private fun startFFMpegRecording(ideRunContext: IDERunContext): Process? {
