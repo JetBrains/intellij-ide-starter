@@ -95,9 +95,9 @@ class LocalIDEProcess : IDEProcess {
                 }
               }
               EventsBus.postAndWaitProcessing(
-                IdeLaunchEvent(runContext = this, ideProcess = process))
+                IdeLaunchEvent(runContext = this, ideProcess = IDEProcessHandle(process.toHandle())))
               ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
-              startCollectThreadDumpsLoop(logsDir, process, jdkHome, startConfig.workDir, ideProcessId, "ide")
+              startCollectThreadDumpsLoop(logsDir, IDEProcessHandle(process.toHandle()), jdkHome, startConfig.workDir, ideProcessId, "ide")
             },
             onBeforeKilled = { process, pid ->
               span.end()

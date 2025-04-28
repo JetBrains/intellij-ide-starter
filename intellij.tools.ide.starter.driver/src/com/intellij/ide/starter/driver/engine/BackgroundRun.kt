@@ -3,8 +3,7 @@ package com.intellij.ide.starter.driver.engine
 import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.ide.starter.process.exec.ProcessExecutor.Companion.killProcessGracefully
-import com.intellij.ide.starter.utils.catchAll
+import com.intellij.ide.starter.runner.IDEHandle
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred

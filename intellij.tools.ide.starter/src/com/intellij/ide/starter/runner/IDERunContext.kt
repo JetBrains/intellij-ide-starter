@@ -280,7 +280,7 @@ data class IDERunContext(
 
   suspend fun startCollectThreadDumpsLoop(
     logsDir: Path,
-    process: Process,
+    process: IDEHandle,
     jdkHome: Path,
     workDir: Path,
     collectingProcessId: Long,

@@ -10,7 +10,7 @@ import com.intellij.driver.sdk.ui.requestFocusFromIde
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
-import com.intellij.ide.starter.driver.engine.IDEHandle
+import com.intellij.ide.starter.runner.IDEHandle
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.utils.catchAll
 import kotlinx.coroutines.Deferred

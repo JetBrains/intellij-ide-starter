@@ -1,4 +1,4 @@
-package com.intellij.ide.starter.driver.engine
+package com.intellij.ide.starter.runner
 
 import com.intellij.ide.starter.process.exec.ProcessExecutor.Companion.killProcessGracefully
 import com.intellij.ide.starter.utils.catchAll

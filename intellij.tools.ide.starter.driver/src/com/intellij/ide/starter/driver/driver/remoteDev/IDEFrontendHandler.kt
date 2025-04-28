@@ -2,8 +2,7 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler
-import com.intellij.ide.starter.driver.engine.IDEHandle
-import com.intellij.ide.starter.driver.engine.IDEProcessHandle
+import com.intellij.ide.starter.runner.IDEHandle
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
@@ -47,9 +46,9 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
         it.dropDebug()
       }
     }
-    val process = CompletableDeferred<ProcessHandle>()
+    val process = CompletableDeferred<IDEHandle>()
     EventsBus.subscribe(process) { event: IdeLaunchEvent ->
-      process.complete(event.ideProcess.toHandle())
+      process.complete(event.ideProcess)
     }
     val result = perClassSupervisorScope.async {
       try {
@@ -75,6 +74,6 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
         throw e
       }
     }
-    return Pair(result, runBlocking { IDEProcessHandle(process.await()) })
+    return Pair(result, runBlocking { process.await() })
   }
 }

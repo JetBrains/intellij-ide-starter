@@ -6,6 +6,7 @@ import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProp
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.runner.IDECommandLine
+import com.intellij.ide.starter.runner.IDEHandle
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
@@ -20,9 +21,9 @@ class LocalDriverRunner : DriverRunner {
   override fun runIdeWithDriver(context: IDETestContext, commandLine: (IDERunContext) -> IDECommandLine, commands: Iterable<MarshallableCommand>, runTimeout: Duration, useStartupScript: Boolean, launchName: String, expectedKill: Boolean, expectedExitCode: Int, collectNativeThreads: Boolean, configure: IDERunContext.() -> Unit): BackgroundRun {
     val driver = DriverWithDetailedLogging(Driver.create(), logUiHierarchy = context !is IDERemDevTestContext)
     val currentStep = Allure.getLifecycle().currentTestCaseOrStep
-    val process = CompletableDeferred<ProcessHandle>()
+    val process = CompletableDeferred<IDEHandle>()
     EventsBus.subscribe(process) { event: IdeLaunchEvent ->
-      process.complete(event.ideProcess.toHandle())
+      process.complete(event.ideProcess)
     }
     val runResult = perClassSupervisorScope.async {
       Allure.getLifecycle().setCurrentTestCase(currentStep.orElse(UUID.randomUUID().toString()))
@@ -45,7 +46,7 @@ class LocalDriverRunner : DriverRunner {
         throw e
       }
     }
-    return runBlocking { BackgroundRun (runResult, driver, IDEProcessHandle(process.await())) }
+    return runBlocking { BackgroundRun (runResult, driver, process.await()) }
   }
 
   private fun IDERunContext.provideDriverProperties() {
