@@ -88,13 +88,13 @@ data class IDERunContext(
     return createDirectories()
   }
 
-  private fun deleteJVMCrashes() {
+  internal fun deleteJVMCrashes() {
     listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory)
       .filter { dir -> dir.exists() && dir.listDirectoryEntries().isNotEmpty() }
       .forEach { NioFiles.deleteRecursively(it) }
   }
 
-  private fun publishArtifacts() {
+  internal fun publishArtifacts() {
     testContext.publishArtifact(
       source = logsDir,
       artifactPath = contextName,
@@ -338,9 +338,9 @@ data class IDERunContext(
     }
   }
 
-  private fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
+  internal fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
 
-  private fun getStdout(): ExecOutputRedirect {
+  internal fun getStdout(): ExecOutputRedirect {
     if (stdOut != null) {
       return stdOut
     }
@@ -348,7 +348,7 @@ data class IDERunContext(
   }
 
 
-  private fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
+  internal fun getErrorMessage(t: Throwable, ciFailureDetails: String?): String? {
     val failureCauseFile = logsDir.resolve("failure_cause.txt")
     val errorMessage = if (Files.exists(failureCauseFile)) {
       Files.readString(failureCauseFile)
@@ -363,14 +363,14 @@ data class IDERunContext(
     }
   }
 
-  private fun logDisabledPlugins(paths: IDEDataPaths) {
+  internal fun logDisabledPlugins(paths: IDEDataPaths) {
     val disabledPlugins = paths.configDir.resolve("disabled_plugins.txt")
     if (disabledPlugins.exists()) {
       logOutput("The list of disabled plugins: " + disabledPlugins.readText())
     }
   }
 
-  private suspend fun captureDiagnosticOnKill(
+  internal suspend fun captureDiagnosticOnKill(
     logsDir: Path,
     jdkHome: Path,
     startConfig: IDEStartConfig,
@@ -449,7 +449,7 @@ data class IDERunContext(
     return current.format(formatter)
   }
 
-  private suspend fun resolveAndDownloadSameJDK(): Path {
+  internal suspend fun resolveAndDownloadSameJDK(): Path {
     try {
       return testContext.ide.resolveAndDownloadTheSameJDK()
     }
@@ -463,7 +463,7 @@ data class IDERunContext(
     }
   }
 
-  private fun logStartupInfo(finalOptions: VMOptions) {
+  internal fun logStartupInfo(finalOptions: VMOptions) {
     logOutput(buildString {
       appendLine("Starting IDE for $contextName with timeout $runTimeout")
       appendLine("  VM Options: [" + finalOptions.toString().lineSequence().map { it.trim() }.joinToString(" ") + "]")
@@ -471,7 +471,7 @@ data class IDERunContext(
     })
   }
 
-  private fun deleteSavedAppStateOnMac() {
+  internal fun deleteSavedAppStateOnMac() {
     if (SystemInfoRt.isMac) {
       val filesToBeDeleted = listOf(
         "com.jetbrains.${testContext.testCase.ideInfo.installerProductName}-EAP.savedState",
