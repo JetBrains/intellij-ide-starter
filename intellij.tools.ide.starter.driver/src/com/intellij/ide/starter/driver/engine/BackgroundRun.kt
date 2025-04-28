@@ -13,14 +13,14 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: ProcessHandle) {
+open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithoutAwaitedConnection: Driver, val process: IDEHandle) {
 
   val driver: Driver by lazy {
     if (!driverWithoutAwaitedConnection.isConnected) {
       runCatching {
         waitFor("Driver is connected", 3.minutes) {
           if (!process.isAlive) {
-            val message = "Couldn't wait for the driver to connect, it has already exited pid[${process.pid()}]"
+            val message = "Couldn't wait for the driver to connect, it has already exited pid[${process.id}]"
             logError(message)
             throw IllegalStateException(message)
           }
@@ -82,7 +82,6 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
 
   private fun forceKill() {
     logOutput("Performing force kill")
-    process.descendants().forEach { catchAll { killProcessGracefully(it) } }
-    catchAll { killProcessGracefully(process) }
+    process.kill()
   }
 }

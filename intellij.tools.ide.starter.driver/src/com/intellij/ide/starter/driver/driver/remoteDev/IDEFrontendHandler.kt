@@ -2,6 +2,8 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler
+import com.intellij.ide.starter.driver.engine.IDEHandle
+import com.intellij.ide.starter.driver.engine.IDEProcessHandle
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
@@ -25,7 +27,7 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
     }
   }
 
-  fun runInBackground(launchName: String, joinLink: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Pair<Deferred<IDEStartResult>, ProcessHandle> {
+  fun runInBackground(launchName: String, joinLink: String, runTimeout: Duration = remoteDevDriverOptions.runTimeout): Pair<Deferred<IDEStartResult>, IDEHandle> {
     frontendContext.ide.vmOptions.let {
       //setup xDisplay
       it.addDisplayIfNecessary()
@@ -73,6 +75,6 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
         throw e
       }
     }
-    return Pair(result, runBlocking { process.await() })
+    return Pair(result, runBlocking { IDEProcessHandle(process.await()) })
   }
 }

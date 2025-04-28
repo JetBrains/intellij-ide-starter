@@ -45,7 +45,7 @@ class LocalDriverRunner : DriverRunner {
         throw e
       }
     }
-    return runBlocking { BackgroundRun (runResult, driver, process.await()) }
+    return runBlocking { BackgroundRun (runResult, driver, IDEProcessHandle(process.await())) }
   }
 
   private fun IDERunContext.provideDriverProperties() {

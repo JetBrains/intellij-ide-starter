@@ -10,6 +10,7 @@ import com.intellij.driver.sdk.ui.requestFocusFromIde
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
+import com.intellij.ide.starter.driver.engine.IDEHandle
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.utils.catchAll
 import kotlinx.coroutines.Deferred
@@ -23,7 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class RemoteDevBackgroundRun(
   private val backendRun: BackgroundRun,
-  frontendProcess: ProcessHandle,
+  frontendProcess: IDEHandle,
   frontendDriver: Driver,
   private val frontendStartResult: Deferred<IDEStartResult>,
 ) : BackgroundRun(startResult = frontendStartResult,

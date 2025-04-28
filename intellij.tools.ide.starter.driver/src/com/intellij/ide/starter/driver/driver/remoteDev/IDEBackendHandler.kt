@@ -82,7 +82,7 @@ internal class IDEBackendHandler(private val backendContext: IDETestContext, pri
     }
     catch (t: Throwable) {
       logError("Failed to await join link. Log file: ${logFile?.toAbsolutePath()}", t)
-      killProcessGracefully(backgroundRun.process)
+      backgroundRun.process.kill()
       throw t
     }
     return backgroundRun to joinLink
