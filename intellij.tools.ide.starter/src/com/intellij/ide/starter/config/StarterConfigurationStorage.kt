@@ -9,11 +9,13 @@ private const val ENV_JUNIT_RUNNER_USE_INSTALLER = "JUNIT_RUNNER_USE_INSTALLER"
 private const val INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY = "INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY"
 private const val ENV_LOG_ENVIRONMENT_VARIABLES = "LOG_ENVIRONMENT_VARIABLES"
 private const val IGNORED_TEST_FAILURE_PATTERN = "IGNORED_TEST_FAILURE_PATTERN"
+private const val ENV_USE_DOCKER_CONTAINER = "USE_DOCKER_CONTAINER"
 
 val starterConfigurationStorageDefaults = mapOf<String, String>(
   ENV_ENABLE_CLASS_FILE_VERIFICATION to System.getenv(ENV_ENABLE_CLASS_FILE_VERIFICATION),
   ENV_USE_LATEST_DOWNLOADED_IDE_BUILD to System.getenv(ENV_USE_LATEST_DOWNLOADED_IDE_BUILD),
   ENV_JUNIT_RUNNER_USE_INSTALLER to System.getenv(ENV_JUNIT_RUNNER_USE_INSTALLER),
+  ENV_USE_DOCKER_CONTAINER to System.getenv(ENV_USE_DOCKER_CONTAINER),
   INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY to "false",
   IGNORED_TEST_FAILURE_PATTERN to System.getenv(IGNORED_TEST_FAILURE_PATTERN),
   ENV_LOG_ENVIRONMENT_VARIABLES to CIServer.instance.isBuildRunningOnCI.toString(),
@@ -27,6 +29,9 @@ fun ConfigurationStorage.Companion.useLatestDownloadedIdeBuild() = instance().ge
 
 fun ConfigurationStorage.Companion.useInstaller(): Boolean = instance().getBoolean(ENV_JUNIT_RUNNER_USE_INSTALLER)
 fun ConfigurationStorage.Companion.useInstaller(value: Boolean) = instance().put(ENV_JUNIT_RUNNER_USE_INSTALLER, value)
+
+fun ConfigurationStorage.Companion.useDockerContainer(): Boolean = instance().getBoolean(ENV_USE_DOCKER_CONTAINER)
+fun ConfigurationStorage.Companion.useDockerContainer(value: Boolean) = instance().put(ENV_USE_DOCKER_CONTAINER, value)
 
 /**
  *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
