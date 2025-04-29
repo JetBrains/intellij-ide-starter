@@ -62,7 +62,7 @@ class DockerIDEProcess : IDEProcess {
         vmOptions.environmentVariables
         val map: List<String> = vmOptions.data().map { it.replace(repoDir, containerWorkDir) }
         vmFile.writeLines(map)
-        val config = ContainerConfig(arguments = finalArgs, workingDir = repoDir, vmOptions = vmFile.toString(), testProject = this.testContext.resolvedProjectHome.toString())
+        val config = ContainerConfig(arguments = finalArgs, env = vmOptions.environmentVariables, workingDir = repoDir, vmOptions = vmFile.toString(), testProject = this.testContext.resolvedProjectHome.toString())
         val executionTime = measureTime {
           val container = IdeContainer(config)
           Path(this.testContext.paths.systemDir.toString(), ".port").delete()

@@ -12,6 +12,7 @@ data class ContainerConfig(
   val vmOptions: String?,
   val testProject: String? = null,
   val workingDir: String? = null,
+  val env: Map<String, String> = emptyMap(),
   val arguments: List<String> = emptyList(),
 )
 
@@ -60,6 +61,7 @@ class IdeContainer(val config: ContainerConfig) {
       }
       val arguments: List<String> = listOf("Xvfb", ":0", "-screen", "0", "1920x1080x24", "-ac", "+extension", "GLX", "-noreset", "&", "/opt/idea/bin/idea") + mapped
       val finalArguments: List<String> = listOf("/bin/sh", "-c", arguments.joinToString(" "))
+      container.withEnv(config.env)
       container.withCreateContainerCmdModifier { cmd -> cmd.withCmd(finalArguments) }
     }
   }
