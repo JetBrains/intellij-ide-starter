@@ -32,6 +32,8 @@ data class VMOptions(
     }
   }
 
+  fun data(): List<String> = data.toList()
+
   override fun toString(): String = buildString {
     appendLine("VMOptions{")
     appendLine("  env=$env")
