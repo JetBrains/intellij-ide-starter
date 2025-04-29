@@ -246,7 +246,10 @@ data class VMOptions(
 
   fun installTestScript(testName: String, paths: IDEDataPaths, commands: Iterable<MarshallableCommand>) {
     val scriptText = commands.joinToString(separator = System.lineSeparator()) { it.storeToString() }
+    installTestScript(testName, paths, scriptText)
+  }
 
+  fun installTestScript(testName: String, paths: IDEDataPaths, scriptText: String) {
     val scriptFileName = testName.cleanPathFromSlashes(replaceWith = "_") + ".text"
     val scriptFile = paths.systemDir.resolve(scriptFileName).apply {
       parent.createDirectories()
