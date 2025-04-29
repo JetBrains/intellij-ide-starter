@@ -5,6 +5,7 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.classFileVerification
 import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
+import com.intellij.ide.starter.config.useDockerContainer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDEStartConfig
@@ -191,7 +192,9 @@ data class IDERunContext(
   }
 
   suspend fun runIdeSuspending(): IDEStartResult {
-    return LocalIDEProcess().run(this)
+    return if (ConfigurationStorage.useDockerContainer())
+      DockerIDEProcess().run(this)
+    else LocalIDEProcess().run(this)
   }
 
   internal fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
