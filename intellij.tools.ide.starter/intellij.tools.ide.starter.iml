@@ -100,5 +100,8 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="testcontainers" level="project" />
+    <orderEntry type="library" exported="" name="testcontainers-junit-jupiter" level="project" />
+    <orderEntry type="library" name="JUnit4" level="project" />
   </component>
 </module>
