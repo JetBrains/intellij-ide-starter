@@ -4,7 +4,6 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.report.ErrorReporter.Companion.MESSAGE_FILENAME
 import com.intellij.ide.starter.report.ErrorReporter.Companion.STACKTRACE_FILENAME
 import com.intellij.ide.starter.runner.IDERunContext
-import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
 import java.nio.file.Files
@@ -137,14 +136,13 @@ object ErrorReporterToCI: ErrorReporter {
   }
 
   private fun generateTestNameFromException(stackTraceContent: String, messageText: String): String {
-    val onlyLettersHash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTraceContent).hashCode())
     return if (stackTraceContent.startsWith(messageText)) {
-      val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH - onlyLettersHash.length).coerceAtMost(stackTraceContent.length)
+      val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH).coerceAtMost(stackTraceContent.length)
       val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
-      "($onlyLettersHash $extractedTestName)"
+      extractedTestName
     }
     else {
-      "($onlyLettersHash ${messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
+      messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()
     }
   }
 }
