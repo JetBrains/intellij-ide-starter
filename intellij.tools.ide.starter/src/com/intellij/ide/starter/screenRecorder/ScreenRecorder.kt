@@ -85,7 +85,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   init {
     //on Linux, we run xvfb and test process is headless, so we need external tool to record screen
     if (!SystemInfo.isLinux) {
-      javaScreenRecorder = runCatching { getScreenRecorder((runContext.logsDir / "screenRecording").toFile()) }.getOrLogException { logOutput("Can't create screen recorder: ${it.message}") }
+      javaScreenRecorder = runCatching { getScreenRecorder((runContext.logsDir / "screenRecording").toFile()) }.getOrLogException { logOutput("Can't create screen recorder: ${it.stackTraceToString()}") }
     }
   }
 
