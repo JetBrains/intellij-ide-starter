@@ -2,6 +2,7 @@ package com.intellij.ide.starter.ide.installer
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeArchiveExtractor
+import com.intellij.ide.starter.ide.DefaultIdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
@@ -9,6 +10,7 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
+import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
 import java.nio.file.Path
@@ -65,7 +67,7 @@ internal class AndroidInstaller : IdeInstaller {
       true -> installDir.resolve("android-studio")
       false -> installDir
     }
-    val ide = IdeDistributionFactory.installIDE(installationPath.toFile(), ideInfo.executableFileName)
+    val ide = di.direct.instance<IdeDistributionFactory>().installIDE(installationPath.toFile(), ideInfo.executableFileName)
     return Pair(ide.build, ide)
   }
 }

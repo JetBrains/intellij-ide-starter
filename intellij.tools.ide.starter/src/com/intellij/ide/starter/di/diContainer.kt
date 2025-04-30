@@ -8,7 +8,9 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.splitMode
 import com.intellij.ide.starter.config.starterConfigurationStorageDefaults
 import com.intellij.ide.starter.frameworks.Framework
+import com.intellij.ide.starter.ide.DefaultIdeDistributionFactory
 import com.intellij.ide.starter.ide.IDETestContext
+import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.JBRDownloader
 import com.intellij.ide.starter.ide.StarterJBRDownloader
@@ -25,6 +27,8 @@ import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
 import com.intellij.ide.starter.runner.CurrentTestMethod
+import com.intellij.ide.starter.runner.IDEProcess
+import com.intellij.ide.starter.runner.LocalIDEProcess
 import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.runner.TestContainerImpl
@@ -55,6 +59,8 @@ var di = DI {
   bindFactory<IDETestContext, PluginConfigurator> { testContext: IDETestContext -> PluginConfigurator(testContext) }
   bindSingleton<IdeDownloader> { PublicIdeDownloader() }
   bindSingleton<IdeInstallerFactory> { IdeInstallerFactory() }
+  bindSingleton<IdeDistributionFactory> { DefaultIdeDistributionFactory }
+  bindSingleton<IDEProcess> { LocalIDEProcess() }
 
   // you can extend DI with frameworks, specific to the IDE language stack
   bindArgSet<IDETestContext, Framework>()

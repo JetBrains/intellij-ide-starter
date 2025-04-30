@@ -34,6 +34,6 @@ class StandardInstaller(
     IdeArchiveExtractor.unpackIdeIfNeeded(ideInstaller.installerFile.toFile(), installDir.toFile())
 
     //Install
-    return Pair(ideInstaller.buildNumber, IdeDistributionFactory.installIDE(installDir.toFile(), ideInfo.executableFileName))
+    return Pair(ideInstaller.buildNumber, di.direct.instance<IdeDistributionFactory>().installIDE(installDir.toFile(), ideInfo.executableFileName))
   }
 }

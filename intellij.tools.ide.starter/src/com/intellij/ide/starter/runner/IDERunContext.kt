@@ -192,9 +192,7 @@ data class IDERunContext(
   }
 
   suspend fun runIdeSuspending(): IDEStartResult {
-    return if (ConfigurationStorage.useDockerContainer())
-      DockerIDEProcess().run(this)
-    else LocalIDEProcess().run(this)
+    return di.direct.instance<IDEProcess>().run(this)
   }
 
   internal fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")

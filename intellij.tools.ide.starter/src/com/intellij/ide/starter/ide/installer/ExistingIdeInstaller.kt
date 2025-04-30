@@ -1,5 +1,7 @@
 package com.intellij.ide.starter.ide.installer
 
+import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.ide.DefaultIdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
@@ -7,6 +9,8 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
+import org.kodein.di.direct
+import org.kodein.di.instance
 import java.nio.file.Path
 import kotlin.io.path.*
 import kotlin.time.Duration.Companion.minutes
@@ -38,7 +42,7 @@ class ExistingIdeInstaller(private val installedIdePath: Path) : IdeInstaller {
     }
     return Pair(
       ideInstaller.buildNumber,
-      IdeDistributionFactory.installIDE(installDir.toFile(), ideInfo.executableFileName)
+      di.direct.instance<IdeDistributionFactory>().installIDE(installDir.toFile(), ideInfo.executableFileName)
     )
   }
 }
