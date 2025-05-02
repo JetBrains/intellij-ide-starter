@@ -74,7 +74,7 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
       catch (e: Throwable) {
         logError("Error waiting IDE is closed: ${e.message}: ${e.stackTraceToString()}", e)
         forceKill()
-        throw IllegalStateException("Process didn't die after waiting for Driver to close IDE")
+        throw IllegalStateException("Process didn't die after waiting for Driver to close IDE", e)
       }
     }
   }
