@@ -12,7 +12,10 @@ class ShutdownListener : ExecutionCondition {
   }
 
   init {
-    Runtime.getRuntime().addShutdownHook(Thread(Runnable { shuttingDown = true }, "Shutdown-indicator"))
+    Runtime.getRuntime().addShutdownHook(Thread(Runnable {
+      shuttingDown = true
+      logOutput("ShutdownListener registered shutting down, no more tests should start after this point")
+    }, "Shutdown-indicator"))
   }
 
   override fun evaluateExecutionCondition(context: ExtensionContext?): ConditionEvaluationResult? {
