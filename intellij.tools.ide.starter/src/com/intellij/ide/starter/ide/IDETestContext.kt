@@ -119,9 +119,9 @@ open class IDETestContext(
     executeRightAfterIdeOpened(executeRightAfterIdeOpened)
   }
 
-  fun executeDuringIndexing(): IDETestContext =
+  fun executeDuringIndexing(executeDuringIndexing: Boolean = true): IDETestContext =
     applyVMOptionsPatch {
-      addSystemProperty("performance.execute.script.after.scanning", true)
+      addSystemProperty("performance.execute.script.after.scanning", executeDuringIndexing)
     }
 
   fun withGtk2OnLinux(): IDETestContext =
