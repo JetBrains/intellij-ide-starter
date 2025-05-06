@@ -394,7 +394,7 @@ open class IDETestContext(
     expectedExitCode: Int = 0,
     collectNativeThreads: Boolean = false,
     stdOut: ExecOutputRedirect? = null,
-    configure: IDERunContext.() -> Unit = {}
+    configure: IDERunContext.() -> Unit = {},
   ): IDEStartResult {
     val span = TestTelemetryService.spanBuilder("runIDE").setAttribute("launchName", launchName).startSpan()
     span.makeCurrent().use {
@@ -582,48 +582,52 @@ open class IDETestContext(
 
   fun addProjectToTrustedLocations(projectPath: Path? = null, addParentDir: Boolean = false, configPath: Path = paths.configDir): IDETestContext {
     if (this.testCase.projectInfo == NoProject && projectPath == null) return this
-    val path = projectPath ?: this.resolvedProjectHome.normalize()
-    val trustedXml = configPath.toAbsolutePath().resolve("options/trusted-paths.xml")
 
-    if (!trustedXml.exists()) {
-      trustedXml.parent.createDirectories()
-      Files.write(trustedXml, this::class.java.classLoader.getResource("trusted-paths.xml")!!.readText().toByteArray())
+    val isRDProduct = this.ide.productCode == IdeProductProvider.RD.productCode
+
+    val (path, expression) = when (addParentDir) {
+      true -> Pair(first = projectPath ?: this.resolvedProjectHome.normalize().parent, second = when (isRDProduct) {
+        true -> error("NOT_IMPLEMENTED please add a correct path")
+        else -> "//component[@name='Trusted.Paths.Settings']/option[@name='TRUSTED_PATHS']/list"
+      })
+      else -> Pair(first = projectPath ?: this.resolvedProjectHome.normalize(), second = when (isRDProduct) {
+        true -> "//component[@name='TrustedSolutionStore']/option[@name='trustedLocations']/set"
+        else -> "//component[@name='Trusted.Paths']/option[@name='TRUSTED_PROJECT_PATHS']/map"
+      })
+    }
+
+    val (trustedXmlPath, fileName) = when (isRDProduct) {
+      true -> configPath.toAbsolutePath().resolve("options/trustedSolutions.xml") to "trustedSolutions.xml"
+      else -> configPath.toAbsolutePath().resolve("options/trusted-paths.xml") to "trusted-paths.xml"
+    }
+
+    if (!trustedXmlPath.exists()) {
+      trustedXmlPath.parent.createDirectories()
+      Files.write(trustedXmlPath, this::class.java.classLoader.getResource(fileName)!!.readText().toByteArray())
+    }
+    else {
+      if (trustedXmlPath.readText().contains("\"$path\"")) {
+        logOutput("Trusted xml file content: ${trustedXmlPath.readText()}")
+        return this
+      }
     }
 
     try {
-      val xmlDoc = XmlBuilder.parse(trustedXml)
+      val xmlDoc = XmlBuilder.parse(trustedXmlPath)
       val xp: XPath = XPathFactory.newInstance().newXPath()
 
-      val map = xp.evaluate("//component[@name='Trusted.Paths']/option[@name='TRUSTED_PROJECT_PATHS']/map", xmlDoc,
-                            XPathConstants.NODE) as Element
-      val entry = xmlDoc.createElement("entry").apply {
-        setAttribute("key", "$path")
-        setAttribute("value", "true")
-      }
-      map.appendChild(entry)
-
-      if (addParentDir) {
-        val list = xp.evaluate("//component[@name='Trusted.Paths.Settings']/option[@name='TRUSTED_PATHS']/list", xmlDoc,
-                               XPathConstants.NODE) as Element
-        val option = xmlDoc.createElement("option").apply { setAttribute("value", "${path.parent}") }
-        list.appendChild(option)
-      }
-
-      XmlBuilder.writeDocument(xmlDoc, trustedXml)
-
-      if (this.ide.productCode == IdeProductProvider.RD.productCode) {
-        val trustedSolutionsXml = configPath.toAbsolutePath().resolve("options/trustedSolutions.xml")
-        if (!trustedSolutionsXml.exists()) {
-          Files.write(trustedSolutionsXml, this::class.java.classLoader.getResource("trustedSolutions.xml")!!.readText().toByteArray())
+      val component = xp.evaluate(expression, xmlDoc, XPathConstants.NODE) as Element
+      val entry = when (addParentDir || isRDProduct) {
+        true -> xmlDoc.createElement("option").apply { setAttribute("value", "${path}") }
+        else -> xmlDoc.createElement("entry").apply {
+          setAttribute("key", "$path")
+          setAttribute("value", "true")
         }
-        val solutionsXmlDoc = XmlBuilder.parse(trustedSolutionsXml)
-        val set = xp.evaluate("//component[@name='TrustedSolutionStore']/option[@name='trustedLocations']/set", solutionsXmlDoc,
-                               XPathConstants.NODE) as Element
-        val option = solutionsXmlDoc.createElement("option").apply { setAttribute("value", "${path}") }
-        set.appendChild(option)
-
-        XmlBuilder.writeDocument(solutionsXmlDoc, trustedSolutionsXml)
       }
+      component.appendChild(entry)
+
+      XmlBuilder.writeDocument(xmlDoc, trustedXmlPath)
+      logOutput("Trusted xml file content: ${trustedXmlPath.readText()}")
     }
     catch (e: Exception) {
       logError(e)
