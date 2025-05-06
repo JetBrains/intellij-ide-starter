@@ -586,7 +586,7 @@ open class IDETestContext(
     val isRDProduct = this.ide.productCode == IdeProductProvider.RD.productCode
 
     val (path, expression) = when (addParentDir) {
-      true -> Pair(first = projectPath ?: this.resolvedProjectHome.normalize().parent, second = when (isRDProduct) {
+      true -> Pair(first = projectPath?.parent ?: this.resolvedProjectHome.normalize().parent, second = when (isRDProduct) {
         true -> error("NOT_IMPLEMENTED please add a correct path")
         else -> "//component[@name='Trusted.Paths.Settings']/option[@name='TRUSTED_PATHS']/list"
       })
