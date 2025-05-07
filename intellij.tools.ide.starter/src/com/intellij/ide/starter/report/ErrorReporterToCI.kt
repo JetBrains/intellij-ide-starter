@@ -139,10 +139,10 @@ object ErrorReporterToCI: ErrorReporter {
     return if (stackTraceContent.startsWith(messageText)) {
       val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH).coerceAtMost(stackTraceContent.length)
       val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
-      extractedTestName
+      "($extractedTestName)"
     }
     else {
-      messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()
+      "(${messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
     }
   }
 }
