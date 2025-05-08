@@ -20,8 +20,8 @@ jvm_library(
   srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True),
   kotlinc_opts = ":custom",
   deps = [
-    "@community//platform/remote-driver/client:driver-client",
-    "@community//platform/remote-driver/model:driver-model",
+    "@community//platform/remote-driver/client",
+    "@community//platform/remote-driver/model",
     "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",
