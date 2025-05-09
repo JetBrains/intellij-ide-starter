@@ -3,12 +3,15 @@ package com.intellij.ide.starter.report
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.report.ErrorReporter.Companion.MESSAGE_FILENAME
 import com.intellij.ide.starter.report.ErrorReporter.Companion.STACKTRACE_FILENAME
+import com.intellij.ide.starter.report.ErrorReporter.Companion.TESTNAME_FILENAME
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.util.SystemProperties
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 import kotlin.jvm.optionals.getOrNull
 
 object ErrorReporterToCI: ErrorReporter {
@@ -51,20 +54,22 @@ object ErrorReporterToCI: ErrorReporter {
       if (!messageFile.exists()) continue
 
       val messageText = generifyErrorMessage(messageFile.readText().trimIndent().trim())
+      val testNameFile = errorDir.resolve(TESTNAME_FILENAME).toFile()
+      val testName = if (testNameFile.exists()) testNameFile.readText().trim() else null
 
       val errorType = ErrorType.fromMessage(messageText)
       if (errorType == ErrorType.ERROR) {
         val stacktraceFile = errorDir.resolve(STACKTRACE_FILENAME).toFile()
         if (!stacktraceFile.exists()) continue
         val stackTrace = stacktraceFile.readText().trimIndent().trim()
-        errors.add(Error(messageText, stackTrace, "", errorType))
+        errors.add(Error(messageText, stackTrace, "", errorType, testName))
       } else if (errorType == ErrorType.FREEZE) {
-          errorDir.listDirectoryEntries("dump*").firstOrNull()?.let { threadDump ->
-            val dumpContent = Files.readString(threadDump)
-            val fallbackName = "Not analyzed freeze: " + (inferClassMethodNamesFromFolderName(threadDump)
-                                                          ?: inferFallbackNameFromThreadDump(dumpContent))
-            errors.add(Error(fallbackName, "", dumpContent, ErrorType.FREEZE))
-          }
+        errorDir.listDirectoryEntries("dump*").firstOrNull()?.let { threadDump ->
+          val dumpContent = Files.readString(threadDump)
+          val fallbackName = "Not analyzed freeze: " + (inferClassMethodNamesFromFolderName(threadDump)
+                                                        ?: inferFallbackNameFromThreadDump(dumpContent))
+          errors.add(Error(fallbackName, "", dumpContent, ErrorType.FREEZE))
+        }
       }
     }
     return errors
@@ -109,7 +114,7 @@ object ErrorReporterToCI: ErrorReporter {
       val stackTraceContent = error.stackTraceContent
       val testName = when (error.type) {
         ErrorType.ERROR -> {
-          generateTestNameFromException(stackTraceContent, messageText)
+          error.testName ?: generateTestNameFromException(stackTraceContent, messageText)
         }
         ErrorType.FREEZE, ErrorType.TIMEOUT -> {
           messageText
@@ -120,11 +125,11 @@ object ErrorReporterToCI: ErrorReporter {
       val failureDetailsMessage = failureDetailsProvider.getFailureDetails(runContext)
       val urlToLogs = failureDetailsProvider.getLinkToCIArtifacts(runContext).toString()
       if (CIServer.instance.isTestFailureShouldBeIgnored(messageText) || CIServer.instance.isTestFailureShouldBeIgnored(stackTraceContent)) {
-        CIServer.instance.ignoreTestFailure(testName = generifyErrorMessage(testName),
+        CIServer.instance.ignoreTestFailure(testName = "(${generifyErrorMessage(testName)})",
                                             message = failureDetailsMessage)
       }
       else {
-        CIServer.instance.reportTestFailure(testName = generifyErrorMessage(testName),
+        CIServer.instance.reportTestFailure(testName = "(${generifyErrorMessage(testName)})",
                                             message = failureDetailsMessage,
                                             details = stackTraceContent,
                                             linkToLogs = urlToLogs)
@@ -139,11 +144,10 @@ object ErrorReporterToCI: ErrorReporter {
     return if (stackTraceContent.startsWith(messageText)) {
       val maxLength = (ErrorReporter.MAX_TEST_NAME_LENGTH).coerceAtMost(stackTraceContent.length)
       val extractedTestName = stackTraceContent.substring(0, maxLength).trim()
-      "($extractedTestName)"
+      extractedTestName
     }
     else {
-      "(${messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()})"
+      messageText.substring(0, ErrorReporter.MAX_TEST_NAME_LENGTH.coerceAtMost(messageText.length)).trim()
     }
   }
 }
-

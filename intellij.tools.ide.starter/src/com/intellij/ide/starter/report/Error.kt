@@ -3,7 +3,7 @@ package com.intellij.ide.starter.report
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import java.util.*
 
-data class Error(val messageText: String, val stackTraceContent: String, val threadDump: String, val type: ErrorType) {
+data class Error(val messageText: String, val stackTraceContent: String, val threadDump: String, val type: ErrorType, val testName: String? = null) {
   private val generifiedStackTraceContent: String = generifyErrorMessage(stackTraceContent)
 
   override fun equals(other: Any?): Boolean {
