@@ -519,6 +519,10 @@ open class IDETestContext(
       logOutput("License is not provided")
       return this
     }
+    if (this is IDERemDevTestContext) {
+      frontendIDEContext.setLicense(license)
+      return this
+    }
     val licenseKeyFileName: String = when (this.ide.productCode) {
       IdeProductProvider.IU.productCode -> "idea.key"
       IdeProductProvider.RM.productCode -> "rubymine.key"
