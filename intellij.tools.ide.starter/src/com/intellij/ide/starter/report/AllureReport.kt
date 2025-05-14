@@ -6,11 +6,7 @@ import com.intellij.ide.starter.utils.convertToHashCodeWithOnlyLetters
 import com.intellij.ide.starter.utils.generifyErrorMessage
 import com.intellij.tools.ide.util.common.logError
 import io.qameta.allure.Allure
-import io.qameta.allure.model.Label
-import io.qameta.allure.model.Link
-import io.qameta.allure.model.Status
-import io.qameta.allure.model.StatusDetails
-import io.qameta.allure.model.TestResult
+import io.qameta.allure.model.*
 import java.util.*
 
 
@@ -52,7 +48,7 @@ object AllureReport {
         linkToCi.name = "CI server"
         linkToCi.url = link
       }
-      Allure.label("layer", "Exception")
+      errorLabels.add(Label().setName("layer").setValue("Exception"))
       val hash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
