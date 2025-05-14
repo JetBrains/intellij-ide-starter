@@ -116,6 +116,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     }
     javaScreenRecorder?.stop()
     ffmpegProcess?.destroy()
+    ffmpegProcess = null
   }
 
   private fun getDisplaySize(displayWithColumn: String, defaultValue: Pair<Int, Int> = 1920 to 1080): Pair<Int, Int> {
