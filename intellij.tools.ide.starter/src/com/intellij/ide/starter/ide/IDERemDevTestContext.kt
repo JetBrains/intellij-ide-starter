@@ -38,6 +38,11 @@ class IDERemDevTestContext(
   preserveSystemDir = preserveSystemDir,
 ) {
 
+  override fun setProfiler(profilerType: ProfilerType): IDETestContext {
+    frontendIDEContext.setProfiler(profilerType)
+    return super.setProfiler(profilerType)
+  }
+
   override fun applyVMOptionsPatch(patchVMOptions: VMOptions.() -> Unit): IDETestContext {
     frontendIDEContext.applyVMOptionsPatch(patchVMOptions)
     return super.applyVMOptionsPatch(patchVMOptions)

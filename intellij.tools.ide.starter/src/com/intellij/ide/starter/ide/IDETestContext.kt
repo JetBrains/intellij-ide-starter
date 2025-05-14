@@ -274,7 +274,7 @@ open class IDETestContext(
    * Make sure that you don't use start/stopProfiler in this case since this will cause: "Could not set dlopen hook. Unsupported JVM?"
    * exception. You have to choose between profiling from the start or profiling a specific part of the test.
    */
-  fun setProfiler(profilerType: ProfilerType = ProfilerType.ASYNC_ON_START): IDETestContext {
+  open fun setProfiler(profilerType: ProfilerType = ProfilerType.ASYNC_ON_START): IDETestContext {
     logOutput("Setting profiler: ${profilerType}")
     this.profilerType = profilerType
     return this
