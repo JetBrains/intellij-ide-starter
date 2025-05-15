@@ -1,11 +1,8 @@
 package com.intellij.ide.starter.runner
 
-import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.classFileVerification
 import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
-import com.intellij.ide.starter.config.useDockerContainer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDEStartConfig
@@ -17,19 +14,12 @@ import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.process.collectJavaThreadDump
 import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
-import com.intellij.ide.starter.process.exec.ExecTimeoutException
-import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerInjector
 import com.intellij.ide.starter.profiler.ProfilerType
-import com.intellij.ide.starter.report.AllureHelper
-import com.intellij.ide.starter.report.ErrorReporter
-import com.intellij.ide.starter.report.FailureDetailsOnCI
-import com.intellij.ide.starter.report.TimeoutAnalyzer
-import com.intellij.ide.starter.runner.events.*
+import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
+import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
-import com.intellij.ide.starter.telemetry.TestTelemetryService
-import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.openapi.util.io.NioFiles
@@ -38,22 +28,21 @@ import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.createDirectories
-import io.qameta.allure.Allure
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.kodein.di.direct
 import org.kodein.di.instance
-import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.*
+import kotlin.io.path.bufferedReader
+import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.readText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTime
 
 data class IDERunContext(
   val testContext: IDETestContext,
@@ -154,6 +143,7 @@ data class IDERunContext(
       disableFreezeReportingProfiling()
       setFatalErrorNotificationEnabled()
       setFlagIntegrationTests()
+      setJcefJsQueryPoolSize(10_000)
       takeScreenshotsPeriodically()
       withJvmCrashLogDirectory(jvmCrashLogDirectory)
       withHeapDumpOnOutOfMemoryDirectory(heapDumpOnOomDirectory)

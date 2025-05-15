@@ -244,6 +244,10 @@ data class VMOptions(
     addSystemProperty("ide.performance.skip.refactoring.dialogs", "true")
   }
 
+  fun setJcefJsQueryPoolSize(size: Int) {
+    addSystemProperty("ide.browser.jcef.jsQueryPoolSize", "$size")
+  }
+
   fun installTestScript(testName: String, paths: IDEDataPaths, commands: Iterable<MarshallableCommand>) {
     val scriptText = commands.joinToString(separator = System.lineSeparator()) { it.storeToString() }
     installTestScript(testName, paths, scriptText)
