@@ -159,6 +159,10 @@ open class IDETestContext(
       addSystemProperty("feature.usage.event.log.send.on.ide.close", false)
     }
 
+  fun suppressStatisticsReport(): IDETestContext = applyVMOptionsPatch {
+    addSystemProperty("idea.suppress.statistics.report", true)
+  }
+
   fun disableReportingStatisticsToProduction(disabled: Boolean = true): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.local.statistics.without.report", disabled)
   }
