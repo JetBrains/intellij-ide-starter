@@ -353,10 +353,12 @@ data class IDERunContext(
       return
     }
     val screenRecorder = IDEScreenRecorder(this)
-    EventsBus.subscribe(IDERunContext::javaClass) { _: IdeLaunchEvent ->
+    EventsBus.subscribe(screenRecorder) { _: IdeLaunchEvent ->
       screenRecorder.start()
     }
-    EventsBus.subscribe(IDERunContext::javaClass) { _: IdeAfterLaunchEvent ->
+    EventsBus.subscribe(screenRecorder) { _: IdeAfterLaunchEvent ->
+      EventsBus.unsubscribe<IdeLaunchEvent>(screenRecorder)
+      EventsBus.unsubscribe<IdeAfterLaunchEvent>(screenRecorder)
       screenRecorder.stop()
     }
   }
