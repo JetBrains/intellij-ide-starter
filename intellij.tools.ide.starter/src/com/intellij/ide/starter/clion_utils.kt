@@ -10,19 +10,20 @@ import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
-fun IDETestContext.disableCLionTestIndexing() =
+fun IDETestContext.disableCLionTestIndexing(): IDETestContext =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
 
-fun IDETestContext.disablePatchEngine() =
+fun IDETestContext.disablePatchEngine(): IDETestContext =
   applyVMOptionsPatch { this.addSystemProperty("rdclient.patch.engine.enabled", false) }
 
-fun IDETestContext.setForcedTraceScenarios(vararg scenarios: String) = applyVMOptionsPatch {
+@Suppress("unused")
+fun IDETestContext.setForcedTraceScenarios(vararg scenarios: String): IDETestContext = applyVMOptionsPatch {
   this.addSystemProperty("rd.forced.trace.scenarios", scenarios.joinToString(","))
 }
 
 // Should be passed manually (through TC or run configuration)
-val isRadler by lazy { System.getProperty("intellij.clion.radler.perf.tests", "false").toBoolean() }
-val clionPrefix by lazy { if (isRadler) "radler" else "clion" }
+val isRadler: Boolean by lazy { System.getProperty("intellij.clion.radler.perf.tests", "false").toBoolean() }
+val clionPrefix: String by lazy { if (isRadler) "radler" else "clion" }
 
 fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
   val context = Starter.newContext("$clionPrefix/$testName", testCase)
