@@ -6,6 +6,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.ThreeState
+import com.intellij.util.io.zip.JBZipEntry
 import com.intellij.util.io.zip.JBZipFile
 import org.rauschig.jarchivelib.ArchiveFormat
 import org.rauschig.jarchivelib.ArchiverFactory
@@ -60,6 +61,10 @@ object FileSystem {
     try {
       targetDir.createDirectories()
 
+      // Data class to store symlink information
+      data class SymlinkInfo(val file: Path, val targetPath: String)
+      val symlinks = mutableListOf<SymlinkInfo>()
+
       JBZipFile(zipFile.toFile(), StandardCharsets.UTF_8, false, ThreeState.UNSURE).use { zip ->
         for (entry in zip.entries) {
           if (entry.isDirectory) {
@@ -68,10 +73,27 @@ object FileSystem {
           }
           val file = targetDir.resolve((map(entry.name) ?: continue))
           file.parent.createDirectories()
-          file.outputStream().use {
-            entry.inputStream.use { entryStream -> entryStream.copyTo(it) }
+
+          if (isSymlink(entry)) {
+            val targetPath = String(entry.data)
+            symlinks.add(SymlinkInfo(file, targetPath))
           }
-          file.setLastModifiedTime(FileTime.fromMillis(entry.time))
+          else {
+            file.outputStream().use {
+              entry.inputStream.use { entryStream -> entryStream.copyTo(it) }
+            }
+            file.setLastModifiedTime(FileTime.fromMillis(entry.time))
+          }
+        }
+
+        for (symlinkInfo in symlinks) {
+          try {
+            Files.deleteIfExists(symlinkInfo.file)
+            Files.createSymbolicLink(symlinkInfo.file, Path.of(symlinkInfo.targetPath))
+          }
+          catch (e: Exception) {
+            logOutput("Failed to create symbolic link at ${symlinkInfo.file}, falling back to regular file: ${e.message}")
+          }
         }
       }
     }
@@ -279,6 +301,11 @@ object FileSystem {
       logOutput("$this is not up to date")
     }
     return upToDate
+  }
+
+  private fun isSymlink(entry: JBZipEntry): Boolean {
+    val fileMode = (entry.externalAttributes ushr 16) and 0xFFFF
+    return (fileMode and 0xF000).toInt() == 0xA000
   }
 }
 
