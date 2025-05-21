@@ -185,7 +185,14 @@ data class IDERunContext(
     return di.direct.instance<IDEProcess>().run(this)
   }
 
-  internal fun getStderr() = ExecOutputRedirect.ToStdOut("[ide-${contextName}-err]")
+  internal fun getStderr(): ExecOutputRedirect {
+    val prefix = "[ide-${contextName}-err]"
+    return if (stdOut != null) {
+      ExecOutputRedirect.DelegatedWithPrefix(prefix, stdOut)
+    } else {
+      ExecOutputRedirect.ToStdOut(prefix)
+    }
+  }
 
   internal fun getStdout(): ExecOutputRedirect {
     if (stdOut != null) {

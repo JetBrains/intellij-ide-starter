@@ -101,6 +101,26 @@ sealed class ExecOutputRedirect {
     override fun toString() = "file $outputFile"
   }
 
+  data class DelegatedWithPrefix(val prefix: String, private val delegate: ExecOutputRedirect): ExecOutputRedirect()  {
+    override fun read(): String {
+      return delegate.read()
+    }
+
+    override fun open() {
+      delegate.open()
+    }
+
+    override fun close() {
+      delegate.close()
+    }
+
+    override fun redirectLine(line: String) {
+      delegate.redirectLine("$prefix $line")
+    }
+
+    override fun toString(): String = "$delegate with prefix '$prefix'"
+  }
+
   data class ToStdOut(val prefix: String) : ExecOutputRedirect() {
     override fun redirectLine(line: String) {
       reportOnStdoutIfNecessary(line)
