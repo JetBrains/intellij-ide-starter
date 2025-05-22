@@ -42,7 +42,7 @@ sealed class ExecOutputRedirect {
     override fun toString() = "ignored"
   }
 
-  data class ToFile(val outputFile: File) : ExecOutputRedirect() {
+  data class ToFile(val outputFile: File, private val reportDebugForAutoAttach: Boolean = true) : ExecOutputRedirect() {
 
     private var writer: PrintWriter? = null
 
@@ -61,7 +61,9 @@ sealed class ExecOutputRedirect {
     }
 
     override fun redirectLine(line: String) {
-      reportOnStdoutIfNecessary(line)
+      if (reportDebugForAutoAttach) {
+        reportOnStdoutIfNecessary(line)
+      }
 
       initializeWriterIfNotInitialized().let {
         it.println(line)
