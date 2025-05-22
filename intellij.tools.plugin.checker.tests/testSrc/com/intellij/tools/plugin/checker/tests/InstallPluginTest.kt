@@ -33,6 +33,7 @@ import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
+import com.intellij.tools.plugin.checker.tests.InstallPluginTest.Companion.getMarketplaceEvent
 import com.intellij.util.containers.ContainerUtil.subtract
 import com.intellij.util.system.OS
 import org.junit.jupiter.api.Assumptions
@@ -54,8 +55,6 @@ import kotlin.io.path.createDirectories
 @ExtendWith(KillOutdatedProcesses::class)
 class InstallPluginTest {
   companion object {
-    private val pluginsWithUI = listOf(12798, 8079, 21452, 15503, 13227, 14823, 21709, 14946, 16478, 10253, 20603, 19772, 16353, 21531, 94086, 17153,
-                                       1800, 14015, 21624, 20158, 23046, 19470)
 
     private fun setDebugBuildParamsForLocalDebug(vararg buildProperties: Pair<String, String>): Path {
       @Suppress("SSBasedInspection") val tempPropertiesFile = File.createTempFile("teamcity_", "_properties_file.properties")
@@ -114,7 +113,7 @@ class InstallPluginTest {
       return jacksonMapper.treeToValue<MarketplaceEvent>(detailField)
     }
 
-    private fun getMarketplaceEvent(): MarketplaceEvent {
+    fun getMarketplaceEvent(): MarketplaceEvent {
       val buildProperties = TeamCityClient.run {
         get(
           fullUrl = restUri.resolve("builds/id:${CIServer.instance.asTeamCity().buildId}/resulting-properties")
@@ -141,81 +140,66 @@ class InstallPluginTest {
         testCase = testCase
       )
 
-      val resultingTestCase = modifyTestCaseForIdeVersion(draftParams)
-      if (resultingTestCase.isEmpty()) markTestCaseEmptyOnTc()
+      val resultingTestCase = try {
+        modifyTestCaseForIdeVersion(draftParams)
+      } catch (ex: UnableToVerifyException) {
+        logOutput(ex)
+        MarketplaceReporter.reportUnableToVerifyError(ex.message!!)
+        return emptyList()
+      }
 
       return resultingTestCase
     }
 
     private fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
       if (!IdeProductProvider.isProductSupported(params.event.productCode)) {
-        logOutput(
-          RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}")
       }
 
       if (params.event.productCode == IdeProductProvider.AI.productCode) {
-        logOutput(
-          RuntimeException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}"))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}")
       }
 
       val versionNumber = params.event.productVersion.split("-")[1].split(".")[0].toInt()
       if (versionNumber <= 203) {
-        logOutput(RuntimeException("Version ${params.event.productVersion} is not supported."))
-        return emptyList()
+        throw UnableToVerifyException("Version ${params.event.productVersion} is not supported.")
       }
 
       if (params.event.productVersion.startsWith("PC-231.")) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported in 231 branch yet. " +
-                                   "Since Performance Plugin is not bundled (yet) and not published."))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported in 231 branch yet. " +
+                                      "Since Performance Plugin is not bundled (yet) and not published.")
       }
 
       if (params.event.productVersion.startsWith("RM-232.")) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported since it freezes on IDEA-320042"))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported since it freezes on IDEA-320042")
       }
 
       if (params.event.productVersion.startsWith("DB") && versionNumber < 232) {
-        logOutput(
-          RuntimeException("Product ${params.event.productVersion} is not supported: https://youtrack.jetbrains.com/issue/DBE-16528"))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productVersion} is not supported: https://youtrack.jetbrains.com/issue/DBE-16528")
       }
 
       if (params.event.productCode == IdeProductProvider.DS.productCode) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. There is some issue with the license."))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. There is some issue with the license.")
       }
 
       if (params.event.pricingModel == "PAID") {
-        logOutput(RuntimeException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}"))
-        return emptyList()
-      }
-
-      if (pluginsWithUI.contains(params.event.pluginId)) {
-        logOutput(RuntimeException("Plugins with UI on startup are not supported yet. Plugin id: ${params.event.pluginId}"))
-        return emptyList()
+        throw UnableToVerifyException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}")
       }
 
       if (params.event.productCode == IdeProductProvider.QA.productCode) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. There is some issue with the license."))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. There is some issue with the license.")
       }
 
       if (params.event.productCode == IdeProductProvider.RR.productCode) {
-        logOutput(RuntimeException("Product ${params.event.productCode} is not supported yet. There is some issue with the license."))
-        return emptyList()
+        throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. There is some issue with the license.")
       }
 
       if (params.event.productCode == IdeProductProvider.RD.productCode && versionNumber < 243) {
-        logOutput(RuntimeException("${params.event.productCode} older than 2024.3 is not supported because it reports 1s freezes as failed tests."))
-        return emptyList()
+        throw UnableToVerifyException("${params.event.productCode} older than 2024.3 is not supported because it reports 1s freezes as failed tests.")
       }
 
       if (params.event.productCode == IdeProductProvider.GW.productCode) {
-        logOutput(RuntimeException("${params.event.productCode} is not supported yet."))
-        return emptyList()
+        throw UnableToVerifyException("${params.event.productCode} is not supported yet.")
       }
 
       val link = params.event.productLink.substring(0, params.event.productLink.indexOf(".tar.gz"))
@@ -255,91 +239,12 @@ class InstallPluginTest {
     return testContext
   }
 
-  private fun reportErrorsToAwsSqs(errors: List<Error>) {
-    if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) return
-    val sqsClient = SqsClientWrapper("https://sqs.eu-west-1.amazonaws.com/046864285642/production__external-services", EU_WEST_1)
-    val buildUrl = System.getenv("BUILD_URL")
-    val marketplaceEvent = getMarketplaceEvent()
-
-    val verificationResult = when {
-      errors.isEmpty() -> VerificationResultType.OK
-      errors.size == 1 && errors.first().messageText.contains("due to a dialog being shown") -> VerificationResultType.WARNINGS
-      else -> VerificationResultType.PROBLEMS
-    }
-
-    val message = VerificationMessage(
-      "${errors.size} ${if (errors.size == 1) "issue" else "issues"} occurred during the IDE run with the plugin installed",
-      verificationResult,
-      "$buildUrl?guest=1",
-      marketplaceEvent.id,
-      marketplaceEvent.verificationType,
-      null
-    )
-    sqsClient.sendMessage(message)
-
-    sqsClient.closeClient()
-  }
-
-  private fun generateSarifReport(errors: List<Error>, params: EventToTestCaseParams) {
-    val artifactsLocation = "${System.getenv("BUILD_URL")}?buildTab=artifacts#%2Finstall-plugin-test%2Fwith-plugin"
-
-    val sarifReport = SarifReport(
-      runs = listOf(
-        Run(
-          tool = Tool(
-            driver = Driver(
-              name = "IntellijIdeStarter",
-              informationUri = "https://github.com/JetBrains/intellij-ide-starter",
-              semanticVersion = params.event.productVersion
-            )
-          ),
-          artifacts = listOf(
-            Artifact(
-              location = Location(
-                uri = artifactsLocation
-              )
-            )
-          ),
-          results = errors.map { error ->
-            Result(
-              ruleId = error.messageText,
-              message = Message(
-                text = error.stackTraceContent
-              )
-            )
-          }
-        )
-      )
-    )
-
-    val mapper = jsonMapper {
-      addModule(kotlinModule())
-      enable(SerializationFeature.INDENT_OUTPUT)
-    }
-
-    val artifactsDir = GlobalPaths.instance.artifactsDirectory
-    val sarifPath = artifactsDir.resolve("sarif-reports/${params.event.pluginId}/${params.event.id}").createDirectories().resolve("sarif.json")
-    logOutput("##teamcity[setParameter name='starter.sarif.reports.path' value='$artifactsDir/sarif-reports']")
-    logOutput("##teamcity[progressMessage 'Writing SARIF report to $sarifPath']")
-    mapper.writeValue(File(sarifPath.toString()), sarifReport)
-
-    TeamCityClient.publishTeamCityArtifacts(
-      source = sarifPath,
-      artifactPath = "install-plugin-test",
-      artifactName = "sarif.json",
-      zipContent = false
-    )
-  }
-
-  private fun handleTimeout(ex: ExecTimeoutException, params: EventToTestCaseParams, testContext: IDETestContext, errorsWithoutPlugin: List<Error>) {
+  private fun handleTimeout(ex: ExecTimeoutException, testContext: IDETestContext, errorsWithoutPlugin: List<Error>) {
     val runContext = IDERunContext(testContext, launchName = "with-plugin")
     val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
     val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
     TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
-
-    generateSarifReport(pluginErrors, params)
-    reportErrorsToAwsSqs(pluginErrors)
-
+    MarketplaceReporter.reportIdeErrors(pluginErrors)
     throw ex
   }
 
@@ -377,18 +282,131 @@ class InstallPluginTest {
       val pluginErrors = subtract(errors, errorsWithoutPlugin).toList()
 
       ErrorReporterToCI.reportErrors(ideRunContext, pluginErrors)
-      generateSarifReport(pluginErrors, params)
-      reportErrorsToAwsSqs(pluginErrors)
+      MarketplaceReporter.reportIdeErrors(pluginErrors)
     }
     catch (ex: Exception) {
       when (ex) {
-        is ExecTimeoutException -> handleTimeout(ex, params, testContext, errorsWithoutPlugin)
+        is ExecTimeoutException -> handleTimeout(ex, testContext, errorsWithoutPlugin)
         else -> throw ex
       }
     }
   }
 }
 
+object MarketplaceReporter {
+
+  private val marketplaceEvent = getMarketplaceEvent()
+
+  private val buildUrl = "https://intellij-plugins-performance.teamcity.com/buildConfiguration/" +
+                         "PluginPlatformTests_ExternalPluginsCheckerTests/" +
+                         "${System.getenv("BUILD_NUMBER")}?guest=1"
+
+  fun reportUnableToVerifyError(reason: String) {
+    markTestCaseEmptyOnTc()
+
+    val message = VerificationMessage(
+      "Unable to verify: $reason",
+      VerificationResultType.UNABLE_TO_VERIFY,
+      buildUrl,
+      marketplaceEvent.id,
+      marketplaceEvent.verificationType,
+      null
+    )
+
+    sendSqsMessage(message)
+  }
+
+  fun reportIdeErrors(errors: List<Error>) {
+    val verificationResult = when {
+      errors.isEmpty() -> VerificationResultType.OK
+      errors.size == 1 && errors.first().messageText.contains("due to a dialog being shown") -> VerificationResultType.WARNINGS
+      else -> VerificationResultType.PROBLEMS
+    }
+
+    val url = when {
+      verificationResult == VerificationResultType.OK -> buildUrl
+      else -> {
+        generateSarifReport(errors)
+        "${marketplaceEvent.pluginId}/${marketplaceEvent.id}/sarif.json"
+      }
+    }
+
+    val verdict = when (verificationResult) {
+      VerificationResultType.OK -> "No issues occurred during the IDE run with the plugin installed"
+      else -> "${errors.size} ${if (errors.size == 1) "issue" else "issues"} occurred during the IDE run with the plugin installed"
+    }
+
+    val message = VerificationMessage(
+      verdict,
+      verificationResult,
+      url,
+      marketplaceEvent.id,
+      marketplaceEvent.verificationType,
+      null
+    )
+
+    sendSqsMessage(message)
+  }
+
+  private fun sendSqsMessage(message: VerificationMessage) {
+    if (!teamCityIntelliJPerformanceServer.isBuildRunningOnCI) return
+    val sqsClient = SqsClientWrapper("https://sqs.eu-west-1.amazonaws.com/046864285642/production__external-services", EU_WEST_1)
+
+    try {
+      sqsClient.sendMessage(message)
+    } finally {
+      sqsClient.closeClient()
+    }
+  }
+
+  private fun generateSarifReport(errors: List<Error>) {
+    val artifactsLocation = "$buildUrl&buildTab=artifacts#%2Finstall-plugin-test%2Fwith-plugin"
+
+    val sarifReport = SarifReport(
+      runs = listOf(
+        Run(
+          tool = Tool(
+            driver = Driver(
+              name = "IntellijIdeStarter",
+              informationUri = "https://github.com/JetBrains/intellij-ide-starter",
+              semanticVersion = marketplaceEvent.productVersion
+            )
+          ),
+          artifacts = listOf(Artifact(Location(artifactsLocation))),
+          results = errors.map { error ->
+            Result(
+              ruleId = error.messageText,
+              message = Message(
+                text = error.stackTraceContent
+              )
+            )
+          }
+        )
+      )
+    )
+
+    val mapper = jsonMapper {
+      addModule(kotlinModule())
+      enable(SerializationFeature.INDENT_OUTPUT)
+    }
+
+    val artifactsDir = GlobalPaths.instance.artifactsDirectory
+    val sarifPath = artifactsDir.resolve("sarif-reports/${marketplaceEvent.pluginId}/${marketplaceEvent.id}").createDirectories().resolve("sarif.json")
+    logOutput("##teamcity[setParameter name='starter.sarif.reports.path' value='$artifactsDir/sarif-reports']")
+    logOutput("##teamcity[progressMessage 'Writing SARIF report to $sarifPath']")
+    mapper.writeValue(File(sarifPath.toString()), sarifReport)
+
+    TeamCityClient.publishTeamCityArtifacts(
+      source = sarifPath,
+      artifactPath = "install-plugin-test",
+      artifactName = "sarif.json",
+      zipContent = false
+    )
+  }
+}
+
 private fun markTestCaseEmptyOnTc() {
   logOutput("##teamcity[setParameter name='starter.test.case.empty' value='true']")
 }
+
+internal class UnableToVerifyException(reason: String) : RuntimeException(reason)
