@@ -1,6 +1,8 @@
 package com.intellij.ide.starter.examples.indexing
 
 import com.intellij.ide.starter.di.di
+import com.intellij.ide.starter.examples.copyExistingConfig
+import com.intellij.ide.starter.examples.copyExistingPlugins
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.IdeProductProvider

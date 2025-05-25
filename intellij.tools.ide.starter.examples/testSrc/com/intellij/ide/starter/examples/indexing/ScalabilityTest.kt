@@ -1,5 +1,7 @@
 package com.intellij.ide.starter.examples.indexing
 
+import com.intellij.ide.starter.examples.copyExistingConfig
+import com.intellij.ide.starter.examples.copyExistingPlugins
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
