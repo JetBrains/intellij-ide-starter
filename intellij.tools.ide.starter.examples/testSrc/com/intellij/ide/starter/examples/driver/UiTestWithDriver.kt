@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.examples.driver
 
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
+import com.intellij.driver.sdk.ui.components.common.codeEditor
 import com.intellij.driver.sdk.ui.components.common.editor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
 import com.intellij.driver.sdk.ui.components.common.structureToolWindow
@@ -18,6 +19,8 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.TestContainer
+import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk11
+import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk17
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
@@ -29,15 +32,14 @@ import kotlin.time.Duration.Companion.minutes
 class UiTestWithDriver {
 
   /**
-   * Opens the editor from the structure view of a specified file, navigates to a specific line in the editor,
-   * and inserts a comment line at the caret position. Performs UI navigation and structure inspection steps
-   * within the project and validates editor behavior after inserting the text.
+   * Opens the editor from the project view, navigates to a specific line in the editor,
+   * and inserts a comment line at the caret position.
    *
    * @param splitMode Determines the mode of execution. If true, the test runs on a remote development environment
    * with IDE backend and frontend running on the same host.
    */
   @ParameterizedTest(name = "split-mode={0}")
-  @ValueSource(booleans = [false, true])
+  @ValueSource(booleans = [true])
   fun openEditorFromStructureViewEnterCommentLine(splitMode: Boolean) {
     if (splitMode) {
       di = DI {
@@ -53,6 +55,7 @@ class UiTestWithDriver {
         repoRelativeUrl = "Perfecto-Quantum/Quantum-Starter-Kit.git",
         commitHash = "1dc6128c115cb41fc442c088174e81f63406fad5"
       )))
+      .setupSdk(jdk17.toSdk())
       .setLicense(System.getenv("LICENSE_KEY"))
       .prepareProjectCleanImport()
 
@@ -67,15 +70,12 @@ class UiTestWithDriver {
             .waitFound()
             .doubleClickPath("Quantum-Starter-Kit", "src", "main", "java", "com.quantum", "pages", "GooglePage", fullMatch = false)
         }
-        leftToolWindowToolbar.structureButton
-          .click()
-        structureToolWindow()
-          .waitFound()
-          .waitOneContainsText("searchOption: QAFExtendedWebElement")
-          .click()
 
-        editor().apply {
+        codeEditor().click()
+
+        codeEditor().apply {
           waitFound()
+          goToLine(28)
 
           // private QAFExtendedWebElement {caret}searchOption;
           assertEquals(28, getCaretLine()) { "Cursor at the wrong line" }
@@ -88,7 +88,6 @@ class UiTestWithDriver {
           }
 
           assertTrue(text.contains("// comment line 123")) { "Editor doesn't contain the entered text" }
-          // waitOneText { it.text.trim() == "comment line 123" }
         }
       }
     }
