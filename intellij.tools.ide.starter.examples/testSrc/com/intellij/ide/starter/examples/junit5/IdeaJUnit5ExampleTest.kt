@@ -58,6 +58,7 @@ class IdeaJUnit5ExampleTest {
   }
 
   @Test
+  @Disabled("Too many tests for Github")
   fun openPythonProjectInPyCharm() {
     val testContext = Starter
       .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.PY.PublicApis)
