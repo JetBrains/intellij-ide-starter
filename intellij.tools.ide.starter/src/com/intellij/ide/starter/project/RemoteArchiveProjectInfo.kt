@@ -33,8 +33,7 @@ data class RemoteArchiveProjectInfo(
    * Relative path inside top-level archive directory, where project home is located
    */
   val projectHomeRelativePath: (Path) -> Path = { it },
-  private val description: String = "",
-  private val envParamNameForPrivatePackageAuth: String? = null
+  private val description: String = ""
 ) : ProjectInfoSpec {
 
   private fun getTopMostFolderFromZip(zipFile: File): String = JBZipFile(zipFile, StandardCharsets.UTF_8, false, ThreeState.UNSURE).entries.first().name.split("/").first()
@@ -46,20 +45,7 @@ data class RemoteArchiveProjectInfo(
 
     val zipFile = globalPaths.cacheDirForProjects.resolve("zip").resolve(projectURL.transformUrlToZipName())
 
-    val authToken =
-      if (envParamNameForPrivatePackageAuth != null) {
-        val test = System.getenv(envParamNameForPrivatePackageAuth)
-        if (test == null || test.isBlank()) {
-          throw SetupException("Please provide token in env.$envParamNameForPrivatePackageAuth property for download project from private package")
-        }
-        else {
-          test
-        }
-      }
-      else {
-        null
-      }
-    HttpClient.downloadIfMissing(url = projectURL, targetFile = zipFile, timeout = downloadTimeout, authToken = authToken)
+    HttpClient.downloadIfMissing(url = projectURL, targetFile = zipFile, timeout = downloadTimeout)
     val imagePath: Path = zipFile
 
     if (!imagePath.isRegularFile()) {

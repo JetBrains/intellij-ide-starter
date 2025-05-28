@@ -38,7 +38,7 @@ object HttpClient {
    * Downloading file from [url] to [outPath] with [retries].
    * @return true - if successful, false - otherwise
    */
-  fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes, authToken: String? = null) {
+  fun download(url: String, outPath: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
     val encodeUrl = url.replace(" ", "%20")
     logOutput("Downloading $encodeUrl to $outPath")
 
@@ -47,9 +47,6 @@ object HttpClient {
       withTimeout(timeout = timeout) {
         withRetry(messageOnFailure = "Failure during downloading $encodeUrl to $outPath", retries = retries) {
           val request = HttpGet(encodeUrl)
-          if (authToken != null) {
-            request.addHeader("Authorization", "Bearer $authToken")
-          }
           sendRequest(request) { response ->
             if (response.statusLine.statusCode == 404) {
               throw HttpNotFound("Server returned 404 Not Found: $encodeUrl")
@@ -90,7 +87,7 @@ object HttpClient {
    * [retries] - how many times retry to download in case of failure
    * @return true - if successful, false - otherwise
    */
-  fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3, timeout: Duration = 10.minutes, authToken: String? = null) {
+  fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
     getLock(targetFile).withLock {
       // TODO: move this check to appropriate place
       if (url.contains("https://github.com")) {
@@ -104,7 +101,7 @@ object HttpClient {
         return
       }
 
-      return download(url, targetFile, retries, timeout, authToken)
+      return download(url, targetFile, retries, timeout)
     }
   }
 
