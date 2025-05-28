@@ -1,5 +1,7 @@
 package com.intellij.ide.starter.ide
 
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.useDockerContainer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.telemetry.computeWithSpan
@@ -60,11 +62,15 @@ object JBRResolver {
   public suspend fun downloadAndUnpackJbrIfNeeded(jbrVersion: JBRVersion): Path = computeWithSpan("download and unpack JBR") {
     val (majorVersion, buildNumber) = listOf(jbrVersion.majorVersion, jbrVersion.buildNumber)
 
-    val os = when {
-      SystemInfo.isWindows -> "windows"
+    var os = when {
       SystemInfo.isLinux -> "linux"
+      SystemInfo.isWindows -> "windows"
       SystemInfo.isMac -> "osx"
       else -> error("Unknown OS")
+    }
+
+    if(ConfigurationStorage.useDockerContainer()){
+      os = "linux"
     }
 
     val arch = when (SystemInfo.isAarch64) {
@@ -76,6 +82,6 @@ object JBRResolver {
     val appHome = withContext(Dispatchers.IO) {
       di.direct.instance<JBRDownloader>().downloadJbr(jbrFileName)
     }
-    return if (SystemInfo.isMac) appHome.resolve("Contents/Home") else appHome
+    return if (SystemInfo.isMac && !ConfigurationStorage.useDockerContainer()) appHome.resolve("Contents/Home") else appHome
   }
 }
