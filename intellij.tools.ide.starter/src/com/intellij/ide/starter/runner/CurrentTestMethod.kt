@@ -1,10 +1,13 @@
 package com.intellij.ide.starter.runner
 
+import java.time.LocalDateTime
+
 data class TestMethod(
   val name: String,
   val clazz: String,
   val clazzSimpleName: String,
   val displayName: String,
+  val startTime: LocalDateTime = LocalDateTime.now(),
   var arguments: List<Any> = emptyList(),
 ) {
   fun argsString(): String = arguments.takeIf { it.isNotEmpty() }?.joinToString(prefix = "(", postfix = ")", separator = " ") ?: ""
