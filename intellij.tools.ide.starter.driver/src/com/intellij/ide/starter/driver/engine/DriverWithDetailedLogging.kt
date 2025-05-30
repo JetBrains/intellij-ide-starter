@@ -9,6 +9,8 @@ import com.intellij.driver.sdk.ui.ui
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityClient
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.useDockerContainer
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
@@ -30,7 +32,7 @@ internal class DriverWithDetailedLogging(private val driver: Driver, logUiHierar
   init {
     EventsBus.subscribe(this) { event: IdeLaunchEvent ->
       runContext = event.runContext
-      if (!CIServer.instance.isBuildRunningOnCI) {
+      if (!CIServer.instance.isBuildRunningOnCI && !ConfigurationStorage.useDockerContainer()) {
         withTimeoutOrNull(1.minutes) {
           while (!driver.isConnected) {
             delay(3.seconds)
