@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.config
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.models.SystemBind
 
 private const val SPLIT_MODE_ENABLED = "SPLIT_MODE_ENABLED"
 private const val ENV_ENABLE_CLASS_FILE_VERIFICATION = "ENABLE_CLASS_FILE_VERIFICATION"
@@ -10,6 +11,7 @@ private const val INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY = "INSTALLER_INCLU
 private const val ENV_LOG_ENVIRONMENT_VARIABLES = "LOG_ENVIRONMENT_VARIABLES"
 private const val IGNORED_TEST_FAILURE_PATTERN = "IGNORED_TEST_FAILURE_PATTERN"
 private const val ENV_USE_DOCKER_CONTAINER = "USE_DOCKER_CONTAINER"
+private const val ENV_USE_DOCKER_ADDITIONAL_BINDS = "USE_DOCKER_ADDITIONAL_BINDS"
 
 val starterConfigurationStorageDefaults = mapOf<String, String>(
   ENV_ENABLE_CLASS_FILE_VERIFICATION to System.getenv(ENV_ENABLE_CLASS_FILE_VERIFICATION),
@@ -32,7 +34,8 @@ fun ConfigurationStorage.Companion.useInstaller(value: Boolean) = instance().put
 
 fun ConfigurationStorage.Companion.useDockerContainer(): Boolean = instance().getBoolean(ENV_USE_DOCKER_CONTAINER)
 fun ConfigurationStorage.Companion.useDockerContainer(value: Boolean) = instance().put(ENV_USE_DOCKER_CONTAINER, value)
-
+fun ConfigurationStorage.Companion.setAdditionDockerBinds(value: Set<SystemBind>) = instance().put(ENV_USE_DOCKER_ADDITIONAL_BINDS, SystemBind.string(value))
+fun ConfigurationStorage.Companion.additionDockerBinds(): Set<SystemBind> = SystemBind.setFromString(instance().get(ENV_USE_DOCKER_ADDITIONAL_BINDS)?:"")
 /**
  *  Is it needed to include [runtime module repository](psi_element://com.intellij.platform.runtime.repository) in the installed IDE?
  */
