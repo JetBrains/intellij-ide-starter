@@ -84,7 +84,14 @@ open class PublicIdeDownloader : IdeDownloader {
           possibleBuild.downloads.mac?.link ?: error("MacOS x64 download link is not specified")
         }
       }
-      OS.Windows -> possibleBuild.downloads.windowsZip?.link ?: error("Windows download link is not specified")
+      OS.Windows -> {
+        if (CpuArch.CURRENT == CpuArch.ARM64) {
+          possibleBuild.downloads.windowsArm?.link ?: error("Windows ARM download link is not specified")
+        }
+        else {
+          possibleBuild.downloads.windowsZip?.link ?: error("Windows download link is not specified")
+        }
+      }
       else -> throw RuntimeException("Unsupported OS ${OS.CURRENT}")
     }
 
