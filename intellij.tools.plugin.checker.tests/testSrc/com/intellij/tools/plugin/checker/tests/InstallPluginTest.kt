@@ -323,10 +323,11 @@ object MarketplaceReporter {
       else -> VerificationResultType.PROBLEMS
     }
 
+    generateSarifReport(errors)
+
     val url = when {
       verificationResult == VerificationResultType.OK -> buildUrl
       else -> {
-        generateSarifReport(errors)
         "${marketplaceEvent.pluginId}/${marketplaceEvent.id}/sarif.json"
       }
     }
