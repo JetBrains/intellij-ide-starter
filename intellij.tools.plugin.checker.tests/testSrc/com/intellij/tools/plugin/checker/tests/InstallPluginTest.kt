@@ -143,7 +143,7 @@ class InstallPluginTest {
       val resultingTestCase = try {
         modifyTestCaseForIdeVersion(draftParams)
       } catch (ex: UnableToVerifyException) {
-        logOutput(ex)
+        logOutput(RuntimeException(ex.message))
         MarketplaceReporter.reportUnableToVerifyError(ex.message!!)
         return emptyList()
       }
