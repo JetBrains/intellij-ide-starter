@@ -57,7 +57,10 @@ open class PublicIdeDownloader : IdeDownloader {
     throw NoSuchElementException("Couldn't find specified release by parameters $filteringParams")
   }
 
-  override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstallerFile {
+  override fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path): IdeInstallerFile =
+    downloadIdeInstaller(ideInfo, installerDirectory, false)
+
+  fun downloadIdeInstaller(ideInfo: IdeInfo, installerDirectory: Path, downloadDedicatedInstaller: Boolean): IdeInstallerFile {
     val params = ProductInfoRequestParameters(type = ideInfo.productCode,
                                               snapshot = ideInfo.buildType,
                                               buildNumber = ideInfo.buildNumber,
@@ -84,13 +87,10 @@ open class PublicIdeDownloader : IdeDownloader {
           possibleBuild.downloads.mac?.link ?: error("MacOS x64 download link is not specified")
         }
       }
-      OS.Windows -> {
-        if (CpuArch.CURRENT == CpuArch.ARM64) {
-          possibleBuild.downloads.windowsArm?.link ?: error("Windows ARM download link is not specified")
-        }
-        else {
-          possibleBuild.downloads.windowsZip?.link ?: error("Windows download link is not specified")
-        }
+      OS.Windows -> when {
+        downloadDedicatedInstaller -> possibleBuild.downloads.windows?.link ?: error("Windows installer download link is not specified")
+        CpuArch.CURRENT == CpuArch.ARM64 -> possibleBuild.downloads.windowsArm?.link ?: error("Windows ARM download link is not specified")
+        else -> possibleBuild.downloads.windowsZip?.link ?: error("Windows download link is not specified")
       }
       else -> throw RuntimeException("Unsupported OS ${OS.CURRENT}")
     }
