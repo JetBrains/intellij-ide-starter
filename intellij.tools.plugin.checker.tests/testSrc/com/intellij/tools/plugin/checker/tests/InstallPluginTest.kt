@@ -263,10 +263,7 @@ class InstallPluginTest {
     catch (ex: Exception) {
       when (ex) {
         is IOException, //plugin is in removal state and not available
-        is PluginNotFoundException -> { //don't run the test if plugin was removed by author
-          markTestCaseEmptyOnTc()
-          return
-        }
+        is PluginNotFoundException -> return //don't run the test if plugin was removed by author
         else -> throw ex
       }
     }
@@ -302,8 +299,6 @@ object MarketplaceReporter {
                          "${System.getenv("BUILD_NUMBER")}?guest=1"
 
   fun reportUnableToVerifyError(reason: String) {
-    markTestCaseEmptyOnTc()
-
     val message = VerificationMessage(
       "Unable to verify: $reason",
       VerificationResultType.UNABLE_TO_VERIFY,
@@ -323,11 +318,10 @@ object MarketplaceReporter {
       else -> VerificationResultType.PROBLEMS
     }
 
-    generateSarifReport(errors)
-
     val url = when {
       verificationResult == VerificationResultType.OK -> buildUrl
       else -> {
+        generateSarifReport(errors)
         "${marketplaceEvent.pluginId}/${marketplaceEvent.id}/sarif.json"
       }
     }
@@ -397,6 +391,8 @@ object MarketplaceReporter {
     logOutput("##teamcity[progressMessage 'Writing SARIF report to $sarifPath']")
     mapper.writeValue(File(sarifPath.toString()), sarifReport)
 
+    logOutput("##teamcity[setParameter name='starter.upload.sarif' value='true']")
+
     TeamCityClient.publishTeamCityArtifacts(
       source = sarifPath,
       artifactPath = "install-plugin-test",
@@ -404,10 +400,6 @@ object MarketplaceReporter {
       zipContent = false
     )
   }
-}
-
-private fun markTestCaseEmptyOnTc() {
-  logOutput("##teamcity[setParameter name='starter.test.case.empty' value='true']")
 }
 
 internal class UnableToVerifyException(reason: String) : RuntimeException(reason)
