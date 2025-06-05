@@ -306,6 +306,12 @@ open class IDETestContext(
     addSystemProperty("llm.show.ai.promotion.window.on.start", false)
   }
 
+  fun disableSplitSearchEverywhere(): IDETestContext = applyVMOptionsPatch {
+    addSystemProperty("search.everywhere.new.enabled", false)
+    addSystemProperty("search.everywhere.new.rider.enabled", false)
+    addSystemProperty("search.everywhere.new.cwm.client.enabled", false)
+  }
+
   fun withKotlinPluginK2(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.kotlin.plugin.use.k2", true)
   }
