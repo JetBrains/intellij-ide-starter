@@ -33,11 +33,12 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     driverWithoutAwaitedConnection
   }
 
-  open fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration = 1.minutes, block: Driver.() -> R): IDEStartResult {
+  open fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration = 1.minutes, shutdownHook: Driver.() -> Unit = {}, block: Driver.() -> R): IDEStartResult {
     try {
       driver.withContext { block(this) }
     }
     finally {
+      shutdownHook(driver)
       driver.closeIdeAndWait(closeIdeTimeout)
       @Suppress("SSBasedInspection")
       runBlocking {

@@ -28,7 +28,7 @@ class RemoteDevBackgroundRun(
 ) : BackgroundRun(startResult = frontendStartResult,
                   driverWithoutAwaitedConnection = frontendDriver,
                   process = frontendProcess) {
-  override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, block: Driver.() -> R): IDEStartResult {
+  override fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration, shutdownHook: Driver.() -> Unit, block: Driver.() -> R): IDEStartResult {
     try {
       waitAndPrepareForTest()
 
@@ -36,6 +36,7 @@ class RemoteDevBackgroundRun(
     }
     finally {
       try {
+        shutdownHook(driver)
         driver.closeIdeAndWait(closeIdeTimeout)
       }
       finally {
