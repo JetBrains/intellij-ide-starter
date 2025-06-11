@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.ide.installer
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.ide.DefaultIdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
