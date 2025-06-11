@@ -105,7 +105,7 @@ object TeamCityClient {
     artifactPath: String,
     artifactName: String = source.fileName.toString(),
     zipContent: Boolean = true,
-    artifactForPublishingDir: Path = TeamCityClient.artifactForPublishingDir
+    artifactForPublishingDir: Path = TeamCityClient.artifactForPublishingDir,
   ) {
     logger.debug("TeamCity publishTeamCityArtifacts ${source.fileName}")
     val sanitizedArtifactPath = artifactPath.replaceSpecialCharactersWithHyphens()
