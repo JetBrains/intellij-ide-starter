@@ -6,6 +6,7 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
 import com.intellij.tools.ide.util.common.logError
@@ -126,7 +127,7 @@ object TeamCityClient {
     while (artifactDir.exists())
 
     logger.debug("Creating directories for artifact publishing ${artifactDir.toUri()}")
-    artifactDir.toFile().deleteRecursively()
+    artifactDir.deleteRecursivelyQuietly()
     artifactDir.createDirectories()
 
     if (source.isDirectory()) {

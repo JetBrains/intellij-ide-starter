@@ -7,6 +7,7 @@ import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.openapi.util.SystemInfo
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -30,7 +31,7 @@ class ExistingIdeInstaller(private val installedIdePath: Path) : IdeInstaller {
     val ideInstaller = IdeInstallerFile(installedIdePath, "locally-installed-ide")
     val installDir = GlobalPaths.instance.getCacheDirectoryFor("builds").resolve("${ideInfo.productCode}-${ideInstaller.buildNumber}")
     @OptIn(ExperimentalPathApi::class)
-    installDir.deleteRecursively()
+    installDir.deleteRecursivelyQuietly()
     val destDir = installDir.resolve(installedIdePath.name)
     if (SystemInfo.isMac) {
       ProcessExecutor("copy app", null, 5.minutes, emptyMap(), listOf("ditto", installedIdePath.absolute().toString(), destDir.absolute().toString())).start()

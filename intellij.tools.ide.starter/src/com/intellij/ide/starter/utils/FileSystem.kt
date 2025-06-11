@@ -49,7 +49,7 @@ object FileSystem {
     }
 
     if (outputArchive.exists())
-      outputArchive.toFile().deleteRecursively()
+      outputArchive.deleteRecursivelyQuietly()
 
     val outputArchiveParentDir = outputArchive.parent.apply { createDirectories() }
 
@@ -99,7 +99,7 @@ object FileSystem {
       }
     }
     catch (e: Throwable) {
-      targetDir.toFile().deleteRecursively()
+      targetDir.deleteRecursivelyQuietly()
       zipFile.deleteIfExists()
       throw IOException("Failed to unpack $zipFile to $targetDir. ${e.message}", e)
     }
@@ -155,6 +155,13 @@ object FileSystem {
     unpackTarGz(tarFile.toPath(), targetDir.toPath())
   }
 
+  /**
+   * Delete [Path] recursively quietly, suppressing any exceptions that occur while attempting to read, open, or delete any entries under
+   * the given file tree.
+   */
+  @OptIn(ExperimentalPathApi::class)
+    fun Path.deleteRecursivelyQuietly(): Boolean = runCatching { deleteRecursively() }.isSuccess
+
   // TODO: use com.intellij.platform.eel.EelApi.getArchive when it's ready?
   private fun unpackTarGz(tarFile: Path, targetDir: Path) {
     require(tarFile.fileName.toString().endsWith(".tar.gz")) { "File $tarFile must be tar.gz archive" }
@@ -176,7 +183,7 @@ object FileSystem {
       }
     }
     catch (e: Exception) {
-      targetDir.toFile().deleteRecursively()
+      targetDir.deleteRecursivelyQuietly()
       tarFile.deleteIfExists()
       throw Exception("Failed to unpack $tarFile. ${e.message}. File and unpack targets are removed.", e)
     }

@@ -20,6 +20,7 @@ import com.intellij.ide.starter.runner.openTestCaseProject
 import com.intellij.ide.starter.runner.startIdeWithoutProject
 import com.intellij.ide.starter.telemetry.TestTelemetryService
 import com.intellij.ide.starter.telemetry.computeWithSpan
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.ide.starter.utils.replaceSpecialCharactersWithHyphens
@@ -248,7 +249,7 @@ open class IDETestContext(
     if (!preserveSystemDir) {
       //TODO: it would be better to allocate a new context instead of wiping the folder
       logOutput("Cleaning system dir for $this at $paths")
-      paths.systemDir.toFile().deleteRecursively()
+      paths.systemDir.deleteRecursivelyQuietly()
     }
     else {
       logOutput("Cleaning system dir for $this at $paths is disabled due to preserveSystemDir")
@@ -258,19 +259,19 @@ open class IDETestContext(
   fun wipeProjectsDir(): IDETestContext = apply {
     val path = paths.systemDir / "projects"
     logOutput("Cleaning project cache dir for $this at $path")
-    path.toFile().deleteRecursively()
+    path.deleteRecursivelyQuietly()
   }
 
   fun wipeEventLogDataDir(): IDETestContext = apply {
     val path = paths.systemDir / "event-log-data"
     logOutput("Cleaning event-log-data dir for $this at $path")
-    path.toFile().deleteRecursively()
+    path.deleteRecursivelyQuietly()
   }
 
   fun wipeWorkspaceState(): IDETestContext = apply {
     val path = paths.configDir.resolve("workspace")
     logOutput("Cleaning workspace dir in config dir for $this at $path")
-    path.toFile().deleteRecursively()
+    path.deleteRecursivelyQuietly()
   }
 
   /**
@@ -336,7 +337,7 @@ open class IDETestContext(
       return this
     }
 
-    ideaDirPath.toFile().deleteRecursively()
+    ideaDirPath.deleteRecursivelyQuietly()
     return this
   }
 

@@ -4,6 +4,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -27,7 +28,7 @@ class StandardInstaller(
 
     if (ideInstaller.buildNumber == "SNAPSHOT") {
       logOutput("Cleaning up SNAPSHOT IDE installation $installDir")
-      installDir.toFile().deleteRecursively()
+      installDir.deleteRecursivelyQuietly()
     }
 
     //Unpack

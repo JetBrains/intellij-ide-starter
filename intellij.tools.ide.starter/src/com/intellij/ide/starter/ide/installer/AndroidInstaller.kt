@@ -7,6 +7,7 @@ import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
 import org.kodein.di.direct
@@ -43,7 +44,7 @@ internal class AndroidInstaller : IdeInstaller {
 
     val installDir = globalPaths.getCacheDirectoryFor("builds") / "AI-$buildNumber"
 
-    installDir.toFile().deleteRecursively()
+    installDir.deleteRecursivelyQuietly()
 
     val installerFile = zipFile.toFile()
 

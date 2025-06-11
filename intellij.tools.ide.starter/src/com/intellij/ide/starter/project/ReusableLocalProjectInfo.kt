@@ -3,6 +3,7 @@ package com.intellij.ide.starter.project
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.instance
 import java.nio.file.Path
@@ -35,7 +36,7 @@ class ReusableLocalProjectInfo(
     val projectsUnpacked = globalPaths.cacheDirForProjects.resolve("unpacked").createDirectories()
     val projectHome = projectsUnpacked / projectDir.last().name
 
-    val isDeleted = projectHome.toFile().deleteRecursively()
+    val isDeleted = projectHome.deleteRecursivelyQuietly()
     if (!isDeleted) {
       logOutput("Failed to delete $projectHome")
     }

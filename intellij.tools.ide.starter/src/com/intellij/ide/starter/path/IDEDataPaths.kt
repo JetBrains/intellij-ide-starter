@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.path
 
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.createInMemoryDirectory
 import com.intellij.tools.ide.util.common.logOutput
 import java.nio.file.Path
@@ -41,7 +42,7 @@ open class IDEDataPaths(
   protected fun finalize() {
     if (inMemoryRoot != null) {
       try {
-        inMemoryRoot.toFile().deleteRecursively()
+        inMemoryRoot.deleteRecursivelyQuietly()
       }
       catch (e: Exception) {
         logOutput("! Failed to unmount in-memory FS at $inMemoryRoot")

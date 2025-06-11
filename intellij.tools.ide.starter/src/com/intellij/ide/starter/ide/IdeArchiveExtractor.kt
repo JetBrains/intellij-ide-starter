@@ -3,6 +3,7 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.SevenZipWindowsArchiver
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logOutput
@@ -31,7 +32,7 @@ object IdeArchiveExtractor {
   }
 
   private fun unpackDmg(dmgFile: File, target: Path): Path {
-    target.toFile().deleteRecursively()
+    target.deleteRecursivelyQuietly()
     target.createDirectories()
 
     val mountDir = File(dmgFile.path + "-mount${System.currentTimeMillis()}")

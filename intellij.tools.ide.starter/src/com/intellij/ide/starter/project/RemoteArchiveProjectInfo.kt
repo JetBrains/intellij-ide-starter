@@ -5,6 +5,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.FileSystem.isDirUpToDate
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.util.common.logOutput
@@ -55,7 +56,7 @@ data class RemoteArchiveProjectInfo(
     val projectHome = (projectsUnpacked / getTopMostFolderFromZip(zipFile.toFile())).let(projectHomeRelativePath)
 
     if (!isReusable) {
-      val isDeleted = projectHome.toFile().deleteRecursively()
+      val isDeleted = projectHome.deleteRecursivelyQuietly()
       if (!isDeleted) {
         logOutput("Failed to delete $projectHome")
       }
@@ -66,7 +67,7 @@ data class RemoteArchiveProjectInfo(
       return projectHome
     }
     else {
-      projectHome.toFile().deleteRecursively()
+      projectHome.deleteRecursivelyQuietly()
     }
 
     when {

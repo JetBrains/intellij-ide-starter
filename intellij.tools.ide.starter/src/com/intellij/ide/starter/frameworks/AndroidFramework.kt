@@ -6,6 +6,7 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.utils.FileSystem
+import com.intellij.ide.starter.utils.FileSystem.deleteRecursivelyQuietly
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.copyRecursively
@@ -73,7 +74,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
         return home
       }
       catch (t: Throwable) {
-        home.toFile().deleteRecursively()
+        home.deleteRecursivelyQuietly()
         throw Exception("Failed to prepare Android SDK to $home. ${t.message}", t)
       }
     }
