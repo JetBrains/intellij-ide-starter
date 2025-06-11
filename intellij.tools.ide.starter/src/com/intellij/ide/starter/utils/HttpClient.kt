@@ -105,7 +105,7 @@ object HttpClient {
     }
   }
 
-  class HttpNotFound(message: String, cause: Throwable? = null): NoRetryException(message, cause)
+  class HttpNotFound(message: String, cause: Throwable? = null) : NoRetryException(message, cause)
 
   private fun getLock(path: Path): ReentrantLock = locks.getOrPut(path.toAbsolutePath().toString()) { ReentrantLock() }
 }
