@@ -4,8 +4,8 @@ import com.intellij.util.createDocumentBuilder
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
-import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.InputStream
 import java.nio.file.Path
 import java.util.*
 import java.util.stream.IntStream
@@ -18,9 +18,9 @@ import kotlin.io.path.outputStream
 
 object XmlBuilder {
 
-  fun parse(fileInputStream: FileInputStream): Document {
+  fun parse(inputStream: InputStream): Document {
     val documentBuilder = createDocumentBuilder()
-    val xmlDoc = documentBuilder.parse(fileInputStream)
+    val xmlDoc = documentBuilder.parse(inputStream)
     xmlDoc.documentElement.normalize()
 
     requireNotNull(xmlDoc) { "Parsed xml document is null" }
