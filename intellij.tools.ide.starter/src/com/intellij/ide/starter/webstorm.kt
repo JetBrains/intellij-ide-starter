@@ -84,11 +84,15 @@ fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
   ).start()
 }
 
-fun IDETestContext.setUseTypesFromServer(value: Boolean) = applyVMOptionsPatch {
+fun IDETestContext.setUseTypesFromServer(value: Boolean): IDETestContext = applyVMOptionsPatch {
   addSystemProperty("typescript.compiler.evaluation", value.toString())
 }
 
-fun IDETestContext.updatePath(path: Path) = applyVMOptionsPatch {
+fun IDETestContext.setAbortTypeScriptCompilerRequestsOutsideProject(): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty("typescript.service.abort.requests.outside.project", "true")
+}
+
+fun IDETestContext.updatePath(path: Path): IDETestContext = applyVMOptionsPatch {
   updatePathEnvVariable(path)
 }
 
@@ -110,7 +114,6 @@ private fun enableCorepack(nodejsRoot: Path) {
                   environmentVariables = getUpdateEnvVarsWithPrependedPath(nodejsRoot)
   ).start()
 }
-
 
 private fun getNodePathByVersion(version: String): Path {
   val nodeJSDir = GlobalPaths.instance.getCacheDirectoryFor("nodejs")
