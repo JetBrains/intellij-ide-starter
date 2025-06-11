@@ -1,9 +1,9 @@
 package com.intellij.ide.starter
 
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 
 fun downloadGoSdk(version: String): Path {
