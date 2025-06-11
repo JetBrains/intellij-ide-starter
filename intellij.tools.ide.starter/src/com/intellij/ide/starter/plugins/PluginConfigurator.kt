@@ -51,7 +51,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
   ): PluginConfigurator = installPluginFromPluginManager(PluginWithExactVersion(pluginId, pluginVersion, channel, pluginFileName))
 
   fun installPluginFromPluginManager(
-    plugin: PluginSourceDescriptor
+    plugin: PluginSourceDescriptor,
   ): PluginConfigurator = apply {
     val pluginId = plugin.pluginId
     logOutput("Setting up plugin: $pluginId ...")
@@ -69,7 +69,8 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     HttpClient.downloadIfMissing(plugin.downloadUrl(), downloadedPlugin, retries = 1)
     if (fileName.endsWith(".jar")) {
       Files.copy(downloadedPlugin, testContext.paths.pluginsDir.resolve(fileName))
-    } else {
+    }
+    else {
       FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
     }
 
