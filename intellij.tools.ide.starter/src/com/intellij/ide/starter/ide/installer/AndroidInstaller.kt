@@ -2,7 +2,6 @@ package com.intellij.ide.starter.ide.installer
 
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeArchiveExtractor
-import com.intellij.ide.starter.ide.DefaultIdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeDistributionFactory
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.InstalledIde
@@ -33,7 +32,7 @@ internal class AndroidInstaller : IdeInstaller {
 
     val path = when {
       SystemInfo.isMac -> "install"
-      else ->  "ide-zips"
+      else -> "ide-zips"
     }
 
     val downloadUrl = "https://redirector.gvt1.com/edgedl/android/studio/$path/$buildNumber/android-studio-$buildNumber$ext"
