@@ -33,7 +33,7 @@ data class RemoteArchiveProjectInfo(
    * Relative path inside top-level archive directory, where project home is located
    */
   val projectHomeRelativePath: (Path) -> Path = { it },
-  private val description: String = ""
+  private val description: String = "",
 ) : ProjectInfoSpec {
 
   private fun getTopMostFolderFromZip(zipFile: File): String = JBZipFile(zipFile, StandardCharsets.UTF_8, false, ThreeState.UNSURE).entries.first().name.split("/").first()
