@@ -6,13 +6,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.tools.ide.util.common.logOutput
 import org.kodein.di.instance
 import java.nio.file.Path
-import kotlin.getValue
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.copyToRecursively
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.name
-import kotlin.io.path.notExists
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -26,7 +20,7 @@ class ReusableLocalProjectInfo(
   val projectDir: Path,
   override val downloadTimeout: Duration = 1.minutes,
   override val configureProjectBeforeUse: (IDETestContext) -> Unit = {},
-  private val description: String = ""
+  private val description: String = "",
 ) : ProjectInfoSpec {
   override val isReusable: Boolean = false
 
@@ -45,7 +39,7 @@ class ReusableLocalProjectInfo(
     if (!isDeleted) {
       logOutput("Failed to delete $projectHome")
     }
-    val newPath = projectDir.copyToRecursively(projectHome, followLinks=false, overwrite = true)
+    val newPath = projectDir.copyToRecursively(projectHome, followLinks = false, overwrite = true)
 
     return newPath.toAbsolutePath()
   }
