@@ -11,6 +11,7 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.io.copyRecursively
 import org.gradle.internal.hash.Hashing
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
@@ -40,7 +41,7 @@ class AndroidFramework(testContext: IDETestContext) : Framework(testContext) {
       val envVariablesWithJavaHome = System.getenv() + ("JAVA_HOME" to javaHome.toAbsolutePath().toString())
 
       try {
-        home.toFile().mkdirs()
+        home.createDirectories()
         /// https://stackoverflow.com/questions/38096225/automatically-accept-all-sdk-licences
         /// sending "yes" to the process in the STDIN :(
         ProcessExecutor(presentableName = "android-sdk-licenses",

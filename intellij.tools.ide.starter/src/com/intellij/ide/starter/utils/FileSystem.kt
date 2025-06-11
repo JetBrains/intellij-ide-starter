@@ -69,7 +69,7 @@ object FileSystem {
       JBZipFile(zipFile.toFile(), StandardCharsets.UTF_8, false, ThreeState.UNSURE).use { zip ->
         for (entry in zip.entries) {
           if (entry.isDirectory) {
-            targetDir.resolve(entry.name).toFile().mkdirs()
+            targetDir.resolve(entry.name).createDirectories()
             continue
           }
           val file = targetDir.resolve((map(entry.name) ?: continue))

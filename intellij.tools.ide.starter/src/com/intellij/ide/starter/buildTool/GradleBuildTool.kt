@@ -90,7 +90,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   fun useNewGradleLocalCache(): GradleBuildTool {
-    localGradleRepoPath.toFile().mkdirs()
+    localGradleRepoPath.createDirectories()
     testContext.applyVMOptionsPatch { addSystemProperty("gradle.user.home", localGradleRepoPath.toString()) }
     return this
   }

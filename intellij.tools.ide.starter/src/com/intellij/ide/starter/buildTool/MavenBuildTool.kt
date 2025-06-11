@@ -12,10 +12,7 @@ import java.io.BufferedInputStream
 import java.io.FileOutputStream
 import java.net.URL
 import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.bufferedReader
-import kotlin.io.path.bufferedWriter
-import kotlin.io.path.createFile
+import kotlin.io.path.*
 import kotlin.time.Duration.Companion.minutes
 
 open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType.MAVEN, testContext) {
@@ -57,7 +54,7 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
 
 
   fun useNewMavenLocalRepository(): MavenBuildTool {
-    temporaryMavenM3RepoPath.toFile().mkdirs()
+    temporaryMavenM3RepoPath.createDirectories()
     testContext.applyVMOptionsPatch { addSystemProperty("maven.repo.local", temporaryMavenM3RepoPath.toString()) }
     return this
   }
