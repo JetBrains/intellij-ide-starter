@@ -115,7 +115,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
 
 
   fun getPluginInstalledState(pluginId: String): PluginInstalledState {
-    if (disabledPluginsPath.toFile().exists() && pluginId in disabledPluginIds) {
+    if (disabledPluginsPath.exists() && pluginId in disabledPluginIds) {
       return PluginInstalledState.DISABLED
     }
 

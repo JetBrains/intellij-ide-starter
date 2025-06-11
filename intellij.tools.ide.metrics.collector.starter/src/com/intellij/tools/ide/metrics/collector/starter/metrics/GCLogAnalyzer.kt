@@ -14,6 +14,7 @@ import java.nio.file.Path
 import java.text.NumberFormat
 import java.util.*
 import kotlin.io.path.div
+import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.minutes
@@ -91,7 +92,7 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
   private fun processGCSummary(gcSummary: Path, requestedMetrics: Array<String>): List<PerformanceMetrics.Metric> {
     val gcMetrics = mutableListOf<PerformanceMetrics.Metric>()
     val format = NumberFormat.getNumberInstance(Locale.getDefault())
-    if (!gcSummary.toFile().exists()) {
+    if (!gcSummary.exists()) {
       println("$gcSummary doesn't exists")
       return gcMetrics
     }

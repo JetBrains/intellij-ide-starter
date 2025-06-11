@@ -40,7 +40,7 @@ fun downloadAndConfigureNodejs(version: String): Path {
   val nodejsRoot = dirToDownload.resolve(fileNameWithoutExt)
   val nodePath = buildNodePath(nodejsRoot)
 
-  if (nodejsRoot.toFile().exists()) {
+  if (nodejsRoot.exists()) {
     return nodePath
   }
 

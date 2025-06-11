@@ -5,6 +5,7 @@ import com.intellij.ide.starter.utils.FileSystem
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
+import kotlin.io.path.exists
 
 fun downloadGoSdk(version: String): Path {
   val os = when {
@@ -20,7 +21,7 @@ fun downloadGoSdk(version: String): Path {
   val dirToDownload = GlobalPaths.instance.getCacheDirectoryFor("go-sdk/$version")
   val downloadedFile = dirToDownload.resolve(sdkFileName)
   val goRoot = dirToDownload.resolve("go-roots")
-  if (goRoot.toFile().exists()) {
+  if (goRoot.exists()) {
     return goRoot.resolve("go")
   }
 
