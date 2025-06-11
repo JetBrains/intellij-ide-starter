@@ -350,7 +350,7 @@ open class IDETestContext(
       return this
     }
 
-    workspaceXml.toFile().delete()
+    workspaceXml.deleteIfExists()
     return this
   }
 

@@ -92,7 +92,7 @@ object HttpClient {
       // TODO: move this check to appropriate place
       if (url.contains("https://github.com")) {
         if (!targetFile.isFileUpToDate()) {
-          targetFile.toFile().delete()
+          targetFile.deleteIfExists()
         }
       }
 
