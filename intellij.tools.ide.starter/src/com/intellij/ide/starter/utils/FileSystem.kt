@@ -63,6 +63,7 @@ object FileSystem {
 
       // Data class to store symlink information
       data class SymlinkInfo(val file: Path, val targetPath: String)
+
       val symlinks = mutableListOf<SymlinkInfo>()
 
       JBZipFile(zipFile.toFile(), StandardCharsets.UTF_8, false, ThreeState.UNSURE).use { zip ->
