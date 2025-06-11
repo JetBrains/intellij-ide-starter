@@ -49,6 +49,7 @@ object AllureReport {
         linkToCi.url = link
       }
       errorLabels.add(Label().setName("layer").setValue("Exception"))
+      errorLabels.add(Label().setName("AS_ID").setValue("-1"))
       val hash = convertToHashCodeWithOnlyLetters(generifyErrorMessage(stackTrace.processStringForTC()).hashCode())
       Allure.getLifecycle().updateTestCase {
         it.status = Status.FAILED
