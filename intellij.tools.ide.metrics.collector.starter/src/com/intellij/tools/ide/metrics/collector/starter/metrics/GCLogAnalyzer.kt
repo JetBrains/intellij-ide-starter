@@ -77,7 +77,8 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
           workDir = gcViewer.parent, timeout = 1.minutes,
           args = listOf(javaCommand, "-jar", gcViewer.toAbsolutePath().toString(), paths, gcSummary.toAbsolutePath().toString())
         ).start()
-      } catch (t: Throwable) {
+      }
+      catch (t: Throwable) {
         println("gcviewer process failed by: ${t.message}")
       }
 
