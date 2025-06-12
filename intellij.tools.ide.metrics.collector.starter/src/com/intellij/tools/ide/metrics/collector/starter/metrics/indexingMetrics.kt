@@ -12,6 +12,7 @@ import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.div
 import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 
 fun IndexingMetrics.getListOfIndexingAndIdeMetrics(ideStartResult: IDEStartResult): List<PerformanceMetrics.Metric> {
@@ -56,7 +57,7 @@ private fun collectPerformanceMetricsFromCSV(
 
 fun extractIndexingMetrics(startResult: IDEStartResult, projectName: String? = null): IndexingMetrics {
   val indexDiagnosticDirectory = startResult.runContext.logsDir / "indexing-diagnostic"
-  val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.toFile().isDirectory }.use { it.toList() }
+  val indexDiagnosticDirectoryChildren = Files.list(indexDiagnosticDirectory).filter { it.isDirectory() }.use { it.toList() }
   val projectIndexDiagnosticDirectory = indexDiagnosticDirectoryChildren.let { perProjectDirs ->
     if (projectName == null) {
       perProjectDirs.singleOrNull() ?: error("Only one project diagnostic dir is expected: ${perProjectDirs.joinToString()}")
