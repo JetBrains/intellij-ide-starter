@@ -22,9 +22,6 @@ object XmlBuilder {
     val documentBuilder = createDocumentBuilder()
     val xmlDoc = documentBuilder.parse(inputStream)
     xmlDoc.documentElement.normalize()
-
-    requireNotNull(xmlDoc) { "Parsed xml document is null" }
-
     return xmlDoc
   }
 
@@ -34,9 +31,6 @@ object XmlBuilder {
 
     val xmlDoc = documentBuilder.parse(path.toFile())
     xmlDoc.documentElement.normalize()
-
-    requireNotNull(xmlDoc) { "Parsed xml document at $path is null" }
-
     return xmlDoc
   }
 
