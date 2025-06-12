@@ -19,6 +19,8 @@ import java.nio.file.FileStore
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
+import java.time.Duration
+import java.time.Instant
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.*
 import kotlin.time.Duration.Companion.minutes
@@ -299,11 +301,11 @@ object FileSystem {
   }
 
   private fun Path.isUpToDate(): Boolean {
-    val lastModified = this.toFile().lastModified()
-    val currentTime = System.currentTimeMillis()
+    val lastModified = Files.getLastModifiedTime(this)
+    val timeSinceLastModified = Duration.between(lastModified.toInstant(), Instant.now())
 
     // less then a day ago
-    val upToDate = currentTime - lastModified < 24 * 60 * 60 * 1000
+    val upToDate = timeSinceLastModified < Duration.ofDays(1)
     if (upToDate) {
       logOutput("$this is up to date")
     }
