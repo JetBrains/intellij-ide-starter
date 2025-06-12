@@ -695,10 +695,10 @@ open class IDETestContext(
     val javaErrorInIdeaFile = pathUserHome.resolve("java_error_in_idea_$javaProcessId.log")
     val jbrErrFile = pathUserHome.resolve("jbr_err_pid$javaProcessId.log")
     if (javaErrorInIdeaFile.exists()) {
-      javaErrorInIdeaFile.toFile().copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).toFile())
+      javaErrorInIdeaFile.copyTo(paths.jbrDiagnostic.resolve(javaErrorInIdeaFile.name).createParentDirectories())
     }
     if (jbrErrFile.exists()) {
-      jbrErrFile.toFile().copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).toFile())
+      jbrErrFile.copyTo(paths.jbrDiagnostic.resolve(jbrErrFile.name).createParentDirectories())
     }
     if (paths.jbrDiagnostic.listDirectoryEntries().isNotEmpty()) {
       publishArtifact(paths.jbrDiagnostic)
