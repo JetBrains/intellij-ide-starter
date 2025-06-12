@@ -7,16 +7,12 @@ import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.system.OS
 import org.w3c.dom.Node
-import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.div
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.name
+import kotlin.io.path.*
 
 class MacOsIdeDistribution : IdeDistribution() {
 
-  private fun getExecutableNameFromInfoPlist(appDir: File, @Suppress("SameParameterValue") keyName: String): String {
+  private fun getExecutableNameFromInfoPlist(appDir: Path, @Suppress("SameParameterValue") keyName: String): String {
     val infoPlistFile = appDir.resolve("Contents/Info.plist")
 
     infoPlistFile.inputStream().use {
@@ -48,7 +44,7 @@ class MacOsIdeDistribution : IdeDistribution() {
     val appDir = unpackDir.listDirectoryEntriesQuietly()?.singleOrNull { it.name.endsWith(".app") }?.toAbsolutePath()
                  ?: error("Invalid macOS application directory: $unpackDir")
 
-    val executableName = getExecutableNameFromInfoPlist(appDir.toFile(), "CFBundleExecutable")
+    val executableName = getExecutableNameFromInfoPlist(appDir, "CFBundleExecutable")
 
     val appHome = appDir.resolve("Contents").toAbsolutePath()
     val executablePath = appHome / "MacOS" / executableName
