@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.FileStore
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Duration
 import java.time.Instant
@@ -221,14 +222,17 @@ object FileSystem {
   }
 
   fun Path.getFileOrDirectoryPresentableSize(): String {
-    val size: Long = if (this.toFile().isFile) {
-      this.toFile().length()
+    // explicitly call readAttributes() to reduce the number of system calls
+    val attributes = readAttributes<BasicFileAttributes>()
+    val size: Long = if (attributes.isRegularFile) {
+      attributes.size()
     }
     else {
       Files.walk(this).use { pathStream ->
         pathStream.mapToLong { p: Path ->
-          if (p.toFile().isFile) {
-            p.toFile().length()
+          val attributes = p.readAttributes<BasicFileAttributes>()
+          if (attributes.isRegularFile) {
+            attributes.size()
           }
           else 0
         }.sum()
