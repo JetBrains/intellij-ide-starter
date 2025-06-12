@@ -15,10 +15,7 @@ import org.kodein.di.instance
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -39,6 +36,7 @@ data class RemoteArchiveProjectInfo(
 
   private fun getTopMostFolderFromZip(zipFile: File): String = JBZipFile(zipFile, StandardCharsets.UTF_8, false, ThreeState.UNSURE).entries.first().name.split("/").first()
 
+  @OptIn(ExperimentalPathApi::class)
   override fun downloadAndUnpackProject(): Path {
     val globalPaths by di.instance<GlobalPaths>()
 
@@ -72,7 +70,7 @@ data class RemoteArchiveProjectInfo(
 
     when {
       imagePath.isRegularFile() -> FileSystem.unpack(imagePath, projectsUnpacked)
-      imagePath.isDirectory() -> imagePath.toFile().copyRecursively(projectsUnpacked.toFile(), overwrite = true)
+      imagePath.isDirectory() -> imagePath.copyToRecursively(projectsUnpacked, followLinks = true, overwrite = true)
 
       else -> error("$imagePath does not exist!")
     }
