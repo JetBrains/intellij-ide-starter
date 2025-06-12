@@ -374,6 +374,8 @@ data class VMOptions(
 
   fun skipIndicesInitialization(value: Boolean = true): Unit = addSystemProperty("idea.skip.indices.initialization", value)
 
+  fun doNotDisablePaidPluginsOnStartup(): Unit = addSystemProperty("ide.do.not.disable.paid.plugins.on.startup", true)
+
   fun doRefreshAfterJpsLibraryDownloaded(value: Boolean = true): Unit = addSystemProperty("idea.do.refresh.after.jps.library.downloaded", value)
 
   /**

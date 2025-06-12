@@ -224,6 +224,10 @@ open class IDETestContext(
     skipIndicesInitialization(value)
   }
 
+  fun doNotDisablePaidPluginsOnStartup(): IDETestContext = applyVMOptionsPatch {
+    doNotDisablePaidPluginsOnStartup()
+  }
+
   fun enableAsyncProfiler(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("integrationTests.profiler", "async")
   }
@@ -772,6 +776,21 @@ open class IDETestContext(
          <option name="USE_PROXY_PAC" value="true" />
        </component>
      </application> 
+    """)
+    return this
+  }
+
+  @Suppress("unused")
+  fun setLocalhostProxy(): IDETestContext {
+    writeConfigFile("options/proxy.settings.xml", """
+      <application>
+        <component name="HttpConfigurable">
+          <option name="USE_HTTP_PROXY" value="true" />
+          <option name="PROXY_HOST" value="localhost" />
+          <option name="PROXY_PORT" value="3128" />
+          <option name="PROXY_EXCEPTIONS" value="" />
+        </component>
+      </application>
     """)
     return this
   }
