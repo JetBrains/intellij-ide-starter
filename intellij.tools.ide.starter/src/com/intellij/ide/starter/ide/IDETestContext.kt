@@ -503,7 +503,7 @@ open class IDETestContext(
     if (this.ide.productCode !in supportedProducts) {
       error("Setting license to the product ${this.ide.productCode} is not supported")
     }
-    return setLicense(String(Base64.getEncoder().encode(pathToFileWithLicense.toFile().readBytes())))
+    return setLicense(String(Base64.getEncoder().encode(pathToFileWithLicense.readBytes())))
   }
 
   fun disableAutoCompletion(): IDETestContext {
