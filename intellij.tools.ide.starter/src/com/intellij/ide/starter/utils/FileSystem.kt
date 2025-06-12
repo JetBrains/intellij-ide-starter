@@ -162,6 +162,8 @@ object FileSystem {
   @OptIn(ExperimentalPathApi::class)
   fun Path.deleteRecursivelyQuietly(): Boolean = runCatching { deleteRecursively() }.isSuccess
 
+  fun Path.listDirectoryEntriesQuietly(): List<Path>? = runCatching { listDirectoryEntries() }.getOrNull()
+
   // TODO: use com.intellij.platform.eel.EelApi.getArchive when it's ready?
   private fun unpackTarGz(tarFile: Path, targetDir: Path) {
     require(tarFile.fileName.toString().endsWith(".tar.gz")) { "File $tarFile must be tar.gz archive" }

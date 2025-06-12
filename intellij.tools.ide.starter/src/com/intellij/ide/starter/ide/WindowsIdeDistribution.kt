@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.utils.FileSystem.listDirectoryEntriesQuietly
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.system.OS
@@ -11,7 +12,7 @@ import kotlin.io.path.listDirectoryEntries
 
 class WindowsIdeDistribution : IdeDistribution() {
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
-    val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir).toAbsolutePath()
+    val appHome = (unpackDir.listDirectoryEntriesQuietly()?.singleOrNull { it.isDirectory() } ?: unpackDir).toAbsolutePath()
     val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(appHome.resolve("build.txt"))
 
     val binDir = appHome / "bin"

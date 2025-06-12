@@ -3,6 +3,7 @@ package com.intellij.ide.starter.ide
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.ide.starter.utils.FileSystem.listDirectoryEntriesQuietly
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
@@ -54,7 +55,7 @@ class LinuxIdeDistribution : IdeDistribution() {
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
     require(SystemInfo.isLinux) { "Can only run on Linux, docker is possible, please PR" }
 
-    val appHome = (unpackDir.toFile().listFiles()?.singleOrNull { it.isDirectory }?.toPath() ?: unpackDir).toAbsolutePath()
+    val appHome = (unpackDir.listDirectoryEntriesQuietly()?.singleOrNull { it.isDirectory() } ?: unpackDir).toAbsolutePath()
     val (productCode, build) = readProductCodeAndBuildNumberFromBuildTxt(appHome.resolve("build.txt"))
 
     val executablePath = listOf(appHome / "bin" / executableFileName, appHome / "bin" / "$executableFileName.sh")

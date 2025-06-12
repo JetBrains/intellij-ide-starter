@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.ide
 
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.utils.FileSystem.listDirectoryEntriesQuietly
 import com.intellij.ide.starter.utils.JvmUtils
 import com.intellij.ide.starter.utils.XmlBuilder
 import com.intellij.tools.ide.util.common.logOutput
@@ -11,6 +12,7 @@ import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
 
 class MacOsIdeDistribution : IdeDistribution() {
 
@@ -43,7 +45,7 @@ class MacOsIdeDistribution : IdeDistribution() {
   }
 
   override fun installIde(unpackDir: Path, executableFileName: String): InstalledIde {
-    val appDir = unpackDir.toFile().listFiles()?.singleOrNull { it.name.endsWith(".app") }?.toPath()?.toAbsolutePath()
+    val appDir = unpackDir.listDirectoryEntriesQuietly()?.singleOrNull { it.name.endsWith(".app") }?.toAbsolutePath()
                  ?: error("Invalid macOS application directory: $unpackDir")
 
     val executableName = getExecutableNameFromInfoPlist(appDir.toFile(), "CFBundleExecutable")

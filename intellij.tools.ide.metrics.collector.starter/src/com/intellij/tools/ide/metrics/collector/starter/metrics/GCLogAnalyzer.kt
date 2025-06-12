@@ -6,6 +6,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
+import com.intellij.ide.starter.utils.FileSystem.listDirectoryEntriesQuietly
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import java.io.File
@@ -34,9 +35,9 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
     else listOf()
   }
 
-  private fun findExistingSummary() = ideStartResult.runContext.reportsDir.toFile().listFiles()?.firstOrNull { file ->
+  private fun findExistingSummary() = ideStartResult.runContext.reportsDir.listDirectoryEntriesQuietly()?.firstOrNull { file ->
     file.name.startsWith("gcSummary_")
-  }?.toPath()
+  }
 
   fun generateGCSummaryFile(): Path {
     val summaryFile = ideStartResult.runContext.reportsDir.resolve("gcSummary_${System.currentTimeMillis()}.log")
