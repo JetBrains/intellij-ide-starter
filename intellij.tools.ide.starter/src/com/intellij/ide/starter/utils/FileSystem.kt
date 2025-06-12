@@ -160,7 +160,7 @@ object FileSystem {
    * the given file tree.
    */
   @OptIn(ExperimentalPathApi::class)
-    fun Path.deleteRecursivelyQuietly(): Boolean = runCatching { deleteRecursively() }.isSuccess
+  fun Path.deleteRecursivelyQuietly(): Boolean = runCatching { deleteRecursively() }.isSuccess
 
   // TODO: use com.intellij.platform.eel.EelApi.getArchive when it's ready?
   private fun unpackTarGz(tarFile: Path, targetDir: Path) {
