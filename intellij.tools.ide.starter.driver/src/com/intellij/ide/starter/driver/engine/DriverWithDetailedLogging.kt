@@ -21,6 +21,7 @@ import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
@@ -79,7 +80,7 @@ internal class DriverWithDetailedLogging(private val driver: Driver, logUiHierar
   private fun detailedException(e: Throwable): DriverWithContextError {
     val screenshotPath = createErrorScreenshotOrNull()
     runContext?.let {
-      saveHierarchy((it.logsDir / "ui-hierarchy").also { dir -> runCatching { dir.toFile().mkdir() } }.toString())
+      saveHierarchy((it.logsDir / "ui-hierarchy").also { dir -> runCatching { dir.createDirectories() } }.toString())
     }
     val detailedMessage = buildString {
       append("\n----Driver Error----\n".color(LogColor.PURPLE))
