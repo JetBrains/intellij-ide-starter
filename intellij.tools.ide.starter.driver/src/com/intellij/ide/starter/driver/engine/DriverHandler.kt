@@ -3,7 +3,6 @@ package com.intellij.ide.starter.driver.engine
 import java.net.InetAddress
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlin.to
 
 open class DriverOptions {
   var systemProperties: Map<String, String> = mapOf()
@@ -30,6 +29,7 @@ open class DriverHandler {
         "com.sun.management.jmxremote.ssl" to "false",
         "com.sun.management.jmxremote.serial.filter.pattern" to "'java.**;javax.**;com.intellij.driver.model.**'",
         "expose.ui.hierarchy.url" to "true",
+        "platform.experiment.ab.manual.option" to "control.option"
       )
     }
   }
