@@ -1,14 +1,8 @@
 package com.intellij.ide.starter
 
-import com.intellij.ide.starter.config.ConfigurationStorage
-import com.intellij.ide.starter.config.useInstaller
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.runner.Starter
-import com.intellij.openapi.application.PathManager
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.exists
 
 fun IDETestContext.disableCLionTestIndexing(): IDETestContext =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
@@ -25,22 +19,17 @@ fun IDETestContext.setForcedTraceScenarios(vararg scenarios: String): IDETestCon
 val isRadler: Boolean by lazy { System.getProperty("intellij.clion.radler.perf.tests", "false").toBoolean() }
 val clionPrefix: String by lazy { if (isRadler) "radler" else "clion" }
 
-fun getCLionContext(testName: String, testCase: TestCase<*>): IDETestContext {
+enum class LanguageEngine {
+  CLASSIC,
+  RADLER;
+}
+
+fun getCLionContext(testName: String, testCase: TestCase<*>, engine: LanguageEngine = LanguageEngine.CLASSIC): IDETestContext {
   val context = Starter.newContext("$clionPrefix/$testName", testCase)
   return context
     .setMemorySize(4096)
     .applyVMOptionsPatch {
-      if (isRadler) {
-        if (!ConfigurationStorage.useInstaller()) {
-          val backendPath = Path(PathManager.getHomePath(), "dotnet", "Bin.RiderBackend")
-          require(backendPath.exists()) {
-            "ReSharper backend not found: $backendPath doesn't exist.\n" +
-            "Please run 'Compile CLion Backend (Radler)' configuration before running tests"
-          }
-
-          withEnv("RESHARPER_HOST_BIN", backendPath.absolutePathString())
-        }
-
+      if (engine == LanguageEngine.RADLER || isRadler) {
         // Enable performance watcher for backend
         addSystemProperty("rider.backend.performance.watcher.isEnabled", "true")
 
