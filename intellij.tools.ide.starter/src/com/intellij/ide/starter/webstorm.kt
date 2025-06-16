@@ -92,6 +92,10 @@ fun IDETestContext.setAbortTypeScriptCompilerRequestsOutsideProject(): IDETestCo
   addSystemProperty("typescript.service.abort.requests.outside.project", "true")
 }
 
+fun IDETestContext.setTypeScriptServiceNodeArguments(value: String): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty("typescript.service.node.arguments", value)
+}
+
 fun IDETestContext.updatePath(path: Path): IDETestContext = applyVMOptionsPatch {
   updatePathEnvVariable(path)
 }
