@@ -8,6 +8,7 @@ import com.intellij.openapi.util.io.findOrCreateDirectory
 import com.intellij.tools.ide.performanceTesting.commands.dto.MavenArchetypeInfo
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
+import org.jetbrains.jps.model.serialization.JpsMavenSettings.getMavenRepositoryPath
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
 import java.net.URL
@@ -20,14 +21,8 @@ open class MavenBuildTool(testContext: IDETestContext) : BuildTool(BuildToolType
     /**
      * ~/.m2
      */
-    val DEFAULT_MAVEN_M2_REPO_PATH: Path
-      get() {
-        val userHome = System.getProperty("user.home", null)
-        val path = if (userHome != null) Path(userHome, ".m2/repository")
-        else Path(".m2/repository")
-
-        return path.toAbsolutePath()
-      }
+    val MAVEN_M2_REPO_PATH: Path
+      get() = Path.of(getMavenRepositoryPath())
 
     private const val MAVEN_DAEMON_NAME = "MavenServerIndexerMain"
     private fun destroyMavenIndexerProcessIfExists() {
