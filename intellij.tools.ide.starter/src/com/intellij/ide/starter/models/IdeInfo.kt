@@ -5,6 +5,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.util.system.CpuArch
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.net.URI
@@ -78,16 +79,21 @@ data class IdeInfo(
       else -> installerFilePrefix
     }
 
-  val installerFileExt
-    get() = when {
-      SystemInfo.isWindows -> ".exe"
-      SystemInfo.isLinux -> ".tar.gz"
-      SystemInfo.isMac -> when (System.getProperty("os.arch")) {
-        "x86_64" -> ".dmg"
-        "aarch64" -> "-aarch64.dmg"
-        else -> error("Unknown architecture of Mac OS")
+  val installerFileExt: String
+    get() {
+      val ext = when {
+        SystemInfo.isWindows -> ".exe"
+        SystemInfo.isLinux -> ".tar.gz"
+        SystemInfo.isMac -> ".dmg"
+        else -> error("Unknown OS ${System.getProperty("os.name")}")
       }
-      else -> error("Unknown OS")
+
+      val aarch64 = when (CpuArch.CURRENT) {
+        CpuArch.X86_64 -> false
+        CpuArch.ARM64 -> true
+        else -> error("Unknown architecture ${CpuArch.CURRENT}")
+      }
+      return if (aarch64) "-aarch64$ext" else ext
     }
 
   val identity: String
