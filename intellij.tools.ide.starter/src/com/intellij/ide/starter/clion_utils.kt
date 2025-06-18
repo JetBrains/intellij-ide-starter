@@ -7,6 +7,9 @@ import com.intellij.ide.starter.runner.Starter
 fun IDETestContext.disableCLionTestIndexing(): IDETestContext =
   applyVMOptionsPatch { this.addSystemProperty("cidr.disable.test.indexing", true) }
 
+fun IDETestContext.setCDBBatchSize(batchSize: Int): IDETestContext =
+  applyVMOptionsPatch { this.addSystemProperty("cidr.clangd.cdb.batch.size", batchSize) }
+
 fun IDETestContext.disablePatchEngine(): IDETestContext =
   applyVMOptionsPatch { this.addSystemProperty("rdclient.patch.engine.enabled", false) }
 
