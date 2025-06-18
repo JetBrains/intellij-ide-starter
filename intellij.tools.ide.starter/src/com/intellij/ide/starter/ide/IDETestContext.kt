@@ -33,6 +33,7 @@ import com.intellij.tools.ide.performanceTesting.commands.SdkObject
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.ui.NewUiValue
+import com.intellij.util.io.createParentDirectories
 import com.intellij.util.io.write
 import com.intellij.util.system.OS
 import kotlinx.coroutines.Dispatchers
@@ -792,6 +793,12 @@ open class IDETestContext(
         </component>
       </application>
     """)
+    return this
+  }
+
+  fun removeMigrateConfigAndCreateStubFile(): IDETestContext {
+    paths.configDir.resolve("test.txt").createParentDirectories().createFile()
+    paths.configDir.resolve("migrate.config").deleteIfExists()
     return this
   }
 }
