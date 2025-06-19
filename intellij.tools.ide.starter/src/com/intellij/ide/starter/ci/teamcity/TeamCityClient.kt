@@ -119,9 +119,15 @@ object TeamCityClient {
     var suffix: String
     var nextSuffix = 0
     var artifactDir: Path
+    val (artifactFullName, artifactExtension) = if ('.' in sanitizedArtifactName) {
+      val dotIndex = sanitizedArtifactName.lastIndexOf('.')
+      sanitizedArtifactName.take(dotIndex) to sanitizedArtifactName.substring(dotIndex)
+    } else {
+      sanitizedArtifactName to ""
+    }
     do {
       suffix = if (nextSuffix == 0) "" else "-$nextSuffix"
-      artifactDir = (artifactForPublishingDir / sanitizedArtifactPath / (sanitizedArtifactName + suffix)).normalize().toAbsolutePath()
+      artifactDir = (artifactForPublishingDir / sanitizedArtifactPath / (artifactFullName + suffix + artifactExtension)).normalize().toAbsolutePath()
       nextSuffix++
     }
     while (artifactDir.exists())
