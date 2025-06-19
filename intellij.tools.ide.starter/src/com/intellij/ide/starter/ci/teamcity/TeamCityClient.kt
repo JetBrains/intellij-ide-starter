@@ -18,7 +18,6 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.auth.BasicScheme
 import org.kodein.di.direct
 import org.kodein.di.instance
-import java.io.File
 import java.io.InputStreamReader
 import java.net.URI
 import java.nio.file.Files
@@ -71,7 +70,7 @@ object TeamCityClient {
     val number = if (!ideInfo.buildNumber.isBlank()) "number:${ideInfo.buildNumber}," else ""
     val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${ideInfo.buildType},${tag}${number}status:SUCCESS,state:(finished:true),count:1")
 
-    val build = get(fullUrl).fields().asSequence().first { it.key == "build" }.value
+    val build = get(fullUrl).properties().first { it.key == "build" }.value
     val buildId = build.findValue("id").asText()
     val buildNumber = ideInfo.buildNumber.ifBlank { build.findValue("number").asText() }
     return Pair(buildId, buildNumber)
@@ -85,9 +84,9 @@ object TeamCityClient {
     return get(url).findValue("number").asText().split(".")[0]
   }
 
-  fun downloadArtifact(buildId: String, artifactName: String, outFile: File) {
+  fun downloadArtifact(buildId: String, artifactName: String, outPath: Path) {
     val artifactUrl = guestAuthUri.resolve("builds/id:$buildId/artifacts/content/$artifactName")
-    HttpClient.download(artifactUrl.toString(), outFile)
+    HttpClient.download(artifactUrl.toString(), outPath)
   }
 
   private fun printTcArtifactsPublishMessage(spec: String) {
