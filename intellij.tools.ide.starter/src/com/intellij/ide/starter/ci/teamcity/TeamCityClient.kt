@@ -119,7 +119,7 @@ object TeamCityClient {
     var nextSuffix = 0
     var artifactDir: Path
     val (artifactFullName, artifactExtension) = if ('.' in sanitizedArtifactName) {
-      val dotIndex = sanitizedArtifactName.lastIndexOf('.')
+      val dotIndex = sanitizedArtifactName.indexOf('.') //Find the first dot to avoid breaking .tar.gz etc.
       sanitizedArtifactName.take(dotIndex) to sanitizedArtifactName.substring(dotIndex)
     } else {
       sanitizedArtifactName to ""
