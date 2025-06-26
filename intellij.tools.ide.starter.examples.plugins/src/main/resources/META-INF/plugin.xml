@@ -22,10 +22,10 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
-    <actions>
-        <action id="ShowDialogAction" class="ShowDialogAction" text="Show Test Dialog">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </action>
+    <actions resource-bundle="messages.DemoBundle">
+      <action id="ShowDialogAction" class="ShowDialogAction">
+        <add-to-group group-id="ToolsMenu" anchor="last"/>
+      </action>
     </actions>
 
     <!-- Extension points defined by the plugin.
