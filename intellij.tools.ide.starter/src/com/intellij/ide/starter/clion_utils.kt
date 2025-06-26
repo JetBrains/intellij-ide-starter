@@ -58,7 +58,6 @@ fun getCLionContext(testName: String, testCase: TestCase<*>, engine: LanguageEng
 
       // Disable assertions
       addSystemProperty("actionSystem.update.actions.warn.dataRules.on.edt", "false")
-      addSystemProperty("ide.slow.operations.assertion", "false")
 
       // Disable wizard
       addSystemProperty("clion.skip.open.wizard", "true")
