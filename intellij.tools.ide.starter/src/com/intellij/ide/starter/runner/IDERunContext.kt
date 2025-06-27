@@ -79,9 +79,13 @@ data class IDERunContext(
   }
 
   internal fun deleteJVMCrashes() {
+    println("Cleaning JVM crashes ...")
     listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory)
       .filter { dir -> dir.exists() && dir.listDirectoryEntries().isNotEmpty() }
-      .forEach { NioFiles.deleteRecursively(it) }
+      .forEach {
+        println("Deleting $it")
+        NioFiles.deleteRecursively(it)
+      }
   }
 
   internal fun publishArtifacts() {
