@@ -36,19 +36,21 @@ class InstallPluginAfterUpdateIdeTest {
   )
 
   companion object {
-    private val configurationData: ConfigurationData = getConfigurationData()
-    private val testContextWithoutPlugin: IDETestContext = createTestContext(
-      TestCases.IU.GradleJitPackSimple.copy(
-        ideInfo = IU.copy(downloadURI = URI(configurationData.url))
-      )
-    )
+    private var configurationData: ConfigurationData? = null
+    private var testContextWithoutPlugin: IDETestContext? = null
     private var errorsWithoutPlugin: List<Error>? = null
 
     @BeforeAll
     @JvmStatic
     fun setupBaseline() {
       initPluginCheckerDI()
-      val runResult = testContextWithoutPlugin.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp())
+      configurationData = getConfigurationData()
+      testContextWithoutPlugin = createTestContext(
+        TestCases.IU.GradleJitPackSimple.copy(
+          ideInfo = IU.copy(downloadURI = URI(configurationData!!.url))
+        )
+      )
+      val runResult = testContextWithoutPlugin!!.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp())
       errorsWithoutPlugin = ErrorReporterToCI.collectErrors(runResult.runContext.logsDir)
     }
     
@@ -101,9 +103,9 @@ class InstallPluginAfterUpdateIdeTest {
 
     @JvmStatic
     fun pluginsProvider(): List<Arguments> {
-      val plugins = MarketplaceClient.getPluginsForBuild(configurationData.type, testContextWithoutPlugin.ide.build)
-      println("Current batch index: ${configurationData.currentBatchIndex}")
-      val pluginsForThisBucket = splitIntoBuckets(plugins)[configurationData.currentBatchIndex]
+      val plugins = MarketplaceClient.getPluginsForBuild(configurationData!!.type, testContextWithoutPlugin!!.ide.build)
+      println("Current batch index: ${configurationData!!.currentBatchIndex}")
+      val pluginsForThisBucket = splitIntoBuckets(plugins)[configurationData!!.currentBatchIndex]
 
       return pluginsForThisBucket.map { Arguments.of(testContextWithoutPlugin to it, it.name) }
     }
