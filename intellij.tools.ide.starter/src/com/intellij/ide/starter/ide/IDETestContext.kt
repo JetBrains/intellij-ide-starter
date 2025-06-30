@@ -318,6 +318,12 @@ open class IDETestContext(
     addSystemProperty("search.everywhere.new.cwm.client.enabled", false)
   }
 
+  fun enableSplitSearchEverywhere(): IDETestContext = applyVMOptionsPatch {
+    addSystemProperty("search.everywhere.new.enabled", true)
+    addSystemProperty("search.everywhere.new.rider.enabled", true)
+    addSystemProperty("search.everywhere.new.cwm.client.enabled", true)
+  }
+
   fun withKotlinPluginK2(): IDETestContext = applyVMOptionsPatch {
     addSystemProperty("idea.kotlin.plugin.use.k2", true)
   }
