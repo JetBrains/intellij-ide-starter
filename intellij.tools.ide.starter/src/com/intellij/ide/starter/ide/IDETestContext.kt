@@ -787,6 +787,9 @@ open class IDETestContext(
     return this
   }
 
+  /**
+   * Disables the "first startup" functionality, such as auto-trial, settings import, etc.
+   */
   fun removeMigrateConfigAndCreateStubFile(): IDETestContext {
     paths.configDir.resolve("test.txt").createParentDirectories().createFile()
     paths.configDir.resolve("migrate.config").deleteIfExists()
