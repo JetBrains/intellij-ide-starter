@@ -221,6 +221,7 @@ data class VMOptions(
     addSystemProperty("jb.consents.confirmation.enabled", false)
     addSystemProperty("jb.privacy.policy.text", "<!--999.999-->")
     addSystemProperty("jb.privacy.policy.ai.assistant.text", "<!--999.999-->")
+    addSystemProperty("marketplace.eula.reviewed.and.accepted", true)
     addSystemProperty("writerside.eula.reviewed.and.accepted", true)
   }
 
