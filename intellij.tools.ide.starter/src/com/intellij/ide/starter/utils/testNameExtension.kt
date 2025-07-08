@@ -31,7 +31,7 @@ fun String.hyphenateTestName(): String {
     convertedPath.toString().replace(convertedPath.fileSystem.separator, "/")
   }
   catch (_: Exception) {
-    return hyphenateString(this)
+    return hyphenateString(this).replaceSpecialCharactersWithHyphens().replace("-*/-*".toRegex(), "/")
   }
 
   return hyphenatedPath.replaceSpecialCharactersWithHyphens()
