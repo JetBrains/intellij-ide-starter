@@ -64,7 +64,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   }
 
   private val localGradleRepoPath: Path
-    get() = testContext.paths.tempDir.resolve("gradle")
+    get() = testContext.paths.tempDir.resolve(".gradle")
 
   private val gradleXmlPath: Path
     get() = testContext.resolvedProjectHome.resolve(".idea").resolve("gradle.xml")
