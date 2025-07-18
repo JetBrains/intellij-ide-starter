@@ -3,7 +3,7 @@ load("@community//build:compiler-options.bzl", "create_kotlinc_options")
 load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources")
 
 create_kotlinc_options(
-  name = "custom",
+  name = "custom_tools-ide-starter",
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
@@ -18,7 +18,7 @@ jvm_library(
   module_name = "intellij.tools.ide.starter",
   visibility = ["//visibility:public"],
   srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True),
-  kotlinc_opts = ":custom",
+  kotlinc_opts = ":custom_tools-ide-starter",
   deps = [
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",

@@ -1,10 +1,9 @@
 ### auto-generated section `build intellij.tools.plugin.checker.tests` start
 load("@community//build:compiler-options.bzl", "create_kotlinc_options")
-load("@community//build:tests-options.bzl", "jps_test")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
 
 create_kotlinc_options(
-  name = "custom",
+  name = "custom_tools-plugin-checker-tests",
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
@@ -12,7 +11,7 @@ jvm_library(
   name = "tools-plugin-checker-tests_test_lib",
   visibility = ["//visibility:public"],
   srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True),
-  kotlinc_opts = ":custom",
+  kotlinc_opts = ":custom_tools-plugin-checker-tests",
   deps = [
     "@lib//:kotlin-stdlib",
     "@ultimate_lib//:kodein-di-jvm",
@@ -33,9 +32,13 @@ jvm_library(
     "@ultimate_lib//:software-amazon-awssdk-sqs",
   ]
 )
+### auto-generated section `build intellij.tools.plugin.checker.tests` end
+
+### auto-generated section `test intellij.tools.plugin.checker.tests` start
+load("@community//build:tests-options.bzl", "jps_test")
 
 jps_test(
   name = "tools-plugin-checker-tests_test",
   runtime_deps = [":tools-plugin-checker-tests_test_lib"]
 )
-### auto-generated section `build intellij.tools.plugin.checker.tests` end
+### auto-generated section `test intellij.tools.plugin.checker.tests` end
