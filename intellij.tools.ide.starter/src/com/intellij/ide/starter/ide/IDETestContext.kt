@@ -528,6 +528,19 @@ open class IDETestContext(
     return this
   }
 
+  fun disableInsertingPairBrackets(): IDETestContext {
+    writeConfigFile("options/editor.xml", """
+      <application>
+        <component name="CodeInsightSettings">
+          <option name="AUTOINSERT_PAIR_BRACKET" value="false" />
+          <option name="AUTOINSERT_PAIR_QUOTE" value="false" />
+          <option name="INSERT_BRACE_ON_ENTER" value="false" />
+        </component>
+      </application>
+    """)
+    return this
+  }
+
   /**
    * To get a license you need:
    * 1. Go to [JetBrains Account](https://account.jetbrains.com/licenses)
