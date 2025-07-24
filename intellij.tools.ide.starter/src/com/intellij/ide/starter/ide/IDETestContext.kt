@@ -338,6 +338,10 @@ open class IDETestContext(
 
   fun enableCheckTrafficLight(enable: Boolean = true): IDETestContext = applyVMOptionsPatch { addSystemProperty("is.test.traffic.light", enable) }
 
+  fun disableCLionPromoOnStart(): IDETestContext = applyVMOptionsPatch {
+    addSystemProperty("clion.promo.on.start.enable", false)
+  }
+
   fun removeIdeaProjectDirectory(): IDETestContext {
     val ideaDirPath = resolvedProjectHome.resolve(".idea")
 
