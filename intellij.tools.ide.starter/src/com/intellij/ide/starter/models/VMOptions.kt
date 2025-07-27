@@ -225,10 +225,6 @@ data class VMOptions(
     addSystemProperty("writerside.eula.reviewed.and.accepted", true)
   }
 
-  fun dontDisablePaidPluginsOnStartup() {
-    addSystemProperty("ide.do.not.disable.paid.plugins.on.startup", true)
-  }
-
   fun disableNewUsersOnboardingDialogue() {
     addSystemProperty("ide.newUsersOnboarding", false)
   }
