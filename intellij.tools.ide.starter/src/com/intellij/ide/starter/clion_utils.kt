@@ -10,9 +10,6 @@ fun IDETestContext.disableCLionTestIndexing(): IDETestContext =
 fun IDETestContext.setCDBBatchSize(batchSize: Int): IDETestContext =
   applyVMOptionsPatch { this.addSystemProperty("cidr.clangd.cdb.batch.size", batchSize) }
 
-fun IDETestContext.disablePatchEngine(): IDETestContext =
-  applyVMOptionsPatch { this.addSystemProperty("rdclient.patch.engine.enabled", false) }
-
 @Suppress("unused")
 fun IDETestContext.setForcedTraceScenarios(vararg scenarios: String): IDETestContext = applyVMOptionsPatch {
   this.addSystemProperty("rd.forced.trace.scenarios", scenarios.joinToString(","))
