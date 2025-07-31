@@ -20,6 +20,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import java.nio.file.attribute.PosixFileAttributeView
+import java.nio.file.attribute.PosixFilePermission
 import java.time.Duration
 import java.time.Instant
 import java.util.zip.GZIPOutputStream
@@ -72,7 +74,9 @@ object FileSystem {
       JBZipFile(zipFile.toFile(), StandardCharsets.UTF_8, false, ThreeState.UNSURE).use { zip ->
         for (entry in zip.entries) {
           if (entry.isDirectory) {
-            targetDir.resolve(entry.name).createDirectories()
+            val dir = targetDir.resolve(entry.name)
+            dir.createDirectories()
+            setFilePermissions(dir, entry)
             continue
           }
           val file = targetDir.resolve((map(entry.name) ?: continue))
@@ -87,6 +91,7 @@ object FileSystem {
               entry.inputStream.use { entryStream -> entryStream.copyTo(it) }
             }
             file.setLastModifiedTime(FileTime.fromMillis(entry.time))
+            setFilePermissions(file, entry)
           }
         }
 
@@ -105,6 +110,39 @@ object FileSystem {
       targetDir.deleteRecursivelyQuietly()
       zipFile.deleteIfExists()
       throw IOException("Failed to unpack $zipFile to $targetDir. ${e.message}", e)
+    }
+  }
+
+  private fun setFilePermissions(file: Path, entry: JBZipEntry) {
+    try {
+      if (!Files.getFileStore(file).supportsFileAttributeView(PosixFileAttributeView::class.java)) return
+
+      val externalAttrs = entry.externalAttributes
+      val unixMode = (externalAttrs shr 16).toInt()
+      if (externalAttrs == 0L || unixMode == 0) return
+
+      // Convert Unix mode to Java PosixFilePermissions
+      val permissions = mutableSetOf<PosixFilePermission>()
+
+      // Owner permissions
+      if (unixMode and 0x100 != 0) permissions.add(PosixFilePermission.OWNER_READ)
+      if (unixMode and 0x080 != 0) permissions.add(PosixFilePermission.OWNER_WRITE)
+      if (unixMode and 0x040 != 0) permissions.add(PosixFilePermission.OWNER_EXECUTE)
+
+      // Group permissions
+      if (unixMode and 0x020 != 0) permissions.add(PosixFilePermission.GROUP_READ)
+      if (unixMode and 0x010 != 0) permissions.add(PosixFilePermission.GROUP_WRITE)
+      if (unixMode and 0x008 != 0) permissions.add(PosixFilePermission.GROUP_EXECUTE)
+
+      // Others permissions
+      if (unixMode and 0x004 != 0) permissions.add(PosixFilePermission.OTHERS_READ)
+      if (unixMode and 0x002 != 0) permissions.add(PosixFilePermission.OTHERS_WRITE)
+      if (unixMode and 0x001 != 0) permissions.add(PosixFilePermission.OTHERS_EXECUTE)
+
+      Files.setPosixFilePermissions(file, permissions)
+    }
+    catch (e: Exception) {
+      logOutput("Failed to set permissions for ${file}: ${e.message}")
     }
   }
 
