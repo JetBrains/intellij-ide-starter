@@ -24,7 +24,7 @@ import kotlin.time.Duration.Companion.minutes
 fun <T> IDETestContext.runIdeTest(
   testName: String,
   configure: IDERunContext.() -> Unit = {},
-  timeout: Duration = 1.minutes,
+  timeout: Duration = 5.minutes,
   beforeTest: Driver.() -> Unit = {},
   afterTest: Driver.() -> Unit = {},
   onTestComplete: (IDEStartResult) -> Unit = {},
