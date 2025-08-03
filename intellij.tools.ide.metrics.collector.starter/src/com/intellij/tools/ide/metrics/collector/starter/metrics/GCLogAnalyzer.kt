@@ -1,7 +1,5 @@
 package com.intellij.tools.ide.metrics.collector.starter.metrics
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -50,17 +48,6 @@ class GCLogAnalyzer(private val ideStartResult: IDEStartResult) {
     runGCViewer(ideStartResult.runContext, gcViewerPath, summaryFile)
 
     return summaryFile
-  }
-
-  fun mergeGCMetrics(statsObject: ObjectNode) {
-    val gcMetrics = getGCMetrics()
-    val nodeFactory = JsonNodeFactory.instance
-    statsObject.putIfAbsent("additionalMetrics", nodeFactory.objectNode())
-    val gcObject = nodeFactory.objectNode()
-    gcMetrics.forEach {
-      gcObject.putIfAbsent(it.id.name, nodeFactory.numberNode(it.value))
-    }
-    (statsObject.get("additionalMetrics") as ObjectNode).putIfAbsent("gc", gcObject)
   }
 
   private fun runGCViewer(context: IDERunContext, gcViewer: Path, gcSummary: Path) {
