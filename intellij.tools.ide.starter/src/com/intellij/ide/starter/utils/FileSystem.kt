@@ -76,7 +76,6 @@ object FileSystem {
           if (entry.isDirectory) {
             val dir = targetDir.resolve(entry.name)
             dir.createDirectories()
-            setFilePermissions(dir, entry)
             continue
           }
           val file = targetDir.resolve((map(entry.name) ?: continue))
