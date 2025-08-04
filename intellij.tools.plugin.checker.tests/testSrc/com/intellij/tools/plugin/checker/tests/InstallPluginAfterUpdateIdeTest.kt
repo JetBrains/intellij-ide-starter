@@ -19,7 +19,8 @@ import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceClient
 import com.intellij.tools.plugin.checker.marketplace.Plugin
 import com.intellij.util.containers.ContainerUtil.subtract
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -40,20 +41,6 @@ class InstallPluginAfterUpdateIdeTest {
     private var configurationData: ConfigurationData? = null
     private var testContextWithoutPlugin: IDETestContext? = null
     private var errorsWithoutPlugin: List<Error>? = null
-
-    @BeforeAll
-    @JvmStatic
-    fun setupBaseline() {
-      initPluginCheckerDI()
-      configurationData = getConfigurationData()
-      testContextWithoutPlugin = createTestContext(
-        TestCases.IU.GradleJitPackSimple.copy(
-          ideInfo = IU.copy(downloadURI = URI(configurationData!!.url))
-        )
-      )
-      val runResult = testContextWithoutPlugin!!.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp())
-      errorsWithoutPlugin = ErrorReporterToCI.collectErrors(runResult.runContext.logsDir)
-    }
     
     private fun JsonNode.getProperty(name: String): String {
       return this
@@ -112,6 +99,20 @@ class InstallPluginAfterUpdateIdeTest {
     }
   }
 
+
+  @Test
+  @Order(0)
+  fun runIdeWithoutPlugins() {
+    initPluginCheckerDI()
+    configurationData = getConfigurationData()
+    testContextWithoutPlugin = createTestContext(
+      TestCases.IU.GradleJitPackSimple.copy(
+        ideInfo = IU.copy(downloadURI = URI(configurationData!!.url))
+      )
+    )
+    val runResult = testContextWithoutPlugin!!.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp())
+    errorsWithoutPlugin = ErrorReporterToCI.collectErrors(runResult.runContext.logsDir)
+  }
 
   @ParameterizedTest(name = "{1}")
   @MethodSource("pluginsProvider")
