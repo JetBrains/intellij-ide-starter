@@ -10,7 +10,6 @@ import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
 import com.intellij.ide.starter.driver.engine.LocalDriverRunner
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.process.exec.ProcessExecutor.Companion.killProcessGracefully
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.IDECommandLine
 import com.intellij.ide.starter.runner.IDERunContext
@@ -27,8 +26,8 @@ import kotlin.time.Duration.Companion.seconds
 internal class IDEBackendHandler(private val backendContext: IDETestContext, private val options: RemoteDevDriverOptions) {
   private fun buildBackendCommandLine(): (IDERunContext) -> IDECommandLine {
     return { _: IDERunContext ->
-      if (backendContext.testCase.projectInfo == NoProject) IDECommandLine.Args(listOf("remoteDevHost"))
-      else IDECommandLine.OpenTestCaseProject(backendContext, listOf("remoteDevHost"))
+      if (backendContext.testCase.projectInfo == NoProject) IDECommandLine.Args(listOf("serverMode"))
+      else IDECommandLine.OpenTestCaseProject(backendContext, listOf("serverMode"))
     }
   }
 
