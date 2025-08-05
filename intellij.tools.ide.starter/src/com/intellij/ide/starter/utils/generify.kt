@@ -38,6 +38,7 @@ fun generifyErrorMessage(originalMessage: String): String {
     .generifyHexadecimal()
     .generifyHexCode()
     .generifyNumber()
+    .generifyKernelMessage()
 }
 
 /** text@3ba5aac, text => text<ID>, text */
@@ -74,6 +75,13 @@ fun String.generifyHexadecimal(): String {
     } else {
       "${it.groupValues[5]}<NUM>${it.groupValues[7]}"
     }
+  }
+}
+
+fun String.generifyKernelMessage(): String {
+  val regex = Regex("\\[Kernel.*, CoroutineName\\((.*)\\), .*]")
+  return this.replace(regex) {
+    "[<Kernel details> ${it.groupValues[1]}]"
   }
 }
 

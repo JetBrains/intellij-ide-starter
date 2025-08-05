@@ -45,6 +45,12 @@ class ReportingTest {
         Arguments.of("cd183e2b-repository", "<NUM>-repository"),
         Arguments.of("repository-cd183e2b-repository", "repository-<NUM>-repository"),
         Arguments.of("Library 'org.jetbrains.kotlin:kotlin-tooling-core:1.9.20-dev-6566' resolution failed", "Library 'org.jetbrains.kotlin:kotlin-tooling-core:<NUM>.<NUM>.<NUM>-dev-<NUM>' resolution failed"),
+        Arguments.of("Unhandled exception in [Kernel@vlg56bursheg4flie1tq, Rete(abortOnError=false, commands=capacity=2147483647,data=[onReceive], " +
+                     "reteState=kotlinx.coroutines.flow.StateFlowImpl@5ccddd20, dbSource=ReteDbSource(reteState=kotlinx.coroutines.flow.StateFlowImpl@5ccddd20)), " +
+                     "DbSourceContextElement(kernel Kernel@vlg56bursheg4flie1tq), ComponentManager(ApplicationImpl@702643297), " +
+                     "com.intellij.codeWithMe.ClientIdContextElementPrecursor@1add8c55, CoroutineName(com.intellij.station.core.services.IdeStationServerService), " +
+                     "Dispatchers.Default]: D:\\BuildAgent\\temp\\buildTmp\\agentTemp\\Host\\jb.station.ij.8236.sock",
+                     "Unhandled exception in [<Kernel details> com.intellij.station.core.services.IdeStationServerService]: D:\\BuildAgent\\temp\\buildTmp\\agentTemp\\Host\\jb.station.ij.<NUM>.sock"),
       )
     }
   }
