@@ -121,8 +121,6 @@ open class TeamCityCIServer(
       "Non-idempotent computation: it returns different results when invoked multiple times".toRegex(),
       //RDCT-1508
       "current modality=ModalityState:.+com.intellij.openapi.ui.impl.DialogWrapperPeerImpl".toRegex(),
-      //GTW-6839
-      "Can't find project session for projectId: RdProjectId".toRegex(),
       //QD-9242
       "Descriptions are missed for tools: DevContainerIdeSettings".toRegex(),
     )
