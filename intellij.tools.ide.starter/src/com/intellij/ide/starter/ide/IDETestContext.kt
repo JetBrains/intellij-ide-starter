@@ -799,4 +799,21 @@ open class IDETestContext(
     paths.configDir.resolve("migrate.config").deleteIfExists()
     return this
   }
+
+  /**
+   * Configures a localhost proxy to disable internet access for the IDE
+   */
+  fun setLocalhostProxy(): IDETestContext {
+    writeConfigFile("options/proxy.settings.xml", """
+      <application>
+        <component name="HttpConfigurable">
+          <option name="USE_HTTP_PROXY" value="true" />
+          <option name="PROXY_HOST" value="localhost" />
+          <option name="PROXY_PORT" value="3128" />
+          <option name="PROXY_EXCEPTIONS" value="" />
+        </component>
+      </application>
+    """)
+    return this
+  }
 }
