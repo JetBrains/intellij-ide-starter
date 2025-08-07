@@ -24,6 +24,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.net.URI
 import kotlin.io.path.createFile
+import kotlin.time.Duration.Companion.minutes
 
 @ExtendWith(KillOutdatedProcesses::class)
 class InstallPluginAfterUpdateIdeTest {
@@ -59,7 +60,7 @@ class InstallPluginAfterUpdateIdeTest {
 
 
     private fun <T> splitIntoBuckets(list: List<T>): List<List<T>> {
-      val batchesCount = 10
+      val batchesCount = 100
       val bucketSize = list.size / batchesCount
       val remainder = list.size % batchesCount
       return (0 until batchesCount).map { i ->
@@ -119,7 +120,7 @@ class InstallPluginAfterUpdateIdeTest {
     val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
 
     val ideRunContext =
-      contextWithPlugin.runIDE(launchName = "Run with plugin", commands = CommandChain().exitApp()).runContext
+      contextWithPlugin.runIDE(launchName = "Run with plugin", commands = CommandChain().exitApp(), runTimeout = 3.minutes).runContext
     val errorsWithPlugin = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
     val diff = subtract(errorsWithPlugin, errorsWithoutPlugin).toList()
