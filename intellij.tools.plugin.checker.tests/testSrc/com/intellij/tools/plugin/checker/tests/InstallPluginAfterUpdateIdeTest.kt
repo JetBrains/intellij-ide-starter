@@ -18,6 +18,7 @@ import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceClient
 import com.intellij.tools.plugin.checker.marketplace.Plugin
 import com.intellij.util.containers.ContainerUtil.subtract
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -35,6 +36,12 @@ class InstallPluginAfterUpdateIdeTest {
   )
 
   companion object {
+    @JvmStatic
+    @BeforeAll
+    fun setupDI() {
+      initPluginCheckerDI()
+    }
+
     private fun JsonNode.getProperty(name: String): String {
       return this
         .first { it.get("name").asText() == name }
@@ -84,7 +91,6 @@ class InstallPluginAfterUpdateIdeTest {
 
     @JvmStatic
     fun pluginsProvider(): List<Arguments> {
-      initPluginCheckerDI()
       val configurationData = getConfigurationData()
       val case = TestCases.IU.GradleJitPackSimple
         .copy(
