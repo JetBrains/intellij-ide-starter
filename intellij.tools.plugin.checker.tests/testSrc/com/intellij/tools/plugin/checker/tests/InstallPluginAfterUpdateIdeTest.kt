@@ -9,6 +9,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider.IU
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.report.Error
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -18,6 +19,8 @@ import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceClient
 import com.intellij.tools.plugin.checker.marketplace.Plugin
 import com.intellij.util.containers.ContainerUtil.subtract
+import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -28,6 +31,8 @@ import kotlin.time.Duration.Companion.minutes
 
 @ExtendWith(KillOutdatedProcesses::class)
 class InstallPluginAfterUpdateIdeTest {
+  private lateinit var errorsWithoutPlugin: List<Error>
+
   private data class ConfigurationData(
     val type: String,
     val url: String,
@@ -105,6 +110,22 @@ class InstallPluginAfterUpdateIdeTest {
     }
   }
 
+  @Test
+  @Order(0)
+  fun runIdeWithoutPlugin() {
+    initPluginCheckerDI()
+    val configurationData = getConfigurationData()
+    val case = TestCases.IU.GradleJitPackSimple
+      .copy(
+        ideInfo = IU.copy(
+          downloadURI = URI(configurationData.url)
+        )
+      )
+
+    val context = createTestContext(case)
+    val ideRunContextWithoutPlugin = context.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp()).runContext
+    errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
+  }
 
   @ParameterizedTest(name = "{1}")
   @MethodSource("pluginsProvider")
@@ -115,12 +136,8 @@ class InstallPluginAfterUpdateIdeTest {
     MarketplaceClient.downloadPlugin(plugin, pluginPath.toFile())
     contextWithPlugin.apply { pluginConfigurator.installPluginFromPath(pluginPath) }
 
-    val ideRunContextWithoutPlugin =
-      context.runIDE(launchName = "Run without plugin", commands = CommandChain().exitApp()).runContext
-    val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
-
     val ideRunContext =
-      contextWithPlugin.runIDE(launchName = "Run with plugin", commands = CommandChain().exitApp(), runTimeout = 3.minutes).runContext
+      contextWithPlugin.runIDE(launchName = "with-plugin-${plugin.id}", commands = CommandChain().exitApp(), runTimeout = 3.minutes).runContext
     val errorsWithPlugin = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
 
     val diff = subtract(errorsWithPlugin, errorsWithoutPlugin).toList()
