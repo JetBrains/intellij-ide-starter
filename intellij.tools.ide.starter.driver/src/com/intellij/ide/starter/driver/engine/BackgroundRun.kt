@@ -33,6 +33,13 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
     driverWithoutAwaitedConnection
   }
 
+  /**
+   * Alias for [useDriverAndCloseIde] to make it possible apply `fun test() = bgRun.test { }` syntax in tests.
+   */
+  fun <R> test(closeIdeTimeout: Duration = 1.minutes, shutdownHook: Driver.() -> Unit = {}, block: Driver.() -> R) {
+    useDriverAndCloseIde(closeIdeTimeout, shutdownHook, block)
+  }
+
   open fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration = 1.minutes, shutdownHook: Driver.() -> Unit = {}, block: Driver.() -> R): IDEStartResult {
     try {
       driver.withContext { block(this) }
