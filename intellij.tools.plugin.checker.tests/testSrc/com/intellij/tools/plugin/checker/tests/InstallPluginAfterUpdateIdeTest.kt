@@ -19,8 +19,9 @@ import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceClient
 import com.intellij.tools.plugin.checker.marketplace.Plugin
 import com.intellij.util.containers.ContainerUtil.subtract
-import org.junit.jupiter.api.Order
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -29,6 +30,7 @@ import java.net.URI
 import kotlin.io.path.createFile
 import kotlin.time.Duration.Companion.minutes
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(KillOutdatedProcesses::class)
 class InstallPluginAfterUpdateIdeTest {
   private lateinit var errorsWithoutPlugin: List<Error>
@@ -111,7 +113,7 @@ class InstallPluginAfterUpdateIdeTest {
   }
 
   @Test
-  @Order(0)
+  @BeforeAll
   fun runIdeWithoutPlugin() {
     initPluginCheckerDI()
     val configurationData = getConfigurationData()
