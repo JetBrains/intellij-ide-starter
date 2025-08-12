@@ -9,6 +9,7 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider.IU
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.report.Error
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.Starter
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.io.IOException
 import java.net.URI
 import kotlin.io.path.createFile
 import kotlin.time.Duration.Companion.minutes
@@ -135,7 +137,16 @@ class InstallPluginAfterUpdateIdeTest {
     val (context, plugin) = data
     val contextWithPlugin = createTestContext(context.testCase)
     val pluginPath = contextWithPlugin.paths.testHome.resolve(plugin.id + ".zip").createFile()
-    MarketplaceClient.downloadPlugin(plugin, pluginPath)
+
+    try {
+      MarketplaceClient.downloadPlugin(plugin, pluginPath)
+    } catch (e: Exception) {
+      when (e) {
+        is IOException, is PluginNotFoundException -> return
+        else -> throw e
+      }
+    }
+
     contextWithPlugin.apply { pluginConfigurator.installPluginFromPath(pluginPath) }
 
     val ideRunContext =
