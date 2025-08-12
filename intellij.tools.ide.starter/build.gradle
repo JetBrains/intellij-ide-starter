@@ -63,7 +63,7 @@ dependencies {
   implementation('com.jetbrains.intellij.platform:ide-impl:LATEST-TRUNK-SNAPSHOT')
   implementation('com.jetbrains.intellij.platform:lang-impl:LATEST-TRUNK-SNAPSHOT')
   implementation('com.jetbrains.intellij.platform:core:LATEST-TRUNK-SNAPSHOT')
-  implementation('com.github.oshi:oshi-core:6.6.0')
+  implementation('com.github.oshi:oshi-core:6.8.2')
 }
 
 configurations {
