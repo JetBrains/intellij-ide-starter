@@ -28,8 +28,10 @@ import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.io.createDirectories
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Files
@@ -55,7 +57,7 @@ data class IDERunContext(
   val expectedKill: Boolean = false,
   val expectedExitCode: Int = 0,
   val collectNativeThreads: Boolean = false,
-  private val stdOut: ExecOutputRedirect? = null
+  private val stdOut: ExecOutputRedirect? = null,
 ) {
   val contextName: String
     get() = (if (launchName.isNotEmpty()) "${testContext.testName}/${launchName}" else testContext.testName)
@@ -182,7 +184,7 @@ data class IDERunContext(
   }
 
   fun runIDE(): IDEStartResult {
-    return runBlocking { runIdeSuspending() }
+    return runBlocking { withContext(Dispatchers.IO) { runIdeSuspending() } }
   }
 
   suspend fun runIdeSuspending(): IDEStartResult {

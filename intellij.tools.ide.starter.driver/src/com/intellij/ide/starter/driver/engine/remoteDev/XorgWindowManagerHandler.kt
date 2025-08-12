@@ -7,6 +7,7 @@ import com.intellij.ide.starter.process.getProcessList
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.getRunningDisplays
 import com.intellij.tools.ide.util.common.logOutput
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlin.io.path.div
 import kotlin.io.path.pathString
@@ -42,7 +43,7 @@ object XorgWindowManagerHandler {
   }
 
   fun startFluxBox(ideRunContext: IDERunContext) {
-    perClientSupervisorScope.async {
+    perClientSupervisorScope.async(Dispatchers.IO) {
       val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
 
       if (!isFluxBoxIsRunning(displayWithColumn)) {

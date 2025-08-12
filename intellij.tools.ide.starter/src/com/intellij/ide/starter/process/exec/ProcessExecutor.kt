@@ -226,7 +226,7 @@ class ProcessExecutor(
     }
 
     try {
-      if (!runInterruptible(Dispatchers.IO) { process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS) }) {
+      if (!runInterruptible(currentCoroutineContext()) { process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS) }) {
         val timeoutHookThread = Thread(Runnable {
           logOutput(
             "   ... terminating process `$presentableName` because it runs more than  ${timeout.inWholeSeconds} seconds ...")
