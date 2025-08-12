@@ -135,7 +135,7 @@ class InstallPluginAfterUpdateIdeTest {
     val (context, plugin) = data
     val contextWithPlugin = createTestContext(context.testCase)
     val pluginPath = contextWithPlugin.paths.testHome.resolve(plugin.id + ".zip").createFile()
-    MarketplaceClient.downloadPlugin(plugin, pluginPath.toFile())
+    MarketplaceClient.downloadPlugin(plugin, pluginPath)
     contextWithPlugin.apply { pluginConfigurator.installPluginFromPath(pluginPath) }
 
     val ideRunContext =

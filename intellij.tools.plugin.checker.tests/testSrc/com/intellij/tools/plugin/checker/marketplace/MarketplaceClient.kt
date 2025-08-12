@@ -7,9 +7,9 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
 
 data class Plugin(
     val id: String,
@@ -45,7 +45,7 @@ object MarketplaceClient {
         return allPlugins.filter { it.id !in themeIds }
     }
 
-    fun downloadPlugin(plugin: Plugin, destinationZip: File) {
+    fun downloadPlugin(plugin: Plugin, destinationZip: Path) {
         val url = "$BASE_URL/plugin/download?updateId=${plugin.updateId}&noStatistic=true"
         val httpGet = HttpGet(url)
 
@@ -56,7 +56,7 @@ object MarketplaceClient {
 
         val entity = response.entity
         entity.content.use { inputStream ->
-            FileOutputStream(destinationZip).use { outputStream ->
+            Files.newOutputStream(destinationZip).use { outputStream ->
                 inputStream.copyTo(outputStream)
             }
         }
