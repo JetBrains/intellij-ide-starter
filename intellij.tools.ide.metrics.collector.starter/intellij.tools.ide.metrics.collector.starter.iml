@@ -17,7 +17,7 @@
     <orderEntry type="library" name="opentelemetry-semconv" level="project" />
     <orderEntry type="library" scope="TEST" name="kotlin-test-assertions-core-jvm" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit5" level="project" />
-    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
+    <orderEntry type="module" module-name="intellij.libraries.mockito" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.indexing.impl" />
     <orderEntry type="library" scope="TEST" name="mockito-junit-jupiter" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.util.common" />

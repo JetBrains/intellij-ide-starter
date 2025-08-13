@@ -56,7 +56,7 @@ jvm_library(
     "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
     "@community//platform/remote-driver/model",
     "@lib//:kotlin-test-assertions-core-jvm",
-    "@lib//:mockito",
+    "@community//libraries/mockito",
     "@lib//:mockito-junit-jupiter",
     "@lib//:junit5Params-provided",
     "@lib//:junit5Launcher-provided",
