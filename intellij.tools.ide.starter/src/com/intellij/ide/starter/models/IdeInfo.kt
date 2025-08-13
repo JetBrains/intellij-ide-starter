@@ -4,8 +4,8 @@ import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.system.CpuArch
+import com.intellij.util.system.OS
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.net.URI
@@ -44,7 +44,7 @@ data class IdeInfo(
 ) {
   companion object
 
-  val installerFilePrefix
+  val installerFilePrefix: String
     get() =
       when (productCode) {
         "IU" -> "ideaIU"
@@ -69,7 +69,7 @@ data class IdeInfo(
         else -> error("Unknown product code: $productCode")
       }
 
-  val installerProductName
+  val installerProductName: String
     get() = when (productCode) {
       "IU" -> "intellij"
       "IC" -> "intellij.ce"
@@ -81,10 +81,10 @@ data class IdeInfo(
 
   val installerFileExt: String
     get() {
-      val ext = when {
-        SystemInfo.isWindows -> ".exe"
-        SystemInfo.isLinux -> ".tar.gz"
-        SystemInfo.isMac -> ".dmg"
+      val ext = when (OS.CURRENT) {
+        OS.Windows -> ".exe"
+        OS.Linux -> ".tar.gz"
+        OS.macOS -> ".dmg"
         else -> error("Unknown OS ${System.getProperty("os.name")}")
       }
 
