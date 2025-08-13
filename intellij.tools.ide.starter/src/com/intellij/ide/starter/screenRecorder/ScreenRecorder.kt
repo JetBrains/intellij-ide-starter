@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.screenRecorder
 
+import com.intellij.ide.starter.coroutine.testSuiteSupervisorScope
 import com.intellij.ide.starter.ide.DEFAULT_DISPLAY_ID
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
@@ -7,6 +8,11 @@ import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.diagnostic.getOrLogException
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.system.OS
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.monte.media.Format
 import org.monte.media.FormatKeys.MediaType
 import org.monte.media.Registry
@@ -80,7 +86,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
   }
 
   var javaScreenRecorder: ScreenRecorder? = null
-  var ffmpegProcess: Process? = null
+  var ffmpegProcessJob: Job? = null
 
   init {
     //on Linux, we run xvfb and test process is headless, so we need external tool to record screen
@@ -100,22 +106,19 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     }
     else if (SystemInfo.isLinux) {
       synchronized(this) {
-        if (ffmpegProcess == null) {
-          ffmpegProcess = runCatching { startFFMpegRecording(runContext) }.getOrElse {
-            logOutput("Can't start ffmpeg recording: ${it.message}")
-            null
-          }
+        if (ffmpegProcessJob == null) {
+          ffmpegProcessJob = testSuiteSupervisorScope.launch(Dispatchers.IO) { startFFMpegRecording(runContext) }
         }
       }
     }
   }
 
   fun stop() {
-    if (javaScreenRecorder == null && ffmpegProcess == null) {
+    if (javaScreenRecorder == null && ffmpegProcessJob == null) {
       logOutput("Screen recorder was not started")
     }
     javaScreenRecorder?.stop()
-    ffmpegProcess?.destroy()
+    ffmpegProcessJob?.cancel()
   }
 
   private fun getDisplaySize(displayWithColumn: String, defaultValue: Pair<Int, Int> = 1920 to 1080): Pair<Int, Int> {
@@ -138,13 +141,14 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
       val (width, height) = matchResult?.groupValues?.let { Pair(it[1].toInt(), it[2].toInt()) } ?: error("Could not determine screen data")
       logOutput("Getting a size for a display $displayWithColumn finished with $width x $height")
       return width to height
-    } catch (e: Exception) {
+    }
+    catch (e: Exception) {
       logOutput("Failed to get a size for a display $displayWithColumn: ${e.message}")
       return defaultValue
     }
   }
 
-  private fun startFFMpegRecording(ideRunContext: IDERunContext): Process? {
+  private suspend fun startFFMpegRecording(ideRunContext: IDERunContext) {
     val processVmOptions = ideRunContext.calculateVmOptions()
     val processDisplay = processVmOptions.environmentVariables["DISPLAY"] ?: System.getenv("DISPLAY") ?: ":$DEFAULT_DISPLAY_ID"
     val recordingFile = ideRunContext.logsDir / "screen-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss_SSS"))}.mkv"
@@ -153,11 +157,22 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
                       processDisplay,
                       "-codec:v", "libx264", "-preset", "superfast", recordingFile.pathString)
     logOutput("Start screen recording to $recordingFile\nArgs: ${args.joinToString(" ")}")
-
-    //we can't use ProcessExecutor since its start method is blocking and we need a handle to process to stop it
-    val processBuilder = ProcessBuilder(args)
-    processBuilder.redirectError(ffmpegLogFile.toFile())
-    processBuilder.redirectOutput(ffmpegLogFile.toFile())
-    return processBuilder.start()
+    try {
+      ProcessExecutor(
+        presentableName = args.joinToString(" "),
+        args = args,
+        environmentVariables = mapOf("DISPLAY" to processDisplay),
+        workDir = null,
+        expectedExitCode = 0,
+        stdoutRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile()),
+        stderrRedirect = ExecOutputRedirect.ToFile(ffmpegLogFile.toFile()),
+      ).startCancellable()
+    }
+    catch (e: CancellationException) {
+      throw e
+    }
+    catch (e: Exception) {
+      logOutput("Failed to start ffmpeg recording: ${e.message}")
+    }
   }
 }
