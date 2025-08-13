@@ -4,6 +4,7 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.ThreeState
 import com.intellij.util.io.zip.JBZipEntry
@@ -200,7 +201,13 @@ object FileSystem {
    * the given file tree.
    */
   @OptIn(ExperimentalPathApi::class)
-  fun Path.deleteRecursivelyQuietly(): Boolean = runCatching { deleteRecursively() }.isSuccess
+  fun Path.deleteRecursivelyQuietly(): Boolean {
+    val result = runCatching { deleteRecursively() }
+    result.onFailure { error ->
+      logError("Failed to delete $this", error)
+    }
+    return result.isSuccess
+  }
 
   fun Path.listDirectoryEntriesQuietly(): List<Path>? = runCatching { listDirectoryEntries() }.getOrNull()
 
