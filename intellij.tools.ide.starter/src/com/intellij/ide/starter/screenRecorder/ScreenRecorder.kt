@@ -101,11 +101,11 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
       return
     }
     logOutput("Screen recorder: starting")
-    if (javaScreenRecorder != null) {
-      javaScreenRecorder?.start()
-    }
-    else if (SystemInfo.isLinux) {
-      synchronized(this) {
+    synchronized(this) {
+      if (javaScreenRecorder != null) {
+        javaScreenRecorder?.start()
+      }
+      else if (SystemInfo.isLinux) {
         if (ffmpegProcessJob == null) {
           ffmpegProcessJob = testSuiteSupervisorScope.launch(Dispatchers.IO) { startFFMpegRecording(runContext) }
         }
