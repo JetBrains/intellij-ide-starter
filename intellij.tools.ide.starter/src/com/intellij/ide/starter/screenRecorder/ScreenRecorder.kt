@@ -6,9 +6,9 @@ import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.openapi.diagnostic.getOrLogException
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.system.OS
+import com.intellij.util.ui.StartupUiUtil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -90,13 +90,13 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
 
   init {
     //on Linux, we run xvfb and test process is headless, so we need external tool to record screen
-    if (!SystemInfo.isLinux) {
+    if (OS.CURRENT != OS.Linux) {
       javaScreenRecorder = runCatching { getScreenRecorder((runContext.logsDir / "screenRecording").toFile()) }.getOrLogException { logOutput("Can't create screen recorder: ${it.stackTraceToString()}") }
     }
   }
 
   fun start() {
-    if (SystemInfo.isWayland) {
+    if (StartupUiUtil.isWayland) {
       logOutput("Screen recording is disabled because on Wayland it triggers system dialog about granting permissions each time, and it can't be disabled.")
       return
     }
@@ -105,7 +105,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
       if (javaScreenRecorder != null) {
         javaScreenRecorder?.start()
       }
-      else if (SystemInfo.isLinux) {
+      else if (OS.CURRENT == OS.Linux) {
         if (ffmpegProcessJob == null) {
           ffmpegProcessJob = testSuiteSupervisorScope.launch(Dispatchers.IO) { startFFMpegRecording(runContext) }
         }
