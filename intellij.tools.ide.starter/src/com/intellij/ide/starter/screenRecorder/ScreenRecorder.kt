@@ -100,7 +100,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
       logOutput("Screen recording is disabled because on Wayland it triggers system dialog about granting permissions each time, and it can't be disabled.")
       return
     }
-
+    logOutput("Screen recorder: starting")
     if (javaScreenRecorder != null) {
       javaScreenRecorder?.start()
     }
@@ -117,6 +117,7 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     if (javaScreenRecorder == null && ffmpegProcessJob == null) {
       logOutput("Screen recorder was not started")
     }
+    logOutput("Screen recorder: stopping")
     javaScreenRecorder?.stop()
     ffmpegProcessJob?.cancel()
   }
