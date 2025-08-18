@@ -15,15 +15,35 @@ class PluginNotFoundException(message: String? = null, cause: Throwable? = null)
 
 open class PluginConfigurator(val testContext: IDETestContext) {
   val disabledPluginsPath: Path
-    get() = testContext.paths.configDir / "disabled_plugins.txt"
+    get() = testContext.paths.configDir.resolve("disabled_plugins.txt")
 
   fun installPluginFromPath(pathToPluginArchive: Path): PluginConfigurator = apply {
     FileSystem.unpack(pathToPluginArchive, testContext.paths.pluginsDir)
   }
 
+  fun installPluginFromDir(pathToPluginDir: Path): PluginConfigurator = apply {
+    val targetPluginsDir = testContext.paths.pluginsDir
+    val targetPluginDir = targetPluginsDir.resolve(pathToPluginDir.name)
+    logOutput("Copy plugins from ${pathToPluginDir} to ${targetPluginDir}")
+
+    if (targetPluginDir.exists()) {
+      logOutput("Deleting the plugin directory from previous runs: ${targetPluginDir}")
+      @OptIn(ExperimentalPathApi::class)
+      targetPluginDir.deleteRecursively()
+    }
+
+    targetPluginDir.createDirectories()
+    @OptIn(ExperimentalPathApi::class)
+    pathToPluginDir.copyToRecursively(targetPluginDir, followLinks = false, overwrite = false)
+  }
+
+  @Deprecated("Use [installPluginFromDir] instead", level = DeprecationLevel.ERROR)
+  @Suppress("unused")
+  fun installPluginFromFolder(pathToPluginFolder: java.io.File): PluginConfigurator = installPluginFromDir(pathToPluginFolder.toPath())
+
   fun installPluginFromURL(urlToPluginZipFile: String): PluginConfigurator = apply {
     val pluginRootDir = GlobalPaths.instance.getCacheDirectoryFor("plugins")
-    val pluginZip: Path = pluginRootDir / testContext.ide.build / urlToPluginZipFile.substringAfterLast("/")
+    val pluginZip = pluginRootDir.resolve(testContext.ide.build).resolve(urlToPluginZipFile.substringAfterLast("/"))
     logOutput("Downloading $urlToPluginZipFile")
 
     try {
@@ -56,14 +76,12 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     val pluginId = plugin.pluginId
     logOutput("Setting up plugin: $pluginId ...")
 
-    val pluginsCacheDor = GlobalPaths.instance.getCacheDirectoryFor("plugins")
+    val pluginsCacheDir = GlobalPaths.instance.getCacheDirectoryFor("plugins")
     val fileName = plugin.pluginFileName ?: (pluginId.replace(".", "-") + ".zip")
 
-    val downloadedPlugin: Path = when (plugin) {
-      is PluginLatestForIde ->
-        (pluginsCacheDor / plugin.ide.build).createDirectories() / fileName
-      is PluginWithExactVersion ->
-        (pluginsCacheDor / plugin.version).createDirectories() / fileName
+    val downloadedPlugin = when (plugin) {
+      is PluginLatestForIde -> pluginsCacheDir.resolve(plugin.ide.build).createDirectories().resolve(fileName)
+      is PluginWithExactVersion -> pluginsCacheDir.resolve(plugin.version).createDirectories().resolve(fileName)
     }
 
     HttpClient.downloadIfMissing(plugin.downloadUrl(), downloadedPlugin, retries = 1)
@@ -74,19 +92,18 @@ open class PluginConfigurator(val testContext: IDETestContext) {
       FileSystem.unpack(downloadedPlugin, testContext.paths.pluginsDir)
     }
 
-
     logOutput("Plugin $pluginId setup finished")
   }
 
   fun disablePlugins(vararg pluginIds: String): PluginConfigurator = disablePlugins(pluginIds.toSet())
 
-  fun disablePlugins(pluginIds: Set<String>): PluginConfigurator = also {
+  fun disablePlugins(pluginIds: Set<String>): PluginConfigurator = apply {
     disabledPluginsPath.writeLines(disabledPluginIds + pluginIds)
   }
 
   fun enablePlugins(vararg pluginIds: String): PluginConfigurator = enablePlugins(pluginIds.toSet())
 
-  private fun enablePlugins(pluginIds: Set<String>) = also {
+  private fun enablePlugins(pluginIds: Set<String>) = apply {
     disabledPluginsPath.writeLines(disabledPluginIds - pluginIds)
   }
 
@@ -96,23 +113,15 @@ open class PluginConfigurator(val testContext: IDETestContext) {
       return if (file.exists()) file.readLines().toSet() else emptySet()
     }
 
-
-  private fun findPluginXmlByPluginIdInAGivenDir(pluginId: String, bundledPluginsDir: Path): Boolean {
-    val jarFiles = bundledPluginsDir.toFile().walk().filter { it.name.endsWith(".jar") }.toList()
-    jarFiles.forEach {
-      val jarFile = JarFile(it)
-      val entry = jarFile.getJarEntry("META-INF/plugin.xml")
-      if (entry != null) {
-        val inputStream = jarFile.getInputStream(entry)
-        val text: String = inputStream.bufferedReader(Charsets.UTF_8).use { reader -> reader.readText() }
-        if (text.contains(" <id>$pluginId</id>")) {
-          return true
-        }
+  private fun findPluginXmlByPluginIdInAGivenDir(pluginId: String, bundledPluginsDir: Path): Boolean = bundledPluginsDir.walk()
+    .filter { it.extension == "jar" }
+    .any { file ->
+      val jarFile = JarFile(file.toString())
+      return@any when (val entry = jarFile.getJarEntry("META-INF/plugin.xml")) {
+        null -> false
+        else -> jarFile.getInputStream(entry).bufferedReader(Charsets.UTF_8).use { it.readText() }.contains("<id>$pluginId</id>")
       }
     }
-    return false
-  }
-
 
   fun getPluginInstalledState(pluginId: String): PluginInstalledState {
     if (disabledPluginsPath.exists() && pluginId in disabledPluginIds) {
@@ -133,6 +142,7 @@ open class PluginConfigurator(val testContext: IDETestContext) {
     if (findPluginXmlByPluginIdInAGivenDir(pluginId, bundledPluginsDir)) {
       return PluginInstalledState.BUNDLED_TO_IDE
     }
+
     return PluginInstalledState.NOT_INSTALLED
   }
 
