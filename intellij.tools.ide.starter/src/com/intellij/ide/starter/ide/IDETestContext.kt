@@ -678,6 +678,21 @@ open class IDETestContext(
     return this
   }
 
+
+  @Suppress("unused")
+  fun copyExistingConfig(configPath: Path): IDETestContext {
+    @OptIn(ExperimentalPathApi::class)
+    configPath.copyToRecursively(paths.configDir, followLinks = false, overwrite = true)
+    return this
+  }
+
+  @Suppress("unused")
+  fun copyExistingPlugins(pluginPath: Path): IDETestContext {
+    @OptIn(ExperimentalPathApi::class)
+    pluginPath.copyToRecursively(paths.pluginsDir, followLinks = false, overwrite = true)
+    return this
+  }
+
   fun setupSdk(sdkObjects: SdkObject?, cleanDirs: Boolean = true): IDETestContext = computeWithSpan("setupSdk") {
     if (sdkObjects == null) return this
     try {
