@@ -77,7 +77,8 @@ val IDETestContext.frontendTestCase: TestCase<out ProjectInfoSpec>
     }
 
     return this.testCase.copy(ideInfo = this.testCase.ideInfo.copy(
-      platformPrefix = this.testCase.ideInfo.platformPrefix + "JetBrainsClient",
+      platformPrefix = "JetBrainsClient",
+      baseIdePlatformPrefixForFrontend = this.testCase.ideInfo.platformPrefix,
       executableFileName = executableFileName
     ))
   }

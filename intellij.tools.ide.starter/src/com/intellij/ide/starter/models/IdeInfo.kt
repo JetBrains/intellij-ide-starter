@@ -22,6 +22,12 @@ data class IdeInfo(
   val platformPrefix: String,
 
   val executableFileName: String,
+  
+  /** 
+   * For a standalone frontend distribution where `platformPrefix` is "JetBrainsClient", specifies the platform prefix of its base IDE. 
+   */
+  val baseIdePlatformPrefixForFrontend: String? = null,
+  
   val buildType: String = BuildType.EAP.type,
   val additionalModules: List<String> = emptyList(),
 
