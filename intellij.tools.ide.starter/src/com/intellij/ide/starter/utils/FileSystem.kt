@@ -124,19 +124,19 @@ object FileSystem {
       // Convert Unix mode to Java PosixFilePermissions
       val permissions = mutableSetOf<PosixFilePermission>()
 
-      // Owner permissions
-      if (unixMode and 0x100 != 0) permissions.add(PosixFilePermission.OWNER_READ)
-      if (unixMode and 0x080 != 0) permissions.add(PosixFilePermission.OWNER_WRITE)
+      // Owner permissions - ALWAYS add read/write, preserve execute
+      permissions.add(PosixFilePermission.OWNER_READ)
+      permissions.add(PosixFilePermission.OWNER_WRITE)
       if (unixMode and 0x040 != 0) permissions.add(PosixFilePermission.OWNER_EXECUTE)
 
-      // Group permissions
-      if (unixMode and 0x020 != 0) permissions.add(PosixFilePermission.GROUP_READ)
-      if (unixMode and 0x010 != 0) permissions.add(PosixFilePermission.GROUP_WRITE)
+      // Group permissions - ALWAYS add read/write, preserve execute
+      permissions.add(PosixFilePermission.GROUP_READ)
+      permissions.add(PosixFilePermission.GROUP_WRITE)
       if (unixMode and 0x008 != 0) permissions.add(PosixFilePermission.GROUP_EXECUTE)
 
-      // Others permissions
-      if (unixMode and 0x004 != 0) permissions.add(PosixFilePermission.OTHERS_READ)
-      if (unixMode and 0x002 != 0) permissions.add(PosixFilePermission.OTHERS_WRITE)
+      // Others permissions - ALWAYS add read/write, preserve execute
+      permissions.add(PosixFilePermission.OTHERS_READ)
+      permissions.add(PosixFilePermission.OTHERS_WRITE)
       if (unixMode and 0x001 != 0) permissions.add(PosixFilePermission.OTHERS_EXECUTE)
 
       Files.setPosixFilePermissions(file, permissions)
