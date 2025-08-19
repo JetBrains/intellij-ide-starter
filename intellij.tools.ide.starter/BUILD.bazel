@@ -17,7 +17,7 @@ jvm_library(
   name = "tools-ide-starter",
   module_name = "intellij.tools.ide.starter",
   visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True),
+  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
   kotlinc_opts = ":custom_tools-ide-starter",
   deps = [
     "@lib//:kotlinx-coroutines-core",

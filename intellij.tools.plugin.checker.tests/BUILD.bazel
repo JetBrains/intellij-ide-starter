@@ -11,7 +11,7 @@ jvm_library(
   name = "tools-plugin-checker-tests_test_lib",
   module_name = "intellij.tools.plugin.checker.tests",
   visibility = ["//visibility:public"],
-  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True),
+  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java", "testSrc/**/*.form"], allow_empty = True),
   kotlinc_opts = ":custom_tools-plugin-checker-tests",
   deps = [
     "@lib//:kotlin-stdlib",

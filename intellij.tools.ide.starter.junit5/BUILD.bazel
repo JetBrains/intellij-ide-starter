@@ -23,7 +23,7 @@ jvm_library(
   name = "tools-ide-starter-junit5",
   module_name = "intellij.tools.ide.starter.junit5",
   visibility = ["//visibility:public"],
-  srcs = glob(["src/**/*.kt", "src/**/*.java"], allow_empty = True),
+  srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
   kotlinc_opts = ":custom_tools-ide-starter-junit5",
   deps = [
     "@lib//:kotlinx-coroutines-core",
@@ -44,7 +44,7 @@ jvm_library(
 jvm_library(
   name = "tools-ide-starter-junit5_test_lib",
   visibility = ["//visibility:public"],
-  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java"], allow_empty = True),
+  srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java", "testSrc/**/*.form"], allow_empty = True),
   kotlinc_opts = ":custom_tools-ide-starter-junit5",
   associates = [":tools-ide-starter-junit5"],
   deps = [
