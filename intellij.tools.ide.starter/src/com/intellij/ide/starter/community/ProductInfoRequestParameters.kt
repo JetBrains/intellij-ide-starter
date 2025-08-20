@@ -3,14 +3,15 @@ package com.intellij.ide.starter.community
 import org.apache.http.client.utils.URIBuilder
 
 data class ProductInfoRequestParameters(
+  /** Eg: IDEA - "IU", PyCharm - "PY" */
   val type: String,
-  // "release" or "eap"
+  /** Eg: "release", "eap", "preview" */
   val snapshot: String = "release",
-  // e.g "2022.2"
+  /** e.g "2022.2" */
   val majorVersion: String = "",
-  // e.g  "221.5591.52",
+  /** e.g  "221.5591.52" */
   val buildNumber: String = "",
-  // e.g "2022.1.1"
+  /** e.g "2022.1.1" */
   val versionNumber: String = "",
 ) {
   /**
@@ -20,7 +21,7 @@ data class ProductInfoRequestParameters(
     if (snapshot.isBlank()) {
       // when there is no snapshot type defined, the API only returns a list of all releases from snapshot type "release"
       // so it is necessary to accumulate data from both types
-      return listOf("release", "eap").map { buildUriQuery(it) }
+      return listOf("release", "eap", "preview").map { buildUriQuery(it) }
     }
     return listOf(buildUriQuery(snapshot))
   }

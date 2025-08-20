@@ -66,6 +66,7 @@ jvm_library(
     "@community//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector_test_lib",
     "//tests/ideTestingFramework/intellij.tools.ide.metrics.collector.starter:tools-ide-metrics-collector-starter",
     "@lib//:opentelemetry",
+    "@community//platform/core-api:core",
   ],
   runtime_deps = [
     ":tools-ide-starter-junit5_resources",

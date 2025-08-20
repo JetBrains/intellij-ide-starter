@@ -43,5 +43,6 @@
     <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector" scope="TEST" />
     <orderEntry type="module" module-name="intellij.tools.ide.metrics.collector.starter" scope="TEST" />
     <orderEntry type="library" name="opentelemetry" level="project" />
+    <orderEntry type="module" module-name="intellij.platform.core" scope="TEST" />
   </component>
 </module>
