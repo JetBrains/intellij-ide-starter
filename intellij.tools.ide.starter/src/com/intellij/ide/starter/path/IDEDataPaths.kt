@@ -9,7 +9,7 @@ import kotlin.io.path.div
 
 @Suppress("unused")
 open class IDEDataPaths(
-  val testHome: Path,
+  open val testHome: Path,
   private val inMemoryRoot: Path?,
 ) {
 

@@ -11,7 +11,7 @@ class FrontendIDEDataPaths(
 
   override val eventLogMetadataDir: Path
     get() = System.getProperty("intellij.fus.custom.schema.dir")?.let { Path(it) }
-            ?: (systemDir / "frontend"/ "per_process_config_0" / "event-log-metadata")
+            ?: (systemDir / "frontend" / "per_process_config_0" / "event-log-metadata")
 
   override val eventLogDataDir: Path
     get() = systemDir / "frontend" / "per_process_system_0" / "event-log-data"
