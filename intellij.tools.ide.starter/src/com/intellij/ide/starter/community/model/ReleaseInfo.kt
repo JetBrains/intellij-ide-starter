@@ -40,4 +40,12 @@ data class Download(
   val windowsArm: OperatingSystem?,
 )
 
-data class OperatingSystem(val link: String)
+data class OperatingSystem(
+  val link: String,
+  val size: Long,
+  /**
+   * Content of the response is something like this:
+   * 7bc070eb7fc9a3496abc513f58291cf00dbb7fe27779df5bfb31abcf0ea26179 *Fleet-1.48.261.exe
+   */
+  val checksumLink: String,
+)

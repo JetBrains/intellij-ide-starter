@@ -3,12 +3,15 @@ package com.intellij.ide.starter.junit5
 import com.intellij.ide.starter.community.JetBrainsDataServiceClient
 import com.intellij.ide.starter.community.ProductInfoRequestParameters
 import com.intellij.ide.starter.community.model.Download
+import com.intellij.ide.starter.community.model.OperatingSystem
 import com.intellij.ide.starter.community.model.ReleaseInfo
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.openapi.util.BuildNumber
 import com.intellij.tools.ide.util.common.logOutput
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.longs.shouldNotBeZero
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.string.shouldNotBeEmpty
 import org.junit.jupiter.api.Test
 
 class JetBrainsDataServiceDownloadableLinksTest {
@@ -19,14 +22,20 @@ class JetBrainsDataServiceDownloadableLinksTest {
     theLatestRelease.downloads.checkDownloadableLinksArePresent()
   }
 
+  private fun OperatingSystem.checkSizeAndCheckSumArePresent() {
+    link.shouldNotBeEmpty()
+    size.shouldNotBeZero()
+    checksumLink.shouldNotBeEmpty()
+  }
+
   private fun Download.checkDownloadableLinksArePresent() {
-    linux.shouldNotBeNull()
-    linuxArm.shouldNotBeNull()
-    windows.shouldNotBeNull()
-    windowsArm.shouldNotBeNull()
-    windowsZip.shouldNotBeNull()
-    mac.shouldNotBeNull()
-    macM1.shouldNotBeNull()
+    linux.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    linuxArm.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    windows.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    windowsArm.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    windowsZip.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    mac.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    macM1.shouldNotBeNull().checkSizeAndCheckSumArePresent()
   }
 
   @Test
