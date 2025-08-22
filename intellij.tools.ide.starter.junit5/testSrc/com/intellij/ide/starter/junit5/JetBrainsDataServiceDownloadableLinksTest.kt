@@ -60,4 +60,27 @@ class JetBrainsDataServiceDownloadableLinksTest {
     latestReleases.shouldNotBeEmpty()
     latestReleases.verifyTheLatestRelease()
   }
+
+  @Test
+  fun `get DotTrace releases`() {
+    val latestReleases = JetBrainsDataServiceClient
+                           .getReleases(ProductInfoRequestParameters(type = "DP", snapshot = "release"))
+                           .values
+                           .firstOrNull() ?: listOf()
+
+    latestReleases.shouldNotBeEmpty()
+
+    val theLatestRelease = latestReleases.sortedByDescending { BuildNumber.fromString(it.build) }.first()
+    logOutput("The latest release that will be verified: $theLatestRelease")
+
+    // No Windows ZIP archive for DotTrace
+    theLatestRelease.downloads.apply {
+      linux.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+      linuxArm.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+      windows.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+      windowsArm.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+      mac.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+      macM1.shouldNotBeNull().checkSizeAndCheckSumArePresent()
+    }
+  }
 }

@@ -2,14 +2,17 @@ package com.intellij.ide.starter.community.model
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import java.time.LocalDate
-
 
 data class ReleaseInfo(
   val date: LocalDate,
   val type: String,
   val version: String,
   val majorVersion: String,
+  // Some ancient releases of portable tools (Eg: dotTrace) may have this field = null
+  @JsonSetter(nulls = Nulls.AS_EMPTY)
   val build: String,
   val downloads: Download,
 )
@@ -22,13 +25,13 @@ data class Download(
   @JsonProperty("linuxARM64")
   val linuxArm: OperatingSystem?,
 
-  @JsonAlias("macos_x64")
+  @JsonAlias("macos_x64", "mac")
   val mac: OperatingSystem?,
 
-  @JsonAlias("macos_aarch64")
+  @JsonAlias("macos_aarch64", "macARM64")
   val macM1: OperatingSystem?,
 
-  @JsonAlias("windows_x64")
+  @JsonAlias("windows_x64", "windows64")
   val windows: OperatingSystem?,
 
   @JsonAlias("windows_zip_x64")
