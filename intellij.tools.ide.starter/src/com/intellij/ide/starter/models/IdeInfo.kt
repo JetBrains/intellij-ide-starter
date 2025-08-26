@@ -48,7 +48,13 @@ data class IdeInfo(
 
   val getInstaller: (IdeInfo) -> IdeInstaller = { di.direct.instance<IdeInstallerFactory>().createInstaller(it) }
 ) {
-  companion object
+  companion object;
+
+  init {
+    if (platformPrefix == "JetBrainsClient") {
+      requireNotNull(baseIdePlatformPrefixForFrontend) { "baseIdePlatformPrefixForFrontend must be specified for JetBrainsClient" }
+    }
+  }
 
   val installerFilePrefix: String
     get() =
