@@ -13,16 +13,46 @@ import com.intellij.openapi.util.SystemInfo
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.io.File
+import java.net.URI
 import java.nio.file.Path
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPathFactory
 import kotlin.io.path.div
 
-internal class AndroidInstaller : IdeInstaller {
+class AndroidInstaller : IdeInstaller {
+
+  companion object {
+    /**
+     * Get latest release Android Studio version from https://dl.google.com/android/studio/patches/updates.xml
+     * @return version string, e.g. 2023.1.1.1
+     */
+    fun fetchLatestMajorReleaseVersion(): String {
+      val uri = URI.create("https://dl.google.com/android/studio/patches/updates.xml")
+      val rawVersion = runCatching {
+        uri.toURL().openStream().use { input ->
+          val factory = DocumentBuilderFactory.newInstance().apply {
+            isNamespaceAware = false
+            isValidating = false
+          }
+          val doc = factory.newDocumentBuilder().parse(input)
+          val xPath = XPathFactory.newInstance().newXPath()
+          xPath.evaluate("/products/product/channel[@status='release']/build[1]/@version", doc)
+            .takeIf { it.isNotBlank() }
+        }
+      }.getOrNull()
+
+      val version = rawVersion?.let { Regex("""\d+\.\d+\.\d+""").find(it)?.value }
+                      ?.takeIf { it.isNotEmpty() } ?: error("Failed to get Android Studio build number")
+
+      return "$version.1"
+    }
+  }
 
   /**
    * Resolve platform specific android studio installer and return paths
    * @return Pair<InstallDir / InstallerFile>
    */
-  private fun downloadAndroidStudio(buildNumber: String): Pair<Path, File> {
+  fun downloadAndroidStudio(buildNumber: String): Pair<Path, File> {
     val ext = when {
       SystemInfo.isWindows -> "-windows.zip"
       SystemInfo.isAarch64 && SystemInfo.isMac -> "-mac_arm.dmg"
