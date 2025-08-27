@@ -149,8 +149,6 @@ data class VMOptions(
     addSystemProperty(PathManager.PROPERTY_PLUGINS_PATH, paths.pluginsDir)
   }
 
-  fun enableStartupPerformanceLog(perf: IDEStartupReports): Unit = addSystemProperty("idea.log.perf.stats.file", perf.statsJSON)
-
   fun enableClassLoadingReport(filePath: Path) {
     addSystemProperty("idea.log.class.list.file", filePath)
     addSystemProperty("idea.record.classpath.info", "true")
