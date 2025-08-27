@@ -51,6 +51,9 @@ class ReportingTest {
                      "com.intellij.codeWithMe.ClientIdContextElementPrecursor@1add8c55, CoroutineName(com.intellij.station.core.services.IdeStationServerService), " +
                      "Dispatchers.Default]: D:\\BuildAgent\\temp\\buildTmp\\agentTemp\\Host\\jb.station.ij.8236.sock",
                      "Unhandled exception in [<Kernel details> com.intellij.station.core.services.IdeStationServerService]: D:\\BuildAgent\\temp\\buildTmp\\agentTemp\\Host\\jb.station.ij.<NUM>.sock"),
+        Arguments.of("com.intellij.diagnostic.RemoteSerializedThrowable: Invalid lookup start: RangeMarker(invalid:166,166) , " +
+                     "EditorImpl[file:///opt/teamcity-agent/temp/buildTmp/testeyqr2monxt4ay/ide-tests/cache/projects/unpacked/laravel.io-8/tests/Unit/UserTest.php], dis",
+                     "com.intellij.diagnostic.RemoteSerializedThrowable: Invalid lookup start: RangeMarker(invalid:<NUM>,<NUM>) , EditorImpl[<FILE>], dis"),
       )
     }
   }

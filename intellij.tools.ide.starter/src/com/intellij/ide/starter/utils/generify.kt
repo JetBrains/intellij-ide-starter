@@ -39,6 +39,7 @@ fun generifyErrorMessage(originalMessage: String): String {
     .generifyHexCode()
     .generifyNumber()
     .generifyKernelMessage()
+    .generifyEditor()
 }
 
 /** text@3ba5aac, text => text<ID>, text */
@@ -82,6 +83,13 @@ fun String.generifyKernelMessage(): String {
   val regex = Regex("\\[Kernel.*, CoroutineName\\((.*)\\), .*]")
   return this.replace(regex) {
     "[<Kernel details> ${it.groupValues[1]}]"
+  }
+}
+
+fun String.generifyEditor(): String {
+  val regex = Regex("EditorImpl\\[file.*]")
+  return this.replace(regex) {
+    "EditorImpl[<FILE>]"
   }
 }
 
