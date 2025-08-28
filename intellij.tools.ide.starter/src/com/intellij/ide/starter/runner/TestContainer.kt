@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.runner
 
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -80,6 +81,12 @@ interface TestContainer<T> {
           .disableMigrationNotification()
           .setKotestMaxCollectionEnumerateSize()
           .acceptNonTrustedCertificates()
+          .apply {
+            if (!CIServer.instance.isBuildRunningOnCI) {
+              //this option is affecting only local launches
+              disableTraceDataSharingNotification()
+            }
+          }
       }
     }
   }
