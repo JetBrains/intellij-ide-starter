@@ -8,6 +8,7 @@ import java.time.LocalDate
 
 data class ReleaseInfo(
   val date: LocalDate,
+  /** @see [BuildType] */
   val type: String,
   val version: String,
   val majorVersion: String,
