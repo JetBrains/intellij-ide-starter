@@ -56,7 +56,7 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
           commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
           commands = CommandChain(),
           runTimeout = runTimeout,
-          launchName = if (launchName.isEmpty()) "embeddedClient" else "$launchName/embeddedClient",
+          launchName = launchName,
           configure = {
             if (System.getenv("DISPLAY") == null && frontendContext.ide.vmOptions.environmentVariables["DISPLAY"] != null && SystemInfo.isLinux) {
               // It means the ide will be started on a new display, so we need to add win manager
