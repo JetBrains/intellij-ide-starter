@@ -144,7 +144,7 @@ interface TestContainer<T> {
 
     val testDirectory = run {
       val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
-      if (testCase.ideInfo.platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX) {
+      if (testCase.ideInfo.isFrontend) {
         commonPath / "frontend"
       }
       else {

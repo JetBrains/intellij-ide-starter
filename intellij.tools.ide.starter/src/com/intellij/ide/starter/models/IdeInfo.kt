@@ -25,7 +25,7 @@ data class IdeInfo(
   val executableFileName: String,
   
   /** 
-   * For a standalone frontend distribution where `platformPrefix` is "JetBrainsClient", specifies the platform prefix of its base IDE. 
+   * For a standalone frontend distribution where `platformPrefix` is PlatformUtils.JETBRAINS_CLIENT_PREFIX, specifies the platform prefix of its base IDE.
    */
   val baseIdePlatformPrefixForFrontend: String? = null,
   
@@ -49,10 +49,12 @@ data class IdeInfo(
 
   val getInstaller: (IdeInfo) -> IdeInstaller = { di.direct.instance<IdeInstallerFactory>().createInstaller(it) }
 ) {
+  val isFrontend: Boolean = platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX
+
   companion object;
 
   init {
-    if (platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX) {
+    if (isFrontend) {
       requireNotNull(baseIdePlatformPrefixForFrontend) { "baseIdePlatformPrefixForFrontend must be specified for " + PlatformUtils.JETBRAINS_CLIENT_PREFIX }
     }
   }

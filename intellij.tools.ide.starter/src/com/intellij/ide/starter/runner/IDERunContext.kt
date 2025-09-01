@@ -92,7 +92,7 @@ data class IDERunContext(
   }
 
   private fun formatArtifactName(artifactName: String): String {
-    return if (testContext.testCase.ideInfo.platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX) {
+    return if (testContext.testCase.ideInfo.isFrontend) {
       formatArtifactName(artifactName + "-frontend", testContext.testName)
     }
     else {
