@@ -10,6 +10,7 @@ import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.util.PlatformUtils
 import org.kodein.di.direct
 import org.kodein.di.instance
 import java.nio.file.Path
@@ -77,7 +78,7 @@ val IDETestContext.frontendTestCase: TestCase<out ProjectInfoSpec>
     }
 
     return this.testCase.copy(ideInfo = this.testCase.ideInfo.copy(
-      platformPrefix = "JetBrainsClient",
+      platformPrefix = PlatformUtils.JETBRAINS_CLIENT_PREFIX,
       baseIdePlatformPrefixForFrontend = this.testCase.ideInfo.platformPrefix,
       executableFileName = executableFileName
     ))

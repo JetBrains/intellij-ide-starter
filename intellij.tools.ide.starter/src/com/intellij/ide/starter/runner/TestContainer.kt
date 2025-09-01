@@ -14,6 +14,7 @@ import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.telemetry.computeWithSpan
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.PlatformUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Path
@@ -143,7 +144,7 @@ interface TestContainer<T> {
 
     val testDirectory = run {
       val commonPath = (GlobalPaths.instance.testsDirectory / "${testCase.ideInfo.productCode}-$buildNumber") / testName
-      if (testCase.ideInfo.platformPrefix == "JetBrainsClient") {
+      if (testCase.ideInfo.platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX) {
         commonPath / "frontend"
       }
       else {

@@ -4,6 +4,7 @@ import com.intellij.ide.starter.community.model.BuildType
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
+import com.intellij.util.PlatformUtils
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
 import org.kodein.di.direct
@@ -51,8 +52,8 @@ data class IdeInfo(
   companion object;
 
   init {
-    if (platformPrefix == "JetBrainsClient") {
-      requireNotNull(baseIdePlatformPrefixForFrontend) { "baseIdePlatformPrefixForFrontend must be specified for JetBrainsClient" }
+    if (platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX) {
+      requireNotNull(baseIdePlatformPrefixForFrontend) { "baseIdePlatformPrefixForFrontend must be specified for " + PlatformUtils.JETBRAINS_CLIENT_PREFIX }
     }
   }
 
@@ -73,7 +74,7 @@ data class IdeInfo(
         "QA" -> "aqua"
         "RR" -> "RustRover"
         "AI" -> "AndroidStudio"
-        "JBC" -> "JetBrainsClient"
+        "JBC" -> PlatformUtils.JETBRAINS_CLIENT_PREFIX
         "RD" -> "rider"
         "WRS" -> "writerside"
         "GW" -> "gateway"
