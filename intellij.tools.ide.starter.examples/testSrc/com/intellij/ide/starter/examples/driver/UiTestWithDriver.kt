@@ -20,7 +20,7 @@ import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.TestContainer
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk11
-import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk17
+import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk21
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
@@ -55,7 +55,7 @@ class UiTestWithDriver {
         repoRelativeUrl = "Perfecto-Quantum/Quantum-Starter-Kit.git",
         commitHash = "1dc6128c115cb41fc442c088174e81f63406fad5"
       )))
-      .setupSdk(jdk17.toSdk())
+      .setupSdk(jdk21.toSdk())
       .setLicense(System.getenv("LICENSE_KEY"))
       .prepareProjectCleanImport()
 
