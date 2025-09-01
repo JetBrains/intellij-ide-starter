@@ -1,10 +1,8 @@
-import com.jetbrains.plugin.structure.base.utils.contentBuilder.buildDirectory
-import com.jetbrains.plugin.structure.base.utils.contentBuilder.buildZipFile
 import org.gradle.kotlin.dsl.intellijPlatform
-import java.util.*
 import org.jetbrains.intellij.platform.gradle.*
 import org.jetbrains.intellij.platform.gradle.models.*
 import org.jetbrains.intellij.platform.gradle.tasks.*
+import java.util.*
 
 plugins {
     id("org.jetbrains.intellij.platform") version "2.2.1"
@@ -52,7 +50,7 @@ intellijPlatform {
 }
 
 kotlin {
-    jvmToolchain(17)
+  jvmToolchain(21)
 }
 
 val integrationTest = task<Test>("integrationTest") {
