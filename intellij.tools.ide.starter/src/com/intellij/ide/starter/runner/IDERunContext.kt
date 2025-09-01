@@ -27,6 +27,7 @@ import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
+import com.intellij.util.PlatformUtils
 import com.intellij.util.io.createDirectories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -90,26 +91,35 @@ data class IDERunContext(
       }
   }
 
+  private fun formatArtifactName(artifactName: String): String {
+    return if (testContext.testCase.ideInfo.platformPrefix == PlatformUtils.JETBRAINS_CLIENT_PREFIX) {
+      formatArtifactName(artifactName + "-frontend", testContext.testName)
+    }
+    else {
+      formatArtifactName(artifactName, testContext.testName)
+    }
+  }
+
   internal fun publishArtifacts() {
     testContext.publishArtifact(
       source = logsDir,
       artifactPath = contextName,
-      artifactName = formatArtifactName("logs", testContext.testName)
+      artifactName = formatArtifactName("logs")
     )
     testContext.publishArtifact(
       source = testContext.paths.eventLogDataDir,
       artifactPath = contextName,
-      artifactName = formatArtifactName("event-log-data", testContext.testName)
+      artifactName = formatArtifactName("event-log-data")
     )
     testContext.publishArtifact(
       source = snapshotsDir,
       artifactPath = contextName,
-      artifactName = formatArtifactName("snapshots", testContext.testName)
+      artifactName = formatArtifactName("snapshots")
     )
     testContext.publishArtifact(
       source = reportsDir,
       artifactPath = contextName,
-      artifactName = formatArtifactName("reports", testContext.testName)
+      artifactName = formatArtifactName("reports")
     )
   }
 
@@ -195,7 +205,8 @@ data class IDERunContext(
     val prefix = "[ide-${contextName}-err]"
     return if (stdOut != null) {
       ExecOutputRedirect.DelegatedWithPrefix(prefix, stdOut)
-    } else {
+    }
+    else {
       ExecOutputRedirect.ToStdOut(prefix)
     }
   }
