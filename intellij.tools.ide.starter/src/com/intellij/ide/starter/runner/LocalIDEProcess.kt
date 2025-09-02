@@ -37,6 +37,8 @@ import kotlin.time.measureTime
 class LocalIDEProcess : IDEProcess {
   override suspend fun run(runContext: IDERunContext): IDEStartResult {
     with(runContext) {
+      // experimental move of adding an Allure link to start IDE instead of finally block
+      Allure.link("Link to CI artifacts", FailureDetailsOnCI.instance.getLinkToCIArtifacts(this))
       EventsBus.postAndWaitProcessing(IdeBeforeLaunchEvent(this))
 
       deleteSavedAppStateOnMac()
@@ -168,7 +170,6 @@ class LocalIDEProcess : IDEProcess {
           computeWithSpan("runIde post-processing, allure and artifacts publishing") {
             kotlin.runCatching {
               publishArtifacts()
-              Allure.link("Link to CI artifacts", FailureDetailsOnCI.instance.getLinkToCIArtifacts(this))
               AllureHelper.addAttachmentsFromDir(logsDir.resolve("screenshots"), filter = { it.extension.endsWith("png") })
               val ideaLog = logsDir.resolve("idea.log")
               if (ideaLog.exists()) {
