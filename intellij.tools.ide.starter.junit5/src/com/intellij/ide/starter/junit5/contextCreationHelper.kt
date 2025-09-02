@@ -16,7 +16,7 @@ class IDETestContextConfig {
 /*
  A method helper that simplifies creating a new context for an integration UI test
  This method has one disadvantage:
- it is not possible to run a test on any IDE's version locally (release, EAP and so on)
+ There is no way to specify a specific IDE's version (release, EAP and so on) as it is usually done using TestCase's methods.
  */
 fun Starter.newContext(ideInfo: IdeInfo, testName: String = CurrentTestMethod.displayName(), configure: IDETestContextConfig.() -> Unit = {}): IDETestContext {
   val config = IDETestContextConfig().apply(configure)
