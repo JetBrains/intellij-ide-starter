@@ -26,12 +26,6 @@ val perTestSupervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + C
 val perClassSupervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("Test class's supervisor scope"))
 
 /**
- * Lifespan is limited to the duration of a single thin client execution. When the client is shut down, the whole coroutines tree is going
- * to be canceled.
- */
-val perClientSupervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("Client's supervisor scope"))
-
-/**
  * In case of unhandled exception in child coroutines all the coroutines tree (parents and other branches) will be cancelled.
  * In most scenarious you don't need that behaviour.
  */

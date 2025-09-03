@@ -425,7 +425,7 @@ open class IDETestContext(
     expectedExitCode: Int = 0,
     collectNativeThreads: Boolean = false,
     stdOut: ExecOutputRedirect? = null,
-    configure: IDERunContext.() -> Unit = {},
+    configure: suspend IDERunContext.() -> Unit = {},
   ): IDEStartResult {
     val span = TestTelemetryService.spanBuilder("runIDE").setAttribute("launchName", launchName).startSpan()
     span.makeCurrent().use {
@@ -440,7 +440,8 @@ open class IDETestContext(
         expectedExitCode = expectedExitCode,
         collectNativeThreads = collectNativeThreads,
         stdOut = stdOut
-      ).also(configure)
+      )
+      runContext.configure()
 
       try {
         val ideRunResult = runContext.runIdeSuspending()

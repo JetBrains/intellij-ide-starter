@@ -6,16 +6,11 @@ import com.intellij.driver.model.OnDispatcher
 import com.intellij.driver.sdk.hasVisibleWindow
 import com.intellij.driver.sdk.ui.IdeEventQueue
 import com.intellij.driver.sdk.waitFor
-import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.driver.engine.BackgroundRun
-import com.intellij.ide.starter.runner.IDEHandle
 import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.ide.starter.utils.catchAll
+import com.intellij.ide.starter.runner.IDEHandle
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -40,13 +35,6 @@ class RemoteDevBackgroundRun(
         driver.closeIdeAndWait(closeIdeTimeout)
       }
       finally {
-        @Suppress("SSBasedInspection")
-        runBlocking {
-          catchAll {
-            perClientSupervisorScope.coroutineContext.cancelChildren(CancellationException("Client run execution is finished"))
-            perClientSupervisorScope.coroutineContext.job.children.forEach { it.join() }
-          }
-        }
         backendRun.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
       }
     }

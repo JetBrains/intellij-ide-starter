@@ -1,16 +1,12 @@
 package com.intellij.ide.starter.driver.engine.remoteDev
 
-import com.intellij.ide.starter.coroutine.perClientSupervisorScope
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.getRunningDisplays
 import com.intellij.tools.ide.util.common.logOutput
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlin.io.path.div
-import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.hours
 
 object XorgWindowManagerHandler {
@@ -42,25 +38,23 @@ object XorgWindowManagerHandler {
     ).start()
   }
 
-  fun startFluxBox(ideRunContext: IDERunContext) {
-    perClientSupervisorScope.async(Dispatchers.IO) {
-      val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
+  suspend fun startFluxBox(ideRunContext: IDERunContext) {
+    val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
 
-      if (!isFluxBoxIsRunning(displayWithColumn)) {
-        verifyFluxBoxInstalled()
-        val fluxboxRunLog = ideRunContext.logsDir / "$fluxboxName.log"
-        ProcessExecutor(
-          presentableName = "Start $fluxboxName",
-          timeout = 2.hours,
-          args = listOf("/usr/bin/${fluxboxName}", "-display", displayWithColumn),
-          workDir = null,
-          stdoutRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile()),
-          stderrRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile())
-        ).startCancellable()
-      }
-      else {
-        logOutput("$fluxboxName is already running on display $displayWithColumn")
-      }
+    if (!isFluxBoxIsRunning(displayWithColumn)) {
+      verifyFluxBoxInstalled()
+      val fluxboxRunLog = ideRunContext.logsDir / "$fluxboxName.log"
+      ProcessExecutor(
+        presentableName = "Start $fluxboxName",
+        timeout = 2.hours,
+        args = listOf("/usr/bin/${fluxboxName}", "-display", displayWithColumn),
+        workDir = null,
+        stdoutRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile()),
+        stderrRedirect = ExecOutputRedirect.ToFile(fluxboxRunLog.toFile())
+      ).startCancellable()
+    }
+    else {
+      logOutput("$fluxboxName is already running on display $displayWithColumn")
     }
   }
   // endregion Fluxbox

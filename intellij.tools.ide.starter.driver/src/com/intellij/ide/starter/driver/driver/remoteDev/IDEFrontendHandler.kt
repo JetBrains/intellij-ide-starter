@@ -2,12 +2,13 @@ package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.driver.engine.DriverHandler
-import com.intellij.ide.starter.runner.IDEHandle
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.runner.IDECommandLine
+import com.intellij.ide.starter.runner.IDEHandle
+import com.intellij.ide.starter.runner.events.IdeAfterLaunchEvent
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -52,7 +53,7 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
     }
     val result = perClassSupervisorScope.async {
       try {
-        frontendContext.runIdeSuspending (
+        frontendContext.runIdeSuspending(
           commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
           commands = CommandChain(),
           runTimeout = runTimeout,
@@ -60,7 +61,14 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
           configure = {
             if (System.getenv("DISPLAY") == null && frontendContext.ide.vmOptions.environmentVariables["DISPLAY"] != null && SystemInfo.isLinux) {
               // It means the ide will be started on a new display, so we need to add win manager
-              XorgWindowManagerHandler.startFluxBox(this)
+              val fluxboxJob = this@async.async(Dispatchers.IO) {
+                XorgWindowManagerHandler.startFluxBox(this@runIdeSuspending)
+              }
+              EventsBus.subscribe(fluxboxJob) { event: IdeAfterLaunchEvent ->
+                if (event.runContext === this@runIdeSuspending) {
+                  fluxboxJob.cancel()
+                }
+              }
             }
             withScreenRecording()
           })
@@ -74,6 +82,7 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
         throw e
       }
     }
+
     return Pair(result, runBlocking { process.await() })
   }
 }
