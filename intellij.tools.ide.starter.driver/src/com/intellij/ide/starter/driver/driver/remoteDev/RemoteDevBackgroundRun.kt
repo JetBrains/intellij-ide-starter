@@ -30,15 +30,9 @@ class RemoteDevBackgroundRun(
       driver.withContext { block(this) }
     }
     finally {
-      try {
-        shutdownHook(driver)
-        driver.closeIdeAndWait(closeIdeTimeout)
-      }
-      finally {
-        backendRun.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
-      }
+      shutdownHook(driver)
+      closeIdeAndWait(closeIdeTimeout)
     }
-    @Suppress("SSBasedInspection")
     return runBlocking {
       backendRun.startResult.await()
         .also { it.frontendStartResult = frontendStartResult.await() }
@@ -77,6 +71,11 @@ class RemoteDevBackgroundRun(
   }
 
   override fun closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean) {
-    backendRun.driver.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
+    try {
+      driver.closeIdeAndWait(closeIdeTimeout)
+    }
+    finally {
+      backendRun.closeIdeAndWait(closeIdeTimeout + 30.seconds, false)
+    }
   }
 }
