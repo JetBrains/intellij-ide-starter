@@ -62,12 +62,12 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
           configure = {
             if (System.getenv("DISPLAY") == null && frontendContext.ide.vmOptions.environmentVariables["DISPLAY"] != null && SystemInfo.isLinux) {
               // It means the ide will be started on a new display, so we need to add win manager
-              val fluxboxJob = this@async.async(Dispatchers.IO) {
+              val fluxboxJob = this@async.launch(Dispatchers.IO) {
                 XorgWindowManagerHandler.startFluxBox(this@runIdeSuspending)
               }
               EventsBus.subscribe(fluxboxJob) { event: IdeAfterLaunchEvent ->
                 if (event.runContext === this@runIdeSuspending) {
-                  fluxboxJob.cancel()
+                  fluxboxJob.cancelAndJoin()
                 }
               }
             }
