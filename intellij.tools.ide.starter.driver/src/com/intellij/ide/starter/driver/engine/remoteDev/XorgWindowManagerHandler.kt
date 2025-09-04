@@ -5,6 +5,7 @@ import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessList
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.getRunningDisplays
+import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.hours
@@ -29,20 +30,27 @@ object XorgWindowManagerHandler {
     return running
   }
 
-  private suspend fun verifyFluxBoxInstalled() {
+  private suspend fun isFluxBoxInstalled(): Boolean {
+    val result = ExecOutputRedirect.ToString()
     ProcessExecutor(
       presentableName = "which $fluxboxName",
       args = listOf("which", fluxboxName),
       workDir = null,
-      expectedExitCode = 0
+      stdoutRedirect = result,
+      analyzeProcessExit = false
     ).startCancellable()
+    return result.read().isNotBlank()
   }
 
   suspend fun startFluxBox(ideRunContext: IDERunContext) {
     val displayWithColumn = ideRunContext.testContext.ide.vmOptions.environmentVariables["DISPLAY"]!!
 
+    if (!isFluxBoxInstalled()) {
+      logError("FluxBox is not installed. Please be aware the possibility of test env will be restricted. E.g. you will not be able to resize windows.")
+      return
+    }
+
     if (!isFluxBoxIsRunning(displayWithColumn)) {
-      verifyFluxBoxInstalled()
       val fluxboxRunLog = ideRunContext.logsDir / "$fluxboxName.log"
       ProcessExecutor(
         presentableName = "Start $fluxboxName",
