@@ -29,13 +29,13 @@ object XorgWindowManagerHandler {
     return running
   }
 
-  private fun verifyFluxBoxInstalled() {
+  private suspend fun verifyFluxBoxInstalled() {
     ProcessExecutor(
       presentableName = "which $fluxboxName",
       args = listOf("which", fluxboxName),
       workDir = null,
       expectedExitCode = 0
-    ).start()
+    ).startCancellable()
   }
 
   suspend fun startFluxBox(ideRunContext: IDERunContext) {
