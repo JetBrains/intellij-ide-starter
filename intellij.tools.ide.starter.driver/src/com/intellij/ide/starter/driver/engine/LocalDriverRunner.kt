@@ -41,7 +41,7 @@ class LocalDriverRunner : DriverRunner {
         }
       }
       catch (e: Throwable) {
-        logError("Error during IDE execution", e)
+        logError("Exception starting IDE. Even if it was started, it will be killed now.", e)
         process.completeExceptionally(e)
         throw e
       }

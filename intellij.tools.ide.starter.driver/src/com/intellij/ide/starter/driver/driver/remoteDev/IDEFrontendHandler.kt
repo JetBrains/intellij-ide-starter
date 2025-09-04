@@ -13,6 +13,7 @@ import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.starter.bus.EventsBus
+import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.*
 import kotlin.time.Duration
@@ -77,8 +78,8 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
           }
       }
       catch (e: Exception) {
+        logError("Exception starting the frontend. Even if it was started, it will be killed now.", e)
         process.completeExceptionally(e)
-        logOutput("Exception starting the frontend. Frontend is not launched: ${e.message}")
         throw e
       }
     }
