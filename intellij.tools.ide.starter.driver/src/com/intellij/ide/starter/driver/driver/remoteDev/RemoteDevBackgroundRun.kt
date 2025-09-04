@@ -9,6 +9,7 @@ import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDEHandle
+import com.intellij.ide.starter.utils.catchAll
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration
@@ -30,9 +31,10 @@ class RemoteDevBackgroundRun(
       driver.withContext { block(this) }
     }
     finally {
-      shutdownHook(driver)
+      catchAll { shutdownHook(driver) }
       closeIdeAndWait(closeIdeTimeout)
     }
+    @Suppress("SSBasedInspection")
     return runBlocking {
       backendRun.startResult.await()
         .also { it.frontendStartResult = frontendStartResult.await() }
