@@ -11,6 +11,7 @@ import com.intellij.ide.starter.utils.updatePathEnvVariable
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.util.system.CpuArch
+import com.intellij.util.system.OS
 import com.intellij.util.text.SemVer
 import java.nio.file.Files
 import java.nio.file.Path
@@ -72,24 +73,12 @@ fun installNodeModules(projectDir: Path, nodeVersion: String, packageManager: St
   ).start()
 }
 
-fun runBuild(projectDir: Path, nodeVersion: String, packageManager: String) {
-  val nodejsRoot = getNodePathByVersion(nodeVersion)
-  val packageManagerPath = getApplicationExecutablePath(nodejsRoot, packageManager)
-
-  ProcessExecutor(presentableName = "running build script",
-                  projectDir,
-                  timeout = 5.minutes,
-                  args = listOf("$packageManagerPath", "build"),
-                  environmentVariables = getUpdateEnvVarsWithPrependedPath(nodejsRoot)
-  ).start()
-}
-
 fun IDETestContext.setUseTypesFromServer(value: Boolean): IDETestContext = applyVMOptionsPatch {
   addSystemProperty("typescript.compiler.evaluation", value.toString())
 }
 
-fun IDETestContext.setAbortTypeScriptCompilerRequestsOutsideProject(): IDETestContext = applyVMOptionsPatch {
-  addSystemProperty("typescript.service.abort.requests.outside.project", "true")
+fun IDETestContext.setAbortTypeScriptCompilerRequestsOutsideProject(value: Boolean): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty("typescript.service.abort.requests.outside.project", value.toString())
 }
 
 fun IDETestContext.setTypeScriptServiceNodeArguments(value: String): IDETestContext = applyVMOptionsPatch {
@@ -98,6 +87,45 @@ fun IDETestContext.setTypeScriptServiceNodeArguments(value: String): IDETestCont
 
 fun IDETestContext.updatePath(path: Path): IDETestContext = applyVMOptionsPatch {
   updatePathEnvVariable(path)
+}
+
+fun IDETestContext.setTSGOtypeEvaluator(value: Boolean): IDETestContext =
+  if (!value) this else applyVMOptionsPatch {
+    addSystemProperty("typescript.ts-go.type-evaluator.path", getTsGoExecutablePath())
+  }
+
+private fun getTsGoExecutablePath(): Path {
+  val tsGoBinOS = when (OS.CURRENT) {
+    OS.macOS if CpuArch.isArm64() -> "darwin-arm64"
+    OS.Linux if CpuArch.isIntel64() -> "linux-amd64"
+    else -> {
+      error(
+        "unsupported OS: ${OS.CURRENT}")
+    }
+  }
+
+  val tsGoVersion = "v0.0.3"
+  val tsGoBinName = "tsgo-$tsGoVersion-$tsGoBinOS"
+  val tsGoBinPath = GlobalPaths.instance.getCacheDirectoryFor("tsgo/bin").resolve(tsGoBinName)
+
+  if (tsGoBinPath.exists()) {
+    return tsGoBinPath
+  }
+
+  HttpClient.download("https://packages.jetbrains.team/files/p/ij/intellij-test-data-public/webstorm/tsgo/bin/$tsGoBinName", tsGoBinPath)
+
+  val process = ProcessBuilder("chmod", "a+x", tsGoBinPath.toString())
+    .redirectErrorStream(true)
+    .start()
+
+  val exitCode = process.waitFor()
+  if (exitCode == 0) {
+    println("chmode has been successfully executed for $tsGoBinPath")
+  } else {
+    error("error in executing chmode for $tsGoBinPath")
+  }
+
+  return tsGoBinPath
 }
 
 private fun buildNodePath(path: Path): Path {
