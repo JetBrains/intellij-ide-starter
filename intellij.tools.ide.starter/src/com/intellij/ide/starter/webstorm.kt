@@ -18,6 +18,8 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 
+const val TSGO_VERSION: String = "v0.0.4"
+
 fun downloadAndConfigureNodejs(version: String): Path {
   val arch = when {
     SystemInfo.isMac && CpuArch.isIntel64() -> "darwin-x64"
@@ -104,8 +106,7 @@ private fun getTsGoExecutablePath(): Path {
     }
   }
 
-  val tsGoVersion = "v0.0.3"
-  val tsGoBinName = "tsgo-$tsGoVersion-$tsGoBinOS"
+  val tsGoBinName = "tsgo-$TSGO_VERSION-$tsGoBinOS"
   val tsGoBinPath = GlobalPaths.instance.getCacheDirectoryFor("tsgo/bin").resolve(tsGoBinName)
 
   if (tsGoBinPath.exists()) {
