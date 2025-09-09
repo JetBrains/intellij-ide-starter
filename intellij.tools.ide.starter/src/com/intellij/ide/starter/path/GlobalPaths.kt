@@ -41,7 +41,11 @@ abstract class GlobalPaths(val checkoutDir: Path) {
     (testHomePath / "cache").createDirectories()
   }
 
-  open fun getCacheDirectoryFor(entity: String): Path = (localCacheDirectory / entity).createDirectories()
+  /** Returns local cache directory for the entity */
+  fun getLocalCacheDirectoryFor(entity: String): Path = (localCacheDirectory / entity).createDirectories()
+
+  /** Returns cache directory for the entity (probably on the target environment. Eg: in Docker */
+  open fun getCacheDirectoryFor(entity: String): Path = getLocalCacheDirectoryFor(entity)
 
   open val cacheDirForProjects: Path get() = getCacheDirectoryFor("projects")
 
