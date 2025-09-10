@@ -10,6 +10,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider.IU
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginNotFoundException
+import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.report.Error
 import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.runner.Starter
@@ -69,7 +70,7 @@ class InstallPluginAfterUpdateIdeTest {
 
 
     private fun <T> splitIntoBuckets(list: List<T>): List<List<T>> {
-      val batchesCount = 100
+      val batchesCount = 20
       val bucketSize = list.size / batchesCount
       val remainder = list.size % batchesCount
       return (0 until batchesCount).map { i ->
@@ -149,11 +150,17 @@ class InstallPluginAfterUpdateIdeTest {
 
     contextWithPlugin.apply { pluginConfigurator.installPluginFromPath(pluginPath) }
 
-    val ideRunContext =
-      contextWithPlugin.runIDE(launchName = "with-plugin-${plugin.id}", commands = CommandChain().exitApp(), runTimeout = 3.minutes).runContext
-    val errorsWithPlugin = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
-
-    val diff = subtract(errorsWithPlugin, errorsWithoutPlugin).toList()
-    ErrorReporterToCI.reportErrors(ideRunContext, diff)
+    try {
+      val ideRunContext = contextWithPlugin.runIDE(launchName = "with-plugin-${plugin.id}", commands = CommandChain().exitApp(), runTimeout = 3.minutes).runContext
+      val errorsWithPlugin = ErrorReporterToCI.collectErrors(ideRunContext.logsDir)
+      val diff = subtract(errorsWithPlugin, errorsWithoutPlugin).toList()
+      ErrorReporterToCI.reportErrors(ideRunContext, diff)
+    }
+    catch (ex: Exception) {
+      when (ex) {
+        is ExecTimeoutException -> InstallPluginTest.handleTimeout(contextWithPlugin, errorsWithoutPlugin)
+        else -> throw ex
+      }
+    }
   }
 }

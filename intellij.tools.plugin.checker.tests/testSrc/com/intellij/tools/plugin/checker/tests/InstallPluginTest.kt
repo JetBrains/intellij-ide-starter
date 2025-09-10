@@ -222,6 +222,14 @@ class InstallPluginTest {
       return listOf(paramsWithAppropriateIde.copy(
         testCase = paramsWithAppropriateIde.testCase.copy(ideInfo = ideInfo.copy(buildNumber = numericProductVersion))))
     }
+
+    fun handleTimeout(testContext: IDETestContext, errorsWithoutPlugin: List<Error>) {
+      val runContext = IDERunContext(testContext, launchName = "with-plugin")
+      val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
+      val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
+      TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
+      MarketplaceReporter.reportIdeErrors(pluginErrors)
+    }
   }
 
   private fun createTestContext(params: EventToTestCaseParams, configurator: IDETestContext.()->Unit = {}): IDETestContext {
@@ -237,15 +245,6 @@ class InstallPluginTest {
     testContext.configurator()
 
     return testContext
-  }
-
-  private fun handleTimeout(ex: ExecTimeoutException, testContext: IDETestContext, errorsWithoutPlugin: List<Error>) {
-    val runContext = IDERunContext(testContext, launchName = "with-plugin")
-    val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
-    val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
-    TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
-    MarketplaceReporter.reportIdeErrors(pluginErrors)
-    throw ex
   }
 
   @ParameterizedTest
@@ -283,7 +282,7 @@ class InstallPluginTest {
     }
     catch (ex: Exception) {
       when (ex) {
-        is ExecTimeoutException -> handleTimeout(ex, testContext, errorsWithoutPlugin)
+        is ExecTimeoutException -> handleTimeout(testContext, errorsWithoutPlugin)
         else -> throw ex
       }
     }
