@@ -18,7 +18,7 @@ import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
 import com.intellij.ide.starter.path.GlobalPaths
-import com.intellij.ide.starter.path.InstallerGlobalPaths
+import com.intellij.ide.starter.path.StarterGlobalPaths
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.report.AllurePath
 import com.intellij.ide.starter.report.ErrorReporter
@@ -52,7 +52,7 @@ import java.nio.file.Path
  * ```
  * */
 var di = DI {
-  bindSingleton<GlobalPaths> { InstallerGlobalPaths() }
+  bindSingleton<GlobalPaths> { StarterGlobalPaths() }
   bindSingleton<CIServer> { NoCIServer }
   bindSingleton<ErrorReporter> { ErrorReporterToCI }
   bindSingleton<FailureDetailsOnCI> { object : FailureDetailsOnCI {} }
