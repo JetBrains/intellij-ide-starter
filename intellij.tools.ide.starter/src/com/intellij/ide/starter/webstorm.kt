@@ -18,7 +18,7 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.minutes
 
-const val TSGO_VERSION: String = "v0.0.4"
+const val TSGO_VERSION: String = "v0.0.5"
 
 fun downloadAndConfigureNodejs(version: String): Path {
   val arch = when {
