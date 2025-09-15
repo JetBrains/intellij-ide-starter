@@ -79,6 +79,10 @@ fun IDETestContext.setUseTypesFromServer(value: Boolean): IDETestContext = apply
   addSystemProperty("typescript.compiler.evaluation", value.toString())
 }
 
+fun IDETestContext.setAbortTypeScriptCompilerRequestsOutsideProject(value: Boolean): IDETestContext = applyVMOptionsPatch {
+  addSystemProperty("typescript.service.abort.requests.outside.project", value.toString())
+}
+
 fun IDETestContext.setTypeScriptServiceNodeArguments(value: String): IDETestContext = applyVMOptionsPatch {
   addSystemProperty("typescript.service.node.arguments", value)
 }
