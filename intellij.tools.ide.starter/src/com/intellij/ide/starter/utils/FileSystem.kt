@@ -49,6 +49,17 @@ object FileSystem {
 
   fun countFiles(path: Path) = Files.walk(path).use { it.count() }
 
+  fun hasAtLeastFiles(path: Path, minCount: Long): Boolean =
+    Files.walk(path).use { stream ->
+      val iterator = stream.iterator()
+      var seen = 0L
+      while (iterator.hasNext()) {
+        iterator.next()
+        if (++seen >= minCount) return true
+      }
+      return false
+    }
+
   fun compressToZip(sourceToCompress: Path, outputArchive: Path) {
     if (sourceToCompress.extension == "zip") {
       logOutput("Looks like $sourceToCompress already compressed to zip file")

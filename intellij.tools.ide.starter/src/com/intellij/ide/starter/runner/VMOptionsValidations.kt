@@ -14,13 +14,13 @@ internal fun validateVMOptionsWereSet(runContext: IDERunContext) {
 
   logOutput("Run VM options validation")
 
-  if (FileSystem.countFiles(runContext.testContext.paths.configDir) <= 3) {
+  if (!FileSystem.hasAtLeastFiles(runContext.testContext.paths.configDir, 4)) {
     CIServer.instance.reportTestFailure(
       testName = "IDE must have created files under config directory at ${runContext.testContext.paths.configDir}. Were .vmoptions included correctly?",
       message = "", details = "")
   }
 
-  if (FileSystem.countFiles(runContext.testContext.paths.systemDir) <= 1) {
+  if (!FileSystem.hasAtLeastFiles(runContext.testContext.paths.systemDir, 2)) {
     CIServer.instance.reportTestFailure(
       testName = "IDE must have created files under system directory at ${runContext.testContext.paths.systemDir}. Were .vmoptions included correctly?",
       message = "", details = "")
