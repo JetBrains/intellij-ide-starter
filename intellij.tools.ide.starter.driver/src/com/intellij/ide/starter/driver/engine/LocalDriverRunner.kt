@@ -22,7 +22,7 @@ class LocalDriverRunner : DriverRunner {
     val driver = DriverWithDetailedLogging(Driver.create(), logUiHierarchy = context !is IDERemDevTestContext)
     val currentStep = Allure.getLifecycle().currentTestCaseOrStep
     val process = CompletableDeferred<IDEHandle>()
-    EventsBus.subscribe(process) { event: IdeLaunchEvent ->
+    EventsBus.subscribeOnce(process) { event: IdeLaunchEvent ->
       process.complete(event.ideProcess)
     }
     val runResult = perClassSupervisorScope.async {

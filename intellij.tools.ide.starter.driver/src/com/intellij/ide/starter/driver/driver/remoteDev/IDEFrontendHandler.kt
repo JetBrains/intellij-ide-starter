@@ -49,7 +49,7 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
       }
     }
     val process = CompletableDeferred<IDEHandle>()
-    EventsBus.subscribe(process) { event: IdeLaunchEvent ->
+    EventsBus.subscribeOnce(process) { event: IdeLaunchEvent ->
       process.complete(event.ideProcess)
     }
     val result = perClassSupervisorScope.async {
@@ -65,7 +65,7 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
               val fluxboxJob = this@async.launch(Dispatchers.IO) {
                 XorgWindowManagerHandler.startFluxBox(this@runIdeSuspending)
               }
-              EventsBus.subscribe(fluxboxJob) { event: IdeAfterLaunchEvent ->
+              EventsBus.subscribeOnce(fluxboxJob) { event: IdeAfterLaunchEvent ->
                 if (event.runContext === this@runIdeSuspending) {
                   fluxboxJob.cancelAndJoin()
                 }

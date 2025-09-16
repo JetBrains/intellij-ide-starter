@@ -60,7 +60,7 @@ class LocalIDEProcess : IDEProcess {
         val vmOptions: VMOptions = calculateVmOptions()
         val startConfig = testContext.ide.startConfig(vmOptions, logsDir)
         if (startConfig is Closeable) {
-          EventsBus.subscribe(this) { event: IdeAfterLaunchEvent ->
+          EventsBus.subscribeOnce(this) { event: IdeAfterLaunchEvent ->
             if (event.runContext === this) {
               startConfig.close()
             }
@@ -91,7 +91,7 @@ class LocalIDEProcess : IDEProcess {
             stderrRedirect = stderr,
             onProcessCreated = { process, pid ->
               span.addEvent("process created")
-              EventsBus.subscribe(process) { _: IdeExceptionEvent ->
+              EventsBus.subscribeOnce(process) { _: IdeExceptionEvent ->
                 if(process.isAlive) {
                   captureDiagnosticOnKill(logsDir, jdkHome, startConfig, pid, process, snapshotsDir)
                 }
