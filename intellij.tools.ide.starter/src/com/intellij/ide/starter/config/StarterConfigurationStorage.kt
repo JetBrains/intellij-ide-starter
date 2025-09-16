@@ -12,6 +12,7 @@ private const val ENV_LOG_ENVIRONMENT_VARIABLES = "LOG_ENVIRONMENT_VARIABLES"
 private const val IGNORED_TEST_FAILURE_PATTERN = "IGNORED_TEST_FAILURE_PATTERN"
 private const val ENV_USE_DOCKER_CONTAINER = "USE_DOCKER_CONTAINER"
 private const val ENV_USE_DOCKER_ADDITIONAL_BINDS = "USE_DOCKER_ADDITIONAL_BINDS"
+private const val AFTER_EACH_MESSAGE_BUS_CLEANUP = "AFTER_EACH_MESSAGE_BUS_CLEANUP"
 
 val starterConfigurationStorageDefaults = mapOf<String, String>(
   ENV_ENABLE_CLASS_FILE_VERIFICATION to System.getenv(ENV_ENABLE_CLASS_FILE_VERIFICATION),
@@ -20,6 +21,7 @@ val starterConfigurationStorageDefaults = mapOf<String, String>(
   ENV_USE_DOCKER_CONTAINER to System.getenv(ENV_USE_DOCKER_CONTAINER),
   INSTALLER_INCLUDE_RUNTIME_MODULE_REPOSITORY to "false",
   IGNORED_TEST_FAILURE_PATTERN to System.getenv(IGNORED_TEST_FAILURE_PATTERN),
+  AFTER_EACH_MESSAGE_BUS_CLEANUP to System.getenv().getOrDefault(AFTER_EACH_MESSAGE_BUS_CLEANUP, "false"),
   ENV_LOG_ENVIRONMENT_VARIABLES to CIServer.instance.isBuildRunningOnCI.toString(),
   SPLIT_MODE_ENABLED to System.getenv().getOrDefault("REMOTE_DEV_RUN", "false")
 ).filter { entry ->
@@ -63,3 +65,10 @@ fun ConfigurationStorage.Companion.useLastDownloadedBuild(value: Boolean) = inst
 
 fun ConfigurationStorage.Companion.ignoredTestFailuresPattern(pattern: String) = instance().put(IGNORED_TEST_FAILURE_PATTERN, pattern)
 fun ConfigurationStorage.Companion.ignoredTestFailuresPattern(): String? = instance().get(IGNORED_TEST_FAILURE_PATTERN)
+
+/**
+ * By default, Message bus cleanup is performed after each test container run. This is needed to prevent side effects when once IDE run is used among several tests methods.
+ * To prevent subscriptions of the current test affecting other tests in one test container, consider using `EventsBus.subscribeOnce` or unsubscribing.
+ */
+fun ConfigurationStorage.Companion.afterEachMessageBusCleanup() = instance().getBoolean(AFTER_EACH_MESSAGE_BUS_CLEANUP)
+fun ConfigurationStorage.Companion.afterEachMessageBusCleanup(value: Boolean) = instance().put(AFTER_EACH_MESSAGE_BUS_CLEANUP, value)

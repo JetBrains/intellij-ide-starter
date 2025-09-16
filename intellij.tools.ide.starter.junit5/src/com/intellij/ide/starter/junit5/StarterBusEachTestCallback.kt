@@ -1,5 +1,7 @@
 package com.intellij.ide.starter.junit5
 
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.afterEachMessageBusCleanup
 import com.intellij.ide.starter.junit5.StarterBusTestPlanListener.Companion.isServerRunning
 import com.intellij.tools.ide.starter.bus.EventsBus
 import org.junit.jupiter.api.extension.AfterEachCallback
@@ -18,6 +20,8 @@ class StarterBusEachTestCallback : BeforeEachCallback, AfterEachCallback {
   }
 
   override fun afterEach(context: ExtensionContext?) {
-    EventsBus.unsubscribeAll()
+    if (ConfigurationStorage.afterEachMessageBusCleanup()) {
+      EventsBus.unsubscribeAll()
+    }
   }
 }
