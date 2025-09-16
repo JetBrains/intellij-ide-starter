@@ -239,6 +239,18 @@ data class VMOptions(
     addSystemProperty("ide.performance.screenshot", "heartbeat")
   }
 
+  fun setAdditionalRegistryKeysIfNeeded() {
+    val additionalRegistryKeys = System.getProperty("additional.registry.keys")
+    if (additionalRegistryKeys != null) {
+      additionalRegistryKeys.split(";").forEach { keyValue ->
+        val key = keyValue.split("=").first()
+        val value = keyValue.split("=").last()
+        logOutput("Setting additional registry key: [${key}=${value}]")
+        addSystemProperty(key, value)
+      }
+    }
+  }
+
   fun skipRefactoringDialogs() {
     addSystemProperty("ide.performance.skip.refactoring.dialogs", "true")
   }
