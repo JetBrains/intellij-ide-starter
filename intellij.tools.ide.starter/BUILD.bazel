@@ -29,6 +29,7 @@ jvm_library(
     "@lib//:http-client",
     "@community//platform/core-api:core",
     "@community//platform/platform-impl:ide-impl",
+    "@community//platform/eel",
     "@lib//:gradle",
     "@ultimate_lib//:kodein-di-jvm",
     "@ultimate_lib//:tools-ide-starter-rauschig-jarchivelib",

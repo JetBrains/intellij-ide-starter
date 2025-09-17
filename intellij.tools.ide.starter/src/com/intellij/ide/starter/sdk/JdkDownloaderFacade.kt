@@ -1,15 +1,13 @@
 package com.intellij.ide.starter.sdk
 
-import com.intellij.execution.wsl.WslDistributionManager
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.runner.SetupException
+import com.intellij.ide.starter.runner.targets.TargetIdentifier
+import com.intellij.ide.starter.runner.targets.isWsl
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
 import com.intellij.openapi.util.SystemInfo
-import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetryBlocking
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
@@ -43,11 +41,8 @@ object JdkDownloaderFacade {
   }
 
   val allJdks: List<JdkDownloadItem> by lazy {
-    listJDKs(JdkPredicate.forCurrentProcess())
-  }
-
-  val allJdksForWSL: List<JdkDownloadItem> by lazy {
-    listJDKs(JdkPredicate.forWSL(null))
+    if (TargetIdentifier.current.isWsl()) listJDKs(JdkPredicate.forWSL(null))
+    else listJDKs(JdkPredicate.forCurrentProcess())
   }
 
   private fun listJDKs(predicate: JdkPredicate): List<JdkDownloadItem> {
@@ -85,22 +80,13 @@ object JdkDownloaderFacade {
 
   @Suppress("SSBasedInspection")
   private fun determineTargetJdkHome(predicate: JdkPredicate, jdk: JdkItem): Path =
-    if (isWSL(predicate)) {
-      runBlocking(Dispatchers.IO) {
-        val wslDistribution = WslDistributionManager.getInstance().installedDistributions.find { it.version == 2 }
-                              ?: throw SetupException("WSL 2 distribution is not found")
-        Path.of(wslDistribution.getWindowsPath("${wslDistribution.userHome}/.jdks/${jdk.installFolderName}"))
-      }
-    }
-    else {
-      GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
-    }
+    GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
 
-  private fun isWSL(predicate: JdkPredicate): Boolean {
-    return (predicate == JdkPredicate.forWSL(null) &&
-            SystemInfoRt.isWindows &&
-            WslDistributionManager.getInstance().installedDistributions.isNotEmpty())
-  }
+  //private fun isWSL(predicate: JdkPredicate): Boolean {
+  //  return (predicate == JdkPredicate.forWSL(null) &&
+  //          SystemInfoRt.isWindows &&
+  //          WslDistributionManager.getInstance().installedDistributions.isNotEmpty())
+  //}
 
   private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean =
     !Files.isRegularFile(targetHomeMarker) || @OptIn(ExperimentalPathApi::class) targetJdkHome.walk().count() < MINIMUM_JDK_FILES_COUNT
@@ -127,7 +113,7 @@ object JdkDownloaderFacade {
   private fun JdkInstaller.installJdk(request: JdkInstallRequest, markerFile: Path) {
     val item = request.item
     val targetDir = request.installDir
-    // TODO Integrate EelApi here.
+
     val wslDistribution = wslDistributionFromPath(targetDir)
     if (wslDistribution != null && item.os != "linux") {
       error("Cannot install non-linux JDK into WSL environment to $targetDir from $item")

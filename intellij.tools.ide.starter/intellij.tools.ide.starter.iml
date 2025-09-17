@@ -33,6 +33,7 @@
     <orderEntry type="library" name="http-client" level="project" />
     <orderEntry type="module" module-name="intellij.platform.core" />
     <orderEntry type="module" module-name="intellij.platform.ide.impl" />
+    <orderEntry type="module" module-name="intellij.platform.eel" />
     <orderEntry type="library" name="Gradle" level="project" />
     <orderEntry type="library" name="kodein-di-jvm" level="project" />
     <orderEntry type="module-library">

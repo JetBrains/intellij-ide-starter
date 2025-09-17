@@ -8,12 +8,7 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.splitMode
 import com.intellij.ide.starter.config.starterConfigurationStorageDefaults
 import com.intellij.ide.starter.frameworks.Framework
-import com.intellij.ide.starter.ide.DefaultIdeDistributionFactory
-import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.IdeDistributionFactory
-import com.intellij.ide.starter.ide.IdeDownloader
-import com.intellij.ide.starter.ide.JBRDownloader
-import com.intellij.ide.starter.ide.StarterJBRDownloader
+import com.intellij.ide.starter.ide.*
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeProduct
 import com.intellij.ide.starter.models.IdeProductImp
@@ -26,12 +21,9 @@ import com.intellij.ide.starter.report.ErrorReporterToCI
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.report.publisher.ReportPublisher
 import com.intellij.ide.starter.report.publisher.impl.ConsoleTestResultPublisher
-import com.intellij.ide.starter.runner.CurrentTestMethod
-import com.intellij.ide.starter.runner.IDEProcess
-import com.intellij.ide.starter.runner.LocalIDEProcess
-import com.intellij.ide.starter.runner.RemDevTestContainer
-import com.intellij.ide.starter.runner.TestContainer
-import com.intellij.ide.starter.runner.TestContainerImpl
+import com.intellij.ide.starter.runner.*
+import com.intellij.ide.starter.runner.targets.LocalOnlyTargetResolver
+import com.intellij.ide.starter.runner.targets.TargetResolver
 import com.intellij.ide.starter.telemetry.NoopTestTelemetryService
 import com.intellij.ide.starter.telemetry.TestTelemetryService
 import com.intellij.tools.ide.util.common.logOutput
@@ -87,6 +79,7 @@ var di = DI {
 
   bindProvider<TestContainer<*>> { if (ConfigurationStorage.splitMode()) TestContainer.newInstance<RemDevTestContainer>() else TestContainer.newInstance<TestContainerImpl>() }
   bindSingleton<JBRDownloader> { StarterJBRDownloader }
+  bindSingleton<TargetResolver> { LocalOnlyTargetResolver }
 }.apply {
   logOutput("Starter DI was initialized")
 }
