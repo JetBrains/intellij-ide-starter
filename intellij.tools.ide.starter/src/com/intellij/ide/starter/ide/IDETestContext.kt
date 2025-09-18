@@ -330,7 +330,7 @@ open class IDETestContext(
   }
 
   fun withKotlinPluginK2(): IDETestContext = applyVMOptionsPatch {
-    addSystemProperty("idea.kotlin.plugin.use.k2", true)
+    addSystemProperty("idea.kotlin.plugin.use.k1", false)
   }
 
   fun enableCloudRegistry(registryHost: String): IDETestContext = applyVMOptionsPatch {
