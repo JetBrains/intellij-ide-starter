@@ -3,9 +3,8 @@ package com.intellij.ide.starter.sdk
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.runner.SetupException
 import com.intellij.ide.starter.runner.targets.TargetIdentifier
-import com.intellij.ide.starter.runner.targets.isWsl
+import com.intellij.ide.starter.runner.targets.isLocal
 import com.intellij.openapi.projectRoots.impl.jdkDownloader.*
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetryBlocking
 import java.net.URL
@@ -41,8 +40,8 @@ object JdkDownloaderFacade {
   }
 
   val allJdks: List<JdkDownloadItem> by lazy {
-    if (TargetIdentifier.current.isWsl()) listJDKs(JdkPredicate.forWSL(null))
-    else listJDKs(JdkPredicate.forCurrentProcess())
+    if (TargetIdentifier.current.isLocal()) listJDKs(JdkPredicate.forCurrentProcess())
+    else listJDKs(JdkPredicate.forEel(TargetIdentifier.current.eelApi))
   }
 
   private fun listJDKs(predicate: JdkPredicate): List<JdkDownloadItem> {
@@ -69,24 +68,26 @@ object JdkDownloaderFacade {
     }
 
     val javaHome = Path.of(Files.readString(targetHomeMarker))
-    require(javaHome.resolve(getJavaBin(predicate)).isRegularFile()) {
-      @OptIn(ExperimentalPathApi::class)
-      targetJdkHome.deleteRecursively()
-      "corrupted JDK home: $targetJdkHome (now deleted)"
-    }
+    checkDownloadedJdk(javaHome, targetJdkHome)
 
     return JdkItemPaths(homePath = javaHome, installPath = targetJdkHome)
+  }
+
+  private fun checkDownloadedJdk(javaHome: Path, targetJdkHome: Path) {
+    val javaBinary = javaHome.resolve("bin").listDirectoryEntries().sorted().firstOrNull { it.name.startsWith("java") }
+
+    runCatching {
+      require(requireNotNull(javaBinary).isRegularFile())
+    }.getOrElse {
+      @OptIn(ExperimentalPathApi::class)
+      targetJdkHome.deleteRecursively()
+      error("corrupted JDK home: $targetJdkHome (now deleted)")
+    }
   }
 
   @Suppress("SSBasedInspection")
   private fun determineTargetJdkHome(predicate: JdkPredicate, jdk: JdkItem): Path =
     GlobalPaths.instance.getCacheDirectoryFor("jdks").resolve(jdk.installFolderName)
-
-  //private fun isWSL(predicate: JdkPredicate): Boolean {
-  //  return (predicate == JdkPredicate.forWSL(null) &&
-  //          SystemInfoRt.isWindows &&
-  //          WslDistributionManager.getInstance().installedDistributions.isNotEmpty())
-  //}
 
   private fun shouldDownloadJdk(targetJdkHome: Path, targetHomeMarker: Path): Boolean =
     !Files.isRegularFile(targetHomeMarker) || @OptIn(ExperimentalPathApi::class) targetJdkHome.walk().count() < MINIMUM_JDK_FILES_COUNT
@@ -150,10 +151,5 @@ object JdkDownloaderFacade {
     finally {
       downloadFile.deleteIfExists()
     }
-  }
-
-  private fun getJavaBin(predicate: JdkPredicate): String = "bin/java" + when {
-    (SystemInfo.isWindows && predicate != JdkPredicate.forWSL(null)) -> ".exe"
-    else -> ""
   }
 }
