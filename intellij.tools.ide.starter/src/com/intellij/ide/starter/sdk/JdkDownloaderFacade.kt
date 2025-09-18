@@ -39,10 +39,9 @@ object JdkDownloaderFacade {
     } ?: throw DownloadJDKException()
   }
 
-  val allJdks: List<JdkDownloadItem> by lazy {
-    if (TargetIdentifier.current.isLocal()) listJDKs(JdkPredicate.forCurrentProcess())
+  val allJdks: List<JdkDownloadItem>
+    get() = if (TargetIdentifier.current.isLocal()) listJDKs(JdkPredicate.forCurrentProcess())
     else listJDKs(JdkPredicate.forEel(TargetIdentifier.current.eelApi))
-  }
 
   private fun listJDKs(predicate: JdkPredicate): List<JdkDownloadItem> {
     val allJDKs = JdkListDownloader().downloadModelForJdkInstaller(null, predicate)
