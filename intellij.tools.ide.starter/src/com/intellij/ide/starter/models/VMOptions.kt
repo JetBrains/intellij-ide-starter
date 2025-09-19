@@ -271,6 +271,8 @@ data class VMOptions(
     }
     scriptFile.writeText(scriptText)
 
+    logOutput("Test commands to be executed: ${System.lineSeparator()}$scriptText")
+
     addSystemProperty("testscript.filename", scriptFile)
     // Use non-success status code 1 when running IDE as a command line tool.
     addSystemProperty("testscript.must.exist.process.with.non.success.code.on.ide.error", "true")
