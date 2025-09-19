@@ -79,11 +79,21 @@ data class RemoteArchiveProjectInfo(
   }
 
   private fun String.transformUrlToZipName(): String {
-    return when (projectURL.contains("https://github.com")) {
-      true -> {
+    return when {
+      projectURL.contains("https://github.com") -> {
         this.removePrefix("https://github.com/").split("/").joinToString("_", postfix = ".zip")
       }
-      false -> projectURL.split("/").last()
+      projectURL.contains("https://kmp.jetbrains.com") -> {
+        val regex = Regex("""[?&]name=([^&]+)""", RegexOption.IGNORE_CASE)
+        val nameEncoded = regex.find(this)?.groupValues?.getOrNull(1)
+        val name = nameEncoded
+          ?.let { java.net.URLDecoder.decode(it, StandardCharsets.UTF_8) }
+          ?.trim()
+          ?.takeIf { it.isNotEmpty() }
+          ?: "kmp_project"
+        "$name.zip"
+      }
+      else -> projectURL.split("/").last()
     }
   }
 
