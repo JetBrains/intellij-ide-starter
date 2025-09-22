@@ -68,10 +68,7 @@ jvm_library(
     "@lib//:opentelemetry",
     "@community//platform/core-api:core",
   ],
-  runtime_deps = [
-    ":tools-ide-starter-junit5_resources",
-    ":tools-ide-starter-junit5_test_resources",
-  ]
+  runtime_deps = [":tools-ide-starter-junit5_test_resources"]
 )
 ### auto-generated section `build intellij.tools.ide.starter.junit5` end
 
