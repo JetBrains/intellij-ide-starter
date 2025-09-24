@@ -241,7 +241,7 @@ data class VMOptions(
 
   fun setAdditionalRegistryKeysIfNeeded() {
     val additionalRegistryKeys = System.getProperty("additional.registry.keys")
-    if (additionalRegistryKeys != null) {
+    if (!additionalRegistryKeys.isNullOrEmpty()) {
       additionalRegistryKeys.split(";").forEach { keyValue ->
         val key = keyValue.split("=").first()
         val value = keyValue.split("=").last()
