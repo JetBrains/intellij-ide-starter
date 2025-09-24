@@ -17,6 +17,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.deleteRecursively
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 object Git {
   private val homeDir: Path by lazy { Paths.get(PathManager.getHomePath()) }
@@ -171,7 +172,28 @@ object Git {
     return duration
   }
 
+  fun ensureRepository(repositoryDirectory: Path) {
+    val cmdName = "git-rev-parse-show-prefix"
+    val arguments = mutableListOf("git", "rev-parse", "--show-prefix")
+    val stdoutRedirect = ExecOutputRedirect.ToString()
+    val stderrRedirect = ExecOutputRedirect.ToStdOutAndString("[$cmdName]")
+    ProcessExecutor(
+      presentableName = cmdName,
+      workDir = repositoryDirectory.toAbsolutePath(),
+      timeout = 10.seconds,
+      args = arguments,
+      stdoutRedirect = stdoutRedirect,
+      stderrRedirect = stderrRedirect,
+      onlyEnrichExistedEnvVariables = true
+    ).start()
+    if (stdoutRedirect.read().trim().isNotEmpty()) {
+      error("Not a root of a git repository: $repositoryDirectory. $cmdName output: ${stdoutRedirect.read()}")
+    }
+  }
+
   fun reset(repositoryDirectory: Path, commitHash: String = "") {
+    ensureRepository(repositoryDirectory)
+
     val cmdName = "git-reset"
 
     val arguments = mutableListOf("git", "reset", "--hard")
