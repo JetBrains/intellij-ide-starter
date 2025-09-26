@@ -89,17 +89,10 @@ object HttpClient {
    */
   fun downloadIfMissing(url: String, targetFile: Path, retries: Long = 3, timeout: Duration = 10.minutes) {
     getLock(targetFile).withLock {
-      // TODO: move this check to appropriate place
-      if (url.contains("https://github.com")) {
-        if (!targetFile.isFileUpToDate()) {
-          targetFile.deleteIfExists()
-        }
-      }
-
-      if (targetFile.isRegularFile() && targetFile.fileSize() > 0) {
+      if (targetFile.isFileUpToDate()) {
         logOutput("File $targetFile was already downloaded. Size ${targetFile.fileSize().formatSize()}")
         return
-      }
+      } else targetFile.deleteIfExists()
 
       return download(url, targetFile, retries, timeout)
     }
