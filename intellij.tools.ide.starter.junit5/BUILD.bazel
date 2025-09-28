@@ -1,21 +1,21 @@
 ### auto-generated section `build intellij.tools.ide.starter.junit5` start
 load("@community//build:compiler-options.bzl", "create_kotlinc_options")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
 
 create_kotlinc_options(
   name = "custom_tools-ide-starter-junit5",
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
-jvm_resources(
+resourcegroup(
   name = "tools-ide-starter-junit5_resources",
-  files = glob(["resources/**/*"]),
+  srcs = glob(["resources/**/*"]),
   strip_prefix = "resources"
 )
 
-jvm_resources(
+resourcegroup(
   name = "tools-ide-starter-junit5_test_resources",
-  files = glob(["testResources/**/*"]),
+  srcs = glob(["testResources/**/*"]),
   strip_prefix = "testResources"
 )
 
@@ -24,6 +24,7 @@ jvm_library(
   module_name = "intellij.tools.ide.starter.junit5",
   visibility = ["//visibility:public"],
   srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
+  resources = [":tools-ide-starter-junit5_resources"],
   kotlinc_opts = ":custom_tools-ide-starter-junit5",
   deps = [
     "@lib//:kotlinx-coroutines-core",
@@ -37,14 +38,14 @@ jvm_library(
     "@ultimate_lib//:junit5Launcher-provided",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@lib//:opentelemetry",
-  ],
-  runtime_deps = [":tools-ide-starter-junit5_resources"]
+  ]
 )
 
 jvm_library(
   name = "tools-ide-starter-junit5_test_lib",
   visibility = ["//visibility:public"],
   srcs = glob(["testSrc/**/*.kt", "testSrc/**/*.java", "testSrc/**/*.form"], allow_empty = True),
+  resources = [":tools-ide-starter-junit5_test_resources"],
   kotlinc_opts = ":custom_tools-ide-starter-junit5",
   associates = [":tools-ide-starter-junit5"],
   deps = [
@@ -67,8 +68,7 @@ jvm_library(
     "//tests/ideTestingFramework/intellij.tools.ide.metrics.collector.starter:tools-ide-metrics-collector-starter",
     "@lib//:opentelemetry",
     "@community//platform/core-api:core",
-  ],
-  runtime_deps = [":tools-ide-starter-junit5_test_resources"]
+  ]
 )
 ### auto-generated section `build intellij.tools.ide.starter.junit5` end
 

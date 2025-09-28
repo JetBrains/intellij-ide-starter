@@ -1,15 +1,15 @@
 ### auto-generated section `build intellij.tools.ide.starter` start
 load("@community//build:compiler-options.bzl", "create_kotlinc_options")
-load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_resources")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
 
 create_kotlinc_options(
   name = "custom_tools-ide-starter",
   opt_in = ["kotlin.time.ExperimentalTime"]
 )
 
-jvm_resources(
+resourcegroup(
   name = "tools-ide-starter_resources",
-  files = glob(["resources/**/*"]),
+  srcs = glob(["resources/**/*"]),
   strip_prefix = "resources"
 )
 
@@ -18,6 +18,7 @@ jvm_library(
   module_name = "intellij.tools.ide.starter",
   visibility = ["//visibility:public"],
   srcs = glob(["src/**/*.kt", "src/**/*.java", "src/**/*.form"], allow_empty = True),
+  resources = [":tools-ide-starter_resources"],
   kotlinc_opts = ":custom_tools-ide-starter",
   deps = [
     "@lib//:kotlinx-coroutines-core",
@@ -48,7 +49,6 @@ jvm_library(
   exports = [
     "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
     "@community//plugins/performanceTesting/event-bus:tools-ide-starter-bus",
-  ],
-  runtime_deps = [":tools-ide-starter_resources"]
+  ]
 )
 ### auto-generated section `build intellij.tools.ide.starter` end
