@@ -68,6 +68,8 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
         }
         exitApplication()
         waitFor("Driver is not connected", closeIdeTimeout, 3.seconds) { !isConnected }
+      } else {
+        error("Driver is not connected, so it can't exit IDE")
       }
     }
     catch (t: Throwable) {
