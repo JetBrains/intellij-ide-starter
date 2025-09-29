@@ -212,7 +212,7 @@ open class TeamCityCIServer(
   val buildId: String by lazy {
     getBuildParam("teamcity.build.id") ?: LOCAL_RUN_ID
   }
-  val teamcityAgentName by lazy { getBuildParam("teamcity.agent.name") }
+  val teamcityAgentName by lazy { buildParams["teamcity.agent.name"] ?: "" }
   val teamcityCloudProfile by lazy { getBuildParam("system.cloud.profile_id") }
 
   val buildTypeId: String? by lazy { getBuildParam("teamcity.buildType.id") }
