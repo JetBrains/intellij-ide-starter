@@ -280,7 +280,7 @@ data class VMOptions(
 
   fun setFlagIntegrationTests(): Unit = addSystemProperty("idea.is.integration.test", true)
 
-  fun setIdeStartupDialogEnabled(value: Boolean = true): Unit = addSystemProperty("show.wizard.in.test", value)
+  fun setIdeStartupDialogEnabled(value: Boolean = true): Unit = addSystemProperty("intellij.startup.wizard", value)
 
   fun setNeverShowInitConfigModal(): Unit = addSystemProperty("idea.initially.ask.config", "never")
 
