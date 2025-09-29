@@ -30,7 +30,7 @@ class RemDevDriverRunner : DriverRunner {
 
     val (backendRun, joinLink) = ideBackendHandler.run(commands, runTimeout, useStartupScript, launchName, expectedKill, expectedExitCode, collectNativeThreads, configure)
 
-    val frontendDriverWithLogging = DriverWithDetailedLogging(RemDevFrontendDriver(JmxHost(address = "127.0.0.1:${remoteDevDriverOptions.driverPort}")))
+    val frontendDriverWithLogging = DriverWithDetailedLogging(RemDevFrontendDriver(JmxHost(address = remoteDevDriverOptions.frontendOptions.address)))
     val (frontendStartResult, frontendProcess) = ideFrontendHandler.runInBackground(launchName, joinLink = joinLink, runTimeout = runTimeout)
 
     return RemoteDevBackgroundRun(backendRun = backendRun,

@@ -5,9 +5,7 @@ import com.intellij.driver.sdk.waitNotNull
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
 import com.intellij.ide.starter.config.useInstaller
-import com.intellij.ide.starter.driver.driver.remoteDev.RemoteDevDriverHandler.Companion.rdctVmOptions
 import com.intellij.ide.starter.driver.engine.BackgroundRun
-import com.intellij.ide.starter.driver.engine.DriverHandler.Companion.systemProperties
 import com.intellij.ide.starter.driver.engine.LocalDriverRunner
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.NoProject
@@ -93,10 +91,8 @@ internal class IDEBackendHandler(private val backendContext: IDETestContext, pri
     val vmOptions = context.ide.vmOptions
     vmOptions.configureLoggers(LogLevel.DEBUG, "#com.intellij.remoteDev.downloader.EmbeddedClientLauncher")
     vmOptions.addSystemProperty("rdct.embedded.client.use.custom.paths", true)
-    vmOptions.addSystemProperty("rpc.port", options.backendWebServerPort)
-    systemProperties(port = options.backendDriverPort).forEach(vmOptions::addSystemProperty)
-    rdctVmOptions(options).forEach(vmOptions::addSystemProperty)
-    options.backendSystemProperties.forEach(vmOptions::addSystemProperty)
+    options.backendOptions.systemProperties.forEach(vmOptions::addSystemProperty)
+    options.remoteDevVmOptions.forEach(vmOptions::addSystemProperty)
     if (vmOptions.isUnderDebug()) {
       vmOptions.debug(options.backendDebugPort, suspend = false)
     }

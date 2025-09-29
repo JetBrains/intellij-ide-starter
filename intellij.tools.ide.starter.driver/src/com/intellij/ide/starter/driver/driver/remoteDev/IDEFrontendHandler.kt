@@ -1,7 +1,6 @@
 package com.intellij.ide.starter.driver.driver.remoteDev
 
 import com.intellij.ide.starter.coroutine.perClassSupervisorScope
-import com.intellij.ide.starter.driver.engine.DriverHandler
 import com.intellij.ide.starter.driver.engine.remoteDev.XorgWindowManagerHandler
 import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.models.IDEStartResult
@@ -34,13 +33,9 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
       it.addDisplayIfNecessary()
 
       //add driver related vmOptions
-      DriverHandler.systemProperties(port = remoteDevDriverOptions.driverPort).forEach(it::addSystemProperty)
-      RemoteDevDriverHandler.rdctVmOptions(remoteDevDriverOptions).forEach(it::addSystemProperty)
+      remoteDevDriverOptions.frontendOptions.systemProperties.forEach(it::addSystemProperty)
+      remoteDevDriverOptions.remoteDevVmOptions.forEach(it::addSystemProperty)
 
-      //add system properties from test
-      remoteDevDriverOptions.systemProperties.forEach(it::addSystemProperty)
-
-      it.addSystemProperty("rpc.port", remoteDevDriverOptions.webServerPort)
       if (it.isUnderDebug()) {
         it.debug(remoteDevDriverOptions.debugPort, suspend = false)
       }

@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 /**
  * Driver with BeControl elements support to ensure BeControl element have the same parameters as in monolith.
  */
-class RemDevFrontendDriver(host: JmxHost?) : DriverImpl(host, true) {
+class RemDevFrontendDriver(jmxHost: JmxHost) : DriverImpl(jmxHost, true) {
   override val polymorphRegistry: PolymorphRegistryImpl = PolymorphRegistryImpl(this)
   override fun <T : Any> cast(instance: Any, clazz: KClass<T>): T {
     if (instance is BeControlComponentBase) {
