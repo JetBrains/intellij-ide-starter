@@ -12,9 +12,9 @@ import com.intellij.ide.starter.path.IDEDataPaths
 import com.intellij.ide.starter.plugins.PluginInstalledState
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.telemetry.computeWithSpan
+import com.intellij.ide.starter.utils.PortUtil
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.util.PlatformUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Path
@@ -53,6 +53,8 @@ interface TestContainer<T> {
       }
     }
 
+    private val defaultDebugPort: Int = PortUtil.getAvailablePort(proposedPort = 5010)
+
     fun applyDefaultVMOptions(context: IDETestContext): IDETestContext {
       return when (context.testCase.ideInfo == IdeProductProvider.AI) {
         true -> context
@@ -72,7 +74,7 @@ interface TestContainer<T> {
           .applyVMOptionsPatch {
             overrideDirectories(context.paths)
             if (isUnderDebug()) {
-              debug(5010, suspend = false)
+              debug(defaultDebugPort, suspend = false)
             }
           }
           .disableMinimap()
