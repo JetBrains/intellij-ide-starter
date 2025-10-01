@@ -8,7 +8,7 @@ interface BuildIdFetcher{
 
 abstract class AbstractBuildIdFetcher : BuildIdFetcher {
   protected fun getBuildIdFromUrl(fullUrl: URI): String? {
-    val build = TeamCityClient.get(fullUrl).fields().asSequence().first { it.key == "build" }.value
+    val build = TeamCityClient.get(fullUrl).properties().first { it.key == "build" }.value
     val buildId = build.findValue("id")
     if (buildId != null) {
       return buildId.asText()
