@@ -15,7 +15,9 @@ import com.intellij.util.system.OS
 import com.intellij.util.text.SemVer
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.minutes
 
 const val TSGO_VERSION: String = "v0.0.5"
@@ -95,6 +97,19 @@ fun IDETestContext.setTSGOtypeEvaluator(value: Boolean): IDETestContext =
   if (!value) this else applyVMOptionsPatch {
     addSystemProperty("typescript.ts-go.type-evaluator.path", getTsGoExecutablePath())
   }
+
+fun writeConfigWithEmbeddedTSGo(context: IDETestContext) {
+  val compilerXMLFilePath = context.resolvedProjectHome.resolve(".idea").resolve("compiler.xml")
+  compilerXMLFilePath.parent.createDirectories()
+  compilerXMLFilePath.writeText("""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project version="4">
+      <component name="TypeScriptCompiler">
+        <option name="versionType" value="EMBEDDED_TS_GO" />
+      </component>
+    </project>
+  """.trimIndent())
+}
 
 private fun getTsGoExecutablePath(): Path {
   val tsGoBinOS = when (OS.CURRENT) {
