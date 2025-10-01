@@ -53,8 +53,6 @@ interface TestContainer<T> {
       }
     }
 
-    private val defaultDebugPort: Int = PortUtil.getAvailablePort(proposedPort = 5010)
-
     fun applyDefaultVMOptions(context: IDETestContext): IDETestContext {
       return when (context.testCase.ideInfo == IdeProductProvider.AI) {
         true -> context
@@ -74,7 +72,7 @@ interface TestContainer<T> {
           .applyVMOptionsPatch {
             overrideDirectories(context.paths)
             if (isUnderDebug()) {
-              debug(defaultDebugPort, suspend = false)
+              debug(PortUtil.getAvailablePort(proposedPort = 5010), suspend = false)
             }
           }
           .disableMinimap()
