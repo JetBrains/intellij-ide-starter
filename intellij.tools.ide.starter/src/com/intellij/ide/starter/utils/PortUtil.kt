@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.diagnostic.Logger
@@ -63,8 +62,9 @@ object PortUtil {
         listOf("sh", "-c", "lsof -i :$port -t")
       }
 
-      val stdoutRedirectFind = ExecOutputRedirect.ToString()
-      val stderrRedirectFind = ExecOutputRedirect.ToString()
+      val prefix = "find-pid"
+      val stdoutRedirectFind = ExecOutputRedirect.ToStdOutAndString(prefix)
+      val stderrRedirectFind = ExecOutputRedirect.ToStdOutAndString(prefix)
 
       ProcessExecutor(
         "Find Processes Using Port",
@@ -78,10 +78,10 @@ object PortUtil {
       errorMsg = stderrRedirectFind.read()
 
       if (OS.CURRENT == OS.Windows) {
-        processIds.split("\n").map { it.trim().split("\\s+".toRegex())[4].toInt() }
+        processIds.split("\n").mapNotNull { it.removePrefix(prefix).trim().split("\\s+".toRegex())[4].toIntOrNull() }
       }
       else {
-        processIds.split("\n").map { it.trim().toInt() }
+        processIds.split("\n").mapNotNull { it.removePrefix(prefix).trim().toIntOrNull() }
       }
     }.getOrElse {
       logger.error("An error occurred while attempting to get processes using port: $port. Error message: ${it.message}. Error message: $errorMsg: ${it.stackTraceToString()}")
@@ -101,8 +101,8 @@ object PortUtil {
           listOf("kill", "-9") + processIds.map { it.toString() }
         }
 
-        val stdoutRedirectKill = ExecOutputRedirect.ToString()
-        val stderrRedirectKill = ExecOutputRedirect.ToString()
+        val stdoutRedirectKill = ExecOutputRedirect.ToStdOutAndString("kill-pid")
+        val stderrRedirectKill = ExecOutputRedirect.ToStdOutAndString("kill-pid")
 
         ProcessExecutor(
           "Kill Processes Using Port",
