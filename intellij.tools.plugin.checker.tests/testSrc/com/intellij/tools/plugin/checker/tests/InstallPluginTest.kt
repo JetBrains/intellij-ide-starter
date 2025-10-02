@@ -240,6 +240,7 @@ class InstallPluginTest {
       .setLicense(System.getenv("LICENSE_KEY"))
       .applyVMOptionsPatch {
         addSystemProperty("llm.show.ai.promotion.window.on.start", false)
+        addSystemProperty("ide.show.tips.on.startup.default.value", false)
       }
 
     testContext.configurator()
