@@ -4,6 +4,7 @@ import com.intellij.driver.client.Driver
 import com.intellij.driver.sdk.waitFor
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.runner.IDEHandle
+import com.intellij.ide.starter.utils.catchAll
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
 import kotlinx.coroutines.Deferred
@@ -45,7 +46,7 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
       driver.withContext { block(this) }
     }
     finally {
-      shutdownHook(driver)
+      catchAll { shutdownHook(driver) }
       driver.closeIdeAndWait(closeIdeTimeout)
       @Suppress("SSBasedInspection")
       runBlocking {
