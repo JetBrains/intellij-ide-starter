@@ -10,7 +10,7 @@ object IdeProductImp : IdeProduct {
     qodanaProductCode = "QDGO"
   )
 
-  /** IntelliJ Ultimate */
+  /** IntelliJ IDEA */
   override val IU = IdeInfo(
     productCode = "IU",
     platformPrefix = "idea",

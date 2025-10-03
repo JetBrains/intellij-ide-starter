@@ -11,7 +11,7 @@ object IdeProductProvider {
   /** GoLand */
   val GO: IdeInfo = di.direct.instance<IdeProduct>().GO
 
-  /** IntelliJ Ultimate */
+  /** IntelliJ IDEA */
   val IU: IdeInfo = di.direct.instance<IdeProduct>().IU
 
   /** IntelliJ Community */

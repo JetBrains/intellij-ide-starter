@@ -4,7 +4,7 @@ interface IdeProduct {
   /** GoLand */
   val GO: IdeInfo
 
-  /** IntelliJ Ultimate */
+  /** IntelliJ IDEA */
   val IU: IdeInfo
 
   /** IntelliJ Community */
