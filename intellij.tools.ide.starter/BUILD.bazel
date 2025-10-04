@@ -23,7 +23,7 @@ jvm_library(
   deps = [
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",
-    "@lib//:kotlin-reflect",
+    "@community//libraries/kotlin-reflect",
     "@community//libraries/jackson/jackson",
     "@community//libraries/jackson/databind",
     "@community//libraries/jackson/module-kotlin:libraries-jackson-module-kotlin",

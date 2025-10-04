@@ -29,7 +29,7 @@ jvm_library(
   deps = [
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",
-    "@lib//:kotlin-reflect",
+    "@community//libraries/kotlin-reflect",
     "@ultimate_lib//:kodein-di-jvm",
     "@ultimate_lib//:junit5-provided",
     "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
@@ -51,7 +51,7 @@ jvm_library(
   deps = [
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",
-    "@lib//:kotlin-reflect",
+    "@community//libraries/kotlin-reflect",
     "@ultimate_lib//:kodein-di-jvm",
     "@ultimate_lib//:junit5-provided",
     "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
