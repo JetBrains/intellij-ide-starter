@@ -49,13 +49,13 @@ open class TestCleanupListener : TestExecutionListener {
     }
   }
 
-  override fun executionFinished(testIdentifier: TestIdentifier?, testExecutionResult: TestExecutionResult?) {
-    val testIdentifierName = testIdentifier?.displayName ?: ""
-    if (testIdentifier?.isContainer == true) {
+  override fun executionFinished(testIdentifier: TestIdentifier, testExecutionResult: TestExecutionResult) {
+    val testIdentifierName = testIdentifier.displayName
+    if (testIdentifier.isContainer) {
       cancelSupervisorScope(perClassSupervisorScope, "Test class `$testIdentifierName` execution is finished")
     }
 
-    if (testIdentifier?.isTest == true) {
+    if (testIdentifier.isTest) {
       cancelSupervisorScope(perTestSupervisorScope, "Test `$testIdentifierName` execution is finished")
       ConfigurationStorage.instance().resetToDefault()
     }
@@ -63,7 +63,7 @@ open class TestCleanupListener : TestExecutionListener {
     super.executionFinished(testIdentifier, testExecutionResult)
   }
 
-  override fun testPlanExecutionFinished(testPlan: TestPlan?) {
+  override fun testPlanExecutionFinished(testPlan: TestPlan) {
     cancelSupervisorScope(testSuiteSupervisorScope, "Test plan execution is finished")
     super.testPlanExecutionFinished(testPlan)
   }
