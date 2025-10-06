@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.system.OS
 import java.net.InetAddress
 import java.net.ServerSocket
+import java.nio.file.Path
 
 object PortUtil {
   private val logger = Logger.getInstance(PortUtil::class.java)
@@ -31,11 +32,27 @@ object PortUtil {
       return proposedPort
     }
     else {
+      val pids = getProcessesUsingPort(proposedPort)
+
+      val pidsInfo = pids?.mapNotNull { pid ->
+        ProcessHandle.of(pid.toLong()).map { it.info() }.orElse(null)?.let {
+          pid to ProcessInfo(
+            pid = pid.toLong(),
+            port = proposedPort,
+            pi = it,
+          )
+        }
+      }?.toMap()
+      val pidsWithProcessName = pids?.map { pid -> "$pid (${pidsInfo?.get(pid)?.shortProcessName ?: "N/A"})" }
       logger.error("Proposed port $proposedPort is not available on host $host " +
-                   "as it used by processes: ${getProcessesUsingPort(proposedPort)?.joinToString(", ") ?: "Failed to retrieve processes"}\n" +
+                   "as it used by processes: ${pidsWithProcessName?.joinToString(", ") ?: "Failed to retrieve processes"}\n" +
                    "Busy port could mean that the previous process is still running or the port is blocked by another application.\n" +
                    "Please make sure to investigate, the uninvestigated hanging processes could lead to further unclear test failure.\n" +
                    "PLEASE BE CAREFUL WHEN MUTING", "")
+
+      if (pidsInfo != null) {
+        logger.warn("Processes using the port $proposedPort:\n${pidsInfo.map { it.value.description }.joinToString("\n")}")
+      }
       repeat(100) {
         if (isPortAvailable(host, proposedPort + it)) {
           return proposedPort + it
@@ -132,5 +149,22 @@ object PortUtil {
       }
       return false
     }
+  }
+}
+
+data class ProcessInfo(
+  val port: Int,
+  val pid: Long,
+  val pi: ProcessHandle.Info,
+) {
+  val shortProcessName: String = Path.of(pi.command().orElse("")).fileName?.toString() ?: "N/A"
+
+  val description: String = buildString {
+    appendLine("PID: $pid")
+    appendLine("Port: $port")
+    appendLine("Command: ${pi.command().orElse("N/A")}")
+    appendLine("Arguments: ${pi.arguments().orElse(emptyArray()).joinToString(" ")}")
+    appendLine("Start time: ${pi.startInstant().orElse(null)}")
+    appendLine("User: ${pi.user().orElse("N/A")}")
   }
 }
