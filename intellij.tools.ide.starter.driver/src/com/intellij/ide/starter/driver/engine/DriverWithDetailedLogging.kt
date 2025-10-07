@@ -31,7 +31,7 @@ internal class DriverWithDetailedLogging(private val driver: Driver, logUiHierar
   private var runContext: IDERunContext? = null
 
   init {
-    EventsBus.subscribe(this) { event: IdeLaunchEvent ->
+    EventsBus.subscribeOnce(this) { event: IdeLaunchEvent ->
       runContext = event.runContext
       if (!CIServer.instance.isBuildRunningOnCI && !ConfigurationStorage.useDockerContainer()) {
         withTimeoutOrNull(1.minutes) {
