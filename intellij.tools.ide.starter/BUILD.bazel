@@ -23,11 +23,11 @@ jvm_library(
   deps = [
     "@lib//:kotlinx-coroutines-core",
     "@lib//:kotlin-stdlib",
-    "@community//libraries/kotlin-reflect",
+    "@community//libraries/kotlin/reflect",
     "@community//libraries/jackson/jackson",
     "@community//libraries/jackson/databind",
     "@community//libraries/jackson/module-kotlin:libraries-jackson-module-kotlin",
-    "@lib//:http-client",
+    "@community//libraries/http-client",
     "@community//platform/core-api:core",
     "@community//platform/platform-impl:ide-impl",
     "@community//platform/eel",

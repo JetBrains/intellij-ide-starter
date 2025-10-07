@@ -28,7 +28,7 @@ jvm_library(
     "@community//libraries/jackson/jackson",
     "@community//libraries/jackson/databind",
     "@community//libraries/jackson/module-kotlin:libraries-jackson-module-kotlin",
-    "@lib//:http-client",
+    "@community//libraries/http-client",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@ultimate_lib//:software-amazon-awssdk-sqs",
   ]
