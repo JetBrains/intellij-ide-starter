@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.utils
 
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.diagnostic.Logger
@@ -44,15 +45,24 @@ object PortUtil {
         }
       }?.toMap()
       val pidsWithProcessName = pids?.map { pid -> "$pid (${pidsInfo?.get(pid)?.shortProcessName ?: "N/A"})" }
-      logger.error("Proposed port $proposedPort is not available on host $host " +
-                   "as it used by processes: ${pidsWithProcessName?.joinToString(", ") ?: "Failed to retrieve processes"}\n" +
-                   "Busy port could mean that the previous process is still running or the port is blocked by another application.\n" +
-                   "Please make sure to investigate, the uninvestigated hanging processes could lead to further unclear test failure.\n" +
-                   "PLEASE BE CAREFUL WHEN MUTING", "")
+      val processNames = pids?.map { pid -> pidsInfo?.get(pid)?.shortProcessName ?: "N/A" }?.distinct()?.sorted()?.joinToString() ?: "Failed to retrieve processes"
+      CIServer.instance.reportTestFailure(
+        testName = "Proposed port is not available on host as it used by processes: ${processNames}",
+        message = buildString {
+          appendLine("Proposed port $proposedPort is not available on host $host as it used by processes: ${pidsWithProcessName?.joinToString(", ") ?: "Failed to retrieve processes"}")
+          appendLine("Busy port could mean that the previous process is still running or the port is blocked by another application.")
+          appendLine("Please make sure to investigate, the uninvestigated hanging processes could lead to further unclear test failure.")
+          appendLine("PLEASE BE CAREFUL WHEN MUTING")
+        },
+        details = buildString {
+          if (pidsInfo != null) {
+            appendLine("Processes using the port $proposedPort:")
+            pidsInfo.forEach { (_, info) -> appendLine(info.description) }
+          }
+          appendLine(Throwable().stackTraceToString())
+        }
+      )
 
-      if (pidsInfo != null) {
-        logger.warn("Processes using the port $proposedPort:\n${pidsInfo.map { it.value.description }.joinToString("\n")}")
-      }
       repeat(100) {
         if (isPortAvailable(host, proposedPort + it)) {
           return proposedPort + it
