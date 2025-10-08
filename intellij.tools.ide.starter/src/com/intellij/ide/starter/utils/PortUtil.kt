@@ -33,31 +33,24 @@ object PortUtil {
       return proposedPort
     }
     else {
-      val pids = getProcessesUsingPort(proposedPort)
+      val processes = getProcessesUsingPort(proposedPort)
 
-      val pidsInfo = pids?.mapNotNull { pid ->
-        ProcessHandle.of(pid.toLong()).map { it.info() }.orElse(null)?.let {
-          pid to ProcessInfo(
-            pid = pid.toLong(),
-            port = proposedPort,
-            pi = it,
-          )
-        }
-      }?.toMap()
-      val pidsWithProcessName = pids?.map { pid -> "$pid (${pidsInfo?.get(pid)?.shortProcessName ?: "N/A"})" }
-      val processNames = pids?.map { pid -> pidsInfo?.get(pid)?.shortProcessName ?: "N/A" }?.distinct()?.sorted()?.joinToString() ?: "Failed to retrieve processes"
+      val pidsInfoMap = processes?.associate { it.pid to it }
+      val processNames = pidsInfoMap?.map { "${it.key} (${it.value.shortProcessName})" }?.sorted()?.joinToString(", ")
+                         ?: "Failed to retrieve processes"
+
       CIServer.instance.reportTestFailure(
         testName = "Proposed port is not available on host as it used by processes: ${processNames}",
         message = buildString {
-          appendLine("Proposed port $proposedPort is not available on host $host as it used by processes: ${pidsWithProcessName?.joinToString(", ") ?: "Failed to retrieve processes"}")
+          appendLine("Proposed port $proposedPort is not available on host $host as it used by processes: ${processNames}")
           appendLine("Busy port could mean that the previous process is still running or the port is blocked by another application.")
           appendLine("Please make sure to investigate, the uninvestigated hanging processes could lead to further unclear test failure.")
           appendLine("PLEASE BE CAREFUL WHEN MUTING")
         },
         details = buildString {
-          if (pidsInfo != null) {
+          if (pidsInfoMap != null) {
             appendLine("Processes using the port $proposedPort:")
-            pidsInfo.forEach { (_, info) -> appendLine(info.description) }
+            pidsInfoMap.forEach { (_, info) -> appendLine(info.description) }
           }
           appendLine(Throwable().stackTraceToString())
         }
@@ -78,7 +71,7 @@ object PortUtil {
    * @param port The network port to check for processes.
    * @return A list of process IDs that are using the specified port, or null if an error occurs.
    */
-  fun getProcessesUsingPort(port: Int): List<Int>? {
+  fun getProcessesUsingPort(port: Int): List<ProcessInfo>? {
     var errorMsg = ""
 
     return runCatching {
@@ -101,14 +94,27 @@ object PortUtil {
         args = findCommand
       ).start()
 
-      val processIds = stdoutRedirectFind.read().trim()
+      val processIdsRaw = stdoutRedirectFind.read().trim()
       errorMsg = stderrRedirectFind.read()
 
-      if (OS.CURRENT == OS.Windows) {
-        processIds.split("\n").mapNotNull { it.removePrefix(prefix).trim().split("\\s+".toRegex())[4].toIntOrNull() }
+      val pids: List<Int> = if (OS.CURRENT == OS.Windows) {
+        processIdsRaw.split("\n").mapNotNull { line ->
+          val tokens = line.removePrefix(prefix).trim().split("\\s+".toRegex())
+          tokens.getOrNull(4)?.toIntOrNull()
+        }
       }
       else {
-        processIds.split("\n").mapNotNull { it.removePrefix(prefix).trim().toIntOrNull() }
+        processIdsRaw.split("\n").mapNotNull { it.removePrefix(prefix).trim().toIntOrNull() }
+      }
+
+      pids.mapNotNull { pid ->
+        ProcessHandle.of(pid.toLong()).map { info ->
+          ProcessInfo(
+            port = port,
+            pid = pid.toLong(),
+            pi = info.info()
+          )
+        }.orElse(null)
       }
     }.getOrElse {
       logger.error("An error occurred while attempting to get processes using port: $port. Error message: ${it.message}. Error message: $errorMsg: ${it.stackTraceToString()}")
@@ -117,15 +123,16 @@ object PortUtil {
   }
 
   fun killProcessesUsingPort(port: Int): Boolean {
-    val processIds = getProcessesUsingPort(port)
+    val processes = getProcessesUsingPort(port)
 
-    if (processIds?.isNotEmpty() == true) {
+    if (processes?.isNotEmpty() == true) {
       return catchAll {
+        val pids = processes.map { it.pid.toString() }
         val killCommand = if (OS.CURRENT == OS.Windows) {
-          listOf("cmd", "/c", "taskkill") + processIds.flatMap { listOf("/PID", it.toString()) }
+          listOf("cmd", "/c", "taskkill") + pids.flatMap { listOf("/PID", it) }
         }
         else {
-          listOf("kill", "-9") + processIds.map { it.toString() }
+          listOf("kill", "-9") + pids
         }
 
         val stdoutRedirectKill = ExecOutputRedirect.ToStdOutAndString("kill-pid")
@@ -151,7 +158,7 @@ object PortUtil {
       } == true
     }
     else {
-      if (processIds == null) {
+      if (processes == null) {
         logger.error("Failed to retrieve processes using port: $port")
       }
       else {

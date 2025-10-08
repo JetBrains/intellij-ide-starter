@@ -62,7 +62,8 @@ class PortUtilTest {
     server.use { _ ->
       Thread.sleep(1000)
 
-      val pids = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+      val processes = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+      val pids = processes.map { it.pid.toInt() }
       assertTrue(pids.contains(currentPid().toInt()), "Expected current JVM PID to be reported for listening port $port")
     }
   }
@@ -73,7 +74,8 @@ class PortUtilTest {
     val child = startListeningProcess(port)
     val childPid = child.pid().toInt()
     try {
-      val pids = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+      val processes = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+      val pids = processes.map { it.pid.toInt() }
       assertTrue(pids.contains(childPid), "Expected child PID $childPid to be listed for port $port, got $pids")
 
       val killed = PortUtil.killProcessesUsingPort(port)
@@ -98,7 +100,8 @@ class PortUtilTest {
       val pid1 = c1.pid().toInt()
       val pid2 = c2.pid().toInt()
       try {
-        val pids = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+        val processes = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+        val pids = processes.map { it.pid.toInt() }
 
         assertTrue(pids.contains(currentPid().toInt()), "Expected current JVM PID to be reported for listening port $port")
         assertTrue(pids.contains(pid1), "Expected first client PID $pid1 to be listed for port $port, got $pids")
@@ -121,7 +124,8 @@ class PortUtilTest {
     val pid1 = client1.pid().toInt()
     val pid2 = client2.pid().toInt()
     try {
-      val pids = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+      val processes = PortUtil.getProcessesUsingPort(port) ?: error("Expected non-null list of processes using port $port")
+      val pids = processes.map { it.pid.toInt() }
       assertTrue(pids.contains(listenerPid), "Expected listener PID $listenerPid to be listed for port $port, got $pids")
       assertTrue(pids.contains(pid1), "Expected first client PID $pid1 to be listed for port $port, got $pids")
       assertTrue(pids.contains(pid2), "Expected second client PID $pid2 to be listed for port $port, got $pids")
