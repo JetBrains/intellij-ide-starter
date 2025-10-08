@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
 import com.intellij.ide.starter.report.FailureDetailsOnCI
 import com.intellij.ide.starter.runner.IDERunContext
 import com.intellij.ide.starter.utils.FileSystem.getFileOrDirectoryPresentableSize
@@ -28,7 +28,7 @@ import kotlin.io.path.div
 import kotlin.random.Random
 
 @ExtendWith(MockitoExtension::class)
-@ExtendWith(KillOutdatedProcesses::class)
+@ExtendWith(KillOutdatedProcessesBeforeEach::class)
 class ReportingTest {
   private lateinit var currentTestInfo: TestInfo
 

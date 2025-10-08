@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit5.events
 
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.Starter
@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @ExtendWith(MockitoExtension::class)
-@ExtendWith(KillOutdatedProcesses::class)
+@ExtendWith(KillOutdatedProcessesBeforeEach::class)
 class TestContextInitializationEventsTest {
 
   @AfterEach

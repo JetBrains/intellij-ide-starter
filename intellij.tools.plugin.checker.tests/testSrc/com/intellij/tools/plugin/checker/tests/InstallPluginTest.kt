@@ -12,7 +12,7 @@ import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcesses
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
 
-@ExtendWith(KillOutdatedProcesses::class)
+@ExtendWith(KillOutdatedProcessesBeforeEach::class)
 class InstallPluginTest {
   companion object {
 
