@@ -1,6 +1,5 @@
 package com.intellij.ide.starter.utils
 
-import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.diagnostic.Logger
@@ -39,21 +38,19 @@ object PortUtil {
       val processNames = pidsInfoMap?.map { "${it.key} (${it.value.shortProcessName})" }?.sorted()?.joinToString(", ")
                          ?: "Failed to retrieve processes"
 
-      CIServer.instance.reportTestFailure(
-        testName = "Proposed port is not available on host as it used by processes: ${processNames}",
-        message = buildString {
+      logger.error(IllegalStateException(
+        buildString {
           appendLine("Proposed port $proposedPort is not available on host $host as it used by processes: ${processNames}")
           appendLine("Busy port could mean that the previous process is still running or the port is blocked by another application.")
           appendLine("Please make sure to investigate, the uninvestigated hanging processes could lead to further unclear test failure.")
           appendLine("PLEASE BE CAREFUL WHEN MUTING")
-        },
-        details = buildString {
+
           if (pidsInfoMap != null) {
+            appendLine()
             appendLine("Processes using the port $proposedPort:")
             pidsInfoMap.forEach { (_, info) -> appendLine(info.description) }
           }
-          appendLine(Throwable().stackTraceToString())
-        }
+        })
       )
 
       repeat(100) {
