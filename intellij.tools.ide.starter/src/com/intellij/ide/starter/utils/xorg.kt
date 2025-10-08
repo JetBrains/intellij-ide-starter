@@ -9,15 +9,14 @@ fun getRunningDisplays(): List<Int> {
   val found = fullProcessList
     .filter { it.command.contains("Xvfb") }
     .map {
-      logOutput(it.command)
-      it.command.split(" ")
-        .single { arg -> arg.startsWith(":") }
-        .drop(1)
-        .toInt()
+      it.arguments?.singleOrNull { arg -> arg.startsWith(":") }
+        ?.drop(1)
+        ?.toIntOrNull()
+      ?: error("Cannot parse Xvfb display number from ${it.commandLine}")
     }
   logOutput("Found Xvfb displays: $found")
   if (found.isEmpty()) {
-    logOutput("Full process list was: ${fullProcessList.map { it.command }.filter { it.isNotEmpty() }.joinToString("\n" )}")
+    logOutput("Full process list was: ${fullProcessList.joinToString("\n")}")
   }
   return found
 }

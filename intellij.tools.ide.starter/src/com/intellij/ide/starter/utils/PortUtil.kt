@@ -6,7 +6,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.system.OS
 import java.net.InetAddress
 import java.net.ServerSocket
-import java.nio.file.Path
+import com.intellij.ide.starter.process.ProcessInfo
+import com.intellij.ide.starter.process.ProcessKiller
 
 object PortUtil {
   private val logger = Logger.getInstance(PortUtil::class.java)
@@ -35,7 +36,7 @@ object PortUtil {
       val processes = getProcessesUsingPort(proposedPort)
 
       val pidsInfoMap = processes?.associate { it.pid to it }
-      val processNames = pidsInfoMap?.map { "${it.key} (${it.value.shortProcessName})" }?.sorted()?.joinToString(", ")
+      val processNames = pidsInfoMap?.map { it.value.toString() }?.sorted()?.joinToString(", ")
                          ?: "Failed to retrieve processes"
 
       logger.error(IllegalStateException(
@@ -105,17 +106,16 @@ object PortUtil {
         processIdsRaw.split("\n").mapNotNull { it.removePrefix(prefix).trim().toIntOrNull() }
       }
 
-      pids.mapNotNull { pid ->
-        ProcessHandle.of(pid.toLong()).map { info ->
-          ProcessInfo(
-            port = port,
-            pid = pid.toLong(),
-            pi = info.info()
-          )
-        }.orElse(null)
+      pids.map { pid ->
+        ProcessInfo.create(pid.toLong(), portThatIsUsedByProcess = port)
       }
     }.getOrElse {
-      logger.error("An error occurred while attempting to get processes using port: $port. Error message: ${it.message}. Error message: $errorMsg: ${it.stackTraceToString()}")
+      logger.error(buildString {
+        appendLine("An error occurred while attempting to get processes using port: $port. ")
+        if (errorMsg.isNotEmpty()) {
+          appendLine("Error message: $errorMsg")
+        }
+      }, it)
       return null
     }
   }
@@ -124,62 +124,32 @@ object PortUtil {
     val processes = getProcessesUsingPort(port)
 
     if (processes?.isNotEmpty() == true) {
-      return catchAll {
-        val pids = processes.map { it.pid.toString() }
-        val killCommand = if (OS.CURRENT == OS.Windows) {
-          listOf("cmd", "/c", "taskkill") + pids.flatMap { listOf("/PID", it) }
-        }
-        else {
-          listOf("kill", "-9") + pids
-        }
-
-        val stdoutRedirectKill = ExecOutputRedirect.ToStdOutAndString("kill-pid")
-        val stderrRedirectKill = ExecOutputRedirect.ToStdOutAndString("kill-pid")
-
-        ProcessExecutor(
-          "Kill Processes Using Port",
-          workDir = null,
-          stdoutRedirect = stdoutRedirectKill,
-          stderrRedirect = stderrRedirectKill,
-          args = killCommand
-        ).start()
-
-        val errorMsg = stderrRedirectKill.read()
-        if (stderrRedirectKill.read().isEmpty()) {
-          logger.info("Successfully killed processes using port: $port")
-          true
-        }
-        else {
-          logger.error("Failed to kill processes using port: $port. Error message: $errorMsg")
-          false
-        }
-      } == true
+      return killProcesses(processes)
     }
     else {
       if (processes == null) {
         logger.error("Failed to retrieve processes using port: $port")
       }
       else {
-        logger.error("No processes found using port: $port")
+        logger.error("No processes using port found: $port")
       }
       return false
     }
   }
-}
 
-data class ProcessInfo(
-  val port: Int,
-  val pid: Long,
-  val pi: ProcessHandle.Info,
-) {
-  val shortProcessName: String = Path.of(pi.command().orElse("")).fileName?.toString() ?: "N/A"
-
-  val description: String = buildString {
-    appendLine("PID: $pid")
-    appendLine("Port: $port")
-    appendLine("Command: ${pi.command().orElse("N/A")}")
-    appendLine("Arguments: ${pi.arguments().orElse(emptyArray()).joinToString(" ")}")
-    appendLine("Start time: ${pi.startInstant().orElse(null)}")
-    appendLine("User: ${pi.user().orElse("N/A")}")
+  fun killProcesses(processes: List<ProcessInfo>): Boolean {
+    return catchAll {
+      ProcessKiller.killPids(
+        pids = processes.map { it.pid }.toSet(),
+        workDir = null,
+      ).also { success ->
+        if (success) {
+          logger.info("Successfully killed processes ${processes.joinToString(", ")}")
+        }
+        else {
+          logger.error("Failed to kill processes ${processes.joinToString(", ")}")
+        }
+      }
+    } == true
   }
 }

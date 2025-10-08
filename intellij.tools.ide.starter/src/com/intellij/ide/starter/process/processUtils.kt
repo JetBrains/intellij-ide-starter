@@ -1,39 +1,28 @@
 package com.intellij.ide.starter.process
 
 import com.intellij.ide.starter.ci.CIServer
-import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.utils.catchAll
-import com.intellij.openapi.util.SystemInfo
 import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
+import com.intellij.util.system.OS
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-fun getProcessList(): List<ProcessMetaInfo> {
-  return oshi.SystemInfo().operatingSystem.processes.map {
-    ProcessMetaInfo(it.processID, it.commandLine)
-  }
+fun getProcessList(): List<ProcessInfo> {
+  return oshi.SystemInfo().operatingSystem.processes.map { ProcessInfo.create(it) }
 }
 
 fun getProcessesPids(
   processesToSearch: Set<String> = setOf("chrome", "Chrome.exe", "Chrome.app", "Google Chrome"),
-): List<Int> {
-  val systemInfo = oshi.SystemInfo()
-  val processes = systemInfo.operatingSystem.processes
-
-  return processes
-    .parallelStream()
-    .filter { process ->
-      processesToSearch.any { it in process.commandLine }
-    }
-    .map { it.processID }
-    .toList()
+): Set<Long> {
+  return getProcessList()
+    .filter { process -> processesToSearch.any { it in process.commandLine } }
+    .map { it.pid }
+    .toSet()
 }
 
 /**
@@ -42,56 +31,12 @@ fun getProcessesPids(
  * This lead to OOM and other errors during tests, for example,
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
-fun killOutdatedProcesses(commandsToSearch: Iterable<String> = listOf("/ide-tests/", "\\ide-tests\\")) {
-  val processes = oshi.SystemInfo().operatingSystem.processes
-  var killProcess: (Int) -> Unit = {}
-
-  if (SystemInfo.isWindows) catchAll {
-    killProcess = { killProcessOnWindows(it) }
+fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/ide-tests/", "\\ide-tests\\")) {
+  val processIdsToKill = getProcessesPids(commandsToSearch.toSet())
+  if (processIdsToKill.isNotEmpty()) {
+    logOutput("These processes must be killed before the next test run: [$processIdsToKill]")
+    ProcessKiller.killPids(processIdsToKill)
   }
-  else if (SystemInfo.isLinux) catchAll {
-    killProcess = { killProcessOnUnix(it) }
-  }
-  else catchAll {
-    killProcess = { killProcessOnUnix(it) }
-  }
-
-  val processIdsToKill = processes.filter { process ->
-    commandsToSearch.any { process.commandLine.contains(it) }
-  }.map { it.processID }
-
-  logOutput("These processes must be killed before the next test run: [$processIdsToKill]")
-  for (pid in processIdsToKill) {
-    catchAll { killProcess(pid) }
-  }
-}
-
-private fun killProcessOnWindows(pid: Int) {
-  check(SystemInfo.isWindows)
-  logOutput("Killing process $pid")
-
-  ProcessExecutor(
-    "kill-process-$pid",
-    GlobalPaths.instance.testsDirectory,
-    timeout = 1.minutes,
-    args = listOf("taskkill", "/pid", pid.toString(), "/f"), //taskkill /pid 23756 /f
-    stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),
-    stderrRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-err]")
-  ).start()
-}
-
-private fun killProcessOnUnix(pid: Int) {
-  check(SystemInfo.isUnix)
-  logOutput("Killing process $pid")
-
-  ProcessExecutor(
-    "kill-process-$pid",
-    GlobalPaths.instance.testsDirectory,
-    timeout = 1.minutes,
-    args = listOf("kill", "-9", pid.toString()),
-    stdoutRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-out]"),
-    stderrRedirect = ExecOutputRedirect.ToStdOut("[kill-$pid-err]")
-  ).start()
 }
 
 suspend fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
@@ -108,7 +53,7 @@ suspend fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalPro
  * In case of Dev Server, under xvfb-run the whole build process is happening so the waiting time can be long.
  */
 private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
-  if (!SystemInfo.isLinux) {
+  if (OS.CURRENT != OS.Linux) {
     return originalProcessId
   }
   logOutput("Guessing java process ID on Linux (pid of the java process wrapper - $originalProcessId)")
@@ -197,7 +142,7 @@ fun collectJavaThreadDump(
   javaProcessId: Long,
   dumpFile: Path,
 ) {
-  val ext = if (SystemInfo.isWindows) ".exe" else ""
+  val ext = if (OS.CURRENT == OS.Windows) ".exe" else ""
   val jstackPath = listOf(
     javaHome.resolve("bin/jstack$ext"),
     javaHome.parent.resolve("bin/jstack$ext")
@@ -246,7 +191,7 @@ fun jcmd(
   command: List<String>,
 ) {
   val pathToJcmd = "bin/jcmd"
-  val ext = if (SystemInfo.isWindows) ".exe" else ""
+  val ext = if (OS.CURRENT == OS.Windows) ".exe" else ""
   val jcmdPath = listOf(
     javaHome.resolve("$pathToJcmd$ext"),
     javaHome.parent.resolve("$pathToJcmd$ext")
@@ -278,20 +223,6 @@ fun getAllJavaProcesses(): List<String> {
   return stdout.read().split("\n")
 }
 
-private fun destroyProcessById(processId: Long) {
-  ProcessHandle.of(processId)
-    .ifPresent {
-      logOutput("Destroy process by pid '${it.pid()}'")
-      it.destroy()
-      catchAll {
-        // Usually daemons wait 2 requests for 10 seconds after ide shutdown
-        logOutput("Start waiting on exit for process '$processId'")
-        it.onExit().get(2, TimeUnit.MINUTES)
-        logOutput("Finish waiting on exit for process '$processId'")
-      }
-      it.destroyForcibly()
-    }
-}
 
 fun getProcessesIdByProcessName(processName: String): Set<Long> {
   return getAllJavaProcesses().filter {
@@ -303,12 +234,6 @@ fun getProcessesIdByProcessName(processName: String): Set<Long> {
 
 fun destroyProcessIfExists(processName: String) {
   logOutput("Killing '$processName' process ...")
-  getProcessesIdByProcessName(processName).forEach {
-    logOutput("Killing '$it' process")
-    // get up-to date process list on every iteration
-    destroyProcessById(it)
-  }
-
-
+  ProcessKiller.killPids(getProcessesIdByProcessName(processName))
   logOutput("Process '$processName' should be killed")
 }
