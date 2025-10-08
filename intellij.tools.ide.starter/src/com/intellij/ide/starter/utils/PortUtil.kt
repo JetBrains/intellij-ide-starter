@@ -88,7 +88,8 @@ object PortUtil {
         workDir = null,
         stdoutRedirect = stdoutRedirectFind,
         stderrRedirect = stderrRedirectFind,
-        args = findCommand
+        args = findCommand,
+        analyzeProcessExit = false
       ).start()
 
       val processIdsRaw = stdoutRedirectFind.read().trim()
