@@ -34,7 +34,7 @@ fun getProcessesPids(
 fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/ide-tests/", "\\ide-tests\\")) {
   val processIdsToKill = getProcessesPids(commandsToSearch.toSet())
   if (processIdsToKill.isNotEmpty()) {
-    logOutput("These processes must be killed before the next test run: [$processIdsToKill]")
+    logOutput("These outdated processes must be killed: [$processIdsToKill]")
     ProcessKiller.killPids(processIdsToKill)
   }
 }
