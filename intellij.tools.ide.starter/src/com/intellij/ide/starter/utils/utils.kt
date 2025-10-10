@@ -40,11 +40,12 @@ fun getThrowableText(t: Throwable): String {
  * In case of success - return T
  * In case of error - print error to stderr and return null
  */
-inline fun <T> catchAll(action: () -> T): T? = try {
+inline fun <T> catchAll(message: String? = null, action: () -> T): T? = try {
+  if (message != null) logOutput("Performing '$message' with catching all exceptions")
   action()
 }
 catch (t: Throwable) {
-  logError("CatchAll swallowed error: ${t.message}")
+  logError("CatchAll ${message?.let { "for '$it' " }}swallowed error: ${t.message}")
   logError(getThrowableText(t))
   null
 }
