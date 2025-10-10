@@ -141,7 +141,6 @@ object PortUtil {
     return catchAll {
       ProcessKiller.killPids(
         pids = processes.map { it.pid }.toSet(),
-        workDir = null,
       ).also { success ->
         if (success) {
           logger.info("Successfully killed processes ${processes.joinToString(", ")}")

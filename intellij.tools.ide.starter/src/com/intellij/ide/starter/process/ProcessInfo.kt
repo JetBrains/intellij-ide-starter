@@ -18,7 +18,7 @@ class ProcessInfo private constructor(
 
   companion object {
     fun create(pid: Long, portThatIsUsedByProcess: Int? = null): ProcessInfo {
-      val processHandle = ProcessHandle.of(pid).getOrNull()
+      val processHandle = ProcessHandle.of(pid).getOrNull() // null if the process doesn't exist
       val processHandleInfo = processHandle?.info()
       if (processHandleInfo == null) {
         return ProcessInfo(pid, "N/A", "N/A", null, null, null, null, portThatIsUsedByProcess)
