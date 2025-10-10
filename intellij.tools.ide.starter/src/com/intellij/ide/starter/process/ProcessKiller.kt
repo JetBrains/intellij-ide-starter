@@ -15,6 +15,11 @@ import kotlin.time.Duration.Companion.seconds
 internal object ProcessKiller {
   private val logger = Logger.getInstance(ProcessKiller::class.java)
 
+  /**
+   * Kills processes by PID.
+   *
+   * Returns true if the processes were killed successfully or found in a killed state.
+   */
   fun killPids(
     pids: Set<Long>,
     workDir: Path? = null,
@@ -24,16 +29,27 @@ internal object ProcessKiller {
     val results = pids.map { pid ->
       val processInfo = ProcessInfo.create(pid)
       if (processInfo.processHandle != null) {
-        killProcessUsingHandle(processInfo.processHandle, timeout)
+        if (!killProcessUsingHandle(processInfo.processHandle, timeout)) {
+          killProcessUsingCommandLine(pid, workDir, timeout)
+        }
+        else {
+          true
+        }
       }
       else {
-        killProcessUsingCommandLine(pid, workDir, timeout)
+        // According to the Doc, a process handle is null only for the non-existing processes
+        true
       }
     }
 
     return results.all { it }
   }
 
+  /**
+   * Kills a process using the command line.
+   * IF possible it's better to use [killProcessUsingHandle].
+   * Returns true if the process was killed successfully or found in a killed state.
+   */
   fun killProcessUsingCommandLine(
     pid: Long,
     workDir: Path? = null,
@@ -62,6 +78,10 @@ internal object ProcessKiller {
 
     val errorMsg = stderr.read()
     return if (errorMsg.isNotEmpty()) {
+      if (errorMsg.contains("No such process")) {
+        logger.warn("Process $pid is already terminated")
+        return true
+      }
       logger.warn("Process kill command reported errors: $errorMsg")
       false
     }
@@ -70,16 +90,27 @@ internal object ProcessKiller {
     }
   }
 
+  /**
+   * Kills a process using the [ProcessHandle].
+   * Waits for the process to exit for up to [timeout].
+   * Returns true if the process was killed successfully or found in a killed state.
+   */
   fun killProcessUsingHandle(processHandle: ProcessHandle, timeout: Duration = 30.seconds): Boolean {
     logOutput("Kill process by pid '${processHandle.pid()}' using ProcessHandle")
-    processHandle.destroy()
-    catchAll {
-      logOutput("Start waiting on exit for process '${processHandle.pid()}'")
-      // Usually daemons wait 2 requests for 10 seconds after ide shutdown
-      processHandle.onExit().get(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
-      logOutput("Finish waiting on exit for process '${processHandle.pid()}'")
+    if (processHandle.destroy()) {
+      catchAll("Waiting on exit for process '${processHandle.pid()}'") {
+        // Usually daemons wait 2 requests for 10 seconds after ide shutdown
+        processHandle.onExit().get(timeout.inWholeMilliseconds, TimeUnit.MILLISECONDS)
+        return true
+      }
     }
+
     processHandle.destroyForcibly()
-    return true
+    catchAll("Waiting on exit for process '${processHandle.pid()}' after forcible termination") {
+      processHandle.onExit().get(2, TimeUnit.SECONDS)
+      return true
+    }
+
+    return false
   }
 }
