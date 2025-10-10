@@ -44,7 +44,7 @@ jvm_library(
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@community//plugins/performanceTesting/event-bus:tools-ide-starter-bus",
     "@lib//:opentelemetry",
-    "@ultimate_lib//:tools-ide-starter-github-oshi-core",
+    "@lib//:github-oshi-core",
   ],
   exports = [
     "@community//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
