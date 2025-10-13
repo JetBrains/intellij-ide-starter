@@ -42,26 +42,22 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
   }
 
   open fun <R> useDriverAndCloseIde(closeIdeTimeout: Duration = 1.minutes, shutdownHook: Driver.() -> Unit = {}, block: Driver.() -> R): IDEStartResult {
+    val ideStartResult: IDEStartResult
     try {
       driver.withContext { block(this) }
     }
     finally {
       catchAll { shutdownHook(driver) }
-      driver.closeIdeAndWait(closeIdeTimeout)
-      @Suppress("SSBasedInspection")
-      runBlocking {
-        startResult.await()
-      }
+      ideStartResult = driver.closeIdeAndWait(closeIdeTimeout)
     }
-    @Suppress("SSBasedInspection")
-    return runBlocking { return@runBlocking startResult.await() }
+    return ideStartResult
   }
 
   open fun closeIdeAndWait(closeIdeTimeout: Duration = 1.minutes, takeScreenshot: Boolean = true) {
     driver.closeIdeAndWait(closeIdeTimeout, takeScreenshot)
   }
 
-  protected fun Driver.closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean = true) {
+  protected fun Driver.closeIdeAndWait(closeIdeTimeout: Duration, takeScreenshot: Boolean = true): IDEStartResult {
     try {
       if (isConnected) {
         if (takeScreenshot) {
@@ -69,7 +65,8 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
         }
         exitApplication()
         waitFor("Driver is not connected", closeIdeTimeout, 3.seconds) { !isConnected }
-      } else {
+      }
+      else {
         error("Driver is not connected, so it can't exit IDE")
       }
     }
@@ -87,6 +84,11 @@ open class BackgroundRun(val startResult: Deferred<IDEStartResult>, driverWithou
         forceKill()
         throw IllegalStateException("Process didn't die after waiting for Driver to close IDE", e)
       }
+    }
+
+    @Suppress("SSBasedInspection")
+    return runBlocking {
+      startResult.await()
     }
   }
 
