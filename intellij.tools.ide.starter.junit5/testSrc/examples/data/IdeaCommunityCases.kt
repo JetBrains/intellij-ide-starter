@@ -14,10 +14,4 @@ object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
       commitHash = "c11de3b42af65dd14c58d175c6ce0deb629704d6"
     )
   ).useRelease()
-
-  val MavenSimpleApp = withProject(
-    RemoteArchiveProjectInfo(
-      projectURL = "https://github.com/jenkins-docs/simple-java-maven-app/archive/refs/heads/master.zip",
-    )
-  ).useRelease()
 }
