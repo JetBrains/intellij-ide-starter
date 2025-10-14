@@ -96,7 +96,7 @@ internal object ProcessKiller {
    * Returns true if the process was killed successfully or found in a killed state.
    */
   fun killProcessUsingHandle(processHandle: ProcessHandle, timeout: Duration = 30.seconds): Boolean {
-    logOutput("Kill process by pid '${processHandle.pid()}' using ProcessHandle")
+    logOutput("Kill process '${processHandle.pid()} ${processHandle.info().command()}' using ProcessHandle")
     if (processHandle.destroy()) {
       catchAll("Waiting on exit for process '${processHandle.pid()}'") {
         // Usually daemons wait 2 requests for 10 seconds after ide shutdown
