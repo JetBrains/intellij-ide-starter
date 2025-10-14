@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit5
 
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesAfterEach
 import com.intellij.ide.starter.utils.HttpClient
 import io.kotest.assertions.withClue
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.fileSize
 import kotlin.io.path.writeText
 
-@ExtendWith(KillOutdatedProcessesBeforeEach::class)
+@ExtendWith(KillOutdatedProcessesAfterEach::class)
 class HttpClientTests {
   @Test
   @Timeout(value = 1, unit = TimeUnit.MINUTES)

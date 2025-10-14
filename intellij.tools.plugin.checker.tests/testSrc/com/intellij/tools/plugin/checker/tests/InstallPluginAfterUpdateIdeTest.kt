@@ -7,7 +7,7 @@ import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider.IU
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesAfterEach
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
@@ -34,7 +34,7 @@ import kotlin.io.path.createFile
 import kotlin.time.Duration.Companion.minutes
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ExtendWith(KillOutdatedProcessesBeforeEach::class)
+@ExtendWith(KillOutdatedProcessesAfterEach::class)
 class InstallPluginAfterUpdateIdeTest {
   private lateinit var errorsWithoutPlugin: List<Error>
 

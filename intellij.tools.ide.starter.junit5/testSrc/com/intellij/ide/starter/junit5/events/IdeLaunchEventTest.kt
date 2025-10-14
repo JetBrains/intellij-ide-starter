@@ -1,6 +1,6 @@
 package com.intellij.ide.starter.junit5.events
 
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesAfterEach
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.Starter
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-@ExtendWith(KillOutdatedProcessesBeforeEach::class)
+@ExtendWith(KillOutdatedProcessesAfterEach::class)
 class IdeLaunchEventTest {
 
   @AfterEach
