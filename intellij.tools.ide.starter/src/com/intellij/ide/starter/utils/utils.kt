@@ -167,3 +167,7 @@ fun pathInsideJarFile(
   jarFile: Path,
   pathInsideJar: String,
 ): String = jarFile.toAbsolutePath().toString().trimEnd('/') + "!/" + pathInsideJar
+
+private val dockerPathRegex = Regex("^[\\\\/]+docker.*")
+
+fun Path.isOnDocker(): Boolean = this.toString().matches(dockerPathRegex)
