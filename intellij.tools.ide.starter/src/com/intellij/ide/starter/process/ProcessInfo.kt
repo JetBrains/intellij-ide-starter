@@ -47,8 +47,9 @@ class ProcessInfo private constructor(
     }
   }
 
+  val shortCommand: String = Path.of(command).fileName?.toString() ?: command
 
-  override fun toString(): String = "$pid ${Path.of(command).fileName?.toString() ?: command}"
+  override fun toString(): String = "$pid $shortCommand"
 
   val description: String = buildString {
     appendLine("PID: $pid")
