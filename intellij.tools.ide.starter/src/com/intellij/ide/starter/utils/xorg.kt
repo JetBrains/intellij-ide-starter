@@ -7,7 +7,7 @@ fun getRunningDisplays(): List<Int> {
   logOutput("Looking for running displays")
   val fullProcessList = getProcessList()
   val found = fullProcessList
-    .filter { it.command.contains("Xvfb") }
+    .filter { it.command == "Xvfb" }
     .map {
       it.arguments?.singleOrNull { arg -> arg.startsWith(":") }
         ?.drop(1)
