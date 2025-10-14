@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtensionContext
 
 open class KillOutdatedProcessesAfterAll : AfterAllCallback {
   override fun afterAll(context: ExtensionContext) {
-    killOutdatedProcesses()
+    killOutdatedProcesses(reportErrors = true)
   }
 }
 

@@ -31,10 +31,19 @@ fun getProcessesPids(
  * This lead to OOM and other errors during tests, for example,
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
-fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/ide-tests/", "\\ide-tests\\")) {
+fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/ide-tests/", "\\ide-tests\\"), reportErrors: Boolean = false) {
   val processIdsToKill = getProcessesPids(commandsToSearch.toSet())
   if (processIdsToKill.isNotEmpty()) {
-    logOutput("These outdated processes must be killed: [$processIdsToKill]")
+    if (reportErrors) {
+      val processInfos = processIdsToKill.map { ProcessInfo.create(it) }
+      CIServer.instance.reportTestFailure("Unexpected running processes were detected ${processInfos.joinToString(", ") { it.shortCommand }}",
+                                          "Please try to stop them appropriately in tests, as you might be missing some diagnostics.\n" +
+                                          "Processes were collected based on command line, containing '${commandsToSearch.joinToString(", ")}'.\n" +
+                                          processInfos.joinToString("\n") { it.description }, details = "")
+    }
+    else {
+      logOutput("These outdated processes must be killed: [${processIdsToKill.joinToString(", ") { ProcessInfo.create(it).toString() }}]")
+    }
     ProcessKiller.killPids(processIdsToKill)
   }
 }
