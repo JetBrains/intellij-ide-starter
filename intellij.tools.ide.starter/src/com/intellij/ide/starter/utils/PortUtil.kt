@@ -1,5 +1,6 @@
 package com.intellij.ide.starter.utils
 
+import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.openapi.diagnostic.Logger
@@ -36,12 +37,12 @@ object PortUtil {
       val processes = getProcessesUsingPort(proposedPort)
 
       val pidsInfoMap = processes?.associate { it.pid to it }
-      val processNames = pidsInfoMap?.map { it.value.toString() }?.sorted()?.joinToString(", ")
+      val processNames = pidsInfoMap?.map { it.value.shortCommand }?.sorted()?.joinToString(", ")
                          ?: "Failed to retrieve processes"
 
-      logger.error(IllegalStateException(
+      CIServer.instance.reportTestFailure(
+        "Proposed port $proposedPort is not available on host $host as it used by processes ${processNames}",
         buildString {
-          appendLine("Proposed port $proposedPort is not available on host $host as it used by processes: ${processNames}")
           appendLine("Busy port could mean that the previous process is still running or the port is blocked by another application.")
           appendLine("Please make sure to investigate, the uninvestigated hanging processes could lead to further unclear test failure.")
           appendLine("PLEASE BE CAREFUL WHEN MUTING")
@@ -51,8 +52,7 @@ object PortUtil {
             appendLine("Processes using the port $proposedPort:")
             pidsInfoMap.forEach { (_, info) -> appendLine(info.description) }
           }
-        })
-      )
+        }, "")
 
       repeat(100) {
         if (isPortAvailable(host, proposedPort + it)) {
@@ -110,12 +110,15 @@ object PortUtil {
         ProcessInfo.create(pid.toLong(), portThatIsUsedByProcess = port)
       }
     }.getOrElse {
-      logger.error(buildString {
-        appendLine("An error occurred while attempting to get processes using port: $port. ")
-        if (errorMsg.isNotEmpty()) {
-          appendLine("Error message: $errorMsg")
-        }
-      }, it)
+      CIServer.instance.reportTestFailure(
+        "An error occurred while attempting to get processes using port.",
+        buildString {
+          appendLine("An error occurred while attempting to get processes using port $port. ")
+          if (errorMsg.isNotEmpty()) {
+            appendLine("Error message: $errorMsg")
+          }
+          appendLine("Exception: ${it.stackTraceToString()}")
+        }, "")
       return null
     }
   }
@@ -128,10 +131,10 @@ object PortUtil {
     }
     else {
       if (processes == null) {
-        logger.error("Failed to retrieve processes using port: $port")
+        CIServer.instance.reportTestFailure("Failed to retrieve processes using port", "Failed to retrieve processes using port $port", "")
       }
       else {
-        logger.error("No processes using port found: $port")
+        CIServer.instance.reportTestFailure("No processes using port found", "No processes using port found $port", "")
       }
       return false
     }
@@ -146,7 +149,7 @@ object PortUtil {
           logger.info("Successfully killed processes ${processes.joinToString(", ")}")
         }
         else {
-          logger.error("Failed to kill processes ${processes.joinToString(", ")}")
+          CIServer.instance.reportTestFailure("Failed to kill processes ${processes.joinToString(", ") { it.command }}", "", "")
         }
       }
     } == true
