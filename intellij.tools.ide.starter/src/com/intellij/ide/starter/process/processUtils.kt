@@ -234,7 +234,13 @@ fun getProcessesIdByProcessName(processName: String): Set<Long> {
 }
 
 fun destroyProcessIfExists(processName: String) {
-  logOutput("Killing '$processName' process ...")
-  ProcessKiller.killPids(getProcessesIdByProcessName(processName))
-  logOutput("Process '$processName' should be killed")
+  val pids = getProcessesIdByProcessName(processName)
+  if (pids.isNotEmpty()) {
+    logOutput("Killing '$processName' process ...")
+    ProcessKiller.killPids(getProcessesIdByProcessName(processName))
+    logOutput("Process '$processName' should be killed")
+  }
+  else {
+    logOutput("No '$processName' processes found to kill")
+  }
 }
