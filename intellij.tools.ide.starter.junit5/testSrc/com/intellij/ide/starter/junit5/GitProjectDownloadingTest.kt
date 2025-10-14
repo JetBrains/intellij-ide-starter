@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.junit5
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesBeforeEach
+import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesAfterEach
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.GitProjectInfo
 import io.kotest.matchers.paths.shouldExist
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.kodein.di.instance
 import java.util.concurrent.TimeUnit
 
-@ExtendWith(KillOutdatedProcessesBeforeEach::class)
+@ExtendWith(KillOutdatedProcessesAfterEach::class)
 class GitProjectDownloadingTest {
 
   @Test
