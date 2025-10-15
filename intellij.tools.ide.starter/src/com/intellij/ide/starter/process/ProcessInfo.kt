@@ -3,6 +3,7 @@ package com.intellij.ide.starter.process
 import com.intellij.util.containers.orNull
 import oshi.software.os.OSProcess
 import java.nio.file.Path
+import java.time.Instant
 import kotlin.jvm.optionals.getOrNull
 
 class ProcessInfo private constructor(
@@ -10,7 +11,7 @@ class ProcessInfo private constructor(
   val commandLine: String,
   val command: String,
   val arguments: List<String>?,
-  private val startTime: String?,
+  private val startTime: Instant?,
   private val user: String?,
   val processHandle: ProcessHandle? = null,
   private val portThatIsUsedByProcess: Int? = null,
@@ -28,7 +29,7 @@ class ProcessInfo private constructor(
                            commandLine = processHandleInfo.commandLine().orElse("N/A"),
                            command = processHandleInfo.command()?.orNull() ?: "N/A",
                            arguments = processHandleInfo.arguments().orNull()?.toList(),
-                           startTime = processHandleInfo.startInstant().orNull()?.toString(),
+                           startTime = processHandleInfo.startInstant().orNull(),
                            user = processHandleInfo.user().orNull(),
                            processHandle = processHandle,
                            portThatIsUsedByProcess = portThatIsUsedByProcess)
@@ -40,7 +41,7 @@ class ProcessInfo private constructor(
                          commandLine = opProcess.commandLine,
                          command = opProcess.name,
                          arguments = opProcess.arguments,
-                         startTime = opProcess.startTime.toString(),
+                         startTime = Instant.ofEpochMilli(opProcess.startTime),
                          user = opProcess.user,
                          processHandle = ProcessHandle.of(opProcess.processID.toLong()).getOrNull())
     }
@@ -61,7 +62,7 @@ class ProcessInfo private constructor(
     if (!commandLine.contains(command) || arguments?.map { commandLine.contains(it) }?.all { it } != true) {
       appendLine("Command line: $commandLine")
     }
-    appendLine("Start time: ${startTime}")
+    appendLine("Start time: ${startTime ?: "N/A"}")
     appendLine("User: ${user}")
   }
 }
