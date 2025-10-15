@@ -147,7 +147,7 @@ class ProcessExecutor(
       error(message)
     }
 
-    if(!silent) logOutput("  ... successfully finished external process for `$presentableName` with exit code $expectedExitCode")
+    if (!silent) logOutput("  ... successfully finished external process for `$presentableName` with exit code $expectedExitCode")
   }
 
   @Throws(ExecTimeoutException::class)
@@ -173,7 +173,7 @@ class ProcessExecutor(
       .redirectError(ProcessBuilder.Redirect.PIPE)
       .actualizeEnvVariables(environmentVariables, onlyEnrichExistedEnvVariables)
 
-    if(!silent) {
+    if (!silent) {
       logOutput(buildString {
         appendLine("Starting external process for `$presentableName`")
         appendLine("  Working directory: $workDir")
@@ -194,7 +194,7 @@ class ProcessExecutor(
 
     val processId = process.pid()
     val onProcessCreatedJob: Job = perTestSupervisorScope.launch(Dispatchers.IO) {
-      if(!silent) logOutput("  ... started external process `$presentableName` with process ID = $processId")
+      if (!silent) logOutput("  ... started external process `$presentableName` with process ID = $processId")
       onProcessCreated(process, processId)
     }
 
