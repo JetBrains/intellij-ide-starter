@@ -7,6 +7,7 @@ import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
 import com.intellij.util.system.OS
+import kotlinx.coroutines.runBlocking
 import oshi.software.os.OperatingSystem.ProcessFiltering.VALID_PROCESS
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
@@ -141,10 +142,22 @@ private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: L
   }
 }
 
+fun collectJavaThreadDump(
+  javaHome: Path,
+  workDir: Path?,
+  javaProcessId: Long,
+  dumpFile: Path,
+) {
+  runBlocking {
+    collectJavaThreadDumpSuspendable(javaHome, workDir, javaProcessId, dumpFile)
+  }
+}
+
+
 /**
  * DON'T ADD ANY LOGGING OTHERWISE IF STDOUT IS BLOCKED THERE WILL BE NO DUMPS
  */
-fun collectJavaThreadDump(
+suspend fun collectJavaThreadDumpSuspendable(
   javaHome: Path,
   workDir: Path?,
   javaProcessId: Long,
@@ -167,7 +180,7 @@ fun collectJavaThreadDump(
       stdoutRedirect = ExecOutputRedirect.ToFile(dumpFile.toFile()),
       stderrRedirect = ExecOutputRedirect.ToStdOut("[jstack-err]"),
       silent = true
-    ).start()
+    ).startCancellable()
   }
   catch (ise: IllegalStateException) {
     val message = ise.message ?: ""

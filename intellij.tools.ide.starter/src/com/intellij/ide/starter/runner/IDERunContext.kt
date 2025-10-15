@@ -11,7 +11,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.models.VMOptions.Companion.ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION
 import com.intellij.ide.starter.path.IDEDataPaths
-import com.intellij.ide.starter.process.collectJavaThreadDump
+import com.intellij.ide.starter.process.collectJavaThreadDumpSuspendable
 import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
@@ -27,7 +27,6 @@ import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
 import com.intellij.tools.ide.util.common.logOutput
-import com.intellij.util.PlatformUtils
 import com.intellij.util.io.createDirectories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -277,7 +276,7 @@ data class IDERunContext(
     val dumpFile = logsDir.resolve("threadDump-before-kill-${System.currentTimeMillis()}.txt")
     val memoryDumpFile = snapshotsDir.resolve("memoryDump-before-kill-${System.currentTimeMillis()}.hprof.gz")
     catchAll {
-      collectJavaThreadDump(jdkHome, startConfig.workDir, getOrComputeJavaProcessId(), dumpFile)
+      collectJavaThreadDumpSuspendable(jdkHome, startConfig.workDir, getOrComputeJavaProcessId(), dumpFile)
     }
     catchAll {
       if (isLowMemorySignalPresent(logsDir)) {
@@ -311,7 +310,7 @@ data class IDERunContext(
 
       val dumpFile = monitoringThreadDumpDir.resolve("threadDump-${++cnt}-${getCurrentTimestamp()}.txt")
       logOutput("Dumping threads to $dumpFile")
-      catchAll { collectJavaThreadDump(jdkHome, workDir, collectingProcessId, dumpFile) }
+      catchAll { collectJavaThreadDumpSuspendable(jdkHome, workDir, collectingProcessId, dumpFile) }
     }
   }
 
