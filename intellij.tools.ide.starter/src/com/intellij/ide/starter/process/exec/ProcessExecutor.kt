@@ -2,7 +2,7 @@ package com.intellij.ide.starter.process.exec
 
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.logEnvVariables
-import com.intellij.ide.starter.coroutine.perTestSupervisorScope
+import com.intellij.ide.starter.coroutine.perClassSupervisorScope
 import com.intellij.ide.starter.utils.catchAll
 import com.intellij.ide.starter.utils.getThrowableText
 import com.intellij.tools.ide.util.common.logError
@@ -193,7 +193,7 @@ class ProcessExecutor(
     @Suppress("BlockingMethodInNonBlockingContext") val process = processBuilder.start()
 
     val processId = process.pid()
-    val onProcessCreatedJob: Job = perTestSupervisorScope.launch(Dispatchers.IO) {
+    val onProcessCreatedJob: Job = perClassSupervisorScope.launch(Dispatchers.IO) {
       if (!silent) logOutput("  ... started external process `$presentableName` with process ID = $processId")
       onProcessCreated(process, processId)
     }
