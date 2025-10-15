@@ -22,12 +22,12 @@ class ProcessInfo private constructor(
       val processHandle = ProcessHandle.of(pid).getOrNull() // null if the process doesn't exist
       val processHandleInfo = processHandle?.info()
       if (processHandleInfo == null) {
-        return ProcessInfo(pid, "N/A", "N/A", null, null, null, null, portThatIsUsedByProcess)
+        return ProcessInfo(pid, "Not Available", "Not Available", null, null, null, null, portThatIsUsedByProcess)
       }
       else {
         return ProcessInfo(pid = pid,
-                           commandLine = processHandleInfo.commandLine().orElse("N/A"),
-                           command = processHandleInfo.command()?.orNull() ?: "N/A",
+                           commandLine = processHandleInfo.commandLine().orNull().toString(),
+                           command = processHandleInfo.command().orNull().toString(),
                            arguments = processHandleInfo.arguments().orNull()?.toList(),
                            startTime = processHandleInfo.startInstant().orNull(),
                            user = processHandleInfo.user().orNull(),
