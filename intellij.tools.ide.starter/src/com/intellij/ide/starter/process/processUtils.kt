@@ -17,9 +17,7 @@ fun getProcessList(): List<ProcessInfo> {
   return oshi.SystemInfo().operatingSystem.getProcesses(VALID_PROCESS, null, 0).map { ProcessInfo.create(it) }
 }
 
-fun getProcessesPids(
-  processesToSearch: Set<String> = setOf("chrome", "Chrome.exe", "Chrome.app", "Google Chrome"),
-): Set<Long> {
+fun getProcessesPids(processesToSearch: Set<String>): Set<Long> {
   return getProcessList()
     .filter { process -> processesToSearch.any { it in process.commandLine } }
     .map { it.pid }
