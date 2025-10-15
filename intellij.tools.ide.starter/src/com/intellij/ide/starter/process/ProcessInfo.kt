@@ -60,10 +60,8 @@ class ProcessInfo private constructor(
     if (arguments != null) {
       appendLine("Arguments: $arguments")
     }
-    if (!commandLine.contains(command) || arguments?.map { commandLine.contains(it) }?.all { it } != true) {
-      appendLine("Command line: $commandLine")
-    }
-    appendLine("Start time: ${startTime ?: "N/A"}")
+    appendLine("Command line: $commandLine")
+    appendLine("Start time: ${startTime}")
     appendLine("User: ${user}")
   }
 }
