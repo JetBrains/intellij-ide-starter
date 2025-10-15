@@ -7,13 +7,14 @@ import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
 import com.intellij.util.system.OS
+import oshi.software.os.OperatingSystem.ProcessFiltering.VALID_PROCESS
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 fun getProcessList(): List<ProcessInfo> {
-  return oshi.SystemInfo().operatingSystem.processes.map { ProcessInfo.create(it) }
+  return oshi.SystemInfo().operatingSystem.getProcesses(VALID_PROCESS, null, 0).map { ProcessInfo.create(it) }
 }
 
 fun getProcessesPids(
