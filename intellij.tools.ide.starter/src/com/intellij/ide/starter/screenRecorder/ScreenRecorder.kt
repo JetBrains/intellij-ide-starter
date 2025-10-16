@@ -12,6 +12,7 @@ import com.intellij.util.ui.StartupUiUtil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import org.monte.media.Format
 import org.monte.media.FormatKeys.MediaType
@@ -113,13 +114,13 @@ class IDEScreenRecorder(private val runContext: IDERunContext) {
     }
   }
 
-  fun stop() {
+  suspend fun stop() {
     if (javaScreenRecorder == null && ffmpegProcessJob == null) {
       logOutput("Screen recorder was not started")
     }
     logOutput("Screen recorder: stopping")
     javaScreenRecorder?.stop()
-    ffmpegProcessJob?.cancel()
+    ffmpegProcessJob?.cancelAndJoin()
   }
 
   private fun getDisplaySize(displayWithColumn: String, defaultValue: Pair<Int, Int> = 1920 to 1080): Pair<Int, Int> {
