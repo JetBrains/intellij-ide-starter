@@ -23,6 +23,16 @@ object PortUtil {
     }
   }
 
+  fun getPortUnavailabilityReason(host: InetAddress, port: Int): String? {
+    try {
+      ServerSocket(port, 0, host).use { /* bound successfully */ }
+      return null
+    }
+    catch (e: Exception) {
+      return e.stackTraceToString()
+    }
+  }
+
   /**
    * Finds an available port starting from the proposed port on a specified host.
    * The separate error will be reported if the proposed port is not available.
@@ -59,7 +69,12 @@ object PortUtil {
           return proposedPort + it
         }
       }
-      error("No available port found in a range $proposedPort..${proposedPort + 100}")
+      error(buildString {
+        appendLine("No available port found in a range $proposedPort..${proposedPort + 100}")
+        listOf(proposedPort, proposedPort + 50, proposedPort + 100).forEach { port ->
+          appendLine("Unavailability reason of $port is ${getPortUnavailabilityReason(host, port)}")
+        }
+      })
     }
   }
 
