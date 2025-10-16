@@ -139,11 +139,6 @@ open class IDETestContext(
       addSystemProperty("ide.instant.shutdown", false)
     }
 
-  fun disableTraceDataSharingNotification(): IDETestContext =
-    applyVMOptionsPatch {
-      addSystemProperty("ide.enable.notification.trace.data.sharing", false)
-    }
-
   fun useOldUIInTests(): IDETestContext =
     applyVMOptionsPatch {
       @Suppress("DEPRECATION")
