@@ -9,7 +9,7 @@ jvm_library(
   deps = [
     "@lib//:kotlin-stdlib",
     "@community//platform/lang-impl",
-    "//tests/ideTestingFramework/intellij.tools.ide.starter:tools-ide-starter",
+    "@community//tools/intellij.tools.ide.starter:ide-starter",
     "@community//platform/remote-driver/model",
     "@community//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector",
     "@community//platform/diagnostic/telemetry",
