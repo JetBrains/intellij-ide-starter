@@ -26,7 +26,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="intellij.driver.client" />
     <orderEntry type="module" module-name="intellij.driver.model" />
-    <orderEntry type="module" module-name="intellij.tools.ide.performanceTesting.commands" />
     <orderEntry type="library" name="kotlinx-coroutines-core" level="project" />
     <orderEntry type="library" name="kotlin-stdlib" level="project" />
     <orderEntry type="module" module-name="intellij.tools.ide.starter" />
