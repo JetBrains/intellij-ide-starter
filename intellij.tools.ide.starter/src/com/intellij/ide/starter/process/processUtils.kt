@@ -18,11 +18,8 @@ fun getProcessList(): List<ProcessInfo> {
   return oshi.SystemInfo().operatingSystem.getProcesses(VALID_PROCESS, null, 0).map { ProcessInfo.create(it) }
 }
 
-fun getProcessesPids(processesToSearch: Set<String>): Set<Long> {
-  return getProcessList()
-    .filter { process -> processesToSearch.any { it in process.commandLine } }
-    .map { it.pid }
-    .toSet()
+fun getProcessList(processesToSearch: Set<String>): List<ProcessInfo> {
+  return getProcessList().filter { process -> processesToSearch.any { it in process.commandLine } }
 }
 
 /**
@@ -32,19 +29,18 @@ fun getProcessesPids(processesToSearch: Set<String>): Set<Long> {
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
 fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/ide-tests/", "\\ide-tests\\"), reportErrors: Boolean = false) {
-  val processIdsToKill = getProcessesPids(commandsToSearch.toSet())
-  if (processIdsToKill.isNotEmpty()) {
+  val processInfosToKill = getProcessList(commandsToSearch.toSet())
+  if (processInfosToKill.isNotEmpty()) {
     if (reportErrors) {
-      val processInfos = processIdsToKill.map { ProcessInfo.create(it) }
-      CIServer.instance.reportTestFailure("Unexpected running processes were detected ${processInfos.joinToString(", ") { it.shortCommand }}",
+      CIServer.instance.reportTestFailure("Unexpected running processes were detected ${processInfosToKill.joinToString(", ") { it.shortCommand }}",
                                           "Please try to stop them appropriately in tests, as you might be missing some diagnostics.\n" +
                                           "Processes were collected based on command line, containing '${commandsToSearch.joinToString(", ")}'.\n" +
-                                          processInfos.joinToString("\n") { it.description }, details = "")
+                                          processInfosToKill.joinToString("\n") { it.description }, details = "")
     }
     else {
-      logOutput("These outdated processes must be killed: [${processIdsToKill.joinToString(", ") { ProcessInfo.create(it).toString() }}]")
+      logOutput("These outdated processes must be killed: [${processInfosToKill.joinToString(", ")}]")
     }
-    ProcessKiller.killPids(processIdsToKill)
+    ProcessKiller.killPids(processInfosToKill.map { it.pid }.toSet())
   }
 }
 
