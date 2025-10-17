@@ -1,2 +1,2 @@
-includeBuild "../intellij.tools.ide.starter"
-includeBuild "../intellij.tools.ide.starter.junit5"
+includeBuild "../../../community/tools/intellij.tools.ide.starter"
+includeBuild "../../../community/tools/intellij.tools.ide.starter.junit5"
