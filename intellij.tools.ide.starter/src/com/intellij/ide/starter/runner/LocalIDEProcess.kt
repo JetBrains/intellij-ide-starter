@@ -6,7 +6,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.ide.starter.process.getJavaProcessIdWithRetry
+import com.intellij.ide.starter.process.getIdeProcessIdWithRetry
 import com.intellij.ide.starter.profiler.ProfilerType
 import com.intellij.ide.starter.report.AllureHelper
 import com.intellij.ide.starter.report.ErrorReporter
@@ -98,7 +98,7 @@ class LocalIDEProcess : IDEProcess {
               }
               EventsBus.postAndWaitProcessing(
                 IdeLaunchEvent(runContext = this, ideProcess = IDEProcessHandle(process.toHandle())))
-              ideProcessId = getJavaProcessIdWithRetry(jdkHome, startConfig.workDir, pid, process)
+              ideProcessId = getIdeProcessIdWithRetry(process)
               startCollectThreadDumpsLoop(logsDir, IDEProcessHandle(process.toHandle()), jdkHome, startConfig.workDir, ideProcessId, "ide")
             },
             onBeforeKilled = { process, pid ->

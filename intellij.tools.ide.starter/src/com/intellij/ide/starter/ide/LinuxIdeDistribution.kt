@@ -18,15 +18,14 @@ const val DEFAULT_DISPLAY_ID = "88"
 class LinuxIdeDistribution : IdeDistribution() {
   companion object {
     private const val DEFAULT_DISPLAY_RESOLUTION = "1920x1080"
-    private val xvfbRunTool by lazy {
-      val toolName = "xvfb-run"
-
+    internal const val XVFB_TOOL_NAME: String = "xvfb-run"
+    private val xvfbRunTool: String by lazy {
       val homePath = Path(System.getProperty("user.home")).toAbsolutePath()
-      ProcessExecutor("xvfb-run", homePath, timeout = 5.seconds, args = listOf("which", toolName),
-                      stdoutRedirect = ExecOutputRedirect.ToStdOut("xvfb-run-out"),
-                      stderrRedirect = ExecOutputRedirect.ToStdOut("xvfb-run-err")
+      ProcessExecutor(XVFB_TOOL_NAME, homePath, timeout = 5.seconds, args = listOf("which", XVFB_TOOL_NAME),
+                      stdoutRedirect = ExecOutputRedirect.ToStdOut("$XVFB_TOOL_NAME-out"),
+                      stderrRedirect = ExecOutputRedirect.ToStdOut("$XVFB_TOOL_NAME-err")
       ).start()
-      toolName
+      XVFB_TOOL_NAME
     }
 
     fun linuxCommandLine(xvfbRunLog: Path, commandEnv: Map<String, String> = emptyMap()): List<String> {
