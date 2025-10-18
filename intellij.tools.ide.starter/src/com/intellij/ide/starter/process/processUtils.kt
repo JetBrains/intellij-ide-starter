@@ -1,26 +1,34 @@
 package com.intellij.ide.starter.process
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ide.LinuxIdeDistribution
 import com.intellij.ide.starter.path.IDE_TESTS_SUBSTRING
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
+import com.intellij.tools.ide.util.common.NoRetryException
 import com.intellij.tools.ide.util.common.PrintFailuresMode
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.ide.util.common.withRetry
 import com.intellij.util.system.OS
 import kotlinx.coroutines.runBlocking
+import oshi.SystemInfo
+import oshi.software.os.OperatingSystem
 import oshi.software.os.OperatingSystem.ProcessFiltering.VALID_PROCESS
 import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-fun getProcessList(): List<ProcessInfo> {
-  return oshi.SystemInfo().operatingSystem.getProcesses(VALID_PROCESS, null, 0).map { ProcessInfo.create(it) }
-}
-
-fun getProcessList(processesToSearch: Set<String>): List<ProcessInfo> {
-  return getProcessList().filter { process -> processesToSearch.any { it in process.commandLine } }
+fun getProcessList(processesToSearch: Set<String> = emptySet()): List<ProcessInfo> {
+  val allProcesses = SystemInfo().operatingSystem.getProcesses(VALID_PROCESS, null, 0)
+  return if (processesToSearch.isEmpty()) {
+    allProcesses.map { ProcessInfo.create(it) }
+  }
+  else {
+    allProcesses
+      .filter { process -> processesToSearch.any { it in process.commandLine } }
+      .map { ProcessInfo.create(it) }
+  }
 }
 
 /**
@@ -45,97 +53,91 @@ fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/$IDE_TEST
   }
 }
 
-suspend fun getJavaProcessIdWithRetry(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
-  return requireNotNull(
-    withRetry(retries = 100, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid $originalProcessId", printFailuresMode = PrintFailuresMode.ONLY_LAST_FAILURE) {
-      getJavaProcessId(javaHome, workDir, originalProcessId, originalProcess)
-    }
-  ) { "Java process id must not be null" }
+private val devBuildArgumentsSet = setOf(
+  "com.intellij.idea.Main",
+  "com.intellij.platform.runtime.loader.IntellijLoader" // thin client
+)
+
+private fun isIde(command: String, commandLine: String, arguments: List<String>): Boolean =
+  !commandLine.contains(LinuxIdeDistribution.xvfbRunTool) &&
+  (
+    /** for installer runs
+     * Example:
+     *  Name: idea
+     *  Arguments: [/mnt/agent/temp/buildTmp/testb0bv1hja1z5rg/ide-tests/cache/builds/IU-installer-from-file/idea-IU-261.1243/bin/idea, serverMode,
+     *    /mnt/agent/temp/buildTmp/testb0bv1hja1z5rg/ide-tests/cache/projects/unpacked/TestScopesProj]
+     **/
+    arguments.firstOrNull().contains(IDE_TESTS_SUBSTRING) == true ||
+    /**  for dev build runs
+     * Example:
+     *  Name: java
+     *  Arguments: [/mnt/agent/system/.persistent_cache/5tq0kti2dt-jbrsdk_jcef-21.0.8-linux-x64-b1173.3.tar.gz.2qppum.d/bin/java,
+     *    @/mnt/agent/temp/buildTmp/testapcvq8gxezoyw/ide-tests/tmp/perf-vmOps-1760988642136-, ... com.intellij.idea.Main, /mnt/agent/temp/buildTmp/test8b25i2v1x4unr/ide-tests/cache/projects/unpacked/ui-tests-data/projects/catch_test_project_sample]
+     **/
+    (command == "java" && devBuildArgumentsSet.any { commandLine.contains(it) })
+  )
+
+
+suspend fun getIdeProcessIdWithRetry(parentProcess: Process): Long {
+  if (OS.CURRENT != OS.Linux) {
+    return parentProcess.pid()
+  }
+
+  val parentProcessInfo = ProcessInfo.create(SystemInfo().operatingSystem.getProcess(parentProcess.pid().toInt()))
+  logOutput("Guessing IDE process ID on Linux: \n${parentProcessInfo.description}")
+  val attemptsResult = withRetry(retries = 100, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid ${parentProcess.pid()}", printFailuresMode = PrintFailuresMode.ALL_FAILURES) {
+    getIdeProcessId(parentProcessInfo)
+  }
+  return requireNotNull(attemptsResult) { "Java process id must not be null" }
 }
+
 
 /**
  * On Linux we run IDE using `xvfb-run` tool wrapper, so we need to guess the real PID.
- * Thus, we must guess the original java process ID for capturing the thread dumps.
+ * Thus, we must guess the IDE process ID for capturing the thread dumps.
  * In case of Dev Server, under xvfb-run the whole build process is happening so the waiting time can be long.
  */
-private fun getJavaProcessId(javaHome: Path, workDir: Path, originalProcessId: Long, originalProcess: Process): Long {
+private fun getIdeProcessId(parentProcessInfo: ProcessInfo): Long {
   if (OS.CURRENT != OS.Linux) {
-    return originalProcessId
-  }
-  logOutput("Guessing java process ID on Linux (pid of the java process wrapper - $originalProcessId)")
-
-  val stdout = ExecOutputRedirect.ToString()
-  val stderr = ExecOutputRedirect.ToString()
-  ProcessExecutor(
-    "jcmd-run",
-    workDir,
-    timeout = 1.minutes,
-    args = listOf(javaHome.resolve("bin/jcmd").toAbsolutePath().toString()),
-    stdoutRedirect = stdout,
-    stderrRedirect = stderr
-  ).start()
-
-  val mergedOutput = stdout.read() + "\n" + stderr.read()
-  val candidates = arrayListOf<Long>()
-  val candidatesFromProcessHandle = arrayListOf<Long>()
-  logOutput("List all java processes IDs:")
-  for (line in mergedOutput.lines().map { it.trim() }.filterNot { it.isEmpty() }) {
-    logOutput(line)
-    /*
-    We need to monitor command line parameters otherwise we might get the locally running IDE in local tests.
-
-    An example of a process line:
-    1578401 com.intellij.idea.Main /home/sergey.patrikeev/Documents/intellij/out/ide-tests/tests/IU-211.1852/ijx-jdk-empty/verify-shared-index/temp/projects/idea-startup-performance-project-test-03/idea-startup-performance-project-test-03
-
-    An example from TC:
-    intellij project:
-    81413 com.intellij.idea.Main /opt/teamcity-agent/work/71b862de01f59e23
-
-    another project:
-    84318 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests5985285665047908961/ide-tests/tests/IU-installer-from-file/spring_boot/indexing_oldProjectModel/projects/projects/spring-boot-master/spring-boot-master
-
-    An example from TC TestsDynamicBundledPluginsStableLinux
-    1879942 com.intellij.idea.Main /opt/teamcity-agent/temp/buildTmp/startupPerformanceTests4436006118811351792/ide-tests/cache/projects/unpacked/javaproject_1.0.0/java-design-patterns-master
-
-    Example from TC
-    39848 com.intellij.idea.Main /mnt/agent/work/71b862de01f59e23/../intellij_copy_8157673bdd3048a6990b1214d6e9780b26b348e6
-    */
-    val pid = line.substringBefore(" ", "").toLongOrNull() ?: continue
-    if (line.contains("com.intellij.idea.Main") && (line.contains("/ide-tests/tests/") || line.contains(
-        "/ide-tests/cache/") || line.contains("/opt/teamcity-agent/work/") || line.contains("/mnt/agent/work/"))) {
-      candidates.add(pid)
-    }
+    return parentProcessInfo.pid
   }
 
-  val originalCommand = originalProcess.info().command()
-  if (originalCommand.isPresent && originalCommand.get().contains("java")) {
-    logOutput("The test was run without wrapper, add original pid")
-    candidatesFromProcessHandle.add(originalProcess.pid())
+  if (parentProcessInfo.processHandle?.isAlive != true) {
+    throw NoRetryException("Couldn't guess IDE process: parent process is not alive", null)
+  }
+  logOutput("Guessing IDE process ID on Linux (pid of the IDE process wrapper ${parentProcessInfo.pid})")
+
+  if (isIde(parentProcessInfo.command, parentProcessInfo.commandLine, parentProcessInfo.arguments)) {
+    logOutput("Parent process is an IDE process itself (was launched without wrapper)")
+    return parentProcessInfo.pid
   }
 
-  originalProcess.toHandle().descendants().forEach { processHandle ->
-    val command = processHandle.info().command()
-    if (command.isPresent && command.get().contains("java")) {
-      logOutput("Candidate from ProcessHandle process: ${processHandle.pid()}")
-      logOutput("command: ${processHandle.info().command()}")
-      candidatesFromProcessHandle.add(processHandle.pid())
-    }
+  val suitableChildren = SystemInfo().operatingSystem.getChildProcesses(
+    /* parentPid = */ parentProcessInfo.pid.toInt(),
+    /* filter = */ { isIde(it.name, it.commandLine, it.arguments) },
+    /* sort = */ OperatingSystem.ProcessSorting.UPTIME_DESC,
+    /* limit = */ 0
+  ).map { ProcessInfo.create(it) }
+
+  if (suitableChildren.isEmpty()) {
+    throw Exception("There are no suitable candidates for IDE process\n" +
+                    "All children: \n" +
+                    SystemInfo().operatingSystem.getChildProcesses(
+                      /* parentPid = */ parentProcessInfo.pid.toInt(),
+                      /* filter = */ null,
+                      /* sort = */ OperatingSystem.ProcessSorting.UPTIME_DESC,
+                      /* limit = */ 0
+                    ).joinToString("\n") { ProcessInfo.create(it).description })
   }
 
-  if (candidates.isEmpty() && candidatesFromProcessHandle.isNotEmpty()) {
-    logOutput("Candidates from jcmd are missing, will be used first one from ProcessHandle instead: " + candidatesFromProcessHandle.first())
-    candidates.add(candidatesFromProcessHandle.first())
-  }
-
-  if (candidates.isNotEmpty()) {
-    logOutput("Found the following java process ID candidates: " + candidates.joinToString())
-    if (originalProcessId in candidates) {
-      return originalProcessId
-    }
-    return candidates.first()
+  if (suitableChildren.size > 1) {
+    logOutput("Found more than one IDE process candidates: " + suitableChildren.joinToString("\n") { it.description } +
+              "Returning oldest suitable IDE process: ${suitableChildren.first()}")
+    return suitableChildren.first().pid
   }
   else {
-    throw Exception("There are no suitable candidates for the process")
+    logOutput("Returning single suitable IDE process: ${suitableChildren.single().description}")
+    return suitableChildren.single().pid
   }
 }
 
