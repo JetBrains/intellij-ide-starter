@@ -1,6 +1,7 @@
 package com.intellij.ide.starter.process
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.path.IDE_TESTS_SUBSTRING
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.tools.ide.util.common.PrintFailuresMode
@@ -28,7 +29,7 @@ fun getProcessList(processesToSearch: Set<String>): List<ProcessInfo> {
  * This lead to OOM and other errors during tests, for example,
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
-fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/ide-tests/", "\\ide-tests\\"), reportErrors: Boolean = false) {
+fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/$IDE_TESTS_SUBSTRING/", "\\$IDE_TESTS_SUBSTRING\\"), reportErrors: Boolean = false) {
   val processInfosToKill = getProcessList(commandsToSearch.toSet())
   if (processInfosToKill.isNotEmpty()) {
     if (reportErrors) {
