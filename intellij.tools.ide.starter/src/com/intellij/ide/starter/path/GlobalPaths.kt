@@ -11,6 +11,8 @@ import kotlin.io.path.div
 
 const val TEST_DATA_CACHE_NAME = "test-data-cache"
 
+const val IDE_TESTS_SUBSTRING: String = "ide-tests"
+
 abstract class GlobalPaths(val checkoutDir: Path) {
   val intelliJOutDirectory: Path = checkoutDir.toAbsolutePath() / "out"
   val artifactsDirectory: Path = intelliJOutDirectory / "artifacts"
@@ -24,7 +26,7 @@ abstract class GlobalPaths(val checkoutDir: Path) {
     false -> intelliJOutDirectory // Local run
   }
 
-  open val testHomePath: Path = intelliJOutDirectory.resolve("ide-tests").createDirectories()
+  open val testHomePath: Path = intelliJOutDirectory.resolve(IDE_TESTS_SUBSTRING).createDirectories()
 
   open val devServerDirectory: Path = intelliJOutDirectory.resolve("dev-run").createDirectories()
 
