@@ -9,29 +9,28 @@ import java.net.InetAddress
 import java.net.ServerSocket
 import com.intellij.ide.starter.process.ProcessInfo
 import com.intellij.ide.starter.process.ProcessKiller
+import java.net.InetSocketAddress
 
 object PortUtil {
   private val logger = Logger.getInstance(PortUtil::class.java)
 
-  fun isPortAvailable(host: InetAddress, port: Int): Boolean {
-    return try {
-      ServerSocket(port, 0, host).use { /* bound successfully */ }
-      true
-    }
-    catch (_: Exception) {
-      false
-    }
+  fun isPortAvailable(host: InetAddress, port: Int): Boolean = checkFree(host, port, { true }) { false }
+
+  fun getPortUnavailabilityReason(host: InetAddress, port: Int): String? = checkFree(host, port, { null }) {
+    it.stackTraceToString()
   }
 
-  fun getPortUnavailabilityReason(host: InetAddress, port: Int): String? {
+  private fun <T> checkFree(host: InetAddress, port: Int, onSuccess: () -> T, onFailure: (Throwable) -> T): T =
     try {
-      ServerSocket(port, 0, host).use { /* bound successfully */ }
-      return null
+      ServerSocket().use {
+        it.reuseAddress = true
+        it.bind(InetSocketAddress(host, port), 50)
+      }
+      onSuccess()
     }
-    catch (e: Exception) {
-      return e.stackTraceToString()
+    catch (t: Throwable) {
+      onFailure(t)
     }
-  }
 
   /**
    * Finds an available port starting from the proposed port on a specified host.
