@@ -1,18 +1,16 @@
 package com.intellij.ide.starter.utils
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.process.ProcessInfo
+import com.intellij.ide.starter.process.ProcessKiller.killProcesses
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.system.OS
 import java.net.InetAddress
 import java.net.ServerSocket
-import com.intellij.ide.starter.process.ProcessInfo
-import com.intellij.ide.starter.process.ProcessKiller
 import java.net.InetSocketAddress
 
 object PortUtil {
-  private val logger = Logger.getInstance(PortUtil::class.java)
 
   fun isPortAvailable(host: InetAddress, port: Int): Boolean = checkFree(host, port, { true }) { false }
 
@@ -46,7 +44,7 @@ object PortUtil {
       val processes = getProcessesUsingPort(proposedPort)
 
       val pidsInfoMap = processes?.associate { it.pid to it }
-      val processNames = pidsInfoMap?.map { it.value.shortCommand }?.sorted()?.joinToString(", ")
+      val processNames = pidsInfoMap?.map { it.value.name }?.sorted()?.joinToString(", ")
                          ?: "Failed to retrieve processes"
 
       CIServer.instance.reportTestFailure(
@@ -152,20 +150,5 @@ object PortUtil {
       }
       return false
     }
-  }
-
-  fun killProcesses(processes: List<ProcessInfo>): Boolean {
-    return catchAll {
-      ProcessKiller.killPids(
-        pids = processes.map { it.pid }.toSet(),
-      ).also { success ->
-        if (success) {
-          logger.info("Successfully killed processes ${processes.joinToString(", ")}")
-        }
-        else {
-          CIServer.instance.reportTestFailure("Failed to kill processes ${processes.joinToString(", ") { it.command }}", "", "")
-        }
-      }
-    } == true
   }
 }

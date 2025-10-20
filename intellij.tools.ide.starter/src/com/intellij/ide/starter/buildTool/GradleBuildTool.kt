@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.ide.starter.buildTool.events.GradleDaemonEvent
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.process.destroyProcessIfExists
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getProcessesIdByProcessName
+import com.intellij.ide.starter.process.findAndKillProcesses
 import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.utils.HttpClient
 import com.intellij.ide.starter.utils.XmlBuilder
@@ -37,7 +37,7 @@ open class GradleBuildTool(testContext: IDETestContext) : BuildTool(BuildToolTyp
   companion object {
     private const val GRADLE_DAEMON_NAME = "GradleDaemon"
     fun destroyGradleDaemonProcessIfExists() {
-      destroyProcessIfExists(GRADLE_DAEMON_NAME)
+      findAndKillProcesses(GRADLE_DAEMON_NAME)
     }
   }
 

@@ -12,25 +12,22 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-internal object ProcessKiller {
+object ProcessKiller {
   private val logger = Logger.getInstance(ProcessKiller::class.java)
 
   /**
-   * Kills processes by PID.
-   *
    * Returns true if the processes were killed successfully or found in a killed state.
    */
-  fun killPids(
-    pids: Set<Long>,
+  fun killProcesses(
+    processInfosToKill: List<ProcessInfo>,
     workDir: Path? = null,
     timeout: Duration = 1.minutes,
   ): Boolean {
-    check(pids.isNotEmpty())
-    val results = pids.map { pid ->
-      val processInfo = ProcessInfo.create(pid)
+    check(processInfosToKill.isNotEmpty())
+    val results = processInfosToKill.map { processInfo ->
       if (processInfo.processHandle != null) {
         if (!killProcessUsingHandle(processInfo.processHandle, timeout)) {
-          killProcessUsingCommandLine(pid, workDir, timeout)
+          killProcessUsingCommandLine(processInfo.pid, workDir, timeout)
         }
         else {
           true

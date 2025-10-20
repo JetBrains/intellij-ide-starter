@@ -11,6 +11,7 @@ import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
 import com.intellij.ide.starter.models.VMOptions.Companion.ALLOW_SKIPPING_FULL_SCANNING_ON_STARTUP_OPTION
 import com.intellij.ide.starter.path.IDEDataPaths
+import com.intellij.ide.starter.process.ProcessInfo.Companion.toProcessInfo
 import com.intellij.ide.starter.process.collectJavaThreadDumpSuspendable
 import com.intellij.ide.starter.process.collectMemoryDump
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
@@ -258,7 +259,7 @@ data class IDERunContext(
     suspend fun getOrComputeIdeProcessId(): Long {
       if (ideProcessId == null) {
         ideProcessId = getIdeProcessIdWithRetry(
-          parentProcess = process,
+          parentProcessInfo = process.toProcessInfo(),
         )
       }
       return ideProcessId
