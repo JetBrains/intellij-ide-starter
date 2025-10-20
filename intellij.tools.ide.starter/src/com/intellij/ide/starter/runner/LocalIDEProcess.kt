@@ -4,6 +4,7 @@ import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.models.IDEStartResult
 import com.intellij.ide.starter.models.VMOptions
+import com.intellij.ide.starter.process.ProcessInfo.Companion.toProcessInfo
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.ide.starter.process.getIdeProcessIdWithRetry
@@ -98,7 +99,7 @@ class LocalIDEProcess : IDEProcess {
               }
               EventsBus.postAndWaitProcessing(
                 IdeLaunchEvent(runContext = this, ideProcess = IDEProcessHandle(process.toHandle())))
-              ideProcessId = getIdeProcessIdWithRetry(process)
+              ideProcessId = getIdeProcessIdWithRetry(process.toProcessInfo())
               startCollectThreadDumpsLoop(logsDir, IDEProcessHandle(process.toHandle()), jdkHome, startConfig.workDir, ideProcessId, "ide")
             },
             onBeforeKilled = { process, pid ->

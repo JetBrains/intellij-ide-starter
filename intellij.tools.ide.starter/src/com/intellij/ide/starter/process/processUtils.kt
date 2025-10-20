@@ -3,6 +3,8 @@ package com.intellij.ide.starter.process
 import com.intellij.ide.starter.ci.CIServer
 import com.intellij.ide.starter.ide.LinuxIdeDistribution
 import com.intellij.ide.starter.path.IDE_TESTS_SUBSTRING
+import com.intellij.ide.starter.process.ProcessInfo.Companion.toProcessInfo
+import com.intellij.ide.starter.process.ProcessKiller.killProcesses
 import com.intellij.ide.starter.process.exec.ExecOutputRedirect
 import com.intellij.ide.starter.process.exec.ProcessExecutor
 import com.intellij.tools.ide.util.common.NoRetryException
@@ -12,44 +14,65 @@ import com.intellij.tools.ide.util.common.withRetry
 import com.intellij.util.system.OS
 import kotlinx.coroutines.runBlocking
 import oshi.SystemInfo
+import oshi.software.os.OSProcess
 import oshi.software.os.OperatingSystem
-import oshi.software.os.OperatingSystem.ProcessFiltering.VALID_PROCESS
 import java.nio.file.Path
+import java.util.function.Predicate
 import kotlin.io.path.isRegularFile
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-fun getProcessList(processesToSearch: Set<String> = emptySet()): List<ProcessInfo> {
-  val allProcesses = SystemInfo().operatingSystem.getProcesses(VALID_PROCESS, null, 0)
-  return if (processesToSearch.isEmpty()) {
-    allProcesses.map { ProcessInfo.create(it) }
+fun getProcessList(vararg substringToSearch: String): List<ProcessInfo> =
+  getProcessList { p ->
+    substringToSearch.isEmpty() || p.arguments.any { arg -> substringToSearch.any { arg.contains(it) } }
   }
-  else {
-    allProcesses
-      .filter { process -> processesToSearch.any { it in process.commandLine } }
-      .map { ProcessInfo.create(it) }
-  }
-}
+
+fun getProcessList(filter: Predicate<ProcessInfo>): List<ProcessInfo> =
+  SystemInfo().operatingSystem.getProcesses({ p -> p.state != OSProcess.State.INVALID && filter.test(ProcessInfo.create(p.processID.toLong())) }, null, 0)
+    .map { it.toProcessInfo() }
 
 /**
+ * Identifies and terminates any leftover processes from previous test runs, specifically those
+ * whose command lines contain specific substrings indicative of test runs.
+ *
  * CI may not kill processes started during the build (for TeamCity: TW-69045).
  * They stay alive and consume resources after tests.
  * This lead to OOM and other errors during tests, for example,
  * IDEA-256265: shared-indexes tests on Linux suspiciously fail with 137 (killed by OOM)
  */
-fun killOutdatedProcesses(commandsToSearch: Iterable<String> = setOf("/$IDE_TESTS_SUBSTRING/", "\\$IDE_TESTS_SUBSTRING\\"), reportErrors: Boolean = false) {
-  val processInfosToKill = getProcessList(commandsToSearch.toSet())
-  if (processInfosToKill.isNotEmpty()) {
+fun findAndKillLeftoverProcessesFromTestRuns(reportErrors: Boolean = false) {
+  val substringToSearch: List<String> = listOf("/$IDE_TESTS_SUBSTRING/", "\\$IDE_TESTS_SUBSTRING\\")
+  findAndKillProcesses(*substringToSearch.toTypedArray()) { processInfosToKill ->
     if (reportErrors) {
-      CIServer.instance.reportTestFailure("Unexpected running processes were detected ${processInfosToKill.joinToString(", ") { it.shortCommand }}",
-                                          "Please try to stop them appropriately in tests, as you might be missing some diagnostics.\n" +
-                                          "Processes were collected based on command line, containing '${commandsToSearch.joinToString(", ")}'.\n" +
+      CIServer.instance.reportTestFailure("Unexpected running processes were detected after IDE was stopped: ${processInfosToKill.joinToString(", ") { it.name }}",
+                                          "Please investigate if it is a product bug, if it is, you can mute the exception and raise a bug," +
+                                          "if it is an expected behaviour, it is recommended to add a call `${::findAndKillProcesses}` with appropriate arguments in @After/@AfterEach.\n" +
+                                          "Processes were collected based on command line, containing '${substringToSearch.joinToString(", ")}'.\n" +
                                           processInfosToKill.joinToString("\n") { it.description }, details = "")
     }
-    else {
-      logOutput("These outdated processes must be killed: [${processInfosToKill.joinToString(", ")}]")
-    }
-    ProcessKiller.killPids(processInfosToKill.map { it.pid }.toSet())
+  }
+}
+
+/**
+ * Finds and kills processes with command lines that contain any of the specified substrings.
+ *
+ * @param substringToSearch Vararg of substrings to search for within process command lines.
+ *                          Processes matching any of these substrings will be identified for termination.
+ * @param onFoundProcesses A callback invoked with the list of `ProcessInfo` objects corresponding
+ *                         to the found processes before attempting to kill them. Defaults to an empty callback.
+ * @return `true` if all targeted processes were successfully killed or none were detected; `false` otherwise.
+ */
+fun findAndKillProcesses(vararg substringToSearch: String, onFoundProcesses: (List<ProcessInfo>) -> Unit = {}) {
+  val prefix = "Killing process containing '${substringToSearch.joinToString(",")}' in command line"
+  logOutput("$prefix ...")
+  val processInfosToKill = getProcessList(*substringToSearch)
+  if (processInfosToKill.isNotEmpty()) {
+    onFoundProcesses.invoke(processInfosToKill)
+    logOutput("$prefix: [${processInfosToKill.joinToString(", ")}] will be killed")
+    killProcesses(processInfosToKill)
+  }
+  else {
+    logOutput("$prefix: no processes were detected")
   }
 }
 
@@ -58,34 +81,30 @@ private val devBuildArgumentsSet = setOf(
   "com.intellij.platform.runtime.loader.IntellijLoader" // thin client
 )
 
-private fun isIde(command: String, commandLine: String, arguments: List<String>): Boolean =
-  !commandLine.contains(LinuxIdeDistribution.xvfbRunTool) &&
-  (
-    /** for installer runs
-     * Example:
-     *  Name: idea
-     *  Arguments: [/mnt/agent/temp/buildTmp/testb0bv1hja1z5rg/ide-tests/cache/builds/IU-installer-from-file/idea-IU-261.1243/bin/idea, serverMode,
-     *    /mnt/agent/temp/buildTmp/testb0bv1hja1z5rg/ide-tests/cache/projects/unpacked/TestScopesProj]
-     **/
-    arguments.firstOrNull().contains(IDE_TESTS_SUBSTRING) == true ||
-    /**  for dev build runs
-     * Example:
-     *  Name: java
-     *  Arguments: [/mnt/agent/system/.persistent_cache/5tq0kti2dt-jbrsdk_jcef-21.0.8-linux-x64-b1173.3.tar.gz.2qppum.d/bin/java,
-     *    @/mnt/agent/temp/buildTmp/testapcvq8gxezoyw/ide-tests/tmp/perf-vmOps-1760988642136-, ... com.intellij.idea.Main, /mnt/agent/temp/buildTmp/test8b25i2v1x4unr/ide-tests/cache/projects/unpacked/ui-tests-data/projects/catch_test_project_sample]
-     **/
-    (command == "java" && devBuildArgumentsSet.any { commandLine.contains(it) })
-  )
+private fun ProcessInfo.isIde(): Boolean =
+  /** for installer runs
+   * Example:
+   *  Name: idea
+   *  Arguments: [/mnt/agent/temp/buildTmp/testb0bv1hja1z5rg/ide-tests/cache/builds/IU-installer-from-file/idea-IU-261.1243/bin/idea, serverMode,
+   *    /mnt/agent/temp/buildTmp/testb0bv1hja1z5rg/ide-tests/cache/projects/unpacked/TestScopesProj]
+   **/
+  (name != LinuxIdeDistribution.XVFB_TOOL_NAME && arguments.firstOrNull()?.contains(IDE_TESTS_SUBSTRING) == true) ||
+  /**  for dev build runs
+   * Example:
+   *  Name: java
+   *  Arguments: [/mnt/agent/system/.persistent_cache/5tq0kti2dt-jbrsdk_jcef-21.0.8-linux-x64-b1173.3.tar.gz.2qppum.d/bin/java,
+   *    @/mnt/agent/temp/buildTmp/testapcvq8gxezoyw/ide-tests/tmp/perf-vmOps-1760988642136-, ... com.intellij.idea.Main, /mnt/agent/temp/buildTmp/test8b25i2v1x4unr/ide-tests/cache/projects/unpacked/ui-tests-data/projects/catch_test_project_sample]
+   **/
+  (name == "java" && arguments.any { it in devBuildArgumentsSet })
 
 
-suspend fun getIdeProcessIdWithRetry(parentProcess: Process): Long {
+suspend fun getIdeProcessIdWithRetry(parentProcessInfo: ProcessInfo): Long {
   if (OS.CURRENT != OS.Linux) {
-    return parentProcess.pid()
+    return parentProcessInfo.pid
   }
 
-  val parentProcessInfo = ProcessInfo.create(SystemInfo().operatingSystem.getProcess(parentProcess.pid().toInt()))
   logOutput("Guessing IDE process ID on Linux: \n${parentProcessInfo.description}")
-  val attemptsResult = withRetry(retries = 100, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid ${parentProcess.pid()}", printFailuresMode = PrintFailuresMode.ALL_FAILURES) {
+  val attemptsResult = withRetry(retries = 100, delay = 3.seconds, messageOnFailure = "Couldn't find appropriate java process id for pid ${parentProcessInfo.pid}", printFailuresMode = PrintFailuresMode.ALL_FAILURES) {
     getIdeProcessId(parentProcessInfo)
   }
   return requireNotNull(attemptsResult) { "Java process id must not be null" }
@@ -107,27 +126,27 @@ private fun getIdeProcessId(parentProcessInfo: ProcessInfo): Long {
   }
   logOutput("Guessing IDE process ID on Linux (pid of the IDE process wrapper ${parentProcessInfo.pid})")
 
-  if (isIde(parentProcessInfo.command, parentProcessInfo.commandLine, parentProcessInfo.arguments)) {
+  if (parentProcessInfo.isIde()) {
     logOutput("Parent process is an IDE process itself (was launched without wrapper)")
     return parentProcessInfo.pid
   }
 
   val suitableChildren = SystemInfo().operatingSystem.getChildProcesses(
-    /* parentPid = */ parentProcessInfo.pid.toInt(),
-    /* filter = */ { isIde(it.name, it.commandLine, it.arguments) },
-    /* sort = */ OperatingSystem.ProcessSorting.UPTIME_DESC,
-    /* limit = */ 0
-  ).map { ProcessInfo.create(it) }
+    parentProcessInfo.pid.toInt(),
+    { ProcessInfo.create(it.processID.toLong()).isIde() },
+    OperatingSystem.ProcessSorting.UPTIME_DESC,
+    0
+  ).map { it.toProcessInfo() }
 
   if (suitableChildren.isEmpty()) {
     throw Exception("There are no suitable candidates for IDE process\n" +
                     "All children: \n" +
                     SystemInfo().operatingSystem.getChildProcesses(
-                      /* parentPid = */ parentProcessInfo.pid.toInt(),
-                      /* filter = */ null,
-                      /* sort = */ OperatingSystem.ProcessSorting.UPTIME_DESC,
-                      /* limit = */ 0
-                    ).joinToString("\n") { ProcessInfo.create(it).description })
+                      parentProcessInfo.pid.toInt(),
+                      null,
+                      OperatingSystem.ProcessSorting.UPTIME_DESC,
+                      0
+                    ).joinToString("\n") { it.toProcessInfo().description })
   }
 
   if (suitableChildren.size > 1) {
@@ -250,16 +269,4 @@ fun getProcessesIdByProcessName(processName: String): Set<Long> {
   }.map {
     it.split(" ").first().toLong()
   }.toSet()
-}
-
-fun destroyProcessIfExists(processName: String) {
-  val pids = getProcessesIdByProcessName(processName)
-  if (pids.isNotEmpty()) {
-    logOutput("Killing '$processName' process ...")
-    ProcessKiller.killPids(getProcessesIdByProcessName(processName))
-    logOutput("Process '$processName' should be killed")
-  }
-  else {
-    logOutput("No '$processName' processes found to kill")
-  }
 }

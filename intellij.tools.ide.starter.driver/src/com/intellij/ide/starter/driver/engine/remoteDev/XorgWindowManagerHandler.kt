@@ -20,12 +20,7 @@ object XorgWindowManagerHandler {
   private val fluxboxName = "fluxbox"
 
   private fun isFluxBoxIsRunning(displayWithColumn: String): Boolean {
-    val running = getProcessList()
-      .filter { it.command.contains(fluxboxName) }
-      .map {
-        it.command.split(" ")
-          .single { arg -> arg.startsWith(":") }
-      }.contains(displayWithColumn)
+    val running = getProcessList { it.name == fluxboxName && it.arguments.contains(":$displayWithColumn") }.isNotEmpty()
     logOutput("$fluxboxName is running: $running")
     return running
   }
