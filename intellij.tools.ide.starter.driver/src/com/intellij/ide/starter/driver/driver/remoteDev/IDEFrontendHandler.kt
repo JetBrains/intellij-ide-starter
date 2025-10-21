@@ -49,8 +49,10 @@ internal class IDEFrontendHandler(private val ideRemDevTestContext: IDERemDevTes
     }
     val result = perClassSupervisorScope.async {
       try {
+        val thinClientCommand = if (frontendContext.ide.vmOptions.data().contains("-Djava.awt.headless=true")) "thinClient-headless" else "thinClient"
+
         frontendContext.runIdeSuspending(
-          commandLine = IDECommandLine.Args(listOf("thinClient", joinLink)),
+          commandLine = IDECommandLine.Args(listOf(thinClientCommand, joinLink)),
           commands = CommandChain(),
           runTimeout = runTimeout,
           launchName = launchName,
