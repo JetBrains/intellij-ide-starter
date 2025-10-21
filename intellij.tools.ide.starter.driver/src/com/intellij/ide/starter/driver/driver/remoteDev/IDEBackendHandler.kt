@@ -7,6 +7,7 @@ import com.intellij.ide.starter.config.includeRuntimeModuleRepositoryInIde
 import com.intellij.ide.starter.config.useInstaller
 import com.intellij.ide.starter.driver.engine.BackgroundRun
 import com.intellij.ide.starter.driver.engine.LocalDriverRunner
+import com.intellij.ide.starter.ide.IDERemDevTestContext
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.IDECommandLine
@@ -21,11 +22,11 @@ import kotlin.io.path.exists
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-internal class IDEBackendHandler(private val backendContext: IDETestContext, private val options: RemoteDevDriverOptions) {
+internal class IDEBackendHandler(private val ideRemDevTestContext: IDERemDevTestContext, private val options: RemoteDevDriverOptions) {
   private fun buildBackendCommandLine(): (IDERunContext) -> IDECommandLine {
     return { _: IDERunContext ->
-      if (backendContext.testCase.projectInfo == NoProject) IDECommandLine.Args(listOf("serverMode"))
-      else IDECommandLine.OpenTestCaseProject(backendContext, listOf("serverMode"))
+      if (ideRemDevTestContext.testCase.projectInfo == NoProject) IDECommandLine.Args(listOf("serverMode"))
+      else IDECommandLine.OpenTestCaseProject(ideRemDevTestContext, listOf("serverMode"))
     }
   }
 
@@ -59,7 +60,7 @@ internal class IDEBackendHandler(private val backendContext: IDETestContext, pri
     applyBackendVMOptionsPatch(options)
     var logLinesBeforeBackendStarted: Int? = null
     var logFile: Path? = null
-    val backgroundRun = LocalDriverRunner().runIdeWithDriver(context = backendContext,
+    val backgroundRun = LocalDriverRunner().runIdeWithDriver(context = ideRemDevTestContext,
                                                              commandLine = buildBackendCommandLine(),
                                                              commands = commands,
                                                              runTimeout = runTimeout,
@@ -87,7 +88,7 @@ internal class IDEBackendHandler(private val backendContext: IDETestContext, pri
 
 
   private fun applyBackendVMOptionsPatch(options: RemoteDevDriverOptions): IDETestContext {
-    val context = backendContext
+    val context = ideRemDevTestContext
     val vmOptions = context.ide.vmOptions
     vmOptions.configureLoggers(LogLevel.DEBUG, "#com.intellij.remoteDev.downloader.EmbeddedClientLauncher")
     vmOptions.addSystemProperty("rdct.embedded.client.use.custom.paths", true)
