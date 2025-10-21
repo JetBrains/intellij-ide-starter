@@ -16,7 +16,7 @@ import org.kodein.di.instance
 import java.nio.file.Path
 
 
-class IDERemDevTestContext(
+class IDERemDevTestContext private constructor(
   paths: IDEDataPaths,
   ide: InstalledIde,
   testCase: TestCase<*>,
@@ -26,7 +26,7 @@ class IDERemDevTestContext(
   publishers: List<ReportPublisher> = di.direct.instance(),
   isReportPublishingEnabled: Boolean = true,
   preserveSystemDir: Boolean = false,
-  var frontendIDEContext: IDETestContext,
+  val frontendIDEContext: IDETestContext,
 ) : IDETestContext(
   paths = paths,
   ide = ide,
