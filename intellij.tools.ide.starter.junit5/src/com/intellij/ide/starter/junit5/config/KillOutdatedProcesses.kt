@@ -11,7 +11,7 @@ open class KillOutdatedProcesses : BeforeAllCallback, AfterAllCallback {
   }
   
   override fun afterAll(context: ExtensionContext) {
-    findAndKillLeftoverProcessesFromTestRuns(reportErrors = true)
+    findAndKillLeftoverProcessesFromTestRuns()
   }
 }
 
