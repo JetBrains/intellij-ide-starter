@@ -248,6 +248,7 @@ data class IDERunContext(
     startConfig: IDEStartConfig,
     process: Process,
     snapshotsDir: Path,
+    runContext: IDERunContext
   ) {
     catchAll {
       takeScreenshot(logsDir)
@@ -259,6 +260,7 @@ data class IDERunContext(
       if (ideProcessId == null) {
         ideProcessId = getIdeProcessIdWithRetry(
           parentProcessInfo = process.toProcessInfo(),
+          runContext = runContext,
         )
       }
       return ideProcessId
