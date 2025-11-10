@@ -22,7 +22,6 @@ import com.intellij.ide.starter.runner.events.IdeLaunchEvent
 import com.intellij.ide.starter.screenRecorder.IDEScreenRecorder
 import com.intellij.ide.starter.utils.*
 import com.intellij.openapi.util.SystemInfoRt
-import com.intellij.openapi.util.io.NioFiles
 import com.intellij.tools.ide.performanceTesting.commands.MarshallableCommand
 import com.intellij.tools.ide.starter.bus.EventsBus
 import com.intellij.tools.ide.util.common.logError
@@ -38,7 +37,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.bufferedReader
 import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -76,12 +74,6 @@ data class IDERunContext(
     }
     logOutput("Creating reports dir '${this.fileName}'")
     return createDirectories()
-  }
-
-  internal fun deleteJVMCrashes() {
-    listOf(heapDumpOnOomDirectory, jvmCrashLogDirectory)
-      .filter { dir -> dir.exists() && dir.listDirectoryEntries().isNotEmpty() }
-      .forEach { NioFiles.deleteRecursively(it) }
   }
 
   internal fun publishArtifacts() {
