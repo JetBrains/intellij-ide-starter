@@ -7,7 +7,9 @@ data class VerificationMessage(
     val verdict: String,
     val resultType: VerificationResultType,
     val url: String,
-    val id: Int,
+    val id: Int?,
     val verificationType: String,
-    val verifierVersion: String?
+    val verifierVersion: String? = null,
+    val ideVersion: String? = null,
+    val updateId: Int? = null
 )
