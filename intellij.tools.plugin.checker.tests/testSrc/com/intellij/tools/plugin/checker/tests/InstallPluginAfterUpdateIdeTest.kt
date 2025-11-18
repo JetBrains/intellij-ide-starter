@@ -85,7 +85,7 @@ class InstallPluginAfterUpdateIdeTest {
 
 
     private fun <T> splitIntoBuckets(list: List<T>): List<List<T>> {
-      val batchesCount = 20
+      val batchesCount = 50
       val bucketSize = list.size / batchesCount
       val remainder = list.size % batchesCount
       return (0 until batchesCount).map { i ->
