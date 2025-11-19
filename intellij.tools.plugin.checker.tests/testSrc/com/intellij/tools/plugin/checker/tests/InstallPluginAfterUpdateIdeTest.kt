@@ -97,7 +97,7 @@ class InstallPluginAfterUpdateIdeTest {
 
     private fun createTestContext(case: TestCase<*>, configurator: IDETestContext.() -> Unit = {}): IDETestContext {
       val testContext = Starter
-        .newContext(testName = "install plugin test", testCase = case)
+        .newContext(testName = "install-plugin-test", testCase = case)
         .prepareProjectCleanImport()
         .setSharedIndexesDownload(enable = true)
         .setLicense(System.getenv("LICENSE_KEY"))
@@ -171,11 +171,11 @@ class InstallPluginAfterUpdateIdeTest {
       val diff = subtract(errorsWithPlugin, errorsWithoutPlugin).toList()
 
       ErrorReporterToCI.reportErrors(ideRunContext, diff)
-      NewInstallerMarketplaceReporter.reportPluginErrors(plugin, diff, context.ide.build)
+      NewInstallerMarketplaceReporter.reportPluginErrors(plugin, diff, "${context.ide.productCode}-${context.ide.build}")
     }
     catch (ex: Exception) {
       when (ex) {
-        is ExecTimeoutException -> handleTimeout(contextWithPlugin, errorsWithoutPlugin, plugin, context.ide.build)
+        is ExecTimeoutException -> handleTimeout(contextWithPlugin, errorsWithoutPlugin, plugin, "${context.ide.productCode}-${context.ide.build}")
         else -> throw ex
       }
     }
@@ -185,26 +185,29 @@ class InstallPluginAfterUpdateIdeTest {
     testContext: IDETestContext,
     errorsWithoutPlugin: List<Error>,
     plugin: Plugin,
-    ideVersion: String
+    productVersion: String
   ) {
     val runContext = IDERunContext(testContext, launchName = "with-plugin-${plugin.id}")
     val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
     val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
     TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
-    NewInstallerMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, ideVersion)
+    NewInstallerMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, productVersion)
   }
 }
 
 object NewInstallerMarketplaceReporter {
 
-  private val buildUrl = "https://intellij-plugins-performance.teamcity.com/buildConfiguration/" +
-                         "PluginPlatformTests_NewInstallerExternalPluginsCheckerTests/" +
-                         "${System.getenv("BUILD_NUMBER")}?guest=1"
+  private val buildUrl: String
+    get() {
+      val buildTypeId = System.getenv("BUILD_TYPE_ID") ?: "PluginPlatformTests_NewInstallerExternalPluginsCheckerTests"
+      val buildId = CIServer.instance.asTeamCity().buildId
+      return "https://intellij-plugins-performance.teamcity.com/buildConfiguration/$buildTypeId/$buildId?guest=1"
+    }
 
   fun reportPluginErrors(
     plugin: Plugin,
     errors: List<Error>,
-    ideVersion: String
+    productVersion: String
   ) {
     val verificationResult = when {
       errors.isEmpty() -> VerificationResultType.OK
@@ -215,8 +218,8 @@ object NewInstallerMarketplaceReporter {
     val url = when {
       verificationResult == VerificationResultType.OK -> buildUrl
       else -> {
-        generateSarifReport(plugin, errors, ideVersion)
-        "${plugin.id}/sarif.json"
+        generateSarifReport(plugin, errors, productVersion)
+        "$productVersion/${plugin.id}/sarif.json"
       }
     }
 
@@ -232,7 +235,7 @@ object NewInstallerMarketplaceReporter {
       id = null,
       verificationType = "IDE_UPDATE",
       verifierVersion = null,
-      ideVersion = ideVersion,
+      ideVersion = productVersion,
       updateId = plugin.updateId.toInt()
     )
 
@@ -242,7 +245,7 @@ object NewInstallerMarketplaceReporter {
   private fun generateSarifReport(
     plugin: Plugin,
     errors: List<Error>,
-    ideVersion: String
+    productVersion: String
   ) {
     val artifactsLocation = "$buildUrl&buildTab=artifacts#%2Finstall-plugin-test%2Fwith-plugin-${plugin.id}"
 
@@ -253,7 +256,7 @@ object NewInstallerMarketplaceReporter {
             driver = Driver(
               name = "IntellijIdeStarter",
               informationUri = "https://github.com/JetBrains/intellij-ide-starter",
-              semanticVersion = ideVersion
+              semanticVersion = productVersion
             )
           ),
           artifacts = listOf(Artifact(Location(artifactsLocation))),
@@ -276,7 +279,7 @@ object NewInstallerMarketplaceReporter {
 
     val artifactsDir = GlobalPaths.instance.artifactsDirectory
     val sarifPath = artifactsDir
-      .resolve("sarif-reports/${plugin.id}")
+      .resolve("sarif-reports/$productVersion/${plugin.id}")
       .createDirectories()
       .resolve("sarif.json")
 
@@ -288,7 +291,7 @@ object NewInstallerMarketplaceReporter {
 
     TeamCityClient.publishTeamCityArtifacts(
       source = sarifPath,
-      artifactPath = "install-plugin-test/with-plugin-${plugin.id}",
+      artifactPath = "install-plugin-test/$productVersion/${plugin.id}",
       artifactName = "sarif.json",
       zipContent = false
     )
