@@ -291,7 +291,7 @@ object NewInstallerMarketplaceReporter {
 
     TeamCityClient.publishTeamCityArtifacts(
       source = sarifPath,
-      artifactPath = "install-plugin-test/$productVersion/${plugin.id}",
+      artifactPath = "install-plugin-test/with-plugin-${plugin.id}",
       artifactName = "sarif.json",
       zipContent = false
     )
