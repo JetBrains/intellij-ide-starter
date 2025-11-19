@@ -229,6 +229,7 @@ class InstallPluginTest {
       val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
       TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
       MarketplaceReporter.reportIdeErrors(pluginErrors)
+      ErrorReporterToCI.reportErrors(runContext, pluginErrors)
     }
   }
 

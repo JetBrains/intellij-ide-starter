@@ -192,6 +192,7 @@ class InstallPluginAfterUpdateIdeTest {
     val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
     TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
     NewInstallerMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, productVersion)
+    ErrorReporterToCI.reportErrors(runContext, pluginErrors)
   }
 }
 
