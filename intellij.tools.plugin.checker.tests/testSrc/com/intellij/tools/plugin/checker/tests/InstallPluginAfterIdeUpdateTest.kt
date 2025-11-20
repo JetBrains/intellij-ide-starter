@@ -221,7 +221,7 @@ object IdeUpdateMarketplaceReporter : MarketplaceReporter() {
       resultType = verificationResult,
       url = url,
       id = null,
-      verificationType = "IDE_UPDATE",
+      verificationType = "IDE_PERFORMANCE",
       verifierVersion = null,
       ideVersion = productVersion,
       updateId = plugin.updateId.toInt()
