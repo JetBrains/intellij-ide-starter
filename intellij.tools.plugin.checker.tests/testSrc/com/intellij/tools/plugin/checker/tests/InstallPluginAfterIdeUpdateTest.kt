@@ -201,7 +201,7 @@ object IdeUpdateMarketplaceReporter : MarketplaceReporter() {
       verificationResult == VerificationResultType.OK -> buildUrl
       else -> {
         val sarifPath = GlobalPaths.instance.artifactsDirectory
-          .resolve("sarif-reports/$productVersion/${plugin.id}")
+          .resolve("sarif-reports/${plugin.id}/$productVersion")
           .createDirectories()
           .resolve("sarif.json")
 
@@ -212,7 +212,7 @@ object IdeUpdateMarketplaceReporter : MarketplaceReporter() {
           sarifPath = sarifPath,
           artifactPath = "install-plugin-test/with-plugin-${plugin.id}"
         )
-        "$productVersion/${plugin.id}/sarif.json"
+        "${plugin.id}/$productVersion/sarif.json"
       }
     }
 
