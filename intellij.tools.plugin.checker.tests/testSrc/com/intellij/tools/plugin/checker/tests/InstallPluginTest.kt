@@ -31,6 +31,7 @@ import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceEvent
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceReporter
+import com.intellij.tools.plugin.checker.report.StartupFailureAnalyzer
 import com.intellij.tools.plugin.checker.tests.InstallPluginTest.Companion.getMarketplaceEvent
 import com.intellij.util.containers.ContainerUtil.subtract
 import com.intellij.util.system.OS
@@ -229,6 +230,19 @@ class InstallPluginTest {
       PluginUpdateMarketplaceReporter.reportIdeErrors(pluginErrors)
       ErrorReporterToCI.reportErrors(runContext, pluginErrors)
     }
+
+    fun handleStartupFailure(testContext: IDETestContext, errorsWithoutPlugin: List<Error>, exception: Exception) {
+      val runContext = IDERunContext(testContext, launchName = "with-plugin")
+      val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
+      val pluginErrors = mutableListOf<Error>()
+
+      StartupFailureAnalyzer.analyzeStartupFailure(runContext)?.let { pluginErrors.add(it) }
+      if (pluginErrors.isEmpty()) throw exception
+
+      pluginErrors.addAll(subtract(errors, errorsWithoutPlugin))
+      PluginUpdateMarketplaceReporter.reportIdeErrors(pluginErrors)
+      ErrorReporterToCI.reportErrors(runContext, pluginErrors)
+    }
   }
 
   private fun createTestContext(params: EventToTestCaseParams, configurator: IDETestContext.()->Unit = {}): IDETestContext {
@@ -281,8 +295,9 @@ class InstallPluginTest {
       PluginUpdateMarketplaceReporter.reportIdeErrors(pluginErrors)
     }
     catch (ex: Exception) {
-      when (ex) {
-        is ExecTimeoutException -> handleTimeout(testContext, errorsWithoutPlugin)
+      when {
+        ex is ExecTimeoutException -> handleTimeout(testContext, errorsWithoutPlugin)
+        ex.message?.contains("failed with code 3") == true -> handleStartupFailure(testContext, errorsWithoutPlugin, ex)
         else -> throw ex
       }
     }

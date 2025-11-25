@@ -26,6 +26,7 @@ import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceClient
 import com.intellij.tools.plugin.checker.marketplace.MarketplaceReporter
 import com.intellij.tools.plugin.checker.marketplace.Plugin
+import com.intellij.tools.plugin.checker.report.StartupFailureAnalyzer
 import com.intellij.util.containers.ContainerUtil.subtract
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -167,8 +168,11 @@ class InstallPluginAfterIdeUpdateTest {
       IdeUpdateMarketplaceReporter.reportPluginErrors(plugin, diff, "${context.ide.productCode}-${context.ide.build}")
     }
     catch (ex: Exception) {
-      when (ex) {
-        is ExecTimeoutException -> handleTimeout(contextWithPlugin, errorsWithoutPlugin, plugin, "${context.ide.productCode}-${context.ide.build}")
+      when {
+        ex is ExecTimeoutException ->
+          handleTimeout(contextWithPlugin, errorsWithoutPlugin, plugin, "${context.ide.productCode}-${context.ide.build}")
+        ex.message?.contains("failed with code 3") == true ->
+          handleStartupFailure(contextWithPlugin, errorsWithoutPlugin, plugin, "${context.ide.productCode}-${context.ide.build}", ex)
         else -> throw ex
       }
     }
@@ -180,6 +184,19 @@ class InstallPluginAfterIdeUpdateTest {
     val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
 
     TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
+    IdeUpdateMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, productVersion)
+    ErrorReporterToCI.reportErrors(runContext, pluginErrors)
+  }
+
+  private fun handleStartupFailure(testContext: IDETestContext, errorsWithoutPlugin: List<Error>, plugin: Plugin, productVersion: String, exception: Exception) {
+    val runContext = IDERunContext(testContext, launchName = "with-plugin-${plugin.id}")
+    val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
+    val pluginErrors = mutableListOf<Error>()
+
+    StartupFailureAnalyzer.analyzeStartupFailure(runContext)?.let { pluginErrors.add(it) }
+    if (pluginErrors.isEmpty()) throw exception
+
+    pluginErrors.addAll(subtract(errors, errorsWithoutPlugin))
     IdeUpdateMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, productVersion)
     ErrorReporterToCI.reportErrors(runContext, pluginErrors)
   }
