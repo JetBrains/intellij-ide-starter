@@ -44,6 +44,6 @@ object StartupFailureAnalyzer {
       stderrLines.add(stderrContent)
     }
 
-    return ErrorInfo(stderrLines.first(), stderrLines.joinToString("\n"))
+    return ErrorInfo("Start Failed: ${stderrLines.first()}", stderrLines.joinToString("\n"))
   }
 }
