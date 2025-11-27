@@ -226,7 +226,7 @@ class InstallPluginTest {
       val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
       val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
 
-      TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
+      TimeoutAnalyzer.analyzeTimeout(runContext)?.also { pluginErrors.add(0, it) }
       PluginUpdateMarketplaceReporter.reportIdeErrors(pluginErrors)
       ErrorReporterToCI.reportErrors(runContext, pluginErrors)
     }
@@ -234,12 +234,12 @@ class InstallPluginTest {
     fun handleStartupFailure(testContext: IDETestContext, errorsWithoutPlugin: List<Error>, exception: Exception) {
       val runContext = IDERunContext(testContext, launchName = "with-plugin")
       val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
-      val pluginErrors = mutableListOf<Error>()
+      val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
 
-      StartupFailureAnalyzer.analyzeStartupFailure(runContext)?.let { pluginErrors.add(it) }
-      if (pluginErrors.isEmpty()) throw exception
+      StartupFailureAnalyzer.analyzeStartupFailure(runContext)?.also {
+        pluginErrors.add(0, it)
+      } ?: throw exception
 
-      pluginErrors.addAll(subtract(errors, errorsWithoutPlugin))
       PluginUpdateMarketplaceReporter.reportIdeErrors(pluginErrors)
       ErrorReporterToCI.reportErrors(runContext, pluginErrors)
     }

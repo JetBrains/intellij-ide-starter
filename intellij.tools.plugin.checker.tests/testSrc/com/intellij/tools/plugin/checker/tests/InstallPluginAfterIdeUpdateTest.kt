@@ -183,7 +183,7 @@ class InstallPluginAfterIdeUpdateTest {
     val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
     val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
 
-    TimeoutAnalyzer.analyzeTimeout(runContext)?.let { pluginErrors.add(it) }
+    TimeoutAnalyzer.analyzeTimeout(runContext)?.also { pluginErrors.add(0, it) }
     IdeUpdateMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, productVersion)
     ErrorReporterToCI.reportErrors(runContext, pluginErrors)
   }
@@ -191,12 +191,12 @@ class InstallPluginAfterIdeUpdateTest {
   private fun handleStartupFailure(testContext: IDETestContext, errorsWithoutPlugin: List<Error>, plugin: Plugin, productVersion: String, exception: Exception) {
     val runContext = IDERunContext(testContext, launchName = "with-plugin-${plugin.id}")
     val errors = ErrorReporterToCI.collectErrors(runContext.logsDir)
-    val pluginErrors = mutableListOf<Error>()
+    val pluginErrors = subtract(errors, errorsWithoutPlugin).toMutableList()
 
-    StartupFailureAnalyzer.analyzeStartupFailure(runContext)?.let { pluginErrors.add(it) }
-    if (pluginErrors.isEmpty()) throw exception
+    StartupFailureAnalyzer.analyzeStartupFailure(runContext)?.also {
+      pluginErrors.add(0, it)
+    } ?: throw exception
 
-    pluginErrors.addAll(subtract(errors, errorsWithoutPlugin))
     IdeUpdateMarketplaceReporter.reportPluginErrors(plugin, pluginErrors, productVersion)
     ErrorReporterToCI.reportErrors(runContext, pluginErrors)
   }
