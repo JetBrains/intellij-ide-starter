@@ -10,7 +10,8 @@ create_kotlinc_options(
 jvm_library(
   name = "tools-plugin-checker-tests",
   visibility = ["//visibility:public"],
-  srcs = glob([], allow_empty = True)
+  srcs = glob([], allow_empty = True),
+  runtime_deps = ["@community//tools/intellij.tools.ide.util.common:ide-util-common"]
 )
 
 jvm_library(
@@ -37,7 +38,8 @@ jvm_library(
     "@community//libraries/http-client",
     "@community//tools/intellij.tools.ide.util.common:ide-util-common",
     "@ultimate_lib//:software-amazon-awssdk-sqs",
-  ]
+  ],
+  runtime_deps = [":tools-plugin-checker-tests"]
 )
 ### auto-generated section `build intellij.tools.plugin.checker.tests` end
 
