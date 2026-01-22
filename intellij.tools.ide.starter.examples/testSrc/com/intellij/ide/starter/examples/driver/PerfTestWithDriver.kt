@@ -27,14 +27,14 @@ class PerfTestWithDriver {
   @Test
   fun openGradleJitPack() {
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.GradleJitPackSimple)
       .prepareProjectCleanImport()
 
     testContext.runIdeWithDriver().useDriverAndCloseIde{
       waitForIndicators(5.minutes) // driver don't wait by default so we need to add waiter
       execute(CommandChain().openFile("build.gradle")) //invocation of command via JMX call
       assertEquals(1, getOpenProjects().size ) // JMX call using predefined interfaces
-      assertEquals(service<LafManager>().getCurrentUIThemeLookAndFeel().getName(), "Dark") //JMX call with custom interfaces
+      assertEquals(service<LafManager>().getCurrentUIThemeLookAndFeel().getName(), "Islands Dark") //JMX call with custom interfaces
     }
   }
 }

@@ -18,7 +18,7 @@ class IdeaJUnit5ExampleTest {
   fun openGradleJitPack() {
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.GradleJitPackSimple)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.GradleJitPackSimple)
       .prepareProjectCleanImport()
 
     val exitCommandChain = CommandChain().exitApp()
@@ -38,7 +38,7 @@ class IdeaJUnit5ExampleTest {
   fun openMavenProject() {
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.MavenSimpleApp)
       .prepareProjectCleanImport()
 
     testContext.runIDE(commands = CommandChain().exitApp())
@@ -48,7 +48,7 @@ class IdeaJUnit5ExampleTest {
   @Disabled("Long running test (> 10 min)")
   fun inspectMavenProject() {
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IC.MavenSimpleApp)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.MavenSimpleApp)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
     getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("globalInspections")).forEach {

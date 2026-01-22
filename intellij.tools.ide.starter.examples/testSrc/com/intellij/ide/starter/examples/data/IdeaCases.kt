@@ -4,7 +4,7 @@ import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.TestCaseTemplate
 
-object IdeaCommunityCases : TestCaseTemplate(IdeProductProvider.IC) {
+object IdeaCases : TestCaseTemplate(IdeProductProvider.IU) {
 
   val GradleJitPackSimple = withProject(
     GitHubProject.fromGithub(
