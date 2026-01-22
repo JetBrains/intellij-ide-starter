@@ -19,7 +19,7 @@ import java.nio.file.Paths
 class Setup {
 
   companion object {
-    init {
+    fun setInstallersUsage() {
       di = DI {
         extend(di)
         bindSingleton<IdeInstallerFactory>(overrides = true) { createInstallerFactory() }
