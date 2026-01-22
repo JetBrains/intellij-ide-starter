@@ -1,22 +1,17 @@
 package com.intellij.ide.starter.examples.indexing
 
-import com.intellij.ide.starter.examples.copyExistingConfig
-import com.intellij.ide.starter.examples.copyExistingPlugins
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
-import com.intellij.ide.starter.runner.TestContainerImpl
 import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingMetrics
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInfo
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Paths
 
 @Disabled("Requires local installation of IDE, configs and project")
@@ -32,7 +27,8 @@ class ScalabilityTest {
     //provide path to config with valid license
     val config = Paths.get("/Users/maxim.kolmakov/Library/Application Support/JetBrains/IntelliJIdea2023.1")
     //provide path to plugins if needed
-    val plugins = Paths.get("/Users/maxim.kolmakov/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-1/231.8109.175/IntelliJ IDEA 2023.1 EAP.app.plugins")
+    val plugins =
+      Paths.get("/Users/maxim.kolmakov/Library/Application Support/JetBrains/Toolbox/apps/IDEA-U/ch-1/231.8109.175/IntelliJ IDEA 2023.1 EAP.app.plugins")
 
     val processorCounts = listOf(1, 2, 4, 8, 16, 32, 64)
     val results = mutableMapOf<Int, List<Long>>()

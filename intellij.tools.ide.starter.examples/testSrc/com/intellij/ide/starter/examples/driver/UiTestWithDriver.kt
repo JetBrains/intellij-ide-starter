@@ -2,11 +2,8 @@ package com.intellij.ide.starter.examples.driver
 
 import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
 import com.intellij.driver.sdk.ui.components.common.codeEditor
-import com.intellij.driver.sdk.ui.components.common.editor
 import com.intellij.driver.sdk.ui.components.common.ideFrame
-import com.intellij.driver.sdk.ui.components.common.structureToolWindow
 import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
-import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.driver.remoteDev.RemDevDriverRunner
 import com.intellij.ide.starter.driver.engine.DriverRunner
@@ -19,7 +16,6 @@ import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.runner.TestContainer
-import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk11
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk21
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

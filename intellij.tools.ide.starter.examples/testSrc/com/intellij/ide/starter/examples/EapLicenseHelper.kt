@@ -10,12 +10,14 @@ class EapLicenseHelper : TestExecutionExceptionHandler {
 
   override fun handleTestExecutionException(context: ExtensionContext?, throwable: Throwable?) {
     if (throwable is SetupException) {
-      if (throwable.message!!.contains(regex=Regex("EAP build.*expired"))) {
+      if (throwable.message!!.contains(regex = Regex("EAP build.*expired"))) {
         logOutput("Skipping the test because the EAP build has expired")
         Assumptions.assumeTrue(false)
-      } else {
+      }
+      else {
         throw throwable
       }
-    } else throwable?.let { throw it }
+    }
+    else throwable?.let { throw it }
   }
 }

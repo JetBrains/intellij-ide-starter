@@ -2,7 +2,6 @@ package com.intellij.ide.starter.examples
 
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics.Metric
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
@@ -44,6 +43,6 @@ fun IDETestContext.copyExistingConfig(configPath: Path): IDETestContext {
 
 @OptIn(ExperimentalPathApi::class)
 fun IDETestContext.copyExistingPlugins(pluginPath: Path): IDETestContext {
-  pluginPath.copyToRecursively( paths.pluginsDir, followLinks = false)
+  pluginPath.copyToRecursively(paths.pluginsDir, followLinks = false)
   return this
 }

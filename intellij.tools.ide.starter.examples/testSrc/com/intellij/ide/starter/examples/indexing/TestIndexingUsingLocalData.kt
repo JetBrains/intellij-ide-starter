@@ -1,8 +1,6 @@
 package com.intellij.ide.starter.examples.indexing
 
 import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.examples.copyExistingConfig
-import com.intellij.ide.starter.examples.copyExistingPlugins
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.IdeInstaller
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -12,10 +10,13 @@ import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
-import com.intellij.tools.ide.performanceTesting.commands.*
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
+import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.performanceTesting.commands.startProfile
+import com.intellij.tools.ide.performanceTesting.commands.stopProfile
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.nio.file.Paths

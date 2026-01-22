@@ -14,7 +14,6 @@ import com.intellij.tools.ide.performanceTesting.commands.openFile
 import com.intellij.tools.ide.performanceTesting.commands.waitForCodeAnalysisFinished
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.time.Duration.Companion.minutes
@@ -25,9 +24,13 @@ class StartupPerformanceTest {
     var pathToStats: Path? = null
     val context = Starter.newContext(CurrentTestMethod.getName(), TestCases.IU.GradleJitPackSimple)
 
-    context.runIDE(commands = CommandChain().importGradleProject().waitForSmartMode().openFile("src/main/java/Hello.java").exitApp(), runTimeout = 10.minutes, launchName = "warmup")
+    context.runIDE(commands = CommandChain().importGradleProject().waitForSmartMode().openFile("src/main/java/Hello.java").exitApp(),
+                   runTimeout = 10.minutes,
+                   launchName = "warmup")
     context
-      .runIDE(commands = CommandChain().waitForCodeAnalysisFinished().delay(1000).exitApp(), runTimeout = 5.minutes, launchName = "startup") {
+      .runIDE(commands = CommandChain().waitForCodeAnalysisFinished().delay(1000).exitApp(),
+              runTimeout = 5.minutes,
+              launchName = "startup") {
         addVMOptionsPatch {
           val statsJson = getStartupStatsJson()
           pathToStats = statsJson

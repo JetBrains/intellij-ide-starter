@@ -1,8 +1,6 @@
 package com.intellij.ide.starter.examples
 
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.models.IDEStartResult
-import com.intellij.ide.starter.utils.Git
 import com.intellij.internal.statistic.eventLog.events.EventFields
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics.Metric
@@ -17,7 +15,6 @@ import com.intellij.util.indexing.diagnostic.dto.getListOfIndexingMetrics
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
 import kotlin.io.path.*
 
 @Disabled("Requires local installation of IDE, configs and project")
@@ -94,7 +91,7 @@ class PerformanceTests {
         it.time
       }.sumOf { it.getDataFromEvent<Long>(EventFields.DurationMs.name) }.toInt()
     val testTime = getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("performance_test"))
-    writeMetricsToCSV(result, listOf(Metric.newDuration("totalImport", totalImport))+ testTime)
+    writeMetricsToCSV(result, listOf(Metric.newDuration("totalImport", totalImport)) + testTime)
   }
 
   /**
@@ -114,9 +111,9 @@ class PerformanceTests {
     val metrics = metricsFromOt.ifEmpty {
       //backward compatibility with 2024.1
       result.runContext.logsDir.forEachDirectoryEntry {
-        if(it.isRegularFile()){
+        if (it.isRegularFile()) {
           it.forEachLine {
-            if(it.contains("processTerminated in:")) {
+            if (it.contains("processTerminated in:")) {
               return@ifEmpty listOf(Metric.newDuration("runConfiguration", it.split(":").last().trim().toInt()))
             }
           }
