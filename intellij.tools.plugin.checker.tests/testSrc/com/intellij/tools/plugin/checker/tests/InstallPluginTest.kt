@@ -45,7 +45,7 @@ import java.io.File
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createDirectories
 
