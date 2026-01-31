@@ -40,7 +40,7 @@ class UiTestWithDriver {
     if (splitMode) {
       di = DI {
         extend(di)
-        bindProvider<TestContainer<*>>(overrides = true) { TestContainer.newInstance<RemDevTestContainer>() }
+        bindProvider<TestContainer>(overrides = true) { TestContainer.newInstance<RemDevTestContainer>() }
         bindProvider<DriverRunner> { RemDevDriverRunner() }
       }
     }
