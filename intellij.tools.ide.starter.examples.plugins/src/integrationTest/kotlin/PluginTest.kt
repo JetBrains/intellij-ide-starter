@@ -1,10 +1,12 @@
 import com.intellij.driver.sdk.invokeAction
 import com.intellij.driver.sdk.openFile
-import com.intellij.driver.sdk.ui.components.button
-import com.intellij.driver.sdk.ui.components.dialog
-import com.intellij.driver.sdk.ui.components.ideFrame
-import com.intellij.driver.sdk.ui.components.waitForNoOpenedDialogs
-import com.intellij.driver.sdk.ui.components.welcomeScreen
+import com.intellij.driver.sdk.ui.components.UiComponent.Companion.waitFound
+import com.intellij.driver.sdk.ui.components.common.ideFrame
+import com.intellij.driver.sdk.ui.components.common.welcomeScreen
+import com.intellij.driver.sdk.ui.components.elements.button
+import com.intellij.driver.sdk.ui.components.elements.dialog
+import com.intellij.driver.sdk.ui.components.elements.waitForNoOpenedDialogs
+import com.intellij.driver.sdk.ui.components.settings.pluginsPage
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.di.di
@@ -22,15 +24,14 @@ import com.intellij.ide.starter.runner.TestContainer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import kotlin.io.path.Path
-import kotlin.time.Duration.Companion.minutes
 import org.kodein.di.DI
 import org.kodein.di.bindProvider
-import java.io.File
-import kotlin.booleanArrayOf
-import kotlin.time.Duration.Companion.seconds
+import kotlin.io.path.Path
+import kotlin.time.Duration.Companion.minutes
 
 class PluginTest {
+  private val pluginName = "Demo"
+  private val pluginPath = Path(System.getProperty("path.to.build.plugin"))
 
   /**
    * Test to verify that the Demo plugin (built from sources) is installed in the IDE.
@@ -44,22 +45,26 @@ class PluginTest {
    */
   @Test
   fun simpleTest() {
-    Starter.newContext("testExample", TestCase(IdeProductProvider.IC, NoProject).withVersion("2024.3")).apply {
-      val pathToPlugin = System.getProperty("path.to.build.plugin")
-      PluginConfigurator(this).installPluginFromFolder(File(pathToPlugin))
+    Starter.newContext("testExample", TestCase(IdeProductProvider.IU, NoProject).useEAP()).apply {
+      PluginConfigurator(this).installPluginFromDir(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       welcomeScreen {
         clickPlugins()
-        x { byAccessibleName("Installed") }.click()
-        shouldBe("Plugin is installed") {
-          x {
-            and(
-              byVisibleText("Demo"),
-              byJavaClass("javax.swing.JLabel")
-            )
-          }.present()
+        pluginsPage {
+          installedTab.click()
+          searchPluginTextField.text = pluginName
+          //This example is here to showcase the use of the DSL
+          shouldBe("Plugin is installed") {
+            x {
+              and(
+                byVisibleText("Demo"),
+                byJavaClass("com.intellij.ui.components.JBLabel")
+              )
+            }.present()
+          }
+          // This one basically the same, but one-liner via existing API
+          listPluginComponent(pluginName).waitFound().enabledCheckBox.waitFound()
         }
-
       }
     }
   }
@@ -81,7 +86,7 @@ class PluginTest {
     if (splitMode) {
       di = DI {
         extend(di)
-        bindProvider<TestContainer>(overrides = true) { TestContainer.newInstance<RemDevTestContainer>() }
+        bindProvider<TestContainer(overrides = true) { TestContainer.newInstance<RemDevTestContainer>() }
         bindProvider<DriverRunner> { RemDevDriverRunner() }
       }
     }
@@ -94,8 +99,7 @@ class PluginTest {
       ).useEAP()
     ).apply {
       setLicense(System.getenv("LICENSE_KEY"))
-      val pathToPlugin = System.getProperty("path.to.build.plugin")
-      PluginConfigurator(this).installPluginFromFolder(File(pathToPlugin))
+      PluginConfigurator(this).installPluginFromDir(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       waitForIndicators(5.minutes)
       openFile("package.json")
