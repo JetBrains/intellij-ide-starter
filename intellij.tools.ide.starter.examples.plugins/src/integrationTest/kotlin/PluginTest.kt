@@ -18,7 +18,6 @@ import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.NoProject
 import com.intellij.ide.starter.runner.Starter
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -28,11 +27,6 @@ import kotlin.time.Duration.Companion.minutes
 class PluginTest {
   private val pluginName = "Demo"
   private val pluginPath = Path(System.getProperty("path.to.build.plugin"))
-
-  @AfterEach
-  fun cleanUpConfigurationStore() {
-    ConfigurationStorage.splitMode(false)
-  }
 
   /**
    * Test to verify that the Demo plugin (built from sources) is installed in the IDE.

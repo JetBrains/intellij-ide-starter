@@ -14,7 +14,6 @@ import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk21
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
@@ -22,11 +21,6 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.time.Duration.Companion.minutes
 
 class UiTestWithDriver {
-
-  @AfterEach
-  fun cleanUpConfigurationStore() {
-    ConfigurationStorage.splitMode(false)
-  }
 
   /**
    * Opens the editor from the project view, navigates to a specific line in the editor,
