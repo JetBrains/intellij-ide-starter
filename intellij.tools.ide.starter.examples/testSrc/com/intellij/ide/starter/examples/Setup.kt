@@ -45,7 +45,7 @@ class Setup {
     // ----- CONFIGURATION SECTION ----
     private val PATH_TO_INSTALLED_IDE = "/Applications/IntelliJ IDEA.app"
     const val PROJECT_LOCATION = "/Users/maxim.kolmakov/IdeaProjects/Quantum-Starter-Kit"
-    private val CONFIG_PATH = Paths.get("$LOCAL_PATH/Library/Application Support/JetBrains/IdeaIC2023.3")
+    private val CONFIG_PATH = Paths.get("$LOCAL_PATH/Library/Application Support/JetBrains/IdeaIU2025.3")
     private val PLUGINS_PATH = Paths.get("$CONFIG_PATH/plugins")
 
     val IDE_TYPE = IdeProductProvider.IU
