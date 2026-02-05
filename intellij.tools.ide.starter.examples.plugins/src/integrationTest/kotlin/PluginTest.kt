@@ -9,29 +9,30 @@ import com.intellij.driver.sdk.ui.components.elements.waitForNoOpenedDialogs
 import com.intellij.driver.sdk.ui.components.settings.pluginsPage
 import com.intellij.driver.sdk.ui.shouldBe
 import com.intellij.driver.sdk.waitForIndicators
-import com.intellij.ide.starter.di.di
-import com.intellij.ide.starter.driver.driver.remoteDev.RemDevDriverRunner
-import com.intellij.ide.starter.driver.engine.DriverRunner
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.splitMode
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.NoProject
-import com.intellij.ide.starter.runner.RemDevTestContainer
 import com.intellij.ide.starter.runner.Starter
-import com.intellij.ide.starter.runner.TestContainer
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.kodein.di.DI
-import org.kodein.di.bindProvider
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.minutes
 
 class PluginTest {
   private val pluginName = "Demo"
   private val pluginPath = Path(System.getProperty("path.to.build.plugin"))
+
+  @AfterEach
+  fun cleanUpConfigurationStore() {
+    ConfigurationStorage.splitMode(false)
+  }
 
   /**
    * Test to verify that the Demo plugin (built from sources) is installed in the IDE.
@@ -84,11 +85,7 @@ class PluginTest {
   @ValueSource(booleans = [false, true])
   fun oneMoreTest(splitMode: Boolean) {
     if (splitMode) {
-      di = DI {
-        extend(di)
-        bindProvider<TestContainer(overrides = true) { TestContainer.newInstance<RemDevTestContainer>() }
-        bindProvider<DriverRunner> { RemDevDriverRunner() }
-      }
+      ConfigurationStorage.splitMode(splitMode)
     }
 
     Starter.newContext(
