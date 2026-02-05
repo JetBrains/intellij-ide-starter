@@ -16,10 +16,11 @@ import org.kodein.di.bindSingleton
 import java.nio.file.Path
 import java.nio.file.Paths
 
+// To be used only for local test runs
 class Setup {
 
   companion object {
-    fun setInstallersUsage() {
+    init {
       di = DI {
         extend(di)
         bindSingleton<IdeInstallerFactory>(overrides = true) { createInstallerFactory() }

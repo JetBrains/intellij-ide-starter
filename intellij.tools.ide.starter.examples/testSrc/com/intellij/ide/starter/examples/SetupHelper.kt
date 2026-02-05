@@ -1,11 +1,13 @@
 package com.intellij.ide.starter.examples
 
-import org.junit.jupiter.api.extension.BeforeAllCallback
+import com.intellij.ide.starter.config.ConfigurationStorage
+import com.intellij.ide.starter.config.useInstaller
+import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 
-class SetupHelper : BeforeAllCallback {
+class SetupHelper : BeforeEachCallback {
 
-  override fun beforeAll(context: ExtensionContext?) {
-    Setup.setInstallersUsage()
+  override fun beforeEach(p0: ExtensionContext?) {
+    ConfigurationStorage.useInstaller(true)
   }
 }
