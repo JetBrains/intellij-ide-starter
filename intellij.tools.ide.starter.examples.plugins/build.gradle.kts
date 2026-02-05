@@ -1,9 +1,6 @@
 import org.gradle.kotlin.dsl.intellijPlatform
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.intellij.platform.gradle.*
-import org.jetbrains.intellij.platform.gradle.models.*
-import org.jetbrains.intellij.platform.gradle.tasks.*
-import java.util.*
 
 plugins {
   id("org.jetbrains.intellij.platform") version "2.3.0"
@@ -74,4 +71,21 @@ val integrationTest = tasks.register<Test>("integrationTest") {
   systemProperty("path.to.build.plugin", tasks.prepareSandbox.get().pluginDirectory.get().asFile)
   useJUnitPlatform()
   dependsOn(tasks.prepareSandbox)
+
+  outputs.cacheIf { false }
+  outputs.upToDateWhen { false }
+
+  // Make test execution visible in console
+  testLogging {
+    events("passed", "skipped", "failed")
+    showStandardStreams = true
+  }
+}
+
+tasks.named<Test>("test") {
+  finalizedBy(integrationTest)
+}
+
+tasks.named("check") {
+  dependsOn(integrationTest)
 }
