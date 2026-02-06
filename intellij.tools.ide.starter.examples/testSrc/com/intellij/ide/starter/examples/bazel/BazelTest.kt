@@ -22,7 +22,7 @@ import kotlin.io.path.div
 class BazelTest {
   @Test
   fun openBazelProject() {
-    val testCase = TestCase(IdeProductProvider.IC, GitHubProject.fromGithub(
+    val testCase = TestCase(IdeProductProvider.IU, GitHubProject.fromGithub(
       branchName = "master",
       repoRelativeUrl = "https://github.com/bazelbuild/bazel.git"
     )).useRelease("2024.1")
