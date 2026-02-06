@@ -9,7 +9,7 @@ import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.ide.installer.IdeInstallerFile
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
-import com.intellij.ide.starter.project.LocalProjectInfo
+import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.Starter
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -44,7 +44,6 @@ class Setup {
 
     // ----- CONFIGURATION SECTION ----
     private val PATH_TO_INSTALLED_IDE = "/Applications/IntelliJ IDEA.app"
-    const val PROJECT_LOCATION = "/Users/maxim.kolmakov/IdeaProjects/Quantum-Starter-Kit"
     private val CONFIG_PATH = Paths.get("$LOCAL_PATH/Library/Application Support/JetBrains/IdeaIU2025.3")
     private val PLUGINS_PATH = Paths.get("$CONFIG_PATH/plugins")
 
@@ -56,7 +55,11 @@ class Setup {
     fun setupTestContext(): IDETestContext {
       val testCase = TestCase(
         IDE_TYPE,
-        LocalProjectInfo(Paths.get(PROJECT_LOCATION))
+        GitHubProject.fromGithub(
+          branchName = "master",
+          repoRelativeUrl = "Perfecto-Quantum/Quantum-Starter-Kit.git",
+          commitHash = "1dc6128c115cb41fc442c088174e81f63406fad5"
+        )
       )
       return Starter
         .newContext(testName = "PerformanceTest", testCase = testCase)
