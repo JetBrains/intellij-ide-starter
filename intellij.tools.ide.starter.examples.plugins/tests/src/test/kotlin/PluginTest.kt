@@ -84,7 +84,7 @@ class PluginTest {
     Starter.newContext(
       "oneMoreTest-" + if (splitMode) "split-mode" else "no-split-mode",
       TestCase(
-        IdeProductProvider.WS,
+        IdeProductProvider.IU,
         GitHubProject.fromGithub(branchName = "master", repoRelativeUrl = "JetBrains/ij-perf-report-aggregator")
       ).useEAP()
     ).apply {
