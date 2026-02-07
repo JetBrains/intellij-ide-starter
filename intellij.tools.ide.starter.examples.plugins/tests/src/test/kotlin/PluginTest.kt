@@ -13,10 +13,12 @@ import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.splitMode
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.NoProject
+import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -39,8 +41,8 @@ class PluginTest {
    * - Asserts that the expected plugin is correctly installed and visible in the list.
    */
   @Test
-  fun simpleTest() {
-    Starter.newContext("testExample", TestCase(IdeProductProvider.IU, NoProject).useEAP()).apply {
+  fun pluginInstalledTest() {
+    Starter.newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, NoProject).useEAP()).apply {
       PluginConfigurator(this).installPluginFromDir(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       welcomeScreen {
@@ -65,11 +67,9 @@ class PluginTest {
   }
 
   /**
-   * Executes a parameterized test to verify that the Demo plugin works with or without a split-mode (remote development env).
+   * Executes a parameterized test to verify that the Demo plugin works with or without a split-mode.
    *
    * This test performs the following actions:
-   * - Configures a custom dependency injection setup when split mode is enabled.
-   * - Initializes a test context with specific settings, including IDE product and project details.
    * - Installs a plugin from a specified path.
    * - Executes an action provided by the plugin and verifies its outcome in the IDE's UI dialog.
    *
@@ -78,15 +78,13 @@ class PluginTest {
   @ParameterizedTest(name = "split-mode={0}")
   @ValueSource(booleans = [false])
   //@ValueSource(booleans = [false, true]) // temporary disabled: should be fixed with next eap version
-  fun oneMoreTest(splitMode: Boolean) {
+  fun pluginActionInvocation(splitMode: Boolean) {
     ConfigurationStorage.splitMode(splitMode)
 
-    Starter.newContext(
-      "oneMoreTest-" + if (splitMode) "split-mode" else "no-split-mode",
-      TestCase(
-        IdeProductProvider.IU,
-        GitHubProject.fromGithub(branchName = "master", repoRelativeUrl = "JetBrains/ij-perf-report-aggregator")
-      ).useEAP()
+    Starter.newContext(CurrentTestMethod.hyphenateWithClass(),
+                       TestCase(IdeProductProvider.IU,
+                                GitHubProject.fromGithub(branchName = "master",
+                                                         repoRelativeUrl = "JetBrains/ij-perf-report-aggregator")).useEAP()
     ).apply {
       setLicense(System.getenv("LICENSE_KEY"))
       PluginConfigurator(this).installPluginFromDir(pluginPath)
