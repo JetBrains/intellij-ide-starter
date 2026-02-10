@@ -43,7 +43,7 @@ class PluginTest {
   @Test
   fun pluginInstalledTest() {
     Starter.newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, NoProject).useEAP()).apply {
-      PluginConfigurator(this).installPluginFromDir(pluginPath)
+      PluginConfigurator(this).installPluginFromPath(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       welcomeScreen {
         clickPlugins()
@@ -87,7 +87,7 @@ class PluginTest {
                                                          repoRelativeUrl = "JetBrains/ij-perf-report-aggregator")).useEAP()
     ).apply {
       setLicense(System.getenv("LICENSE_KEY"))
-      PluginConfigurator(this).installPluginFromDir(pluginPath)
+      PluginConfigurator(this).installPluginFromPath(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       waitForIndicators(5.minutes)
       openFile("package.json")
