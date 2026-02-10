@@ -68,7 +68,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Run tests
-        run: ./gradlew clean build test
+        run: ./gradlew clean build integrationTest
         env:
           LICENSE_KEY: ${{ secrets.LICENSE_KEY }}
       - name: Store reports
