@@ -42,7 +42,7 @@ class PluginTest {
    */
   @Test
   fun pluginInstalledTest() {
-    Starter.newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, NoProject).useEAP()).apply {
+    Starter.newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, NoProject)).apply {
       PluginConfigurator(this).installPluginFromPath(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       welcomeScreen {
@@ -84,7 +84,7 @@ class PluginTest {
     Starter.newContext(CurrentTestMethod.hyphenateWithClass(),
                        TestCase(IdeProductProvider.IU,
                                 GitHubProject.fromGithub(branchName = "master",
-                                                         repoRelativeUrl = "JetBrains/ij-perf-report-aggregator")).useEAP()
+                                                         repoRelativeUrl = "JetBrains/ij-perf-report-aggregator"))
     ).apply {
       setLicense(System.getenv("LICENSE_KEY"))
       PluginConfigurator(this).installPluginFromPath(pluginPath)
