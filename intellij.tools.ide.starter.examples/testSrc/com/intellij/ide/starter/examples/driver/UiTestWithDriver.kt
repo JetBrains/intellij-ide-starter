@@ -30,8 +30,7 @@ class UiTestWithDriver {
    * with IDE backend and frontend running on the same host.
    */
   @ParameterizedTest(name = "split-mode={0}")
-  @ValueSource(booleans = [false])
-  //@ValueSource(booleans = [false, true]) // temporary disabled: should be fixed with next eap version
+  @ValueSource(booleans = [false, true])
   fun openEditorFromStructureViewEnterCommentLine(splitMode: Boolean) {
     ConfigurationStorage.splitMode(splitMode)
 
