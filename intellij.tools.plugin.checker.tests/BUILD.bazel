@@ -52,6 +52,12 @@ jvm_library(
 )
 ### auto-generated section `build intellij.tools.plugin.checker.tests` end
 
+### auto-generated section `iml intellij.tools.plugin.checker.tests` start
+exports_files([
+  "intellij.tools.plugin.checker.tests.iml",
+], visibility = ["//visibility:public"])
+### auto-generated section `iml intellij.tools.plugin.checker.tests` end
+
 ### auto-generated section `test intellij.tools.plugin.checker.tests` start
 load("@community//build:tests-options.bzl", "jps_test")
 
