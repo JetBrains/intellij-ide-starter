@@ -7,13 +7,14 @@ import com.intellij.driver.sdk.ui.components.common.toolwindows.projectView
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.splitMode
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.ide.starter.sdk.JdkDownloaderFacade.jdk21
+import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
@@ -35,7 +36,7 @@ class UiTestWithDriver {
     ConfigurationStorage.splitMode(splitMode)
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, GitHubProject.fromGithub(
+      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeInfo.IdeaUltimate, GitHubProject.fromGithub(
         branchName = "master",
         repoRelativeUrl = "Perfecto-Quantum/Quantum-Starter-Kit.git",
         commitHash = "1dc6128c115cb41fc442c088174e81f63406fad5"

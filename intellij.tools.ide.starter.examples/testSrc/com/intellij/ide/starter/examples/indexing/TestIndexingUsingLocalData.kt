@@ -3,7 +3,6 @@ package com.intellij.ide.starter.examples.indexing
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeDownloader
 import com.intellij.ide.starter.ide.IdeInstaller
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
 import com.intellij.ide.starter.ide.installer.IdeInstallerFactory
 import com.intellij.ide.starter.models.IdeInfo
@@ -15,6 +14,7 @@ import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.startProfile
 import com.intellij.tools.ide.performanceTesting.commands.stopProfile
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.kodein.di.DI
@@ -45,7 +45,7 @@ class TestIndexing {
     //CONFIGURATION: specify required IDE version to download
     //if you want to use local version, don't change and make sure that no code in init{} section is commented
     //provide path to preconfigured project
-    val testCase = TestCase(IdeProductProvider.IU, LocalProjectInfo(Paths.get("/Users/maxim.kolmakov/IdeaProjects/bazel")))
+    val testCase = TestCase(IdeInfo.IdeaUltimate, LocalProjectInfo(Paths.get("/Users/maxim.kolmakov/IdeaProjects/bazel")))
       .useRelease("2022.3.2")
     //provide path to config
     val config = Paths.get("/Users/maxim.kolmakov/Library/Application Support/JetBrains/IntelliJIdea2022.3")

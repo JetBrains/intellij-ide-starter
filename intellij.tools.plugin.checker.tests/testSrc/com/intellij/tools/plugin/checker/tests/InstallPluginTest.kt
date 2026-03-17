@@ -9,8 +9,12 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityClient
 import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
-import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.di.di
+import org.kodein.di.instance
+import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.ide.starter.models.IdeInfoType
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesAfterEach
+import org.kodein.di.direct
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.plugins.PluginNotFoundException
 import com.intellij.ide.starter.process.exec.ExecTimeoutException
@@ -130,7 +134,7 @@ class InstallPluginTest {
     fun data(): List<EventToTestCaseParams> {
       val event = getMarketplaceEvent()
       val testCase = when (event.productCode) {
-        IdeProductProvider.PS.productCode -> TestCases.PS.LaravelFramework
+        IdeInfoType.PHPSTORM.productCode -> TestCases.PS.LaravelFramework
         else -> TestCases.IU.GradleJitPackSimple
       }
       val draftParams = EventToTestCaseParams(
@@ -140,7 +144,8 @@ class InstallPluginTest {
 
       val resultingTestCase = try {
         modifyTestCaseForIdeVersion(draftParams)
-      } catch (ex: UnableToVerifyException) {
+      }
+      catch (ex: UnableToVerifyException) {
         logOutput(RuntimeException(ex.message))
         PluginUpdateMarketplaceReporter.reportUnableToVerifyError(ex.message!!)
         return emptyList()
@@ -150,11 +155,11 @@ class InstallPluginTest {
     }
 
     private fun modifyTestCaseForIdeVersion(params: EventToTestCaseParams): List<EventToTestCaseParams> {
-      if (!IdeProductProvider.isProductSupported(params.event.productCode)) {
+      if (IdeInfoType.fromProductCode(params.event.productCode) == null) {
         throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}")
       }
 
-      if (params.event.productCode == IdeProductProvider.AI.productCode) {
+      if (params.event.productCode == IdeInfoType.ANDROID_STUDIO.productCode) {
         throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. Link to download it ${params.event.productLink}")
       }
 
@@ -176,7 +181,7 @@ class InstallPluginTest {
         throw UnableToVerifyException("Product ${params.event.productVersion} is not supported: https://youtrack.jetbrains.com/issue/DBE-16528")
       }
 
-      if (params.event.productCode == IdeProductProvider.DS.productCode) {
+      if (params.event.productCode == IdeInfoType.DATASPELL.productCode) {
         throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. There is some issue with the license.")
       }
 
@@ -184,19 +189,19 @@ class InstallPluginTest {
         throw UnableToVerifyException("Paid plugins are not supported yet. Plugin id: ${params.event.pluginId}")
       }
 
-      if (params.event.productCode == IdeProductProvider.QA.productCode) {
+      if (params.event.productCode == IdeInfoType.AQUA.productCode) {
         throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. There is some issue with the license.")
       }
 
-      if (params.event.productCode == IdeProductProvider.RR.productCode) {
+      if (params.event.productCode == IdeInfoType.RUSTROVER.productCode) {
         throw UnableToVerifyException("Product ${params.event.productCode} is not supported yet. There is some issue with the license.")
       }
 
-      if (params.event.productCode == IdeProductProvider.RD.productCode && versionNumber < 243) {
+      if (params.event.productCode == IdeInfoType.RIDER.productCode && versionNumber < 243) {
         throw UnableToVerifyException("${params.event.productCode} older than 2024.3 is not supported because it reports 1s freezes as failed tests.")
       }
 
-      if (params.event.productCode == IdeProductProvider.GW.productCode) {
+      if (params.event.productCode == IdeInfoType.GATEWAY.productCode) {
         throw UnableToVerifyException("${params.event.productCode} is not supported yet.")
       }
 
@@ -211,7 +216,9 @@ class InstallPluginTest {
         else -> throw RuntimeException("OS is not supported")
       }
 
-      val ideInfo = IdeProductProvider.getProducts().single { it.productCode == params.event.productCode }
+      val ideInfoType = IdeInfoType.fromProductCode(params.event.productCode)
+                        ?: throw UnableToVerifyException("Unknown product code: ${params.event.productCode}")
+      val ideInfo = di.direct.instance<IdeInfo>(tag = ideInfoType)
         .copy(downloadURI = URI(downloadLink), buildType = params.event.productType ?: "")
 
       val paramsWithAppropriateIde = params.onIDE(ideInfo)
@@ -245,7 +252,7 @@ class InstallPluginTest {
     }
   }
 
-  private fun createTestContext(params: EventToTestCaseParams, configurator: IDETestContext.()->Unit = {}): IDETestContext {
+  private fun createTestContext(params: EventToTestCaseParams, configurator: IDETestContext.() -> Unit = {}): IDETestContext {
     val testContext = Starter
       .newContext(testName = "install-plugin-test", testCase = params.testCase)
       .prepareProjectCleanImport()
@@ -266,7 +273,8 @@ class InstallPluginTest {
   @Timeout(value = 20, unit = TimeUnit.MINUTES)
   fun installPluginTest(params: EventToTestCaseParams) {
     val testContextWithoutPlugin = createTestContext(params)
-    val ideRunContextWithoutPlugin = testContextWithoutPlugin.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp()).runContext
+    val ideRunContextWithoutPlugin =
+      testContextWithoutPlugin.runIDE(launchName = "without-plugin", commands = CommandChain().exitApp()).runContext
     val errorsWithoutPlugin = ErrorReporterToCI.collectErrors(ideRunContextWithoutPlugin.logsDir)
 
     val testContext: IDETestContext
@@ -276,7 +284,8 @@ class InstallPluginTest {
     catch (ex: Exception) {
       when (ex) {
         is IOException, //plugin is in removal state and not available
-        is PluginNotFoundException -> return //don't run the test if plugin was removed by author
+        is PluginNotFoundException,
+          -> return //don't run the test if plugin was removed by author
         else -> throw ex
       }
     }

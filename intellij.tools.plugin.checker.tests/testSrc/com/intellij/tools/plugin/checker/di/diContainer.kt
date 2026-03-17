@@ -5,9 +5,6 @@ import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.community.IdeByLinkDownloader
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IdeDownloader
-import com.intellij.ide.starter.ide.IdeProductProvider
-import com.intellij.ide.starter.models.IdeProduct
-import com.intellij.ide.starter.models.IdeProductImp
 import com.intellij.ide.starter.report.ErrorReporter
 import com.intellij.ide.starter.report.FailureDetailsForTeamcity
 import com.intellij.ide.starter.report.FailureDetailsOnCI
@@ -38,10 +35,8 @@ fun initPluginCheckerDI(systemPropertiesFilePath: Path = Path(System.getenv("TEA
         bindSingleton<ErrorReporter>(overrides = true) {
           object: ErrorReporter { override fun reportErrorsAsFailedTests(runContext: IDERunContext) {} }
         }
-        bindSingleton<IdeProduct>(overrides = true) { IdeProductImp }
         bindSingleton<IdeDownloader>(overrides = true) { IdeByLinkDownloader }
         bindSingleton<FailureDetailsOnCI>(overrides = true) { FailureDetailsForTeamcity }
-        bindSingleton<IdeProductProvider> { IdeProductProvider }
         bindSingleton<URI>(tag = "teamcity.uri", overrides = true) { serverUri }
       }
     }

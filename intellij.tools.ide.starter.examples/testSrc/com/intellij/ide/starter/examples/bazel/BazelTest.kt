@@ -2,7 +2,7 @@ package com.intellij.ide.starter.examples.bazel
 
 import com.intellij.ide.starter.examples.getMetricsFromSpanAndChildren
 import com.intellij.ide.starter.examples.writeMetricsToCSV
-import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.runner.Starter
@@ -11,6 +11,7 @@ import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingM
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
+import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
 import com.intellij.util.indexing.diagnostic.dto.IndexingMetric
 import com.intellij.util.indexing.diagnostic.dto.getListOfIndexingMetrics
 import com.intellij.util.io.createParentDirectories
@@ -22,7 +23,7 @@ import kotlin.io.path.div
 class BazelTest {
   @Test
   fun openBazelProject() {
-    val testCase = TestCase(IdeProductProvider.IU, GitHubProject.fromGithub(
+    val testCase = TestCase(IdeInfo.IdeaUltimate, GitHubProject.fromGithub(
       branchName = "master",
       repoRelativeUrl = "https://github.com/bazelbuild/bazel.git"
     )).useRelease("2024.1")

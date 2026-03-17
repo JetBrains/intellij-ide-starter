@@ -12,7 +12,8 @@ import com.intellij.driver.sdk.waitForIndicators
 import com.intellij.ide.starter.config.ConfigurationStorage
 import com.intellij.ide.starter.config.splitMode
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
-import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.models.IdeInfo
+import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
 import com.intellij.ide.starter.junit5.hyphenateWithClass
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
@@ -42,7 +43,7 @@ class PluginTest {
    */
   @Test
   fun pluginInstalledTest() {
-    Starter.newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeProductProvider.IU, NoProject)).apply {
+    Starter.newContext(CurrentTestMethod.hyphenateWithClass(), TestCase(IdeInfo.IdeaUltimate, NoProject)).apply {
       PluginConfigurator(this).installPluginFromPath(pluginPath)
     }.runIdeWithDriver().useDriverAndCloseIde {
       welcomeScreen {
@@ -81,7 +82,7 @@ class PluginTest {
     ConfigurationStorage.splitMode(splitMode)
 
     Starter.newContext(CurrentTestMethod.hyphenateWithClass(),
-                       TestCase(IdeProductProvider.IU,
+                       TestCase(IdeInfo.IdeaUltimate,
                                 GitHubProject.fromGithub(branchName = "master",
                                                          repoRelativeUrl = "JetBrains/ij-perf-report-aggregator"))
     ).apply {

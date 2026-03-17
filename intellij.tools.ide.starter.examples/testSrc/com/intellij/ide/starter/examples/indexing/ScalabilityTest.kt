@@ -1,7 +1,7 @@
 package com.intellij.ide.starter.examples.indexing
 
-import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.junit5.hyphenateWithClass
+import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.CurrentTestMethod
@@ -10,6 +10,7 @@ import com.intellij.tools.ide.metrics.collector.starter.metrics.extractIndexingM
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
+import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -20,7 +21,7 @@ class ScalabilityTest {
   fun scalabilityOfIndexingTest() {
     //CONFIGURATION
     //provide path to your local project
-    val testCase = TestCase(IdeProductProvider.IU, LocalProjectInfo(Paths.get("/Users/maxim.kolmakov/IdeaProjects/coroutines")))
+    val testCase = TestCase(IdeInfo.IdeaUltimate, LocalProjectInfo(Paths.get("/Users/maxim.kolmakov/IdeaProjects/coroutines")))
       //provide the required release
       .useRelease("2023.1")
 
