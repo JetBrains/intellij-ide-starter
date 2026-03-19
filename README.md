@@ -23,7 +23,7 @@ Additional features include:
 * Running tests with a profiler (not yet included)
 
 More details how it works can
-be [found here](https://github.com/JetBrains/intellij-ide-starter/blob/master/intellij.tools.ide.starter/README.md)
+be [found here](https://github.com/JetBrains/intellij-community/blob/master/tools/intellij.tools.ide.starter/README.md)
 
 #### Supported products
 
@@ -44,14 +44,14 @@ the [Examples](https://github.com/JetBrains/intellij-ide-starter/tree/master/int
 ##### Available commands
 
 The available commands can be found in
-the [performance-testing-commands package](https://github.com/JetBrains/intellij-community/blob/9f011b378a6fffe4859f76966d70a63910e3e1c8/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt)
+the [performance-testing-commands package](https://github.com/JetBrains/intellij-community/blob/master/plugins/performanceTesting/commands-model/src/com/intellij/tools/ide/performanceTesting/commands/generalCommandChain.kt)
 which includes performance-intensive operations and IDE configuration commands.
 
 Examples of included commands:
 
 - waitForSmartMode()
 - flushIndexes()
-- setupProjectSdk(sdkName: String, sdkType: String, sdkPath: String)]
+- setupProjectSdk(sdkName: String, sdkType: String, sdkPath: String)
 - openFile(relativePath: String)
 - openProject(projectPath: Path)
 - reopenProject()
@@ -87,5 +87,5 @@ Examples of included commands:
 Metrics are values collected during test execution, including operation durations, command results (e.g., the number of elements in
 completion lists), and more.  
 You can find more information about different approach to collect metrics (with or without Starter)
-in [Starter Readme](https://github.com/JetBrains/intellij-ide-starter/tree/master/intellij.tools.ide.starter#performance-testingmetrics-collection)
+in [Metrics collector Readme](https://github.com/JetBrains/intellij-community/blob/master/tools/intellij.tools.ide.metrics.collector/README.md)
 
