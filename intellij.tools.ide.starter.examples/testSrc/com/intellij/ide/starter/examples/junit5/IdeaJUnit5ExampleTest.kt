@@ -17,7 +17,7 @@ class IdeaJUnit5ExampleTest {
   fun openGradleJitPack() {
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.GradleJitPackSimple)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), IdeaUltimateCases.GradleJitPackSimple)
       .prepareProjectCleanImport()
 
     val exitCommandChain = CommandChain().exitApp()
@@ -37,7 +37,7 @@ class IdeaJUnit5ExampleTest {
   fun openMavenProject() {
 
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.MavenSimpleApp)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), IdeaUltimateCases.MavenSimpleApp)
       .prepareProjectCleanImport()
 
     testContext.runIDE(commands = CommandChain().exitApp())
@@ -47,7 +47,7 @@ class IdeaJUnit5ExampleTest {
   @Disabled("Long running test (> 10 min)")
   fun inspectMavenProject() {
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.MavenSimpleApp)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), IdeaUltimateCases.MavenSimpleApp)
 
     val result = testContext.runIDE(commands = CommandChain().inspectCode().exitApp())
     getMetricsFromSpanAndChildren(result, SpanFilter.nameEquals("globalInspections")).forEach {
@@ -60,7 +60,7 @@ class IdeaJUnit5ExampleTest {
   @Disabled("Too many tests for Github")
   fun openPythonProjectInPyCharm() {
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.PY.PublicApis)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), PyCharmCases.PublicApis)
     testContext.runIDE(commands = CommandChain().exitApp())
   }
 

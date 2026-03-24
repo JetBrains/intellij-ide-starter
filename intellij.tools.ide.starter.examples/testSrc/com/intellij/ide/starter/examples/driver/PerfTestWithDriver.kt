@@ -20,7 +20,7 @@ class PerfTestWithDriver {
   @Test
   fun openGradleJitPack() {
     val testContext = Starter
-      .newContext(CurrentTestMethod.hyphenateWithClass(), TestCases.IU.GradleJitPackSimple)
+      .newContext(CurrentTestMethod.hyphenateWithClass(), IdeaUltimateCases.GradleJitPackSimple)
       .prepareProjectCleanImport()
 
     testContext.runIdeWithDriver().useDriverAndCloseIde {

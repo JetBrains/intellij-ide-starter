@@ -30,6 +30,7 @@ import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.util.common.logOutput
 import com.intellij.tools.plugin.checker.aws.VerificationMessage
 import com.intellij.tools.plugin.checker.aws.VerificationResultType
+import com.intellij.tools.plugin.checker.data.PhpStormCases
 import com.intellij.tools.plugin.checker.data.TestCases
 import com.intellij.tools.plugin.checker.di.initPluginCheckerDI
 import com.intellij.tools.plugin.checker.di.teamCityIntelliJPerformanceServer
@@ -134,7 +135,7 @@ class InstallPluginTest {
     fun data(): List<EventToTestCaseParams> {
       val event = getMarketplaceEvent()
       val testCase = when (event.productCode) {
-        IdeInfoType.PHPSTORM.productCode -> TestCases.PS.LaravelFramework
+        IdeInfoType.PHPSTORM.productCode -> PhpStormCases.LaravelFramework
         else -> TestCases.IU.GradleJitPackSimple
       }
       val draftParams = EventToTestCaseParams(
