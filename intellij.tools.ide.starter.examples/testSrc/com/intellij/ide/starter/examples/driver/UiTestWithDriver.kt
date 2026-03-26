@@ -41,11 +41,8 @@ class UiTestWithDriver {
         commitHash = "1dc6128c115cb41fc442c088174e81f63406fad5"
       )))
       .setupSdk(jdk21.toSdk())
+      .setLicense(System.getenv("LICENSE_KEY"))
       .prepareProjectCleanImport()
-
-    // this needs to be a separate is due to a bug in the setLicense Api for rem dev
-    // will be fixed in AT-4228
-    testContext.setLicense(System.getenv("LICENSE_KEY"))
 
     testContext.runIdeWithDriver().useDriverAndCloseIde {
       ideFrame {
