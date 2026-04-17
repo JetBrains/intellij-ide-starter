@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'kotlin'
 
 buildscript {
-  ext.kotlin_version = '2.2.0-RC'
+  ext.kotlin_version = '2.3.0'
   ext.jackson_version = '2.16.0'
 
   repositories {
@@ -48,7 +48,7 @@ dependencies {
 }
 
 kotlin {
-  jvmToolchain(21)
+  jvmToolchain(25)
   compileKotlin {
     kotlinOptions {
       freeCompilerArgs += "-opt-in=kotlin.time.ExperimentalTime"

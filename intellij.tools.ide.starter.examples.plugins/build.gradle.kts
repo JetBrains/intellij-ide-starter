@@ -3,7 +3,7 @@ import org.jetbrains.intellij.platform.gradle.*
 
 plugins {
   id("org.jetbrains.intellij.platform") version "2.11.0"
-  kotlin("jvm") version "2.2.0"
+  kotlin("jvm") version "2.3.0"
 }
 
 repositories {
@@ -56,7 +56,7 @@ intellijPlatform {
 }
 
 kotlin {
-  jvmToolchain(21)
+  jvmToolchain(25)
 }
 
 val integrationTest by intellijPlatformTesting.testIdeUi.registering {

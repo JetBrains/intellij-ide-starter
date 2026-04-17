@@ -12,7 +12,7 @@ repositories {
 }
 
 kotlin {
-  jvmToolchain(21)
+  jvmToolchain(25)
   sourceSets {
     getByName("test").kotlin.srcDirs("testSrc")
   }
