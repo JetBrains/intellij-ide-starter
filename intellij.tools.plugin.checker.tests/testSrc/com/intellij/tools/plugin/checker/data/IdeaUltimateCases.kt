@@ -3,9 +3,9 @@ package com.intellij.tools.plugin.checker.data
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.project.GitHubProject
 import com.intellij.ide.starter.project.TestCaseTemplate
-import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
+import com.intellij.tools.plugin.checker.tests.IdeProductImpl
 
-object IdeaUltimateCases : TestCaseTemplate(IdeInfo.IdeaUltimate) {
+object IdeaUltimateCases : TestCaseTemplate(IdeProductImpl.IU) {
 
   val GradleJitPackSimple = withProject(
     GitHubProject.fromGithub(repoRelativeUrl = "jitpack/gradle-simple", branchName = "master")

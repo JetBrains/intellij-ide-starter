@@ -8,7 +8,6 @@ import com.intellij.ide.starter.ci.teamcity.withAuth
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IdeInfo
 import com.intellij.ide.starter.junit5.config.KillOutdatedProcessesAfterEach
-import com.intellij.tools.ide.starter.build.server.idea.ultimate.IdeaUltimate
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.plugins.PluginNotFoundException
@@ -107,7 +106,7 @@ class InstallPluginAfterIdeUpdateTest {
       val configurationData = getConfigurationData()
       val case = TestCases.IU.GradleJitPackSimple
         .copy(
-          ideInfo = IdeInfo.IdeaUltimate.copy(
+          ideInfo = IdeProductImpl.IU.copy(
             downloadURI = URI(configurationData.url)
           )
         )
@@ -131,7 +130,7 @@ class InstallPluginAfterIdeUpdateTest {
     val configurationData = getConfigurationData()
     val case = TestCases.IU.GradleJitPackSimple
       .copy(
-        ideInfo = IdeInfo.IdeaUltimate.copy(
+        ideInfo = IdeProductImpl.IU.copy(
           downloadURI = URI(configurationData.url)
         )
       )

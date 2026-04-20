@@ -219,8 +219,9 @@ class InstallPluginTest {
 
       val ideInfoType = IdeInfoType.fromProductCode(params.event.productCode)
                         ?: throw UnableToVerifyException("Unknown product code: ${params.event.productCode}")
-      val ideInfo = di.direct.instance<IdeInfo>(tag = ideInfoType)
-        .copy(downloadURI = URI(downloadLink), buildType = params.event.productType ?: "")
+      val ideInfo = (IdeProductImpl.allId.singleOrNull { ideInfoType.productCode == it.productCode }
+                     ?: throw UnableToVerifyException("Unknown product code in custom IdeProductImpl: ${params.event.productCode}")).copy(downloadURI = URI(
+          downloadLink), buildType = params.event.productType ?: "")
 
       val paramsWithAppropriateIde = params.onIDE(ideInfo)
       val numericProductVersion = paramsWithAppropriateIde.event.getNumericProductVersion()
